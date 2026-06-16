@@ -1,0 +1,175 @@
+:root {
+  /* Brand colours */
+  --color-blue: oklch(66.623% 0.1177 217.10);
+  --color-blue-light: oklch(77.31% 0.13351 211.702);
+  --color-blue-dark: oklch(58.216% 0.1005 212.646);
+  --color-green: oklch(77.183% 0.1766 131.692);
+  --color-green-dark: oklch(64.020% 0.1502 131.396);
+  --color-red: oklch(62.83% 0.2089 25.21);
+
+  /* Neutral */
+  --color-white: oklch(96.826% 0.0069 247.896);
+  --color-grey-50: oklch(20.768% 0.0398 265.755);
+  --color-grey-100: oklch(23.157% 0.0398 262.510);
+  --color-grey-200: oklch(27.950% 0.0368 260.031);
+  --color-grey-300: oklch(37.170% 0.0392 257.287);
+  --color-grey-400: oklch(71.067% 0.0351 256.788);
+  --color-grey-500: oklch(55.439% 0.0407 257.417);
+  --color-grey-600: oklch(86.898% 0.0198 252.894);
+  --color-grey-700: oklch(92.876% 0.0126 255.508);
+  --color-grey-800: oklch(96.826% 0.0069 247.896);
+  --color-grey-900: oklch(98.415% 0.0034 247.858);
+
+  /* Semantic surfaces */
+  --color-body-bg: oklch(16.140% 0.0289 266.826);
+  --color-surface-solid: oklch(18.020% 0.0325 266.625);
+  --color-header-solid-bg: oklch(16.140% 0.0289 266.826 / 0.95);
+
+  /* Text */
+  --color-text: oklch(86.898% 0.0198 252.894);
+  --color-text-muted: oklch(71.067% 0.0351 256.788);
+  --color-heading: oklch(96.826% 0.0069 247.896);
+
+  /* Blur scale (shared by backdrop-filter and filter) */
+  --blur-sm: 0.25rem;
+  --blur-md: 0.5rem;
+  --blur-lg: 0.75rem;
+  --blur-xl: 1rem;
+
+  /* Glass */
+  --glass-bg: oklch(20.768% 0.0398 265.755 / 0.6);
+  --glass-bg-light: oklch(20.768% 0.0398 265.755 / 0.4);
+  --glass-border: oklch(71.067% 0.0351 256.788 / 0.12);
+  --glass-border-hover: oklch(71.067% 0.0351 256.788 / 0.22);
+  --glass-blur: var(--blur-xl);
+
+  /* Brand tints (transparent overlays of the brand colours).
+     Suffix is the percentage of the brand colour mixed with transparent. */
+  --tint-blue-5:   color-mix(in srgb, var(--color-blue) 5%, transparent);
+  --tint-blue-8:   color-mix(in srgb, var(--color-blue) 8%, transparent);
+  --tint-blue-10:  color-mix(in srgb, var(--color-blue) 10%, transparent);
+  --tint-blue-12:  color-mix(in srgb, var(--color-blue) 12%, transparent);
+  --tint-blue-15:  color-mix(in srgb, var(--color-blue) 15%, transparent);
+  --tint-blue-20:  color-mix(in srgb, var(--color-blue) 20%, transparent);
+  --tint-blue-25:  color-mix(in srgb, var(--color-blue) 25%, transparent);
+  --tint-blue-30:  color-mix(in srgb, var(--color-blue) 30%, transparent);
+  --tint-green-5:  color-mix(in srgb, var(--color-green) 5%, transparent);
+  --tint-green-8:  color-mix(in srgb, var(--color-green) 8%, transparent);
+  --tint-green-10: color-mix(in srgb, var(--color-green) 10%, transparent);
+  --tint-green-12: color-mix(in srgb, var(--color-green) 12%, transparent);
+  --tint-green-15: color-mix(in srgb, var(--color-green) 15%, transparent);
+  --tint-green-20: color-mix(in srgb, var(--color-green) 20%, transparent);
+  --tint-green-25: color-mix(in srgb, var(--color-green) 25%, transparent);
+  --tint-green-30: color-mix(in srgb, var(--color-green) 30%, transparent);
+
+  /* Gradients */
+  --gradient-accent: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-blue) 90%, var(--color-grey-200)) 0 10%,
+    color-mix(in srgb, var(--color-green) 90%, var(--color-grey-200)) 90% 100%
+  );
+  /* Pair with `background-size: 200% 100%` and `animation: shimmer ...` for the looping accent. */
+  --gradient-accent-shimmer: linear-gradient(
+    90deg,
+    var(--color-blue) 0%,
+    var(--color-green) 35%,
+    var(--color-green) 50%,
+    var(--color-blue) 100%
+  );
+
+  /* Grid lines */
+  --color-grid-line: oklch(71.067% 0.0351 256.788 / 0.08);
+  --color-grid-line-light: oklch(71.067% 0.0351 256.788 / 0.06);
+
+  /* Shimmer */
+  --color-shimmer: oklch(100% 0 none / 0.25);
+
+  /* Partners */
+  --partner-logo-filter: grayscale(100%) brightness(0.8) invert(1);
+  --partner-logo-hover-filter: none;
+  --partner-logo-opacity: 0.5;
+  --partner-logo-hover-opacity: 0.85;
+  --partner-item-bg: oklch(26.48% 0.01276 243.42);
+
+  /* Benefits card */
+  --benefits-card-bg: oklch(20.768% 0.0398 265.755 / 0.6);
+
+  /* Hero blob opacities */
+  --hero-blob-blue-1: 0.18;
+  --hero-blob-green-1: 0.15;
+  --hero-blob-blue-2: 0.12;
+  --hero-blob-green-2: 0.1;
+
+  /* Background gradient opacities */
+  --bg-blue-1: 0.1;
+  --bg-green-1: 0.07;
+  --bg-blue-2: 0.06;
+  --bg-green-2: 0.05;
+
+  /* Hero signal colours */
+  --signal-trail-r: 10;
+  --signal-trail-g: 165;
+  --signal-trail-b: 195;
+  --signal-trail-multiplier: 0.4;
+  --signal-dot: oklch(66.623% 0.1177 217.10 / 0.5);
+
+  /* Typography */
+  --font-text: 'Noto Sans', 'Noto Sans Fallback', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Outfit', 'Outfit Fallback', sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+  --font-size-5xl: 3rem;
+  --font-size-6xl: 3.75rem;
+  --font-size-7xl: 4.5rem;
+  --font-size-8xl: 5.5rem;
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+
+  /* Border radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 0.0625rem 0.125rem oklch(0% 0 none / 0.3);
+  --shadow-md: 0 0.25rem 0.375rem oklch(0% 0 none / 0.35);
+  --shadow-lg: 0 0.625rem 0.9375rem oklch(0% 0 none / 0.4);
+  --shadow-xl: 0 1.25rem 1.5625rem oklch(0% 0 none / 0.45);
+  --shadow-glow: 0 0 1.5rem oklch(66.623% 0.1177 217.10 / 0.35);
+  --shadow-focus: 0 0 0 3px var(--tint-blue-20);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  --transition-slow: 400ms ease;
+  --easing-emphasis: cubic-bezier(0.22, 1, 0.36, 1);
+  --transition-emphasis: 600ms var(--easing-emphasis);
+
+  /* Z-index */
+  --z-background: -1;
+  --z-content: 1;
+  --z-header: 100;
+  --z-overlay: 200;
+  --z-modal: 300;
+}

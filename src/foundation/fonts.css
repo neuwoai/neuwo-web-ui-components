@@ -1,0 +1,49 @@
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('fonts/outfit-variable.woff2') format('woff2-variations'),
+       url('fonts/outfit-variable.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('fonts/noto-sans-variable.woff2') format('woff2-variations'),
+       url('fonts/noto-sans-variable.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('fonts/noto-sans-italic-variable.woff2') format('woff2-variations'),
+       url('fonts/noto-sans-italic-variable.woff2') format('woff2');
+}
+
+/* Metric-adjusted system fallbacks -- minimise CLS during font swap.
+   Values approximate the real font metrics so layout barely shifts when
+   the variable WOFF2 finishes loading. Refine with tools like Fontaine
+   (github.com/danielroe/fontaine) if you want exact numbers. */
+
+@font-face {
+  font-family: 'Outfit Fallback';
+  src: local('Arial');
+  size-adjust: 100.4%;
+  ascent-override: 96%;
+  descent-override: 25%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'Noto Sans Fallback';
+  src: local('Arial');
+  size-adjust: 107%;
+  ascent-override: 100.5%;
+  descent-override: 27.4%;
+  line-gap-override: 0%;
+}
