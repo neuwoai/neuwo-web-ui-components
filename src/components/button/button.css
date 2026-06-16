@@ -1,0 +1,98 @@
+/* ==========================================================================
+   Buttons -- unified base styles
+   ========================================================================== */
+
+/* --- Base --- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3) var(--space-6);
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  font-family: var(--font-text);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  position: relative;
+  transition: background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+
+.btn:hover {
+  text-decoration: none;
+}
+
+/* --- Variant: solid (primary) --- */
+
+.btn--solid {
+  background: var(--color-blue);
+  color: var(--color-white);
+}
+
+.btn--solid:hover {
+  background: var(--color-blue-dark);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-0.125rem);
+}
+
+/* --- Variant: outline (secondary) --- */
+
+.btn--outline {
+  background: transparent;
+  color: var(--color-blue);
+  border-color: var(--color-blue);
+}
+
+.btn--outline:hover {
+  background: var(--tint-blue-10);
+  color: var(--color-blue-dark);
+  border-color: var(--color-blue-dark);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-0.125rem);
+}
+
+/* --- Variant: glass (secondary with heavy blur) --- */
+
+.btn--glass {
+  color: var(--color-blue);
+  border-color: var(--color-blue);
+  backdrop-filter: blur(var(--blur-sm));
+}
+
+.btn--glass:hover {
+  color: var(--color-blue-dark);
+  border-color: var(--color-blue-dark);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-0.125rem);
+}
+
+/* --- Size: small --- */
+
+.btn--sm {
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--font-size-sm);
+}
+
+/* --- Size: large --- */
+
+.btn--lg {
+  padding: var(--space-4) var(--space-8);
+  font-size: var(--font-size-lg);
+}
+
+/* --- Modifier: wide --- */
+
+.btn--wide {
+  padding-left: var(--space-10);
+  padding-right: var(--space-10);
+}
+
+/* --- Modifier: extra wide --- */
+
+.btn--xwide {
+  padding-left: var(--space-16);
+  padding-right: var(--space-16);
+}
