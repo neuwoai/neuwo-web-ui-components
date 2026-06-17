@@ -68,6 +68,21 @@
       <neuwo-button block variant="solid">Full-width button</neuwo-button>
     </div>
 
+    <h2>Form association (submit / reset)</h2>
+    <form class="row" id="demo-form">
+      <input name="q" value="hello" />
+      <neuwo-button type="submit" variant="solid">Submit</neuwo-button>
+      <neuwo-button type="reset" variant="outline">Reset</neuwo-button>
+      <output id="demo-out"></output>
+    </form>
+    <script>
+      document.getElementById("demo-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        document.getElementById("demo-out").value =
+          "submitted q=" + new FormData(e.target).get("q");
+      });
+    </script>
+
     <h2>Token re-theming (inherits through the shadow boundary)</h2>
     <div class="row reskin">
       <neuwo-button variant="solid">Re-themed</neuwo-button>

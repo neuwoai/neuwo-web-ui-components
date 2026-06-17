@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import "../src/index.js"; // registers <neuwo-button> and injects fonts
+import { NeuwoButton } from "../src/components/button/neuwo-button.js";
 
 function make(html) {
   const host = document.createElement("div");
@@ -80,6 +81,59 @@ describe("<neuwo-button>", () => {
     expect(btn.getAttribute("aria-label")).toBe("Save");
     expect(btn.getAttribute("data-track")).toBe("cta");
     expect(btn.getAttribute("title")).toBe("Save now");
+  });
+
+  it("is a form-associated element", () => {
+    expect(NeuwoButton.formAssociated).toBe(true);
+  });
+
+  it("submits its form when a type=submit button is activated", () => {
+    const form = document.createElement("form");
+    form.innerHTML = `<neuwo-button type="submit">Send</neuwo-button>`;
+    document.body.appendChild(form);
+    let submitted = false;
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      submitted = true;
+    });
+    form.querySelector("neuwo-button").click();
+    expect(submitted).toBe(true);
+  });
+
+  it("resets its form when a type=reset button is activated", () => {
+    const form = document.createElement("form");
+    form.innerHTML = `<input name="q" value="x"><neuwo-button type="reset">Reset</neuwo-button>`;
+    document.body.appendChild(form);
+    const input = form.querySelector("input");
+    input.value = "changed";
+    form.querySelector("neuwo-button").click();
+    expect(input.value).toBe("x");
+  });
+
+  it("does not submit its form when disabled", () => {
+    const form = document.createElement("form");
+    form.innerHTML = `<neuwo-button type="submit" disabled>Send</neuwo-button>`;
+    document.body.appendChild(form);
+    let submitted = false;
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      submitted = true;
+    });
+    form.querySelector("neuwo-button").click();
+    expect(submitted).toBe(false);
+  });
+
+  it("does not submit its form when it is a link", () => {
+    const form = document.createElement("form");
+    form.innerHTML = `<neuwo-button type="submit" href="https://neuwo.ai">Go</neuwo-button>`;
+    document.body.appendChild(form);
+    let submitted = false;
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      submitted = true;
+    });
+    form.querySelector("neuwo-button").click();
+    expect(submitted).toBe(false);
   });
 
   it("treats href as a value, not markup (no injection)", () => {

@@ -3,6 +3,7 @@ import { sheet } from "../../core/sheet.js";
 import buttonCss from "./button.css?raw";
 
 export class NeuwoButton extends NeuwoElement {
+  static formAssociated = true;
   static styles = sheet(buttonCss);
   static observedAttributes = [
     "variant",
@@ -16,6 +17,26 @@ export class NeuwoButton extends NeuwoElement {
     "rel",
     "download",
   ];
+
+  #internals;
+
+  // The real control lives in the shadow root, so it cannot drive the outer form
+  // natively. Replicate submit/reset on activation via ElementInternals.
+  #onClick = () => {
+    if (this.hasAttribute("disabled") || this.getAttribute("href")) return;
+    const form = this.#internals?.form ?? this.closest("form");
+    if (!form) return;
+    const type = this.getAttribute("type") || "button";
+    if (type === "submit") form.requestSubmit();
+    else if (type === "reset") form.reset();
+  };
+
+  constructor() {
+    super();
+    // attachInternals is absent in some non-browser test environments.
+    this.#internals = typeof this.attachInternals === "function" ? this.attachInternals() : null;
+    this.addEventListener("click", this.#onClick);
+  }
 
   render() {
     const variant = this.getAttribute("variant") || "solid";
