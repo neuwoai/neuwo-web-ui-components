@@ -34,6 +34,17 @@
   text-decoration: none;
 }
 
+/* --- State: disabled --- */
+
+:host([disabled]) {
+  cursor: not-allowed;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  pointer-events: none; /* also suppresses the hover lift on a disabled button */
+}
+
 /* --- Variant: solid (primary) --- */
 
 .btn--solid {
