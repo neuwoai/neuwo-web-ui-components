@@ -2,6 +2,14 @@
    Buttons -- unified base styles
    ========================================================================== */
 
+/* --- Host: the custom element is the button's outer box --- */
+
+:host {
+  display: inline-flex;
+  position: relative;
+  vertical-align: middle;
+}
+
 /* --- Base --- */
 
 .btn {
