@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Neuwo Web UI Components — Demo</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 3rem;
+        background: #0f1115;
+        color: #fff;
+        font-family: system-ui, sans-serif;
+      }
+      /* Hostile rule: if Shadow DOM leaked, the buttons would turn hot pink.
+         They must NOT — this proves isolation. */
+      .btn {
+        background: hotpink !important;
+        color: black !important;
+        border-radius: 0 !important;
+        padding: 4px !important;
+      }
+      .row {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-block: 1.5rem;
+      }
+      /* Re-theme via a token that inherits through the shadow boundary. */
+      .reskin {
+        --color-blue: darkslateblue;
+      }
+      h2 {
+        margin-top: 2.5rem;
+      }
+    </style>
+    <script type="module" src="/dist/neuwo.js"></script>
+  </head>
+  <body>
+    <h1>neuwo-button</h1>
+    <p>The page defines a hostile <code>.btn</code> rule. Shadow DOM keeps it out.</p>
+
+    <h2>Variants</h2>
+    <div class="row">
+      <neuwo-button variant="solid">Solid</neuwo-button>
+      <neuwo-button variant="outline">Outline</neuwo-button>
+      <neuwo-button variant="glass">Glass</neuwo-button>
+    </div>
+
+    <h2>Sizes</h2>
+    <div class="row">
+      <neuwo-button size="sm">Small</neuwo-button>
+      <neuwo-button>Base</neuwo-button>
+      <neuwo-button size="lg">Large</neuwo-button>
+    </div>
+
+    <h2>Modifiers &amp; states</h2>
+    <div class="row">
+      <neuwo-button wide>Wide</neuwo-button>
+      <neuwo-button xwide>Extra wide</neuwo-button>
+      <neuwo-button disabled>Disabled</neuwo-button>
+      <neuwo-button href="https://neuwo.ai">Link button</neuwo-button>
+    </div>
+
+    <h2>Token re-theming (inherits through the shadow boundary)</h2>
+    <div class="row reskin">
+      <neuwo-button variant="solid">Re-themed</neuwo-button>
+      <neuwo-button variant="outline">Re-themed</neuwo-button>
+    </div>
+  </body>
+</html>
