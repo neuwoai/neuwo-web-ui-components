@@ -64,6 +64,24 @@ describe("<neuwo-button>", () => {
     expect(el.textContent).toBe("Hello");
   });
 
+  it("forwards target, rel and download to the anchor", () => {
+    const a = make(
+      `<neuwo-button href="https://neuwo.ai" target="_blank" rel="noopener" download>Go</neuwo-button>`
+    ).shadowRoot.querySelector("a");
+    expect(a.getAttribute("target")).toBe("_blank");
+    expect(a.getAttribute("rel")).toBe("noopener");
+    expect(a.hasAttribute("download")).toBe(true);
+  });
+
+  it("forwards aria-*, data-* and title to the inner control", () => {
+    const btn = make(
+      `<neuwo-button aria-label="Save" data-track="cta" title="Save now">Go</neuwo-button>`
+    ).shadowRoot.querySelector("button");
+    expect(btn.getAttribute("aria-label")).toBe("Save");
+    expect(btn.getAttribute("data-track")).toBe("cta");
+    expect(btn.getAttribute("title")).toBe("Save now");
+  });
+
   it("treats href as a value, not markup (no injection)", () => {
     const el = make(`<neuwo-button href='"><img src=x onerror=1>'>Go</neuwo-button>`);
     const a = el.shadowRoot.querySelector("a");

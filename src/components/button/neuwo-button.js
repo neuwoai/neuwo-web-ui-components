@@ -12,6 +12,9 @@ export class NeuwoButton extends NeuwoElement {
     "href",
     "disabled",
     "type",
+    "target",
+    "rel",
+    "download",
   ];
 
   render() {
@@ -34,10 +37,21 @@ export class NeuwoButton extends NeuwoElement {
     el.setAttribute("part", "button"); // let host pages reach the control across the boundary
     if (asLink) {
       el.setAttribute("href", href);
+      for (const attr of ["target", "rel", "download"]) {
+        if (this.hasAttribute(attr)) el.setAttribute(attr, this.getAttribute(attr));
+      }
     } else {
       el.type = type;
       el.disabled = disabled;
     }
+
+    // Forward presentational / accessibility attributes to the rendered control.
+    for (const { name, value } of this.attributes) {
+      if (name === "title" || name.startsWith("aria-") || name.startsWith("data-")) {
+        el.setAttribute(name, value);
+      }
+    }
+
     el.append(document.createElement("slot"));
 
     this.shadowRoot.replaceChildren(el);
