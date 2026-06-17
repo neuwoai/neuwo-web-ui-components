@@ -42,6 +42,16 @@ describe("<neuwo-button>", () => {
     expect(btn.hasAttribute("disabled")).toBe(true);
   });
 
+  it("exposes the inner control as ::part(button)", () => {
+    const el = make(`<neuwo-button>Go</neuwo-button>`);
+    expect(el.shadowRoot.querySelector("button").getAttribute("part")).toBe("button");
+  });
+
+  it("exposes part on the anchor variant too", () => {
+    const el = make(`<neuwo-button href="https://neuwo.ai">Go</neuwo-button>`);
+    expect(el.shadowRoot.querySelector("a").getAttribute("part")).toBe("button");
+  });
+
   it("re-renders when an attribute changes", () => {
     const el = make(`<neuwo-button>Go</neuwo-button>`);
     el.setAttribute("variant", "glass");

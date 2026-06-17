@@ -104,3 +104,14 @@
   padding-left: var(--space-16);
   padding-right: var(--space-16);
 }
+
+/* --- Modifier: block (stretch to the container) --- */
+
+:host([block]) {
+  display: flex;
+  width: 100%;
+}
+
+:host([block]) .btn {
+  width: 100%;
+}

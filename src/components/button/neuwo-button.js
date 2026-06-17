@@ -31,6 +31,7 @@ export class NeuwoButton extends NeuwoElement {
     const asLink = href && !disabled;
     const el = document.createElement(asLink ? "a" : "button");
     el.className = classes.join(" ");
+    el.setAttribute("part", "button"); // let host pages reach the control across the boundary
     if (asLink) {
       el.setAttribute("href", href);
     } else {
