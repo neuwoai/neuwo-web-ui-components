@@ -83,6 +83,17 @@ describe("<neuwo-button>", () => {
     expect(btn.getAttribute("title")).toBe("Save now");
   });
 
+  it("reflects the disabled property to the attribute and inner control", () => {
+    const el = make(`<neuwo-button>Go</neuwo-button>`);
+    expect(el.disabled).toBe(false);
+    el.disabled = true;
+    expect(el.hasAttribute("disabled")).toBe(true);
+    expect(el.shadowRoot.querySelector("button").disabled).toBe(true);
+    el.disabled = false;
+    expect(el.hasAttribute("disabled")).toBe(false);
+    expect(el.shadowRoot.querySelector("button").disabled).toBe(false);
+  });
+
   it("is a form-associated element", () => {
     expect(NeuwoButton.formAssociated).toBe(true);
   });

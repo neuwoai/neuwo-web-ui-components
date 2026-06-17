@@ -38,6 +38,15 @@ export class NeuwoButton extends NeuwoElement {
     this.addEventListener("click", this.#onClick);
   }
 
+  // Reflect disabled like a native button, so `el.disabled = true` drives the attribute.
+  get disabled() {
+    return this.hasAttribute("disabled");
+  }
+
+  set disabled(value) {
+    this.toggleAttribute("disabled", Boolean(value));
+  }
+
   render() {
     const variant = this.getAttribute("variant") || "solid";
     const size = this.getAttribute("size");
