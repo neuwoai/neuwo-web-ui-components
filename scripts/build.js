@@ -32,6 +32,16 @@ await rm("dist", { recursive: true, force: true });
 await mkdir("dist", { recursive: true });
 await cp("src/foundation/fonts", "dist/fonts", { recursive: true });
 
+// Publish the raw CSS so the design system can parse it and non-web outputs can copy it.
+await mkdir("dist/foundation", { recursive: true });
+await cp("src/foundation/tokens.css", "dist/foundation/tokens.css");
+await cp("src/foundation/typography.css", "dist/foundation/typography.css");
+// Component recipes only (the .js stays bundled into neuwo.js).
+await cp("src/components", "dist/components", {
+  recursive: true,
+  filter: (src) => !src.endsWith(".js"),
+});
+
 if (serve) {
   const ctx = await esbuild.context(options);
   await ctx.watch();

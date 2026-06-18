@@ -3,6 +3,12 @@
   "version": "0.0.0",
   "description": "Neuwo design-system web components (vanilla custom elements).",
   "type": "module",
+  "files": ["dist"],
+  "exports": {
+    ".": "./dist/neuwo.js",
+    "./foundation/*": "./dist/foundation/*",
+    "./components/*": "./dist/components/*"
+  },
   "private": true,
   "scripts": {
     "start": "node scripts/build.js --serve",
