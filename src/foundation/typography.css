@@ -1,0 +1,88 @@
+/* Neuwo typography for native elements. Opt-in: link or import this file.
+   Bare tags map to design-system type roles: h1 Display, h2 Section,
+   h3/h4 Subsection, p Body, a inline prose link. h5/h6 step the Subsection
+   recipe down the scale (no design-system role below xl). */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  color: var(--color-heading);
+}
+
+/* Display */
+h1 {
+  font-size: var(--font-size-6xl);
+  font-weight: var(--font-weight-extrabold);
+  line-height: var(--line-height-display);
+  letter-spacing: var(--letter-spacing-display);
+  margin-bottom: var(--space-8);
+}
+
+/* Section */
+h2 {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-heading);
+  margin-bottom: var(--space-4);
+}
+
+@media (min-width: 48rem) {
+  h2 {
+    font-size: var(--font-size-5xl);
+  }
+}
+
+/* Subsection */
+h3 {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-subheading);
+  margin-bottom: var(--space-2);
+}
+
+h4 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-subheading);
+  margin-bottom: var(--space-2);
+}
+
+h5 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-subheading);
+  margin-bottom: var(--space-2);
+}
+
+h6 {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-subheading);
+  margin-bottom: var(--space-2);
+}
+
+/* Body */
+p {
+  font-family: var(--font-text);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-body);
+  color: var(--color-text);
+  margin-bottom: var(--space-4);
+}
+
+/* Inline prose link */
+a {
+  color: var(--color-blue);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--color-blue-dark);
+}
