@@ -1,0 +1,30 @@
+/* --- Select: native chevron suppressed, custom masked chevron painted on top --- */
+
+.select {
+  position: relative;
+}
+
+.input {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: var(--space-10);
+  cursor: pointer;
+}
+
+/* The unselected placeholder option reads in the muted placeholder colour. */
+.input:invalid {
+  color: var(--color-grey-400);
+}
+
+.select__chevron {
+  position: absolute;
+  top: 50%;
+  right: var(--space-4);
+  width: 1rem;
+  height: 1rem;
+  transform: translateY(-50%);
+  pointer-events: none;
+  background-color: var(--color-text-muted);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") center / contain no-repeat;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") center / contain no-repeat;
+}
