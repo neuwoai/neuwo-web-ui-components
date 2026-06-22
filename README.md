@@ -39,8 +39,10 @@ consumers), use the combined stylesheet instead:
 | Component | Tag | Status |
 | --- | --- | --- |
 | Button | `<neuwo-button>` | Stable |
+| Text input | `<neuwo-input>` | Stable |
+| Textarea | `<neuwo-textarea>` | Stable |
+| Select | `<neuwo-select>` | Stable |
 | Modal | `<neuwo-modal>` | Planned |
-| Inputs | `<neuwo-input>` | Planned |
 | Card | `<neuwo-card>` | Planned |
 | Badge | `<neuwo-badge>` | Planned |
 
@@ -52,6 +54,7 @@ Published styling files, for direct linking or non-web use:
 | Typography | `@neuwo/web-ui-components/foundation/typography.css` |
 | Tokens + typography (one file) | `@neuwo/web-ui-components/neuwo.css` |
 | Button recipe | `@neuwo/web-ui-components/components/button/button.css` |
+| Field chrome | `@neuwo/web-ui-components/components/fields/field.css` |
 
 ## Develop
 
