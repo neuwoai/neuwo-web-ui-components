@@ -61,6 +61,7 @@
   --tint-green-20: color-mix(in srgb, var(--color-green) 20%, transparent);
   --tint-green-25: color-mix(in srgb, var(--color-green) 25%, transparent);
   --tint-green-30: color-mix(in srgb, var(--color-green) 30%, transparent);
+  --tint-red-20:   color-mix(in srgb, var(--color-red) 20%, transparent);
 
   /* Gradients */
   --gradient-accent: linear-gradient(
@@ -172,6 +173,7 @@
   --shadow-xl: 0 1.25rem 1.5625rem oklch(0% 0 none / 0.45);
   --shadow-glow: 0 0 1.5rem oklch(66.623% 0.1177 217.10 / 0.35);
   --shadow-focus: 0 0 0 3px var(--tint-blue-20);
+  --shadow-danger: 0 0 0 3px var(--tint-red-20);
 
   /* Transitions */
   --transition-fast: 150ms ease;
