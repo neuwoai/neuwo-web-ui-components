@@ -20,6 +20,13 @@
         border-radius: 0 !important;
         padding: 4px !important;
       }
+      /* Hostile rule: if Shadow DOM leaked, the fields would turn hot pink too. */
+      .input,
+      .field {
+        background: hotpink !important;
+        color: black !important;
+        border-radius: 0 !important;
+      }
       .row {
         display: flex;
         gap: 1rem;
@@ -100,6 +107,45 @@
     <div class="row reskin">
       <neuwo-button variant="solid">Re-themed</neuwo-button>
       <neuwo-button variant="outline">Re-themed</neuwo-button>
+    </div>
+
+    <h2>Fields (text input, textarea, select)</h2>
+    <form id="fields-form">
+      <div class="row">
+        <neuwo-input name="email" type="email" label="Work email" placeholder="you@company.com" required></neuwo-input>
+        <neuwo-input name="nickname" label="Nickname" placeholder="optional"></neuwo-input>
+      </div>
+      <div class="row">
+        <neuwo-input label="Disabled" value="can't touch this" disabled></neuwo-input>
+        <neuwo-input label="With error" value="nope" error="That value is not allowed"></neuwo-input>
+      </div>
+      <div class="row">
+        <neuwo-textarea name="message" label="Message" rows="4" placeholder="Tell us what you are looking for..."></neuwo-textarea>
+      </div>
+      <div class="row">
+        <neuwo-select name="role" label="I am a">
+          <option value="" disabled selected>Select one</option>
+          <option value="publisher">Publisher</option>
+          <option value="advertiser">Advertiser</option>
+        </neuwo-select>
+      </div>
+      <div class="row">
+        <neuwo-button type="submit" variant="solid">Submit</neuwo-button>
+        <output id="fields-out"></output>
+      </div>
+    </form>
+    <script>
+      document.getElementById("fields-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const data = new FormData(e.target);
+        document.getElementById("fields-out").value =
+          "submitted " + [...data.entries()].map(([k, v]) => k + "=" + v).join(", ");
+      });
+    </script>
+
+    <h2>Fields re-theming (inherits through the shadow boundary)</h2>
+    <div class="row reskin">
+      <neuwo-input label="Re-themed" value="focus me" required></neuwo-input>
     </div>
   </body>
 </html>
