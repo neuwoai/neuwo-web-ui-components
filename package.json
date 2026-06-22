@@ -6,8 +6,11 @@
   "files": ["dist"],
   "exports": {
     ".": "./dist/neuwo.js",
+    "./neuwo.css": "./dist/neuwo.css",
     "./foundation/*": "./dist/foundation/*",
-    "./components/*": "./dist/components/*"
+    "./components/*": "./dist/components/*",
+    "./fonts/*": "./dist/fonts/*",
+    "./package.json": "./package.json"
   },
   "private": true,
   "scripts": {

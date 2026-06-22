@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
 import "../src/index.js"; // registers <neuwo-button> and injects fonts
 import { NeuwoButton } from "../src/components/button/neuwo-button.js";
+
+// The recipe is consumed via `?raw`, which Vitest does not transform, so read
+// the file off disk to assert on its CSS text (see typography.test.js).
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const buttonCss = readFileSync(join(__dirname, "../src/components/button/button.css"), "utf8");
 
 function make(html) {
   const host = document.createElement("div");
@@ -153,5 +161,10 @@ describe("<neuwo-button>", () => {
     expect(a).toBeTruthy();
     expect(el.shadowRoot.querySelector("img")).toBeNull();
     expect(a.getAttribute("href")).toBe('"><img src=x onerror=1>');
+  });
+
+  it("draws a keyboard focus ring on .btn from the shadow-focus token", () => {
+    expect(buttonCss).toContain(".btn:focus-visible");
+    expect(buttonCss).toContain("var(--shadow-focus)");
   });
 });

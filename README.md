@@ -27,6 +27,13 @@ Opt into Neuwo typography for native headings and text by linking the stylesheet
 
 or, in a bundler, `import "@neuwo/web-ui-components/foundation/typography.css"`.
 
+To link tokens and typography as a single file (handy for CSS-only or no-bundler
+consumers), use the combined stylesheet instead:
+
+```html
+<link rel="stylesheet" href="https://cdn.neuwo.ai/neuwo.css" />
+```
+
 ## Components
 
 | Component | Tag | Status |
@@ -43,6 +50,7 @@ Published styling files, for direct linking or non-web use:
 | --- | --- |
 | Tokens | `@neuwo/web-ui-components/foundation/tokens.css` |
 | Typography | `@neuwo/web-ui-components/foundation/typography.css` |
+| Tokens + typography (one file) | `@neuwo/web-ui-components/neuwo.css` |
 | Button recipe | `@neuwo/web-ui-components/components/button/button.css` |
 
 ## Develop
@@ -50,7 +58,7 @@ Published styling files, for direct linking or non-web use:
 ```bash
 npm install
 npm start     # build + watch + serve the demo at http://localhost:8000/demo/
-npm run build # produce dist/ (neuwo.js, fonts/, foundation/*.css, components/**/*.css)
+npm run build # produce dist/ (neuwo.js, neuwo.css, fonts/, foundation/*.css, components/**/*.css)
 npm test      # Vitest + happy-dom
 ```
 

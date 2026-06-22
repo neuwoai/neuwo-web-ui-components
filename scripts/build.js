@@ -1,5 +1,5 @@
 import esbuild from "esbuild";
-import { cp, mkdir, rm, readFile } from "node:fs/promises";
+import { cp, mkdir, rm, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const serve = process.argv.includes("--serve");
@@ -36,6 +36,18 @@ await cp("src/foundation/fonts", "dist/fonts", { recursive: true });
 await mkdir("dist/foundation", { recursive: true });
 await cp("src/foundation/tokens.css", "dist/foundation/tokens.css");
 await cp("src/foundation/typography.css", "dist/foundation/typography.css");
+
+// One combined foundation stylesheet so a consumer can link a single file:
+// tokens first, then typography (which depends on them).
+const combinedCss = [
+  await readFile("src/foundation/tokens.css", "utf8"),
+  await readFile("src/foundation/typography.css", "utf8"),
+].join("\n");
+await writeFile(
+  "dist/neuwo.css",
+  `/* @neuwo/web-ui-components foundation: design tokens then typography. */\n${combinedCss}`
+);
+
 // Component recipes only (the .js stays bundled into neuwo.js).
 await cp("src/components", "dist/components", {
   recursive: true,
