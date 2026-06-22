@@ -1,0 +1,79 @@
+/* ==========================================================================
+   Fields -- shared chrome for the text-entry controls
+   (input, textarea, select)
+   ========================================================================== */
+
+/* --- Host: a field is a block so its control can fill the width --- */
+
+:host {
+  display: block;
+}
+
+/* --- Wrapper: label + control + optional error, stacked --- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.field__label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-heading);
+}
+
+/* --- The shared control chrome --- */
+
+.input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-text);
+  font-family: var(--font-text);
+  font-size: var(--font-size-base);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.input:focus-visible {
+  outline: none;
+  border-color: var(--color-blue);
+  box-shadow: var(--shadow-focus);
+}
+
+.input::placeholder {
+  color: var(--color-grey-400);
+}
+
+.input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* --- State: error (red border + danger ring + a single shake) --- */
+
+.input--error {
+  border-color: var(--color-red);
+  box-shadow: var(--shadow-danger);
+  animation: neuwo-field-shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+.field__error {
+  font-size: var(--font-size-sm);
+  color: var(--color-red);
+}
+
+@keyframes neuwo-field-shake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-4px); }
+  40%, 60% { transform: translateX(4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .input--error {
+    animation: none;
+  }
+}
