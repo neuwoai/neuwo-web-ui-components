@@ -40,7 +40,6 @@
 
 .input:focus-visible {
   outline: none;
-  border-color: var(--color-blue);
   box-shadow: var(--shadow-focus);
 }
 
