@@ -126,7 +126,7 @@ export class NeuwoFieldElement extends NeuwoElement {
     this.#defaultValue = this.getAttribute("value") ?? "";
     this.#control.value = this.#defaultValue;
 
-    this.#wrapper.append(this.decorateControl(this.#control));
+    this.#wrapper.append(this.decorateControl(this.#control) ?? this.#control);
     this.shadowRoot.append(this.#wrapper);
     this.#built = true;
 
@@ -162,6 +162,8 @@ export class NeuwoFieldElement extends NeuwoElement {
   #syncError() {
     const has = this.hasAttribute("error");
     this.#control.classList.toggle("input--error", has);
+    if (has) this.#control.setAttribute("aria-invalid", "true");
+    else this.#control.removeAttribute("aria-invalid");
     const message = has ? this.getAttribute("error") : "";
     if (message) {
       if (!this.#errorEl) {

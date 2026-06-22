@@ -99,4 +99,45 @@ describe("NeuwoFieldElement", () => {
     el.formResetCallback();
     expect(el.shadowRoot.querySelector("input").value).toBe("seed");
   });
+
+  it("sets aria-invalid on the control when error has a message", () => {
+    const el = make(`<test-field error="Required"></test-field>`);
+    const control = el.shadowRoot.querySelector("input");
+    expect(control.getAttribute("aria-invalid")).toBe("true");
+  });
+
+  it("sets aria-invalid on the control when error is a bare attribute", () => {
+    const el = make(`<test-field error></test-field>`);
+    const control = el.shadowRoot.querySelector("input");
+    expect(control.getAttribute("aria-invalid")).toBe("true");
+  });
+
+  it("removes aria-invalid when the error attribute is removed", () => {
+    const el = make(`<test-field error="Required"></test-field>`);
+    el.removeAttribute("error");
+    const control = el.shadowRoot.querySelector("input");
+    expect(control.hasAttribute("aria-invalid")).toBe(false);
+  });
+
+  it("formDisabledCallback(true) disables the inner control", () => {
+    const el = make(`<test-field></test-field>`);
+    const control = el.shadowRoot.querySelector("input");
+    el.formDisabledCallback(true);
+    expect(control.disabled).toBe(true);
+  });
+
+  it("formDisabledCallback(false) re-enables the control when the host has no disabled attribute", () => {
+    const el = make(`<test-field></test-field>`);
+    const control = el.shadowRoot.querySelector("input");
+    el.formDisabledCallback(true);
+    el.formDisabledCallback(false);
+    expect(control.disabled).toBe(false);
+  });
+
+  it("formDisabledCallback(false) leaves control disabled when the host has the disabled attribute", () => {
+    const el = make(`<test-field disabled></test-field>`);
+    const control = el.shadowRoot.querySelector("input");
+    el.formDisabledCallback(false);
+    expect(control.disabled).toBe(true);
+  });
 });

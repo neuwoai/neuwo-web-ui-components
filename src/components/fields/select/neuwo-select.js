@@ -34,6 +34,7 @@ export class NeuwoSelect extends NeuwoFieldElement {
   }
 
   disconnectedCallback() {
+    super.disconnectedCallback?.();
     this.#observer?.disconnect();
   }
 
