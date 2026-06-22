@@ -172,7 +172,7 @@
   --shadow-lg: 0 0.625rem 0.9375rem oklch(0% 0 none / 0.4);
   --shadow-xl: 0 1.25rem 1.5625rem oklch(0% 0 none / 0.45);
   --shadow-glow: 0 0 1.5rem oklch(66.623% 0.1177 217.10 / 0.35);
-  --shadow-focus: 0 0 0 3px var(--tint-blue-20);
+  --shadow-focus: 0 0 0 2px var(--color-body-bg), 0 0 0 4px var(--color-blue);
   --shadow-danger: 0 0 0 3px var(--tint-red-20);
 
   /* Transitions */
