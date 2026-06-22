@@ -15,7 +15,7 @@ export class NeuwoElement extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
-    const own = this.constructor.styles ? [this.constructor.styles] : [];
+    const own = this.constructor.styles ? [].concat(this.constructor.styles) : [];
     // Tokens inherit from the document; shadow root carries reset + recipe.
     this.shadowRoot.adoptedStyleSheets = [resetSheet, ...own];
   }

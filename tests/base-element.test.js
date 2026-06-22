@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { NeuwoElement } from "../src/core/base-element.js";
+import { sheet } from "../src/core/sheet.js";
 
 class TestEl extends NeuwoElement {
   render() {
@@ -7,6 +8,17 @@ class TestEl extends NeuwoElement {
   }
 }
 customElements.define("test-el", TestEl);
+
+const sheetA = sheet(".a { color: red }");
+const sheetB = sheet(".b { color: blue }");
+
+class MultiSheetEl extends NeuwoElement {
+  static styles = [sheetA, sheetB];
+  render() {
+    this.shadowRoot.innerHTML = `<span>multi</span>`;
+  }
+}
+customElements.define("multi-sheet-el", MultiSheetEl);
 
 describe("NeuwoElement", () => {
   it("attaches an open shadow root and renders on connect", () => {
@@ -31,5 +43,14 @@ describe("NeuwoElement", () => {
     expect(el.shadowRoot.adoptedStyleSheets).not.toContain(
       document.adoptedStyleSheets[0]
     );
+  });
+
+  it("adopts every sheet when static styles is an array", () => {
+    const el = document.createElement("multi-sheet-el");
+    document.body.appendChild(el);
+    expect(el.shadowRoot.adoptedStyleSheets).toContain(sheetA);
+    expect(el.shadowRoot.adoptedStyleSheets).toContain(sheetB);
+    // reset + both component sheets
+    expect(el.shadowRoot.adoptedStyleSheets.length).toBe(3);
   });
 });
