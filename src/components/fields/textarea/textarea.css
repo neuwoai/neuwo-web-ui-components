@@ -1,0 +1,6 @@
+/* --- Textarea: multi-line, grows vertically --- */
+
+.input {
+  min-height: 8rem;
+  resize: vertical;
+}
