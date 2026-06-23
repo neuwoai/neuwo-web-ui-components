@@ -29,7 +29,7 @@ export class NeuwoBooleanControl extends NeuwoElement {
   createControl() {
     throw new Error("NeuwoBooleanControl subclasses must implement createControl()");
   }
-  renderRow() {
+  renderRow(control) {
     throw new Error("NeuwoBooleanControl subclasses must implement renderRow()");
   }
   get accentClass() {

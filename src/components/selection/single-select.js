@@ -31,10 +31,10 @@ export class NeuwoSingleSelect extends NeuwoElement {
   // --- hooks ---
   get groupClass() { throw new Error("NeuwoSingleSelect subclasses must define groupClass"); }
   get accentClass() { throw new Error("NeuwoSingleSelect subclasses must define accentClass"); }
-  renderContents() {}
+  renderContents(group) {}
   renderOptions() {}
   readOptions() { return []; }
-  syncLabel() {}
+  syncLabel(group) {}
   initialValue() { return ""; }
 
   // --- protected ---
