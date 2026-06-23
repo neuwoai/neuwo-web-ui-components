@@ -1,0 +1,35 @@
+/* ==========================================================================
+   Selection: Radio group -- legend + stacked (or inline) <neuwo-radio> rows.
+   ========================================================================== */
+
+:host {
+  display: block;
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.radio-group__legend {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-heading);
+}
+
+.radio-group__options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+:host([orientation="horizontal"]) .radio-group__options {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+}
+
+.radio-group--error .radio-group__legend {
+  color: var(--color-red);
+}
