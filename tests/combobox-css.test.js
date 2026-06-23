@@ -23,4 +23,9 @@ describe("combobox.css recipe", () => {
     expect(css).toContain("background-color: var(--color-text-muted)");
     expect(css).toContain("prefers-reduced-motion: reduce");
   });
+
+  it("reserves a line on the value label so an empty trigger does not collapse", () => {
+    expect(css).toContain(".combobox__value");
+    expect(css).toContain("min-height: 1lh");
+  });
 });

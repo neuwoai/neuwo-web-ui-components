@@ -28,6 +28,13 @@
   color: var(--color-grey-400);
 }
 
+/* The value label reserves one line so a trigger with neither a selection nor a
+   placeholder keeps the same height as a populated field (an empty inline span
+   would otherwise collapse the button to its padding). */
+.combobox__value {
+  min-height: 1lh;
+}
+
 .combobox__chevron {
   position: absolute;
   top: 50%;
