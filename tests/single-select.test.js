@@ -149,4 +149,19 @@ describe("NeuwoSingleSelect", () => {
       expect(buttons(el).map((b) => b.dataset.value)).toContain("d");
     });
   });
+
+  it("does not fire change when value is set programmatically", () => {
+    const el = make(`<test-select>${OPTS}</test-select>`);
+    let changed = false;
+    el.addEventListener("change", () => (changed = true));
+    el.value = "b";
+    expect(el.value).toBe("b");
+    expect(changed).toBe(false);
+  });
+
+  it("selects the focused option on Space", () => {
+    const el = make(`<test-select>${OPTS}</test-select>`);
+    keydown(el, " ");
+    expect(el.value).toBe("a");
+  });
 });
