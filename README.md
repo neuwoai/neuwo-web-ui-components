@@ -42,6 +42,7 @@ consumers), use the combined stylesheet instead:
 | Text input | `<neuwo-input>` | Stable |
 | Textarea | `<neuwo-textarea>` | Stable |
 | Select | `<neuwo-select>` | Stable |
+| Combobox | `<neuwo-combobox>` | Stable |
 | Modal | `<neuwo-modal>` | Planned |
 | Card | `<neuwo-card>` | Planned |
 | Badge | `<neuwo-badge>` | Planned |

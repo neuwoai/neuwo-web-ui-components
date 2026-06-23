@@ -147,5 +147,44 @@
     <div class="row reskin">
       <neuwo-input label="Re-themed" value="focus me" required></neuwo-input>
     </div>
+
+    <h2>Combobox (fully styled dropdown)</h2>
+    <form id="combobox-form">
+      <div class="row">
+        <neuwo-combobox name="fruit" label="Fruit" placeholder="Pick a fruit" required style="width: 16rem">
+          <option value="apple">Apple</option>
+          <option value="banana">Banana</option>
+          <optgroup label="Citrus">
+            <option value="orange">Orange</option>
+            <option value="lemon">Lemon</option>
+          </optgroup>
+          <option value="kiwi" disabled>Kiwi (out of stock)</option>
+        </neuwo-combobox>
+        <neuwo-combobox label="With error" error="Please choose" style="width: 16rem">
+          <option value="a">Alpha</option>
+          <option value="b">Beta</option>
+        </neuwo-combobox>
+      </div>
+      <div class="row">
+        <neuwo-button type="submit" variant="solid">Submit</neuwo-button>
+        <output id="combobox-out"></output>
+      </div>
+    </form>
+    <div style="overflow: hidden; max-width: 22rem; padding: var(--space-2); border: 1px dashed var(--glass-border); border-radius: 0.5rem; margin-top: 1.5rem">
+      <p style="margin: 0 0 0.5rem">This box has <code>overflow: hidden</code>; the dropdown still escapes it via the top layer.</p>
+      <neuwo-combobox label="Clipped container" placeholder="Open me" style="width: 14rem">
+        <option value="1">Option one</option>
+        <option value="2">Option two</option>
+        <option value="3">Option three</option>
+      </neuwo-combobox>
+    </div>
+    <script>
+      document.getElementById("combobox-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const data = new FormData(e.target);
+        document.getElementById("combobox-out").value =
+          "submitted " + [...data.entries()].map(([k, v]) => k + "=" + v).join(", ");
+      });
+    </script>
   </body>
 </html>
