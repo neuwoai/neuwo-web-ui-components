@@ -497,6 +497,8 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     }
   }
 
+  // Filtering hides individual option rows; a group header whose options all
+  // become hidden stays visible. searchable is intended for flat option lists.
   #applyFilter() {
     const q = this.#filter.trim().toLowerCase();
     let anyVisible = false;

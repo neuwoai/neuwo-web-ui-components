@@ -19,8 +19,7 @@
   cursor: pointer;
 }
 
-.combobox__trigger[aria-expanded="true"] .combobox__chevron,
-.combobox[data-open] .combobox__chevron {
+.combobox__trigger[aria-expanded="true"] .combobox__chevron {
   transform: translateY(-50%) rotate(180deg);
 }
 

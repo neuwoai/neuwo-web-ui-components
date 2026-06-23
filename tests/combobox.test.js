@@ -82,6 +82,15 @@ describe("<neuwo-combobox> core", () => {
 });
 
 describe("<neuwo-combobox> open/close", () => {
+  it("removes aria-activedescendant when closed", () => {
+    const el = make(`<neuwo-combobox>${OPTS}</neuwo-combobox>`);
+    const trigger = el.shadowRoot.querySelector(".combobox__trigger");
+    el.open();
+    expect(trigger.hasAttribute("aria-activedescendant")).toBe(true);
+    el.close();
+    expect(trigger.hasAttribute("aria-activedescendant")).toBe(false);
+  });
+
   it("toggles aria-expanded and open state when the trigger is clicked", () => {
     const el = make(`<neuwo-combobox>${OPTS}</neuwo-combobox>`);
     const trigger = el.shadowRoot.querySelector(".combobox__trigger");
@@ -209,6 +218,13 @@ describe("<neuwo-combobox> keyboard + selection", () => {
     key(el, "Tab");
     expect(el.value).toBe("a");
     expect(el.isOpen).toBe(false);
+  });
+
+  it("navigates into grouped options with the keyboard", () => {
+    const el = make(`<neuwo-combobox><option value="a">Apple</option><optgroup label="Citrus"><option value="o">Orange</option></optgroup></neuwo-combobox>`);
+    key(el, "ArrowDown"); // open, highlight Apple
+    key(el, "ArrowDown"); // move into the grouped Orange option
+    expect(el.shadowRoot.querySelector(".combobox__option.is-active").dataset.value).toBe("o");
   });
 
   it("ignores clicks on disabled options", () => {
