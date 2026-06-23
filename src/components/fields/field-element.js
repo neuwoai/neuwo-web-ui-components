@@ -110,7 +110,7 @@ export class NeuwoFieldElement extends NeuwoElement {
   }
   set value(v) {
     this.writeValue(v);
-    this.#internals?.setFormValue(v);
+    this.#internals?.setFormValue(this.readValue());
   }
   get disabled() {
     return this.hasAttribute("disabled");
