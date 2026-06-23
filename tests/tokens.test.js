@@ -19,10 +19,6 @@ describe("control tokens", () => {
   it("defines a single disabled-opacity token used across controls", () => {
     expect(tokensCss).toContain("--opacity-disabled: 0.4");
   });
-  it("defines a 45% blue tint for the checked toggle border", () => {
-    expect(tokensCss).toContain("--tint-blue-45:");
-    expect(tokensCss).toContain("color-mix(in srgb, var(--color-blue) 45%, transparent)");
-  });
 });
 
 describe("font-weight tokens", () => {

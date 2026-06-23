@@ -56,7 +56,6 @@
   --tint-blue-20:  color-mix(in srgb, var(--color-blue) 20%, transparent);
   --tint-blue-25:  color-mix(in srgb, var(--color-blue) 25%, transparent);
   --tint-blue-30:  color-mix(in srgb, var(--color-blue) 30%, transparent);
-  --tint-blue-45:  color-mix(in srgb, var(--color-blue) 45%, transparent);
   --tint-green-5:  color-mix(in srgb, var(--color-green) 5%, transparent);
   --tint-green-8:  color-mix(in srgb, var(--color-green) 8%, transparent);
   --tint-green-10: color-mix(in srgb, var(--color-green) 10%, transparent);

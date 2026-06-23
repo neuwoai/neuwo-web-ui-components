@@ -10,12 +10,12 @@ const css = readFileSync(
 );
 
 describe("toggle.css recipe", () => {
-  it("builds the track and thumb from tokens and tints the checked state", () => {
+  it("builds the track and thumb from tokens and fills the checked track solid blue", () => {
     expect(css).toContain(".form-toggle__track");
     expect(css).toContain(".form-toggle__track::after");
     expect(css).toContain("var(--glass-bg-light)");
-    expect(css).toContain("var(--tint-blue-20)");
-    expect(css).toContain("var(--tint-blue-45)");
+    expect(css).toContain("var(--color-heading)");
+    expect(css).toContain(".form-toggle__input:checked + .form-toggle__track");
     expect(css).toContain("var(--color-blue)");
   });
 

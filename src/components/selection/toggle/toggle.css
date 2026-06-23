@@ -53,17 +53,18 @@
   background: var(--color-heading);
   border-radius: var(--radius-full);
   transform: translateY(-50%);
-  transition: transform var(--transition-fast), background var(--transition-fast);
+  transition: transform var(--transition-fast);
 }
 
+/* Checked: the track fills solid --color-blue and the thumb stays
+   --color-heading in both states, just sliding across (matches the
+   design-system reference recipe). */
 .form-toggle__input:checked + .form-toggle__track {
-  background: var(--tint-blue-20);
-  border-color: var(--tint-blue-45);
+  background: var(--color-blue);
 }
 
 .form-toggle__input:checked + .form-toggle__track::after {
   transform: translateY(-50%) translateX(1.5rem);
-  background: var(--color-blue);
 }
 
 .form-toggle__input:focus-visible + .form-toggle__track {
