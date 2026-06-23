@@ -140,4 +140,23 @@ describe("NeuwoFieldElement", () => {
     el.formDisabledCallback(false);
     expect(control.disabled).toBe(true);
   });
+
+  it("routes value through the overridable readValue/writeValue seams", () => {
+    class SeamField extends NeuwoFieldElement {
+      static formAssociated = true;
+      static styles = fieldSheet;
+      static observedAttributes = NeuwoFieldElement.observedAttributes;
+      stored = "";
+      createControl() { return document.createElement("button"); }
+      wireControl() {} // no native input/change wiring
+      seedValue() { this.stored = this.defaultValue; }
+      readValue() { return this.stored; }
+      writeValue(v) { this.stored = v; }
+    }
+    customElements.define("seam-field", SeamField);
+    const el = make(`<seam-field value="x"></seam-field>`);
+    expect(el.value).toBe("x");      // readValue
+    el.value = "y";                   // writeValue + setFormValue
+    expect(el.value).toBe("y");
+  });
 });

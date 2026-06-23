@@ -8,9 +8,11 @@ export const fieldSheet = sheet(fieldCss);
 // Unique ids for the in-shadow label/control and error association.
 let uid = 0;
 
-// Shared base for the text-entry fields. Holds form association, the value and
-// disabled API, label and error rendering, and a build-once-then-patch render so
-// the inner control keeps focus, caret and typed value across attribute changes.
+// Shared base for the field elements. Holds form association, the value and disabled
+// API, label and error rendering, and a build-once-then-patch render. The value
+// source and validity are seams (wireControl/seedValue/readValue/writeValue/
+// syncValidity): native controls use the defaults; a custom-value subclass (the
+// combobox) overrides them.
 export class NeuwoFieldElement extends NeuwoElement {
   static formAssociated = true;
   static styles = fieldSheet;
@@ -37,75 +39,102 @@ export class NeuwoFieldElement extends NeuwoElement {
 
   constructor() {
     super();
-    // attachInternals is absent in some non-browser test environments.
     this.#internals = typeof this.attachInternals === "function" ? this.attachInternals() : null;
   }
 
   // --- Hooks for subclasses ---
-
-  // Returns the native control (<input>/<textarea>/<select>).
   createControl() {
     throw new Error("NeuwoFieldElement subclasses must implement createControl()");
   }
-
-  // Wraps the control before insertion (the select adds a chevron). Default: none.
   decorateControl(control) {
     return control;
   }
-
-  // Control-specific attribute sync on every render (the input clamps `type`).
   syncControl() {}
-
-  // Attributes copied straight through to the control. Subclasses extend this.
   get forwardedAttributes() {
     return ["name", "placeholder", "required", "readonly", "autocomplete"];
   }
 
-  // --- Public API ---
+  // --- Value / validity seams (defaults reproduce native behaviour) ---
+  wireControl(control) {
+    control.addEventListener("input", this.#onInput);
+    control.addEventListener("change", this.#onChange);
+  }
+  seedValue() {
+    this.#control.value = this.#defaultValue;
+  }
+  readValue() {
+    return this.#control ? this.#control.value : this.getAttribute("value") ?? "";
+  }
+  writeValue(v) {
+    if (this.#control) this.#control.value = v;
+  }
+  syncValidity() {
+    if (!this.#internals || typeof this.#internals.setValidity !== "function") return;
+    const c = this.#control;
+    if (!c || !c.validity || c.validity.valid) {
+      this.#internals.setValidity({});
+      return;
+    }
+    const flags = {};
+    for (const key of [
+      "badInput",
+      "customError",
+      "patternMismatch",
+      "rangeOverflow",
+      "rangeUnderflow",
+      "stepMismatch",
+      "tooLong",
+      "tooShort",
+      "typeMismatch",
+      "valueMissing",
+    ]) {
+      if (c.validity[key]) flags[key] = true;
+    }
+    this.#internals.setValidity(flags, c.validationMessage, c);
+  }
 
-  // The inner native control, exposed so subclasses can reach it (select cloning).
+  // --- Protected accessors for subclasses ---
+  get internals() {
+    return this.#internals;
+  }
   get control() {
     return this.#control;
   }
-
-  get value() {
-    return this.#control ? this.#control.value : this.getAttribute("value") ?? "";
+  get defaultValue() {
+    return this.#defaultValue;
   }
 
+  // --- Public API ---
+  get value() {
+    return this.readValue();
+  }
   set value(v) {
-    if (this.#control) this.#control.value = v;
+    this.writeValue(v);
     this.#internals?.setFormValue(v);
   }
-
   get disabled() {
     return this.hasAttribute("disabled");
   }
-
   set disabled(v) {
     this.toggleAttribute("disabled", Boolean(v));
   }
-
   checkValidity() {
     return this.#control ? this.#control.checkValidity() : true;
   }
-
   reportValidity() {
     return this.#control ? this.#control.reportValidity() : true;
   }
-
   formResetCallback() {
-    if (this.#control) this.#control.value = this.#defaultValue;
+    this.writeValue(this.#defaultValue);
     this.removeAttribute("error");
     this.#internals?.setFormValue(this.#defaultValue);
-    this.#syncValidity();
+    this.syncValidity();
   }
-
   formDisabledCallback(disabled) {
     if (this.#control) this.#control.disabled = disabled || this.hasAttribute("disabled");
   }
 
   // --- Render (build once, then patch) ---
-
   render() {
     if (this.#built) this.#patch();
     else this.#build();
@@ -120,18 +149,17 @@ export class NeuwoFieldElement extends NeuwoElement {
     this.#control.classList.add("input");
     this.#control.setAttribute("part", "input");
     this.#control.id = this.#id;
-    this.#control.addEventListener("input", this.#onInput);
-    this.#control.addEventListener("change", this.#onChange);
+    this.wireControl(this.#control);
 
     this.#defaultValue = this.getAttribute("value") ?? "";
-    this.#control.value = this.#defaultValue;
+    this.seedValue();
 
     this.#wrapper.append(this.decorateControl(this.#control) ?? this.#control);
     this.shadowRoot.append(this.#wrapper);
     this.#built = true;
 
     this.#patch();
-    this.#internals?.setFormValue(this.#control.value);
+    this.#internals?.setFormValue(this.readValue());
   }
 
   #patch() {
@@ -197,39 +225,13 @@ export class NeuwoFieldElement extends NeuwoElement {
   }
 
   #onInput = () => {
-    this.#internals?.setFormValue(this.#control.value);
-    this.#syncValidity();
+    this.#internals?.setFormValue(this.readValue());
+    this.syncValidity();
   };
 
   #onChange = () => {
-    this.#internals?.setFormValue(this.#control.value);
-    this.#syncValidity();
-    // `change` is not composed, so it does not cross the shadow boundary; re-emit it.
+    this.#internals?.setFormValue(this.readValue());
+    this.syncValidity();
     this.dispatchEvent(new Event("change", { bubbles: true }));
   };
-
-  #syncValidity() {
-    if (!this.#internals || typeof this.#internals.setValidity !== "function") return;
-    const c = this.#control;
-    if (!c.validity || c.validity.valid) {
-      this.#internals.setValidity({});
-      return;
-    }
-    const flags = {};
-    for (const key of [
-      "badInput",
-      "customError",
-      "patternMismatch",
-      "rangeOverflow",
-      "rangeUnderflow",
-      "stepMismatch",
-      "tooLong",
-      "tooShort",
-      "typeMismatch",
-      "valueMissing",
-    ]) {
-      if (c.validity[key]) flags[key] = true;
-    }
-    this.#internals.setValidity(flags, c.validationMessage, c);
-  }
 }
