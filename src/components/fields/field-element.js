@@ -194,24 +194,20 @@ export class NeuwoFieldElement extends NeuwoElement {
     this.#control.classList.toggle("input--error", has);
     if (has) this.#control.setAttribute("aria-invalid", "true");
     else this.#control.removeAttribute("aria-invalid");
-    const message = has ? this.getAttribute("error") : "";
-    if (message) {
-      if (!this.#errorEl) {
-        this.#errorEl = document.createElement("span");
-        this.#errorEl.className = "field__error";
-        this.#errorEl.setAttribute("part", "error");
-        this.#errorEl.id = `${this.#id}-error`;
-        this.#wrapper.append(this.#errorEl);
-      }
-      this.#errorEl.textContent = message;
-      this.#control.setAttribute("aria-describedby", this.#errorEl.id);
-    } else {
-      if (this.#errorEl) {
-        this.#errorEl.remove();
-        this.#errorEl = null;
-      }
-      this.#control.removeAttribute("aria-describedby");
+    // The error line is always present (a reserved, fixed-height slot) so
+    // toggling an error never shifts the surrounding layout; it only gains or
+    // loses its text. aria-describedby is wired only when there is a message.
+    if (!this.#errorEl) {
+      this.#errorEl = document.createElement("span");
+      this.#errorEl.className = "field__error";
+      this.#errorEl.setAttribute("part", "error");
+      this.#errorEl.id = `${this.#id}-error`;
+      this.#wrapper.append(this.#errorEl);
     }
+    const message = has ? this.getAttribute("error") : "";
+    this.#errorEl.textContent = message;
+    if (message) this.#control.setAttribute("aria-describedby", this.#errorEl.id);
+    else this.#control.removeAttribute("aria-describedby");
   }
 
   #forward() {

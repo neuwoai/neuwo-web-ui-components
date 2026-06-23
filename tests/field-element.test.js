@@ -74,8 +74,17 @@ describe("NeuwoFieldElement", () => {
     el.removeAttribute("error");
     const control = el.shadowRoot.querySelector("input");
     expect(control.classList.contains("input--error")).toBe(false);
-    expect(el.shadowRoot.querySelector(".field__error")).toBeNull();
+    // The error line stays in the DOM (reserved slot) but loses its text.
+    expect(el.shadowRoot.querySelector(".field__error").textContent).toBe("");
     expect(control.hasAttribute("aria-describedby")).toBe(false);
+  });
+
+  it("keeps an empty error line present without an error (reserved, no layout shift)", () => {
+    const el = make(`<test-field></test-field>`);
+    const error = el.shadowRoot.querySelector(".field__error");
+    expect(error).toBeTruthy();
+    expect(error.textContent).toBe("");
+    expect(el.shadowRoot.querySelector("input").hasAttribute("aria-describedby")).toBe(false);
   });
 
   it("re-dispatches change from the host", () => {

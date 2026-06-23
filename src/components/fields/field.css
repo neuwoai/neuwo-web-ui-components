@@ -60,7 +60,10 @@
   animation: neuwo-field-shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97);
 }
 
+/* Always present and reserving one line, so showing or hiding the message
+   never shifts the surrounding layout. */
 .field__error {
+  min-height: 1lh;
   font-size: var(--font-size-sm);
   color: var(--color-red);
 }
