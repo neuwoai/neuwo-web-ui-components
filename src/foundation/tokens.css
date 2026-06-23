@@ -43,6 +43,9 @@
   --glass-border-hover: oklch(71.067% 0.0351 256.788 / 0.22);
   --glass-blur: var(--blur-xl);
 
+  /* Disabled state */
+  --opacity-disabled: 0.4;
+
   /* Brand tints (transparent overlays of the brand colours).
      Suffix is the percentage of the brand colour mixed with transparent. */
   --tint-blue-5:   color-mix(in srgb, var(--color-blue) 5%, transparent);
@@ -53,6 +56,7 @@
   --tint-blue-20:  color-mix(in srgb, var(--color-blue) 20%, transparent);
   --tint-blue-25:  color-mix(in srgb, var(--color-blue) 25%, transparent);
   --tint-blue-30:  color-mix(in srgb, var(--color-blue) 30%, transparent);
+  --tint-blue-45:  color-mix(in srgb, var(--color-blue) 45%, transparent);
   --tint-green-5:  color-mix(in srgb, var(--color-green) 5%, transparent);
   --tint-green-8:  color-mix(in srgb, var(--color-green) 8%, transparent);
   --tint-green-10: color-mix(in srgb, var(--color-green) 10%, transparent);

@@ -114,7 +114,7 @@
 }
 
 .combobox__option[aria-disabled="true"] {
-  opacity: 0.4;
+  opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }
 

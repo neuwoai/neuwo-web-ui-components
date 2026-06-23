@@ -41,7 +41,7 @@
 }
 
 .btn:disabled {
-  opacity: 0.6;
+  opacity: var(--opacity-disabled);
   pointer-events: none; /* also suppresses the hover lift on a disabled button */
 }
 
