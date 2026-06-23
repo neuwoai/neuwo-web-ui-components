@@ -29,7 +29,7 @@
   transition: background var(--transition-fast), color var(--transition-fast);
 }
 
-.segmented__option:hover {
+.segmented__option:not(:disabled):hover {
   color: var(--color-heading);
 }
 
