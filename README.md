@@ -43,6 +43,10 @@ consumers), use the combined stylesheet instead:
 | Textarea | `<neuwo-textarea>` | Stable |
 | Select | `<neuwo-select>` | Stable |
 | Combobox | `<neuwo-combobox>` | Stable |
+| Checkbox | `<neuwo-checkbox>` | Stable |
+| Toggle / Switch | `<neuwo-toggle>` | Stable |
+| Radio group | `<neuwo-radio-group>` / `<neuwo-radio>` | Stable |
+| Segmented control | `<neuwo-segmented>` | Stable |
 | Modal | `<neuwo-modal>` | Planned |
 | Card | `<neuwo-card>` | Planned |
 | Badge | `<neuwo-badge>` | Planned |
