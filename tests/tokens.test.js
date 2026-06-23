@@ -24,3 +24,12 @@ describe("control tokens", () => {
     expect(tokensCss).toContain("color-mix(in srgb, var(--color-blue) 45%, transparent)");
   });
 });
+
+describe("font-weight tokens", () => {
+  it("defines --font-weight-medium at 500", () => {
+    expect(tokensCss).toContain("--font-weight-medium: 500");
+  });
+  it("defines --font-weight-semibold at 600", () => {
+    expect(tokensCss).toContain("--font-weight-semibold: 600");
+  });
+});
