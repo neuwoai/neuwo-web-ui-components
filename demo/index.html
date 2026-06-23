@@ -189,5 +189,17 @@
           "submitted " + [...data.entries()].map(([k, v]) => k + "=" + v).join(", ");
       });
     </script>
+
+    <h2>Selection: checkbox</h2>
+    <form id="checkbox-form" class="row">
+      <neuwo-checkbox name="news" value="weekly">Weekly newsletter</neuwo-checkbox>
+      <neuwo-checkbox checked>Pre-checked</neuwo-checkbox>
+      <neuwo-checkbox disabled>Disabled</neuwo-checkbox>
+      <neuwo-checkbox required error="You must accept the terms">I accept the terms</neuwo-checkbox>
+      <neuwo-checkbox id="parent-cb">Select all (indeterminate)</neuwo-checkbox>
+    </form>
+    <script>
+      document.getElementById("parent-cb").indeterminate = true;
+    </script>
   </body>
 </html>
