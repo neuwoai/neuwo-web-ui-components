@@ -227,5 +227,18 @@
         </neuwo-radio-group>
       </div>
     </form>
+
+    <h2>Selection: segmented control</h2>
+    <form id="segmented-form" class="row">
+      <neuwo-segmented name="view" label="Results view" value="visual">
+        <option value="visual">Visual</option>
+        <option value="json">JSON</option>
+      </neuwo-segmented>
+      <neuwo-segmented name="density" label="Density" value="comfortable">
+        <option value="compact">Compact</option>
+        <option value="comfortable">Comfortable</option>
+        <option value="spacious" disabled>Spacious</option>
+      </neuwo-segmented>
+    </form>
   </body>
 </html>

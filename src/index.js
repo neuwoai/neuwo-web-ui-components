@@ -8,6 +8,7 @@ import "./components/selection/checkbox/neuwo-checkbox.js"; // self-registers <n
 import "./components/selection/toggle/neuwo-toggle.js"; // self-registers <neuwo-toggle>
 import "./components/selection/radio/neuwo-radio.js"; // self-registers <neuwo-radio>
 import "./components/selection/radio/neuwo-radio-group.js"; // self-registers <neuwo-radio-group>
+import "./components/selection/segmented/neuwo-segmented.js"; // self-registers <neuwo-segmented>
 
 injectFonts();
 
@@ -20,3 +21,4 @@ export { NeuwoCheckbox } from "./components/selection/checkbox/neuwo-checkbox.js
 export { NeuwoToggle } from "./components/selection/toggle/neuwo-toggle.js";
 export { NeuwoRadio } from "./components/selection/radio/neuwo-radio.js";
 export { NeuwoRadioGroup } from "./components/selection/radio/neuwo-radio-group.js";
+export { NeuwoSegmented } from "./components/selection/segmented/neuwo-segmented.js";

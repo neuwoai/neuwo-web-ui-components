@@ -1,0 +1,54 @@
+/* ==========================================================================
+   Selection: Segmented control -- a compact pill of single-select buttons.
+   Active state is driven by aria-checked (set by the ARIA layer).
+   ========================================================================== */
+
+:host {
+  display: inline-block;
+}
+
+.segmented {
+  display: inline-flex;
+  gap: 0.125rem;
+  padding: var(--space-1);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-full);
+  background: var(--glass-bg-light);
+}
+
+.segmented__option {
+  padding: var(--space-1) var(--space-4);
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-full);
+  font-family: var(--font-text);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.segmented__option:hover {
+  color: var(--color-heading);
+}
+
+.segmented__option:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+.segmented__option[aria-checked="true"] {
+  background: var(--color-blue);
+  color: var(--color-white);
+}
+
+.segmented__option:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.segmented--error {
+  border-color: var(--color-red);
+  box-shadow: var(--shadow-danger);
+}
