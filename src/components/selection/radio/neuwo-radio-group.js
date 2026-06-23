@@ -25,66 +25,7 @@ export class NeuwoRadioGroup extends NeuwoSingleSelect {
       this.#seedValue = seed ? (seed.getAttribute("value") ?? "") : "";
     }
     super.connectedCallback();
-    // In happy-dom, slotted light-DOM events (click) and shadow-forwarded
-    // events (keydown re-dispatched from <neuwo-radio> on itself) bubble to
-    // the host but do not reach the base-class listeners on the shadow #group
-    // element. Attach host-level delegating handlers to bridge the gap.
-    this.addEventListener("click", this.#onHostClick);
-    this.addEventListener("keydown", this.#onHostKeydown);
   }
-
-  disconnectedCallback() {
-    super.disconnectedCallback?.();
-    this.removeEventListener("click", this.#onHostClick);
-    this.removeEventListener("keydown", this.#onHostKeydown);
-  }
-
-  // Select a radio by its handle. Mirrors the base-class private #select:
-  // setting this.value triggers attributeChangedCallback -> render -> #applyState.
-  #selectHandle(handle) {
-    if (!handle || handle.disabled || this.disabled) return;
-    const prev = this.value;
-    this.value = handle.value;
-    handle.focus();
-    if (handle.value !== prev) this.dispatchEvent(new Event("change", { bubbles: true }));
-  }
-
-  // Handle click events that bubble from slotted <neuwo-radio> children.
-  #onHostClick = (e) => {
-    const opts = this.readOptions();
-    const handle = opts.find((o) => o.element === e.target || o.element.contains(e.target));
-    if (handle) this.#selectHandle(handle);
-  };
-
-  // Handle keydown events forwarded from <neuwo-radio>'s shadow input via the
-  // radio's own re-dispatch (keydown is re-fired on the <neuwo-radio> element).
-  #onHostKeydown = (e) => {
-    if (this.disabled) return;
-    const opts = this.readOptions();
-    const enabled = opts.filter((o) => !o.disabled);
-    if (!enabled.length) return;
-    // The event target is the <neuwo-radio> element (re-dispatched from its shadow input).
-    const focused = opts.find((o) => o.element === e.target);
-    let i = focused ? enabled.indexOf(focused) : -1;
-    switch (e.key) {
-      case "ArrowDown":
-      case "ArrowRight":
-        i = i < 0 ? 0 : (i + 1) % enabled.length;
-        break;
-      case "ArrowUp":
-      case "ArrowLeft":
-        i = i < 0 ? enabled.length - 1 : (i - 1 + enabled.length) % enabled.length;
-        break;
-      case " ":
-      case "Spacebar":
-        i = i < 0 ? 0 : i;
-        break;
-      default:
-        return;
-    }
-    e.preventDefault();
-    this.#selectHandle(enabled[i]);
-  };
 
   renderContents(group) {
     this.#legend = document.createElement("span");

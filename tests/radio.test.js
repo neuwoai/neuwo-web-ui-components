@@ -73,4 +73,11 @@ describe("<neuwo-radio-group>", () => {
     expect(el.shadowRoot.querySelector(".control-error").textContent).toBe("Please choose");
     expect(el.shadowRoot.querySelector(".radio-group").classList.contains("radio-group--error")).toBe(true);
   });
+
+  it("ignores clicks when form-disabled via formDisabledCallback", () => {
+    const el = make(`<neuwo-radio-group value="free">${RADIOS}</neuwo-radio-group>`);
+    el.formDisabledCallback(true);
+    radios(el)[1].click();
+    expect(el.value).toBe("free");
+  });
 });

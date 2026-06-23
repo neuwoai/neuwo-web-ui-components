@@ -97,6 +97,8 @@ export class NeuwoSingleSelect extends NeuwoElement {
   disconnectedCallback() {
     super.disconnectedCallback?.();
     this.#observer?.disconnect();
+    this.removeEventListener("keydown", this.#onKeydown);
+    this.removeEventListener("click", this.#onClick);
   }
 
   render() {
@@ -113,6 +115,8 @@ export class NeuwoSingleSelect extends NeuwoElement {
     this.renderContents(this.#group);
     this.#group.addEventListener("keydown", this.#onKeydown);
     this.#group.addEventListener("click", this.#onClick);
+    this.addEventListener("keydown", this.#onKeydown);
+    this.addEventListener("click", this.#onClick);
     this.#built = true;
     this.#patch();
   }
