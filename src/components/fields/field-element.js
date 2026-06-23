@@ -1,5 +1,6 @@
 import { NeuwoElement } from "../../core/base-element.js";
 import { sheet } from "../../core/sheet.js";
+import { syncError } from "../../core/control-error.js";
 import fieldCss from "./field.css?raw";
 
 // Built once, adopted by reference across every field element.
@@ -190,24 +191,14 @@ export class NeuwoFieldElement extends NeuwoElement {
   }
 
   #syncError() {
-    const has = this.hasAttribute("error");
-    this.#control.classList.toggle("input--error", has);
-    if (has) this.#control.setAttribute("aria-invalid", "true");
-    else this.#control.removeAttribute("aria-invalid");
-    // The error line is always present (a reserved, fixed-height slot) so
-    // toggling an error never shifts the surrounding layout; it only gains or
-    // loses its text. aria-describedby is wired only when there is a message.
-    if (!this.#errorEl) {
-      this.#errorEl = document.createElement("span");
-      this.#errorEl.className = "field__error";
-      this.#errorEl.setAttribute("part", "error");
-      this.#errorEl.id = `${this.#id}-error`;
-      this.#wrapper.append(this.#errorEl);
-    }
-    const message = has ? this.getAttribute("error") : "";
-    this.#errorEl.textContent = message;
-    if (message) this.#control.setAttribute("aria-describedby", this.#errorEl.id);
-    else this.#control.removeAttribute("aria-describedby");
+    this.#errorEl = syncError(this, {
+      announce: this.#control,
+      accentEl: this.#control,
+      accentClass: "input--error",
+      container: this.#wrapper,
+      lineClass: "field__error",
+      lineId: `${this.#id}-error`,
+    });
   }
 
   #forward() {
