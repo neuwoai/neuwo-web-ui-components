@@ -149,13 +149,15 @@ export class NeuwoFieldElement extends NeuwoElement {
     this.#control.classList.add("input");
     this.#control.setAttribute("part", "input");
     this.#control.id = this.#id;
-    this.wireControl(this.#control);
 
     this.#defaultValue = this.getAttribute("value") ?? "";
     this.seedValue();
 
     this.#wrapper.append(this.decorateControl(this.#control) ?? this.#control);
     this.shadowRoot.append(this.#wrapper);
+    // Wire events after decorateControl, so a subclass can attach listeners to
+    // structure it builds there (the combobox's popup/listbox), not only the control.
+    this.wireControl(this.#control);
     this.#built = true;
 
     this.#patch();

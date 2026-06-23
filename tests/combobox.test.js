@@ -80,3 +80,42 @@ describe("<neuwo-combobox> core", () => {
     expect(el.shadowRoot.getElementById(labelId).textContent).toBe("Fruit");
   });
 });
+
+describe("<neuwo-combobox> open/close", () => {
+  it("toggles aria-expanded and open state when the trigger is clicked", () => {
+    const el = make(`<neuwo-combobox>${OPTS}</neuwo-combobox>`);
+    const trigger = el.shadowRoot.querySelector(".combobox__trigger");
+    expect(el.isOpen).toBe(false);
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    trigger.click();
+    expect(el.isOpen).toBe(true);
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    trigger.click();
+    expect(el.isOpen).toBe(false);
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+  });
+
+  it("does not open when disabled", () => {
+    const el = make(`<neuwo-combobox disabled>${OPTS}</neuwo-combobox>`);
+    el.shadowRoot.querySelector(".combobox__trigger").click();
+    expect(el.isOpen).toBe(false);
+  });
+
+  it("does not open when there are no options", () => {
+    const el = make(`<neuwo-combobox></neuwo-combobox>`);
+    el.shadowRoot.querySelector(".combobox__trigger").click();
+    expect(el.isOpen).toBe(false);
+  });
+
+  it("mirrors a browser-driven popover dismissal back into its state", () => {
+    const el = make(`<neuwo-combobox>${OPTS}</neuwo-combobox>`);
+    el.open();
+    expect(el.isOpen).toBe(true);
+    const popup = el.shadowRoot.querySelector(".combobox__popup");
+    const ev = new Event("toggle");
+    ev.newState = "closed";
+    popup.dispatchEvent(ev);
+    expect(el.isOpen).toBe(false);
+    expect(el.shadowRoot.querySelector(".combobox__trigger").getAttribute("aria-expanded")).toBe("false");
+  });
+});

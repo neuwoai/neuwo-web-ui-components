@@ -21,6 +21,8 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   #popup;
   #listbox;
   #observer = null;
+  #open = false;
+  #reposition = () => this.#position();
 
   // --- base seams ---
 
@@ -62,7 +64,11 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   }
 
   // The combobox owns its value and commit path; no native input/change wiring.
-  wireControl() {}
+  // Runs after decorateControl, so the popup/listbox exist to wire here.
+  wireControl() {
+    this.#trigger.addEventListener("click", this.#onTriggerClick);
+    this.#popup.addEventListener("toggle", this.#onPopoverToggle);
+  }
 
   // No native .value to seed; read options and resolve the initial selection.
   seedValue() {
@@ -143,6 +149,7 @@ export class NeuwoCombobox extends NeuwoFieldElement {
 
   disconnectedCallback() {
     super.disconnectedCallback?.();
+    this.close(); // remove the window scroll/resize listeners if open
     this.#observer?.disconnect();
   }
 
@@ -159,6 +166,74 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   get popup() {
     return this.#popup;
   }
+
+  // --- open/close and positioning ---
+
+  get isOpen() {
+    return this.#open;
+  }
+
+  open() {
+    if (this.#open || this.hasAttribute("disabled") || !this.#options.length) return;
+    this.#open = true;
+    this.#trigger.setAttribute("aria-expanded", "true");
+    if (typeof this.#popup.showPopover === "function") {
+      try {
+        this.#popup.showPopover();
+      } catch {
+        /* already open or unsupported */
+      }
+    }
+    this.#position();
+    window.addEventListener("scroll", this.#reposition, true);
+    window.addEventListener("resize", this.#reposition);
+  }
+
+  close() {
+    if (!this.#open) return;
+    this.#open = false;
+    this.#trigger.setAttribute("aria-expanded", "false");
+    this.#trigger.removeAttribute("aria-activedescendant");
+    if (typeof this.#popup.hidePopover === "function") {
+      try {
+        this.#popup.hidePopover();
+      } catch {
+        /* already closed */
+      }
+    }
+    window.removeEventListener("scroll", this.#reposition, true);
+    window.removeEventListener("resize", this.#reposition);
+  }
+
+  #onTriggerClick = () => {
+    if (this.#open) this.close();
+    else this.open();
+  };
+
+  // Place the popup under the trigger, flipping above when there is no room,
+  // matching the trigger width. The popover renders in the top layer (fixed).
+  #position() {
+    if (!this.#open || typeof this.#trigger.getBoundingClientRect !== "function") return;
+    const r = this.#trigger.getBoundingClientRect();
+    const popup = this.#popup;
+    popup.style.position = "fixed";
+    popup.style.minWidth = `${r.width}px`;
+    popup.style.left = `${r.left}px`;
+    const below = window.innerHeight - r.bottom;
+    const ph = popup.offsetHeight || 0;
+    if (below < ph && r.top > below) {
+      popup.style.top = "auto";
+      popup.style.bottom = `${window.innerHeight - r.top + 4}px`;
+    } else {
+      popup.style.bottom = "auto";
+      popup.style.top = `${r.bottom + 4}px`;
+    }
+  }
+
+  #onPopoverToggle = (e) => {
+    // Browser-driven close (Escape, outside click) -> mirror our state.
+    if (e.newState === "closed" && this.#open) this.close();
+  };
 
   // Commit a value: update selection, the form value, validity, and emit events.
   commit(value) {
