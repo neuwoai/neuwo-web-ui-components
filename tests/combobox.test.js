@@ -220,3 +220,91 @@ describe("<neuwo-combobox> keyboard + selection", () => {
     expect(el.isOpen).toBe(true);
   });
 });
+
+describe("<neuwo-combobox searchable>", () => {
+  const FRUIT = `<option value="apple">Apple</option><option value="apricot">Apricot</option><option value="banana">Banana</option>`;
+
+  it("renders a text input trigger with aria-autocomplete", () => {
+    const el = make(`<neuwo-combobox searchable>${FRUIT}</neuwo-combobox>`);
+    const trigger = el.shadowRoot.querySelector(".combobox__trigger");
+    expect(trigger.tagName).toBe("INPUT");
+    expect(trigger.getAttribute("aria-autocomplete")).toBe("list");
+  });
+
+  it("opens on focus", () => {
+    const el = make(`<neuwo-combobox searchable>${FRUIT}</neuwo-combobox>`);
+    el.shadowRoot.querySelector(".combobox__trigger").dispatchEvent(new Event("focus"));
+    expect(el.isOpen).toBe(true);
+  });
+
+  it("filters options as you type", () => {
+    const el = make(`<neuwo-combobox searchable>${FRUIT}</neuwo-combobox>`);
+    const input = el.shadowRoot.querySelector(".combobox__trigger");
+    input.value = "ap";
+    input.dispatchEvent(new Event("input"));
+    const visible = [...el.shadowRoot.querySelectorAll(".combobox__option")].filter(
+      (o) => o.hidden === false
+    );
+    expect(visible.map((o) => o.dataset.value)).toEqual(["apple", "apricot"]);
+  });
+
+  it("shows the empty state when nothing matches", () => {
+    const el = make(`<neuwo-combobox searchable>${FRUIT}</neuwo-combobox>`);
+    const input = el.shadowRoot.querySelector(".combobox__trigger");
+    input.value = "zzz";
+    input.dispatchEvent(new Event("input"));
+    expect(el.shadowRoot.querySelector(".combobox__empty")).toBeTruthy();
+  });
+
+  it("shows the selected label in the input after commit", () => {
+    const el = make(`<neuwo-combobox searchable>${FRUIT}</neuwo-combobox>`);
+    el.value = "banana";
+    const input = el.shadowRoot.querySelector(".combobox__trigger");
+    expect(input.value).toBe("Banana");
+  });
+
+  it("does not commit on Space in searchable mode (space is a filter character)", () => {
+    const el = make(`<neuwo-combobox searchable>${FRUIT}</neuwo-combobox>`);
+    el.open();
+    const trigger = el.shadowRoot.querySelector(".combobox__trigger");
+    trigger.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true, cancelable: true }));
+    trigger.dispatchEvent(new KeyboardEvent("keydown", { key: " ", bubbles: true, cancelable: true }));
+    expect(el.isOpen).toBe(true); // Space did not commit/close
+    expect(el.value).toBe("");
+  });
+
+  it("highlights the current selection when opened by focus", () => {
+    const el = make(`<neuwo-combobox searchable value="banana">${FRUIT}</neuwo-combobox>`);
+    el.shadowRoot.querySelector(".combobox__trigger").dispatchEvent(new Event("focus"));
+    expect(el.shadowRoot.querySelector(".combobox__option.is-active").dataset.value).toBe("banana");
+  });
+
+  it("clears the filter, empty state and reverts the label on close", () => {
+    const el = make(`<neuwo-combobox searchable value="banana">${FRUIT}</neuwo-combobox>`);
+    const input = el.shadowRoot.querySelector(".combobox__trigger");
+    input.value = "zzz";
+    input.dispatchEvent(new Event("input")); // opens and filters to nothing
+    expect(el.shadowRoot.querySelector(".combobox__empty")).toBeTruthy();
+    el.close();
+    expect(el.shadowRoot.querySelector(".combobox__empty")).toBeNull();
+    expect([...el.shadowRoot.querySelectorAll(".combobox__option")].every((o) => o.hidden === false)).toBe(true);
+    expect(input.value).toBe("Banana"); // reverted to the selected label
+  });
+
+  it("reverts free text in the input on blur", () => {
+    const el = make(`<neuwo-combobox searchable value="banana">${FRUIT}</neuwo-combobox>`);
+    const input = el.shadowRoot.querySelector(".combobox__trigger");
+    input.value = "free text";
+    input.dispatchEvent(new Event("blur"));
+    expect(input.value).toBe("Banana"); // free text discarded, selected label restored
+  });
+
+  it("navigation skips filtered-out options", () => {
+    const el = make(`<neuwo-combobox searchable>${FRUIT}</neuwo-combobox>`);
+    const input = el.shadowRoot.querySelector(".combobox__trigger");
+    input.value = "ban";
+    input.dispatchEvent(new Event("input")); // only Banana visible
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true, cancelable: true }));
+    expect(el.shadowRoot.querySelector(".combobox__option.is-active").dataset.value).toBe("banana");
+  });
+});

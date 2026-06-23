@@ -26,12 +26,24 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   #active = -1;
   #typeahead = "";
   #typeaheadTimer = 0;
+  #filter = "";
+
+  get #searchable() {
+    return this.hasAttribute("searchable");
+  }
 
   // --- base seams ---
 
   createControl() {
-    this.#trigger = document.createElement("button");
-    this.#trigger.type = "button";
+    if (this.hasAttribute("searchable")) {
+      this.#trigger = document.createElement("input");
+      this.#trigger.type = "text";
+      this.#trigger.setAttribute("autocomplete", "off");
+      this.#trigger.setAttribute("aria-autocomplete", "list");
+    } else {
+      this.#trigger = document.createElement("button");
+      this.#trigger.type = "button";
+    }
     this.#trigger.className = "combobox__trigger";
     this.#trigger.setAttribute("role", "combobox");
     this.#trigger.setAttribute("aria-haspopup", "listbox");
@@ -73,6 +85,11 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     this.#trigger.addEventListener("keydown", this.#onKeydown);
     this.#popup.addEventListener("toggle", this.#onPopoverToggle);
     this.#listbox.addEventListener("click", this.#onOptionClick);
+    if (this.#searchable) {
+      this.#trigger.addEventListener("input", this.#onFilterInput);
+      this.#trigger.addEventListener("focus", this.#onTriggerFocus);
+      this.#trigger.addEventListener("blur", this.#onTriggerBlur);
+    }
   }
 
   // No native .value to seed; read options and resolve the initial selection.
@@ -197,6 +214,13 @@ export class NeuwoCombobox extends NeuwoFieldElement {
 
   close() {
     if (!this.#open) return;
+    this.#filter = "";
+    if (this.#searchable) {
+      this.#listbox.querySelectorAll(".combobox__option").forEach((li) => (li.hidden = false));
+      const empty = this.#listbox.querySelector(".combobox__empty");
+      if (empty) empty.remove();
+      this.#renderTriggerText();
+    }
     this.#open = false;
     this.#trigger.setAttribute("aria-expanded", "false");
     this.#setActive(-1); // reset highlight + aria-activedescendant so the next open re-highlights the selection
@@ -212,6 +236,11 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   }
 
   #onTriggerClick = () => {
+    if (this.#searchable) {
+      // The input opens on focus; a click must not toggle it shut.
+      if (!this.#open) this.open();
+      return;
+    }
     if (this.#open) this.close();
     else this.open();
   };
@@ -241,9 +270,16 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     if (e.newState === "closed" && this.#open) this.close();
   };
 
-  // Indices of selectable (non-disabled) options.
+  // Indices of selectable (non-disabled, not hidden) options.
   #selectable() {
-    return this.#options.map((o, i) => (o.disabled ? -1 : i)).filter((i) => i >= 0);
+    return this.#options
+      .map((o, i) => {
+        if (o.disabled) return -1;
+        const li = this.#listbox?.querySelector(`.combobox__option[data-index="${i}"]`);
+        if (li && li.hidden) return -1;
+        return i;
+      })
+      .filter((i) => i >= 0);
   }
 
   #setActive(index) {
@@ -302,19 +338,22 @@ export class NeuwoCombobox extends NeuwoFieldElement {
 
   #onKeydown = (e) => {
     const k = e.key;
+    // In searchable mode, printable keys and Space must reach the input to
+    // filter/type, and Home/End move the caret, so they are not intercepted.
+    const search = this.#searchable;
     if (!this.#open) {
       if (k === "ArrowUp") {
         e.preventDefault();
-        this.open();          // open() highlights the selected or first option
+        this.open();
         this.#move(-1, true); // ArrowUp opens at the last option (APG)
         return;
       }
-      if (k === "ArrowDown" || k === "Enter" || k === " ") {
+      if (k === "ArrowDown" || k === "Enter" || (k === " " && !search)) {
         e.preventDefault();
-        this.open();          // open() already highlights the selected or first option
+        this.open(); // open() highlights the selected or first option
         return;
       }
-      if (k.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      if (!search && k.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey) {
         e.preventDefault();
         this.#typeaheadMatch(k);
         return;
@@ -324,14 +363,17 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     switch (k) {
       case "ArrowDown": e.preventDefault(); this.#move(1, false); break;
       case "ArrowUp": e.preventDefault(); this.#move(-1, false); break;
-      case "Home": e.preventDefault(); this.#move(1, true); break;
-      case "End": e.preventDefault(); this.#move(-1, true); break;
-      case "Enter":
-      case " ": e.preventDefault(); this.#commitActive(); this.close(); this.#trigger.focus(); break;
+      case "Home": if (!search) { e.preventDefault(); this.#move(1, true); } break;
+      case "End": if (!search) { e.preventDefault(); this.#move(-1, true); } break;
+      case "Enter": e.preventDefault(); this.#commitActive(); this.close(); this.#trigger.focus(); break;
+      case " ":
+        // Select-only: Space commits. Searchable: Space types into the filter.
+        if (!search) { e.preventDefault(); this.#commitActive(); this.close(); this.#trigger.focus(); }
+        break;
       case "Escape": e.preventDefault(); this.close(); this.#trigger.focus(); break;
       case "Tab": this.#commitActive(); this.close(); break;
       default:
-        if (k.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        if (!search && k.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey) {
           e.preventDefault();
           this.#typeaheadMatch(k);
         }
@@ -431,6 +473,11 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   #renderTriggerText() {
     if (!this.#trigger) return;
     const opt = this.#options.find((o) => o.value === this.#selected);
+    if (this.#searchable) {
+      this.#trigger.value = opt ? opt.label : "";
+      this.#trigger.placeholder = this.getAttribute("placeholder") || "";
+      return;
+    }
     const label = document.createElement("span");
     label.className = "combobox__value";
     if (opt) {
@@ -449,6 +496,52 @@ export class NeuwoCombobox extends NeuwoFieldElement {
       li.setAttribute("aria-selected", li.dataset.value === this.#selected ? "true" : "false");
     }
   }
+
+  #applyFilter() {
+    const q = this.#filter.trim().toLowerCase();
+    let anyVisible = false;
+    let firstVisible = -1;
+    this.#listbox.querySelectorAll(".combobox__option").forEach((li) => {
+      const i = Number(li.dataset.index);
+      const match = !q || this.#options[i].label.toLowerCase().includes(q);
+      li.hidden = !match;
+      if (match) {
+        anyVisible = true;
+        if (firstVisible < 0 && !this.#options[i].disabled) firstVisible = i;
+      }
+    });
+    let empty = this.#listbox.querySelector(".combobox__empty");
+    if (!anyVisible) {
+      if (!empty) {
+        empty = document.createElement("li");
+        empty.className = "combobox__empty";
+        empty.setAttribute("role", "presentation");
+        empty.textContent = "No matches";
+        this.#listbox.append(empty);
+      }
+    } else if (empty) {
+      empty.remove();
+    }
+    this.#setActive(firstVisible);
+  }
+
+  #onFilterInput = () => {
+    this.#filter = this.#trigger.value;
+    if (!this.#open) this.open();
+    this.#applyFilter();
+  };
+
+  #onTriggerFocus = () => {
+    if (!this.#open) {
+      this.#filter = "";
+      this.open(); // open() highlights the current selection; options are already unfiltered after close()
+    }
+  };
+
+  #onTriggerBlur = () => {
+    // Revert the input text to the committed selection's label.
+    if (!this.#open) this.#renderTriggerText();
+  };
 }
 
 customElements.define("neuwo-combobox", NeuwoCombobox);
