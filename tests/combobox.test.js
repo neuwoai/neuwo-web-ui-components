@@ -119,3 +119,104 @@ describe("<neuwo-combobox> open/close", () => {
     expect(el.shadowRoot.querySelector(".combobox__trigger").getAttribute("aria-expanded")).toBe("false");
   });
 });
+
+describe("<neuwo-combobox> keyboard + selection", () => {
+  function key(el, k) {
+    el.shadowRoot
+      .querySelector(".combobox__trigger")
+      .dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true, cancelable: true }));
+  }
+
+  it("opens and highlights the first option on ArrowDown", () => {
+    const el = make(`<neuwo-combobox>${OPTS}</neuwo-combobox>`);
+    key(el, "ArrowDown");
+    expect(el.isOpen).toBe(true);
+    const active = el.shadowRoot.querySelector(".combobox__option.is-active");
+    expect(active.dataset.value).toBe("a");
+    expect(el.shadowRoot.querySelector(".combobox__trigger").getAttribute("aria-activedescendant")).toBe(active.id);
+  });
+
+  it("skips disabled options when navigating", () => {
+    const el = make(`<neuwo-combobox>${OPTS}</neuwo-combobox>`);
+    key(el, "ArrowDown"); // a
+    key(el, "ArrowDown"); // b
+    key(el, "ArrowDown"); // c is disabled -> stays on b
+    expect(el.shadowRoot.querySelector(".combobox__option.is-active").dataset.value).toBe("b");
+  });
+
+  it("commits the highlighted option on Enter and emits change", () => {
+    const el = make(`<neuwo-combobox>${OPTS}</neuwo-combobox>`);
+    let changed = false;
+    el.addEventListener("change", () => (changed = true));
+    key(el, "ArrowDown"); // open, highlight a
+    key(el, "Enter");
+    expect(el.value).toBe("a");
+    expect(el.isOpen).toBe(false);
+    expect(changed).toBe(true);
+  });
+
+  it("reverts on Escape", () => {
+    const el = make(`<neuwo-combobox value="b">${OPTS}</neuwo-combobox>`);
+    key(el, "ArrowDown"); // open
+    key(el, "ArrowUp"); // move highlight
+    key(el, "Escape");
+    expect(el.isOpen).toBe(false);
+    expect(el.value).toBe("b");
+  });
+
+  it("selects an option on click", () => {
+    const el = make(`<neuwo-combobox>${OPTS}</neuwo-combobox>`);
+    el.open();
+    const banana = [...el.shadowRoot.querySelectorAll(".combobox__option")].find((o) => o.dataset.value === "b");
+    banana.click();
+    expect(el.value).toBe("b");
+    expect(el.isOpen).toBe(false);
+  });
+
+  it("does not change the value while navigating (commit model)", () => {
+    const el = make(`<neuwo-combobox>${OPTS}</neuwo-combobox>`);
+    key(el, "ArrowDown"); // highlight a
+    key(el, "ArrowDown"); // highlight b
+    expect(el.value).toBe(""); // highlight moved, nothing committed
+  });
+
+  it("opens at the last selectable option when ArrowUp is pressed while closed", () => {
+    const el = make(`<neuwo-combobox>${OPTS}</neuwo-combobox>`);
+    key(el, "ArrowUp");
+    expect(el.isOpen).toBe(true);
+    expect(el.shadowRoot.querySelector(".combobox__option.is-active").dataset.value).toBe("b");
+  });
+
+  it("jumps to first and last selectable options with Home and End", () => {
+    const el = make(`<neuwo-combobox>${OPTS}</neuwo-combobox>`);
+    el.open();
+    key(el, "End");
+    expect(el.shadowRoot.querySelector(".combobox__option.is-active").dataset.value).toBe("b");
+    key(el, "Home");
+    expect(el.shadowRoot.querySelector(".combobox__option.is-active").dataset.value).toBe("a");
+  });
+
+  it("opens and typeahead-jumps to a matching option", () => {
+    const el = make(`<neuwo-combobox>${OPTS}</neuwo-combobox>`);
+    key(el, "b");
+    expect(el.isOpen).toBe(true);
+    expect(el.shadowRoot.querySelector(".combobox__option.is-active").dataset.value).toBe("b");
+  });
+
+  it("commits the highlighted option on Tab", () => {
+    const el = make(`<neuwo-combobox>${OPTS}</neuwo-combobox>`);
+    key(el, "ArrowDown"); // open, highlight a
+    key(el, "Tab");
+    expect(el.value).toBe("a");
+    expect(el.isOpen).toBe(false);
+  });
+
+  it("ignores clicks on disabled options", () => {
+    const el = make(`<neuwo-combobox>${OPTS}</neuwo-combobox>`);
+    el.open();
+    const cherry = [...el.shadowRoot.querySelectorAll(".combobox__option")].find((o) => o.dataset.value === "c");
+    cherry.click();
+    expect(el.value).toBe("");
+    expect(el.isOpen).toBe(true);
+  });
+});

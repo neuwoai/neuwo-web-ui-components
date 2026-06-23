@@ -23,6 +23,9 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   #observer = null;
   #open = false;
   #reposition = () => this.#position();
+  #active = -1;
+  #typeahead = "";
+  #typeaheadTimer = 0;
 
   // --- base seams ---
 
@@ -67,7 +70,9 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   // Runs after decorateControl, so the popup/listbox exist to wire here.
   wireControl() {
     this.#trigger.addEventListener("click", this.#onTriggerClick);
+    this.#trigger.addEventListener("keydown", this.#onKeydown);
     this.#popup.addEventListener("toggle", this.#onPopoverToggle);
+    this.#listbox.addEventListener("click", this.#onOptionClick);
   }
 
   // No native .value to seed; read options and resolve the initial selection.
@@ -185,6 +190,7 @@ export class NeuwoCombobox extends NeuwoFieldElement {
       }
     }
     this.#position();
+    if (this.#active < 0) this.#activeStart();
     window.addEventListener("scroll", this.#reposition, true);
     window.addEventListener("resize", this.#reposition);
   }
@@ -193,7 +199,7 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     if (!this.#open) return;
     this.#open = false;
     this.#trigger.setAttribute("aria-expanded", "false");
-    this.#trigger.removeAttribute("aria-activedescendant");
+    this.#setActive(-1); // reset highlight + aria-activedescendant so the next open re-highlights the selection
     if (typeof this.#popup.hidePopover === "function") {
       try {
         this.#popup.hidePopover();
@@ -233,6 +239,111 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   #onPopoverToggle = (e) => {
     // Browser-driven close (Escape, outside click) -> mirror our state.
     if (e.newState === "closed" && this.#open) this.close();
+  };
+
+  // Indices of selectable (non-disabled) options.
+  #selectable() {
+    return this.#options.map((o, i) => (o.disabled ? -1 : i)).filter((i) => i >= 0);
+  }
+
+  #setActive(index) {
+    this.#active = index;
+    const items = this.#listbox.querySelectorAll(".combobox__option");
+    items.forEach((li) => li.classList.remove("is-active"));
+    if (index < 0) {
+      this.#trigger.removeAttribute("aria-activedescendant");
+      return;
+    }
+    const el = this.#listbox.querySelector(`.combobox__option[data-index="${index}"]`);
+    if (!el) return;
+    el.classList.add("is-active");
+    this.#trigger.setAttribute("aria-activedescendant", el.id);
+    if (typeof el.scrollIntoView === "function") el.scrollIntoView({ block: "nearest" });
+  }
+
+  #move(delta, toEdge) {
+    const sel = this.#selectable();
+    if (!sel.length) return;
+    let pos;
+    if (toEdge) {
+      pos = delta > 0 ? 0 : sel.length - 1;
+    } else {
+      const current = sel.indexOf(this.#active);
+      if (current === -1) pos = delta > 0 ? 0 : sel.length - 1;
+      else pos = Math.min(sel.length - 1, Math.max(0, current + delta));
+    }
+    this.#setActive(sel[pos]);
+  }
+
+  #activeStart() {
+    // Open with the selected option active, else the first selectable.
+    const selIdx = this.#options.findIndex((o) => o.value === this.#selected && !o.disabled);
+    this.#setActive(selIdx >= 0 ? selIdx : this.#selectable()[0] ?? -1);
+  }
+
+  #commitActive() {
+    if (this.#active >= 0 && !this.#options[this.#active].disabled) {
+      this.commit(this.#options[this.#active].value);
+    }
+  }
+
+  #typeaheadMatch(char) {
+    this.#typeahead = (this.#typeahead + char).toLowerCase();
+    const match = this.#options.findIndex(
+      (o) => !o.disabled && o.label.toLowerCase().startsWith(this.#typeahead)
+    );
+    if (match >= 0) {
+      if (!this.#open) this.open();
+      this.#setActive(match);
+    }
+    clearTimeout(this.#typeaheadTimer);
+    this.#typeaheadTimer = setTimeout(() => (this.#typeahead = ""), 500);
+  }
+
+  #onKeydown = (e) => {
+    const k = e.key;
+    if (!this.#open) {
+      if (k === "ArrowUp") {
+        e.preventDefault();
+        this.open();          // open() highlights the selected or first option
+        this.#move(-1, true); // ArrowUp opens at the last option (APG)
+        return;
+      }
+      if (k === "ArrowDown" || k === "Enter" || k === " ") {
+        e.preventDefault();
+        this.open();          // open() already highlights the selected or first option
+        return;
+      }
+      if (k.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        this.#typeaheadMatch(k);
+        return;
+      }
+      return;
+    }
+    switch (k) {
+      case "ArrowDown": e.preventDefault(); this.#move(1, false); break;
+      case "ArrowUp": e.preventDefault(); this.#move(-1, false); break;
+      case "Home": e.preventDefault(); this.#move(1, true); break;
+      case "End": e.preventDefault(); this.#move(-1, true); break;
+      case "Enter":
+      case " ": e.preventDefault(); this.#commitActive(); this.close(); this.#trigger.focus(); break;
+      case "Escape": e.preventDefault(); this.close(); this.#trigger.focus(); break;
+      case "Tab": this.#commitActive(); this.close(); break;
+      default:
+        if (k.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey) {
+          e.preventDefault();
+          this.#typeaheadMatch(k);
+        }
+    }
+  };
+
+  #onOptionClick = (e) => {
+    const li = e.target.closest(".combobox__option");
+    if (!li || li.getAttribute("aria-disabled") === "true") return;
+    this.commit(li.dataset.value);
+    this.close();
+    this.#trigger.focus();
   };
 
   // Commit a value: update selection, the form value, validity, and emit events.
