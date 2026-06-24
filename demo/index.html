@@ -27,6 +27,12 @@
         color: black !important;
         border-radius: 0 !important;
       }
+      /* Hostile rule: if Shadow DOM leaked, the badges would turn hot pink too. */
+      .badge {
+        background: hotpink !important;
+        color: black !important;
+        border-radius: 0 !important;
+      }
       .row {
         display: flex;
         gap: 1rem;
@@ -291,5 +297,17 @@
         }
       });
     </script>
+
+    <h2>Badge (eyebrow label pill)</h2>
+    <p>The page defines a hostile <code>.badge</code> rule. Shadow DOM keeps it out.</p>
+    <div class="row">
+      <neuwo-badge>For Publishers</neuwo-badge>
+      <neuwo-badge variant="green">New</neuwo-badge>
+    </div>
+    <h2>Badge token re-theming (inherits through the shadow boundary)</h2>
+    <div class="row reskin">
+      <neuwo-badge>Re-themed</neuwo-badge>
+      <neuwo-badge variant="green">Re-themed</neuwo-badge>
+    </div>
   </body>
 </html>

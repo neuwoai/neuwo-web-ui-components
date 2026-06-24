@@ -1,0 +1,30 @@
+:host {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.badge {
+  /* Eyebrow typography, inlined because the shadow root cannot inherit the
+     design system's shared .eyebrow class rule (Outfit, xs, 600, 0.08em, caps). */
+  font-family: var(--font-heading);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  /* The pill itself. Layout margins from the source recipe are dropped: they
+     are page-gutter concerns, the consumer owns spacing. */
+  display: inline-block;
+  color: var(--color-blue);
+  background: var(--tint-blue-8);
+  border: 1px solid var(--tint-blue-20);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+}
+
+/* Green variant (the source recipe's "new" modifier), swapping the blue tints. */
+.badge--green {
+  color: var(--color-green);
+  background: var(--tint-green-8);
+  border-color: var(--tint-green-20);
+}

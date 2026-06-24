@@ -48,7 +48,7 @@ export { manifest, attributesFor, partsFor };
 const EXPECTED_TAGS = [
   "neuwo-button", "neuwo-input", "neuwo-textarea", "neuwo-select",
   "neuwo-combobox", "neuwo-checkbox", "neuwo-toggle", "neuwo-radio",
-  "neuwo-radio-group", "neuwo-segmented",
+  "neuwo-radio-group", "neuwo-segmented", "neuwo-badge",
 ];
 
 describe("custom-elements.json", () => {
@@ -112,5 +112,10 @@ describe("custom-elements.json", () => {
   it("documents the radio's own attributes", () => {
     const attrs = attributesFor(manifest, "neuwo-radio");
     for (const a of ["value", "disabled", "checked"]) expect(attrs).toContain(a);
+  });
+
+  it("documents the badge's variant attribute and part", () => {
+    expect(attributesFor(manifest, "neuwo-badge").has("variant")).toBe(true);
+    expect(partsFor(manifest, "neuwo-badge").has("badge")).toBe(true);
   });
 });

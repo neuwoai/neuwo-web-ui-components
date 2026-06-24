@@ -9,6 +9,7 @@ import "./components/selection/toggle/neuwo-toggle.js"; // self-registers <neuwo
 import "./components/selection/radio/neuwo-radio.js"; // self-registers <neuwo-radio>
 import "./components/selection/radio/neuwo-radio-group.js"; // self-registers <neuwo-radio-group>
 import "./components/selection/segmented/neuwo-segmented.js"; // self-registers <neuwo-segmented>
+import "./components/badge/neuwo-badge.js"; // self-registers <neuwo-badge>
 
 injectFonts();
 
@@ -22,3 +23,4 @@ export { NeuwoToggle } from "./components/selection/toggle/neuwo-toggle.js";
 export { NeuwoRadio } from "./components/selection/radio/neuwo-radio.js";
 export { NeuwoRadioGroup } from "./components/selection/radio/neuwo-radio-group.js";
 export { NeuwoSegmented } from "./components/selection/segmented/neuwo-segmented.js";
+export { NeuwoBadge } from "./components/badge/neuwo-badge.js";
