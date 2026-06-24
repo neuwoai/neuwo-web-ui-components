@@ -248,42 +248,47 @@
       </neuwo-segmented>
     </form>
 
-    <h2>Selection: error softening (reward early, punish late)</h2>
+    <h2>Error + softening (every control)</h2>
     <p>
-      Submit empty to flag the error (red accent + <code>aria-invalid</code>). Pick a tier and
-      the alarm softens immediately via <code>error-muted</code>: the accent and
-      <code>aria-invalid</code> drop while the message stays as a calm hint. Submit again to
-      clear it. The component owns no error text, so the consumer drives both attributes.
+      Each control below starts in the error state (red accent / box-shadow + message).
+      Interact with it and the alarm softens via <code>error-muted</code>: the accent and
+      <code>aria-invalid</code> drop, the message stays as a calm grey hint. (A real app then
+      removes <code>error</code> on its next successful validate. The "Re-arm" button restores
+      the red state so each behaviour can be checked again.)
     </p>
-    <form id="soften-form">
-      <div class="row">
-        <neuwo-radio-group id="soften-group" name="tier" label="Tier" orientation="horizontal" required>
-          <neuwo-radio value="free">Free</neuwo-radio>
-          <neuwo-radio value="pro">Pro</neuwo-radio>
-          <neuwo-radio value="team">Team</neuwo-radio>
-        </neuwo-radio-group>
-      </div>
-      <div class="row">
-        <neuwo-button type="submit" variant="solid">Submit</neuwo-button>
-      </div>
-    </form>
+    <div class="row">
+      <neuwo-checkbox class="soften" required error="You must accept the terms">I accept the terms</neuwo-checkbox>
+      <neuwo-toggle class="soften" error="Enable this to continue">Enable feature</neuwo-toggle>
+    </div>
+    <div class="row">
+      <neuwo-radio-group class="soften" name="soften-tier" label="Tier" orientation="horizontal" error="Please choose a tier">
+        <neuwo-radio value="free">Free</neuwo-radio>
+        <neuwo-radio value="pro">Pro</neuwo-radio>
+        <neuwo-radio value="team">Team</neuwo-radio>
+      </neuwo-radio-group>
+    </div>
+    <div class="row">
+      <neuwo-input class="soften" label="Work email" value="taken@example.com" error="That email is already registered"></neuwo-input>
+      <neuwo-segmented class="soften" name="soften-view" label="View" error="That view is unavailable">
+        <option value="visual">Visual</option>
+        <option value="json">JSON</option>
+      </neuwo-segmented>
+    </div>
+    <div class="row">
+      <neuwo-button id="soften-rearm" variant="outline">Re-arm errors</neuwo-button>
+    </div>
     <script>
-      const softenForm = document.getElementById("soften-form");
-      const softenGroup = document.getElementById("soften-group");
-      // Punish late: only assert the full error on submit.
-      softenForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-        if (softenGroup.checkValidity()) {
-          softenGroup.removeAttribute("error");
-          softenGroup.removeAttribute("error-muted");
-        } else {
-          softenGroup.removeAttribute("error-muted"); // re-arm the red alarm
-          softenGroup.setAttribute("error", "Please choose a tier");
-        }
-      });
+      const softenControls = [...document.querySelectorAll(".soften")];
+      const softenMessages = new Map(softenControls.map((el) => [el, el.getAttribute("error")]));
       // Reward early: the instant the user acts, soften but keep the message.
-      softenGroup.addEventListener("change", () => {
-        if (softenGroup.hasAttribute("error")) softenGroup.setAttribute("error-muted", "");
+      for (const el of softenControls) {
+        el.addEventListener("change", () => el.setAttribute("error-muted", ""));
+      }
+      document.getElementById("soften-rearm").addEventListener("click", () => {
+        for (const el of softenControls) {
+          el.removeAttribute("error-muted");
+          el.setAttribute("error", softenMessages.get(el));
+        }
       });
     </script>
   </body>
