@@ -85,7 +85,15 @@ export class NeuwoSingleSelect extends NeuwoElement {
     super.connectedCallback(); // builds via render()
     this.#defaultValue = this.getAttribute("value") ?? this.initialValue();
     if (!this.hasAttribute("value") && this.#defaultValue) this.setAttribute("value", this.#defaultValue);
-    this.#observer = new MutationObserver(() => this.#syncOptions());
+    // Only option-child changes (added/removed, or an option's own attributes)
+    // need a re-render. The host's OWN attribute changes are already handled by
+    // attributeChangedCallback, so ignore them here -- otherwise a host `value`
+    // change would rebuild the options and cancel the segmented slide animation.
+    this.#observer = new MutationObserver((records) => {
+      if (records.some((r) => r.type === "childList" || r.target !== this)) {
+        this.#syncOptions();
+      }
+    });
     this.#observer.observe(this, {
       childList: true,
       subtree: true,

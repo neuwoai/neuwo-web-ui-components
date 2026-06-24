@@ -31,6 +31,17 @@ describe("<neuwo-segmented>", () => {
     expect(active.dataset.value).toBe("visual");
   });
 
+  it("does not rebuild the options on a value change (keeps the indicator so it can slide)", async () => {
+    const el = make(`<neuwo-segmented value="visual">${OPTS}</neuwo-segmented>`);
+    const indicatorBefore = el.shadowRoot.querySelector(".segmented__indicator");
+    const buttonBefore = options(el)[0];
+    el.value = "json";
+    await Promise.resolve(); // let any MutationObserver microtask run
+    expect(el.shadowRoot.querySelector(".segmented__indicator")).toBe(indicatorBefore);
+    expect(options(el)[0]).toBe(buttonBefore); // same DOM, not re-rendered
+    expect(el.value).toBe("json");
+  });
+
   it("is form-associated", () => {
     expect(make(`<neuwo-segmented>${OPTS}</neuwo-segmented>`).constructor.formAssociated).toBe(true);
   });
