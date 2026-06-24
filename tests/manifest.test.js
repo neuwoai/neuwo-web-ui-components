@@ -76,4 +76,27 @@ describe("custom-elements.json", () => {
     for (const a of ["name", "value", "disabled", "required", "label", "orientation", "error", "error-muted"])
       expect(attrs).toContain(a);
   });
+
+  it("documents the button's own attributes and part", () => {
+    const attrs = attributesFor(manifest, "neuwo-button");
+    for (const a of ["variant", "size", "wide", "xwide", "href", "disabled", "type"])
+      expect(attrs).toContain(a);
+    expect(partsFor(manifest, "neuwo-button").has("button")).toBe(true);
+  });
+
+  it("documents the input's type and constraint attributes", () => {
+    const attrs = attributesFor(manifest, "neuwo-input");
+    for (const a of ["type", "min", "max", "step", "pattern", "minlength", "maxlength"])
+      expect(attrs).toContain(a);
+  });
+
+  it("documents the combobox's searchable attribute and parts", () => {
+    expect(attributesFor(manifest, "neuwo-combobox").has("searchable")).toBe(true);
+    for (const p of ["chevron", "popup"])
+      expect(partsFor(manifest, "neuwo-combobox").has(p)).toBe(true);
+  });
+
+  it("documents the select's chevron part", () => {
+    expect(partsFor(manifest, "neuwo-select").has("chevron")).toBe(true);
+  });
 });

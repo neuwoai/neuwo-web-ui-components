@@ -2,6 +2,26 @@ import { NeuwoElement } from "../../core/base-element.js";
 import { sheet } from "../../core/sheet.js";
 import buttonCss from "./button.css?raw";
 
+/**
+ * On-brand button. Renders a `<button>`, or an `<a>` when `href` is set and the
+ * element is not disabled. Replicates submit/reset on activation via form internals.
+ *
+ * @summary Neuwo button (or link button).
+ * @customElement neuwo-button
+ * @attr {solid|outline|glass} variant - visual style (default solid).
+ * @attr {sm|lg} size - size preset (default medium when unset).
+ * @attr {boolean} wide - extra horizontal padding.
+ * @attr {boolean} xwide - maximal horizontal padding.
+ * @attr href - when set (and not disabled), renders a navigable link.
+ * @attr {boolean} disabled - disables the button (a disabled `href` stays a button to be inert).
+ * @attr {button|submit|reset} type - activation behaviour for the host form (default button).
+ * @attr target - link target, forwarded to the `<a>` when `href` is set.
+ * @attr rel - link rel, forwarded to the `<a>` when `href` is set.
+ * @attr download - link download, forwarded to the `<a>` when `href` is set.
+ * @slot - the button label.
+ * @csspart button - the rendered `<button>` or `<a>`.
+ * @cssprop --color-blue - brand accent; re-theme by setting it on :root.
+ */
 export class NeuwoButton extends NeuwoElement {
   static formAssociated = true;
   static styles = sheet(buttonCss);

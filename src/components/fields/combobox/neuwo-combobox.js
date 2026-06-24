@@ -8,6 +8,18 @@ let cbUid = 0;
 // reuses the field chrome; the option list is a top-layer popover listbox. Options
 // are authored as light-DOM <option>/<optgroup> children. Open/close and keyboard
 // behaviour are added in later tasks.
+/**
+ * Fully styled dropdown that renders its list in the top layer, with optional
+ * type-to-filter.
+ *
+ * @summary Neuwo combobox.
+ * @customElement neuwo-combobox
+ * @attr {boolean} searchable - show a text field that filters the options.
+ * @fires {Event} input - the typed filter or highlighted option changed.
+ * @slot - the `<option>` and `<optgroup>` elements for the list.
+ * @csspart chevron - the dropdown chevron.
+ * @csspart popup - the floating list container.
+ */
 export class NeuwoCombobox extends NeuwoFieldElement {
   static formAssociated = true;
   static styles = [fieldSheet, sheet(comboboxCss)];

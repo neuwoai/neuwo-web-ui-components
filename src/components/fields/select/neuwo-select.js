@@ -2,6 +2,14 @@ import { NeuwoFieldElement, fieldSheet } from "../field-element.js";
 import { sheet } from "../../../core/sheet.js";
 import selectCss from "./select.css?raw";
 
+/**
+ * Native single-select dropdown styled with Neuwo chrome.
+ *
+ * @summary Neuwo select.
+ * @customElement neuwo-select
+ * @slot - the `<option>` and `<optgroup>` elements for the list.
+ * @csspart chevron - the dropdown chevron.
+ */
 export class NeuwoSelect extends NeuwoFieldElement {
   static formAssociated = true;
   static styles = [fieldSheet, sheet(selectCss)];
