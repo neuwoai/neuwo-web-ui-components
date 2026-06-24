@@ -25,4 +25,12 @@ describe("segmented.css recipe", () => {
     expect(css).toContain(".segmented--error");
     expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
   });
+
+  it("renders a sliding indicator that animates and respects reduced motion", () => {
+    expect(css).toContain(".segmented__indicator");
+    expect(css).toContain("var(--color-blue)");
+    expect(css).toContain("transform var(--transition-base)");
+    expect(css).toContain(".segmented__indicator--animated");
+    expect(css).toContain("prefers-reduced-motion: reduce");
+  });
 });

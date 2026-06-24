@@ -1,6 +1,7 @@
 /* ==========================================================================
    Selection: Segmented control -- a compact pill of single-select buttons.
-   Active state is driven by aria-checked (set by the ARIA layer).
+   Active state is driven by aria-checked (set by the ARIA layer); the blue
+   selection is a sliding .segmented__indicator positioned in JS.
    ========================================================================== */
 
 :host {
@@ -8,6 +9,7 @@
 }
 
 .segmented {
+  position: relative;
   display: inline-flex;
   gap: 0.125rem;
   padding: var(--space-1);
@@ -16,7 +18,35 @@
   background: var(--glass-bg-light);
 }
 
+/* The moving blue pill behind the active option. Its width/height/transform
+   are set inline by neuwo-segmented.js from the active button's box. */
+.segmented__indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  width: 0;
+  height: 0;
+  background: var(--color-blue);
+  border-radius: var(--radius-full);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.segmented__indicator[data-active="true"] {
+  opacity: 1;
+}
+
+/* Armed only after the first placement (see neuwo-segmented.js), so the active
+   pill appears in position on load and slides only on later changes. */
+.segmented__indicator--animated {
+  transition: transform var(--transition-base), width var(--transition-base),
+    opacity var(--transition-fast);
+}
+
 .segmented__option {
+  position: relative;
+  z-index: 1;
   padding: var(--space-1) var(--space-4);
   border: none;
   background: transparent;
@@ -26,10 +56,10 @@
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-muted);
   cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast);
+  transition: color var(--transition-fast);
 }
 
-.segmented__option:not(:disabled):hover {
+.segmented__option:not([aria-checked="true"]):not(:disabled):hover {
   color: var(--color-heading);
 }
 
@@ -39,7 +69,6 @@
 }
 
 .segmented__option[aria-checked="true"] {
-  background: var(--color-blue);
   color: var(--color-white);
 }
 
@@ -51,4 +80,10 @@
 .segmented--error {
   border-color: var(--color-red);
   box-shadow: var(--shadow-danger);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .segmented__indicator--animated {
+    transition: none;
+  }
 }

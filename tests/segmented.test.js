@@ -21,6 +21,16 @@ describe("<neuwo-segmented>", () => {
     expect(opts.every((b) => b.getAttribute("role") === "radio")).toBe(true);
   });
 
+  it("renders an aria-hidden sliding indicator placed on the active option", () => {
+    const el = make(`<neuwo-segmented value="visual">${OPTS}</neuwo-segmented>`);
+    const indicator = el.shadowRoot.querySelector(".segmented__indicator");
+    expect(indicator).toBeTruthy();
+    expect(indicator.getAttribute("aria-hidden")).toBe("true");
+    expect(indicator.dataset.active).toBe("true");
+    const active = options(el).find((b) => b.getAttribute("aria-checked") === "true");
+    expect(active.dataset.value).toBe("visual");
+  });
+
   it("is form-associated", () => {
     expect(make(`<neuwo-segmented>${OPTS}</neuwo-segmented>`).constructor.formAssociated).toBe(true);
   });

@@ -9,9 +9,27 @@ export class NeuwoSegmented extends NeuwoSingleSelect {
   static observedAttributes = NeuwoSingleSelect.observedAttributes;
 
   #buttons = [];
+  #indicator = null;
+  #indicatorReady = false;
+  #resize = null;
 
   get groupClass() { return "segmented"; }
   get accentClass() { return "segmented--error"; }
+
+  connectedCallback() {
+    super.connectedCallback();
+    // Keep the sliding indicator aligned when the pill reflows (responsive
+    // width, or a late web-font swap changing button widths).
+    if (typeof ResizeObserver === "function") {
+      this.#resize = new ResizeObserver(() => this.#repositionActive());
+      this.#resize.observe(this.group);
+    }
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback?.();
+    this.#resize?.disconnect();
+  }
 
   syncLabel(group) {
     const label = this.getAttribute("label");
@@ -25,7 +43,15 @@ export class NeuwoSegmented extends NeuwoSingleSelect {
       label: o.textContent.trim(),
       disabled: o.hasAttribute("disabled"),
     }));
+    // The indicator is the moving blue pill that sits behind the active option.
+    const indicator = document.createElement("span");
+    indicator.className = "segmented__indicator";
+    indicator.setAttribute("part", "indicator");
+    indicator.setAttribute("aria-hidden", "true");
+    this.#indicator = indicator;
+    this.#indicatorReady = false;
     this.group.replaceChildren(
+      indicator,
       ...data.map((d) => {
         const btn = document.createElement("button");
         btn.type = "button";
@@ -46,11 +72,15 @@ export class NeuwoSegmented extends NeuwoSingleSelect {
   }
 
   readOptions() {
+    const self = this;
     return this.#buttons.map((btn) => ({
       element: btn,
       value: btn.dataset.value,
       disabled: btn.hasAttribute("data-own-disabled"),
-      set checked(on) { btn.setAttribute("aria-checked", on ? "true" : "false"); },
+      set checked(on) {
+        btn.setAttribute("aria-checked", on ? "true" : "false");
+        if (on) self.#positionIndicator(btn);
+      },
       set tabbable(on) { btn.tabIndex = on ? 0 : -1; },
       set disabledByGroup(on) { btn.disabled = on || btn.hasAttribute("data-own-disabled"); },
       focus() { btn.focus(); },
@@ -60,6 +90,28 @@ export class NeuwoSegmented extends NeuwoSingleSelect {
   initialValue() {
     const sel = this.querySelector(":scope > option[selected]");
     return sel ? sel.getAttribute("value") ?? sel.textContent.trim() : "";
+  }
+
+  // Move the blue pill under the given option button.
+  #positionIndicator(btn) {
+    const ind = this.#indicator;
+    if (!ind) return;
+    ind.style.width = `${btn.offsetWidth}px`;
+    ind.style.height = `${btn.offsetHeight}px`;
+    ind.style.transform = `translate(${btn.offsetLeft}px, ${btn.offsetTop}px)`;
+    ind.dataset.active = "true";
+    if (!this.#indicatorReady) {
+      // Arm the slide only after the first placement, so the active pill
+      // appears in position on load instead of sliding in from the corner.
+      void ind.offsetWidth; // flush layout before enabling the transition
+      ind.classList.add("segmented__indicator--animated");
+      this.#indicatorReady = true;
+    }
+  }
+
+  #repositionActive() {
+    const active = this.#buttons.find((b) => b.getAttribute("aria-checked") === "true");
+    if (active) this.#positionIndicator(active);
   }
 }
 
