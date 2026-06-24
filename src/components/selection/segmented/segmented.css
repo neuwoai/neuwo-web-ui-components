@@ -4,8 +4,14 @@
    selection is a sliding .segmented__indicator positioned in JS.
    ========================================================================== */
 
+/* Stack the pill and its reserved error line, matching the other selection
+   controls. (inline-block would put the inline-flex pill on a line box and pick
+   up baseline whitespace, nudging it off-centre next to the error line.) */
 :host {
-  display: inline-block;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
 }
 
 .segmented {
