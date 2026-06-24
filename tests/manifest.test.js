@@ -1,0 +1,61 @@
+import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const manifest = JSON.parse(
+  readFileSync(join(__dirname, "../custom-elements.json"), "utf8")
+);
+
+// --- manifest walkers (shared by later attribute assertions) ---
+function declByTag(m, tag) {
+  for (const mod of m.modules ?? [])
+    for (const dec of mod.declarations ?? [])
+      if (dec.tagName === tag) return dec;
+  return null;
+}
+function declByName(m, name) {
+  for (const mod of m.modules ?? [])
+    for (const dec of mod.declarations ?? [])
+      if (dec.name === name) return dec;
+  return null;
+}
+// Attributes resolved up the superclass chain (the analyzer keeps inherited
+// attributes on the base declaration, not flattened onto the subclass).
+function attributesFor(m, tag) {
+  const names = new Set();
+  let dec = declByTag(m, tag);
+  while (dec) {
+    for (const a of dec.attributes ?? []) names.add(a.name);
+    dec = dec.superclass ? declByName(m, dec.superclass.name) : null;
+  }
+  return names;
+}
+function partsFor(m, tag) {
+  const names = new Set();
+  let dec = declByTag(m, tag);
+  while (dec) {
+    for (const p of dec.cssParts ?? []) names.add(p.name);
+    dec = dec.superclass ? declByName(m, dec.superclass.name) : null;
+  }
+  return names;
+}
+
+export { manifest, attributesFor, partsFor };
+
+const EXPECTED_TAGS = [
+  "neuwo-button", "neuwo-input", "neuwo-textarea", "neuwo-select",
+  "neuwo-combobox", "neuwo-checkbox", "neuwo-toggle", "neuwo-radio",
+  "neuwo-radio-group", "neuwo-segmented",
+];
+
+describe("custom-elements.json", () => {
+  it("declares every registered neuwo-* element", () => {
+    const tags = (manifest.modules ?? [])
+      .flatMap((mod) => mod.declarations ?? [])
+      .filter((d) => d.customElement && d.tagName)
+      .map((d) => d.tagName);
+    for (const tag of EXPECTED_TAGS) expect(tags).toContain(tag);
+  });
+});

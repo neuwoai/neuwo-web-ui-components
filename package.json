@@ -18,14 +18,18 @@
   "scripts": {
     "start": "node scripts/build.js --serve",
     "build": "node scripts/build.js",
+    "analyze": "cem analyze",
+    "pretest": "npm run analyze",
     "test": "vitest run",
     "test:watch": "vitest",
     "types": "tsc -p tsconfig.json"
   },
   "devDependencies": {
+    "@custom-elements-manifest/analyzer": "^0.10.10",
     "esbuild": "^0.28.1",
     "happy-dom": "^20.10.3",
     "typescript": "^5.9.3",
     "vitest": "^4.1.9"
-  }
+  },
+  "customElements": "custom-elements.json"
 }

@@ -1,5 +1,6 @@
 node_modules/
 dist/
+custom-elements.json
 
 # Frozen design-system snapshot — copy-paste reference only, never published.
 .reference/
