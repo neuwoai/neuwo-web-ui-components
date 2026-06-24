@@ -58,4 +58,22 @@ describe("custom-elements.json", () => {
       .map((d) => d.tagName);
     for (const tag of EXPECTED_TAGS) expect(tags).toContain(tag);
   });
+
+  it("documents the shared field attributes on field elements", () => {
+    const attrs = attributesFor(manifest, "neuwo-input");
+    for (const a of ["name", "value", "label", "disabled", "required", "error", "error-muted"])
+      expect(attrs).toContain(a);
+  });
+
+  it("documents the shared boolean attributes on the checkbox", () => {
+    const attrs = attributesFor(manifest, "neuwo-checkbox");
+    for (const a of ["name", "value", "checked", "disabled", "required", "error", "error-muted"])
+      expect(attrs).toContain(a);
+  });
+
+  it("documents the shared single-select attributes on the radio group", () => {
+    const attrs = attributesFor(manifest, "neuwo-radio-group");
+    for (const a of ["name", "value", "disabled", "required", "label", "orientation", "error", "error-muted"])
+      expect(attrs).toContain(a);
+  });
 });

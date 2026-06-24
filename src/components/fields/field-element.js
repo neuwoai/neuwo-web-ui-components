@@ -14,6 +14,29 @@ let uid = 0;
 // source and validity are seams (wireControl/seedValue/readValue/writeValue/
 // syncValidity): native controls use the defaults; a custom-value subclass (the
 // combobox) overrides them.
+/**
+ * Base for the text-like field controls (input, textarea, select, combobox).
+ * Owns form association, the value and disabled API, label and error rendering.
+ *
+ * @summary Base class for Neuwo field controls.
+ * @attr name - form field name submitted with the value.
+ * @attr value - the field's value.
+ * @attr placeholder - placeholder text shown when empty.
+ * @attr {boolean} disabled - disables the control and removes it from submission.
+ * @attr {boolean} required - the field must have a value to be valid.
+ * @attr {boolean} readonly - the value is shown but cannot be edited.
+ * @attr autocomplete - native autocomplete hint forwarded to the control.
+ * @attr label - visible label text rendered above the control.
+ * @attr error - error message; shows the red accent, the message, and aria-invalid.
+ * @attr {boolean} error-muted - softens a shown error: drops the border/box-shadow accent while the red message and invalid state stay.
+ * @fires {Event} change - the committed value changed.
+ * @slot - not used; the label is set via the `label` attribute.
+ * @csspart field - the wrapper around label, control, and error line.
+ * @csspart input - the native control element.
+ * @csspart label - the field's label element.
+ * @csspart error - the reserved error message line.
+ * @cssprop --color-blue - brand accent (focus ring); re-theme by setting it on :root.
+ */
 export class NeuwoFieldElement extends NeuwoElement {
   static formAssociated = true;
   /** @type {CSSStyleSheet | CSSStyleSheet[]} */

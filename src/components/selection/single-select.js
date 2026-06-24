@@ -13,6 +13,26 @@ let uid = 0;
 //   set disabledByGroup(on), set invalid(on), focus() }. `invalid` is the group's
 //   active-error state (error set and not muted); a radio reddens its own circle
 //   with it, segmented conveys the error on the group accent and ignores it.
+/**
+ * Base for the single-select controls (radio group, segmented). Owns form
+ * association, the single value, required validity, error display, the
+ * role=radiogroup wiring, and the roving-focus keyboard with selection
+ * following focus.
+ *
+ * @summary Base class for Neuwo single-select controls.
+ * @attr name - form field name submitted with the selected value.
+ * @attr value - the selected option's value.
+ * @attr {boolean} disabled - disables the whole group.
+ * @attr {boolean} required - a value must be selected to be valid.
+ * @attr label - accessible group label.
+ * @attr {horizontal|vertical} orientation - layout and arrow-key axis (default vertical).
+ * @attr error - error message; shows the red accent, the message, and aria-invalid.
+ * @attr {boolean} error-muted - softens a shown error: drops the accent while the red message and invalid state stay.
+ * @fires {Event} change - the selected value changed.
+ * @csspart group - the role=radiogroup container.
+ * @csspart error - the reserved error message line.
+ * @cssprop --color-blue - brand accent (selected option); re-theme on :root.
+ */
 export class NeuwoSingleSelect extends NeuwoElement {
   static formAssociated = true;
   static observedAttributes = ["name", "value", "disabled", "required", "label", "orientation", "error", "error-muted"];

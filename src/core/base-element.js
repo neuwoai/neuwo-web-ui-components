@@ -11,6 +11,14 @@ if (typeof document !== "undefined" && !document.adoptedStyleSheets.includes(tok
   document.adoptedStyleSheets = [...document.adoptedStyleSheets, tokensSheet];
 }
 
+/**
+ * Shared base for every Neuwo custom element: attaches an open shadow root,
+ * adopts the shared reset plus the component's stylesheet, and runs an
+ * attribute-driven render lifecycle. Design tokens inherit through the shadow
+ * boundary, so consumers re-theme by setting CSS custom properties on `:root`.
+ *
+ * @summary Base class for Neuwo custom elements.
+ */
 export class NeuwoElement extends HTMLElement {
   constructor() {
     super();

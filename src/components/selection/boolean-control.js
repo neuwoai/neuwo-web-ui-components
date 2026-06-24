@@ -9,6 +9,24 @@ let uid = 0;
 // for free; this base owns form association, the checked/value/disabled API,
 // required validity, error display, and a build-once-then-patch render. The
 // markup (which input, which row) is supplied by createControl()/renderRow().
+/**
+ * Base for the boolean selection controls (checkbox, toggle). Owns form
+ * association, the checked state, required validity, and error display.
+ *
+ * @summary Base class for Neuwo boolean controls.
+ * @attr name - form field name submitted when checked.
+ * @attr value - value submitted when checked (defaults to "on").
+ * @attr {boolean} checked - whether the control is on.
+ * @attr {boolean} disabled - disables the control and removes it from submission.
+ * @attr {boolean} required - the control must be checked to be valid.
+ * @attr error - error message; shows the red accent, the message, and aria-invalid.
+ * @attr {boolean} error-muted - softens a shown error: drops the accent while the red message and invalid state stay.
+ * @fires {Event} change - the checked state changed.
+ * @slot - the control's label content.
+ * @csspart input - the underlying native input.
+ * @csspart error - the reserved error message line.
+ * @cssprop --color-blue - brand accent (checked fill, focus ring); re-theme on :root.
+ */
 export class NeuwoBooleanControl extends NeuwoElement {
   static formAssociated = true;
   static observedAttributes = ["name", "value", "checked", "disabled", "required", "error", "error-muted"];
