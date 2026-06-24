@@ -32,6 +32,7 @@ export class NeuwoBooleanControl extends NeuwoElement {
   renderRow(control) {
     throw new Error("NeuwoBooleanControl subclasses must implement renderRow()");
   }
+  /** @returns {string} */
   get accentClass() {
     throw new Error("NeuwoBooleanControl subclasses must define accentClass");
   }

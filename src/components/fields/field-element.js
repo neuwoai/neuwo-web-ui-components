@@ -16,6 +16,7 @@ let uid = 0;
 // combobox) overrides them.
 export class NeuwoFieldElement extends NeuwoElement {
   static formAssociated = true;
+  /** @type {CSSStyleSheet | CSSStyleSheet[]} */
   static styles = fieldSheet;
   static observedAttributes = [
     "name",

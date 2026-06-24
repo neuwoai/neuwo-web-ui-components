@@ -31,7 +31,9 @@ export class NeuwoSingleSelect extends NeuwoElement {
   }
 
   // --- hooks ---
+  /** @returns {string} */
   get groupClass() { throw new Error("NeuwoSingleSelect subclasses must define groupClass"); }
+  /** @returns {string} */
   get accentClass() { throw new Error("NeuwoSingleSelect subclasses must define accentClass"); }
   renderContents(group) {}
   renderOptions() {}

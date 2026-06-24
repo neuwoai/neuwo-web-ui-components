@@ -71,8 +71,9 @@ export class NeuwoButton extends NeuwoElement {
         if (this.hasAttribute(attr)) el.setAttribute(attr, this.getAttribute(attr));
       }
     } else {
-      el.type = type;
-      el.disabled = disabled;
+      const btn = /** @type {HTMLButtonElement} */ (el);
+      btn.type = /** @type {"button" | "reset" | "submit"} */ (type);
+      btn.disabled = disabled;
     }
 
     // Forward presentational / accessibility attributes to the rendered control.

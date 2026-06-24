@@ -25,6 +25,7 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   #reposition = () => this.#position();
   #active = -1;
   #typeahead = "";
+  /** @type {number} */
   #typeaheadTimer = 0;
   #filter = "";
 
@@ -333,7 +334,7 @@ export class NeuwoCombobox extends NeuwoFieldElement {
       this.#setActive(match);
     }
     clearTimeout(this.#typeaheadTimer);
-    this.#typeaheadTimer = setTimeout(() => (this.#typeahead = ""), 500);
+    this.#typeaheadTimer = /** @type {number} */ (/** @type {unknown} */ (setTimeout(() => (this.#typeahead = ""), 500)));
   }
 
   #onKeydown = (e) => {
