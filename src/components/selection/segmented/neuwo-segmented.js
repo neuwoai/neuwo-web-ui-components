@@ -83,6 +83,9 @@ export class NeuwoSegmented extends NeuwoSingleSelect {
       },
       set tabbable(on) { btn.tabIndex = on ? 0 : -1; },
       set disabledByGroup(on) { btn.disabled = on || btn.hasAttribute("data-own-disabled"); },
+      // The error is shown on the group accent (.segmented--error), which sits in
+      // this same shadow root, so the per-option signal is intentionally a no-op.
+      set invalid(on) {},
       focus() { btn.focus(); },
     }));
   }

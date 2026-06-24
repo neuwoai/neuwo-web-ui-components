@@ -14,9 +14,11 @@ export class NeuwoRadio extends NeuwoElement {
   static observedAttributes = ["value", "disabled", "checked"];
 
   #input = null;
+  #label = null;
   #id = `neuwo-radio-${++uid}`;
   #tabbable = false;
   #groupDisabled = false;
+  #invalid = false;
   #built = false;
 
   // --- option-handle API consumed by NeuwoRadioGroup ---
@@ -36,6 +38,12 @@ export class NeuwoRadio extends NeuwoElement {
   set disabledByGroup(v) {
     this.#groupDisabled = Boolean(v);
     if (this.#input) this.#input.disabled = this.#groupDisabled || this.hasAttribute("disabled");
+  }
+  // The group's active-error state: redden this radio's circle to match the
+  // checkbox error ring (the shared .form-check--error rule on the label).
+  set invalid(v) {
+    this.#invalid = Boolean(v);
+    if (this.#label) this.#label.classList.toggle("form-check--error", this.#invalid);
   }
   focus() { this.#input?.focus(); }
 
@@ -59,6 +67,7 @@ export class NeuwoRadio extends NeuwoElement {
     const label = document.createElement("label");
     label.className = "form-check";
     label.setAttribute("part", "field");
+    this.#label = label;
     const text = document.createElement("span");
     text.className = "form-check__label";
     text.setAttribute("part", "label");
@@ -74,6 +83,7 @@ export class NeuwoRadio extends NeuwoElement {
     this.#input.checked = this.hasAttribute("checked");
     this.#input.disabled = this.hasAttribute("disabled") || this.#groupDisabled;
     this.#input.tabIndex = this.#tabbable ? 0 : -1;
+    this.#label.classList.toggle("form-check--error", this.#invalid);
   }
 }
 

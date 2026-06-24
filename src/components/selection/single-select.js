@@ -10,7 +10,9 @@ let uid = 0;
 // subclass supplies ordered "option handles" via readOptions().
 //
 // Option handle: { value, disabled, element, set checked(on), set tabbable(on),
-//   set disabledByGroup(on), focus() }.
+//   set disabledByGroup(on), set invalid(on), focus() }. `invalid` is the group's
+//   active-error state (error set and not muted); a radio reddens its own circle
+//   with it, segmented conveys the error on the group accent and ignores it.
 export class NeuwoSingleSelect extends NeuwoElement {
   static formAssociated = true;
   static observedAttributes = ["name", "value", "disabled", "required", "label", "orientation", "error", "error-muted"];
@@ -162,9 +164,13 @@ export class NeuwoSingleSelect extends NeuwoElement {
     const opts = this.readOptions();
     const value = this.value;
     const groupDisabled = this.#isDisabled();
+    // The group accent lives in this shadow root, but radios render in their own
+    // child shadow roots, so the active-error state has to be pushed per option.
+    const activeError = this.hasAttribute("error") && !this.hasAttribute("error-muted");
     let selected = null;
     for (const o of opts) {
       o.disabledByGroup = groupDisabled;
+      o.invalid = activeError;
       const on = value !== "" && o.value === value;
       o.checked = on;
       if (on) selected = o;

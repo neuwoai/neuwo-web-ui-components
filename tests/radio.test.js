@@ -80,4 +80,19 @@ describe("<neuwo-radio-group>", () => {
     radios(el)[1].click();
     expect(el.value).toBe("free");
   });
+
+  it("marks every radio invalid when the group has an error, and drops it when muted", () => {
+    const el = make(`<neuwo-radio-group error="Pick one">${RADIOS}</neuwo-radio-group>`);
+    const labels = radios(el).map((r) => r.shadowRoot.querySelector(".form-check"));
+    expect(labels.every((l) => l.classList.contains("form-check--error"))).toBe(true);
+
+    el.setAttribute("error-muted", "");
+    expect(labels.some((l) => l.classList.contains("form-check--error"))).toBe(false);
+
+    el.removeAttribute("error-muted");
+    expect(labels.every((l) => l.classList.contains("form-check--error"))).toBe(true);
+
+    el.removeAttribute("error");
+    expect(labels.some((l) => l.classList.contains("form-check--error"))).toBe(false);
+  });
 });
