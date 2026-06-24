@@ -250,11 +250,11 @@
 
     <h2>Error + softening (every control)</h2>
     <p>
-      Each control below starts in the error state (red accent / box-shadow + message).
-      Interact with it and the alarm softens via <code>error-muted</code>: the accent and
-      <code>aria-invalid</code> drop, the message stays as a calm grey hint. (A real app then
-      removes <code>error</code> on its next successful validate. The "Re-arm" button restores
-      the red state so each behaviour can be checked again.)
+      Each control below starts in the error state (red accent / box-shadow + red message).
+      Interact with it and <code>error-muted</code> drops the border and box-shadow ring, while
+      the red message and the invalid state stay. (A real app then removes <code>error</code> on
+      its next successful validate. The "Re-arm errors" button restores the box-shadow so each
+      behaviour can be checked again.)
     </p>
     <div class="row">
       <neuwo-checkbox class="soften" required error="You must accept the terms">I accept the terms</neuwo-checkbox>

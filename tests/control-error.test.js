@@ -48,17 +48,16 @@ describe("syncError", () => {
     expect(announce.hasAttribute("aria-describedby")).toBe(false);
   });
 
-  it("keeps the message but drops the accent and aria-invalid when error-muted is set", () => {
+  it("drops only the accent when error-muted is set; message and invalid state stay", () => {
     const host = document.createElement("div");
     host.setAttribute("error", "Nope");
     host.setAttribute("error-muted", "");
     const { container, accentEl, announce, refs } = harness();
     syncError(host, refs);
     const line = container.querySelector(".x-error");
-    expect(line.textContent).toBe("Nope"); // message stays
-    expect(line.classList.contains("x-error--muted")).toBe(true);
-    expect(accentEl.classList.contains("x--error")).toBe(false); // accent dropped
-    expect(announce.hasAttribute("aria-invalid")).toBe(false); // no longer flagged invalid
+    expect(line.textContent).toBe("Nope"); // red message stays
+    expect(accentEl.classList.contains("x--error")).toBe(false); // chrome accent dropped
+    expect(announce.getAttribute("aria-invalid")).toBe("true"); // still invalid until re-validated
     expect(announce.getAttribute("aria-describedby")).toBe("x-1"); // message still announced
   });
 
@@ -69,22 +68,20 @@ describe("syncError", () => {
     syncError(host, refs);
     const line = container.querySelector(".x-error");
     expect(line.textContent).toBe("");
-    expect(line.classList.contains("x-error--muted")).toBe(false);
     expect(accentEl.classList.contains("x--error")).toBe(false);
     expect(announce.hasAttribute("aria-invalid")).toBe(false);
     expect(announce.hasAttribute("aria-describedby")).toBe(false);
   });
 
-  it("re-arms the accent and aria-invalid when error-muted is removed", () => {
+  it("re-arms the accent when error-muted is removed", () => {
     const host = document.createElement("div");
     host.setAttribute("error", "Nope");
     host.setAttribute("error-muted", "");
-    const { container, accentEl, announce, refs } = harness();
+    const { accentEl, announce, refs } = harness();
     syncError(host, refs);
+    expect(accentEl.classList.contains("x--error")).toBe(false);
     host.removeAttribute("error-muted");
     syncError(host, refs);
-    const line = container.querySelector(".x-error");
-    expect(line.classList.contains("x-error--muted")).toBe(false);
     expect(accentEl.classList.contains("x--error")).toBe(true);
     expect(announce.getAttribute("aria-invalid")).toBe("true");
   });

@@ -165,17 +165,16 @@ describe("NeuwoSingleSelect", () => {
     expect(el.value).toBe("a");
   });
 
-  it("softens to a muted hint when error-muted is added, and re-arms when removed", () => {
+  it("drops the accent when error-muted is added (message and invalid state stay), re-arms when removed", () => {
     const el = make(`<test-select error="Pick one">${OPTS}</test-select>`);
     const line = el.shadowRoot.querySelector(".control-error");
     expect(el.group.classList.contains("ts--error")).toBe(true);
     expect(el.group.getAttribute("aria-invalid")).toBe("true");
 
     el.setAttribute("error-muted", "");
-    expect(line.textContent).toBe("Pick one"); // message stays
-    expect(line.classList.contains("control-error--muted")).toBe(true);
+    expect(line.textContent).toBe("Pick one"); // red message stays
     expect(el.group.classList.contains("ts--error")).toBe(false); // accent dropped
-    expect(el.group.hasAttribute("aria-invalid")).toBe(false);
+    expect(el.group.getAttribute("aria-invalid")).toBe("true"); // still invalid
 
     el.removeAttribute("error-muted");
     expect(el.group.classList.contains("ts--error")).toBe(true); // re-armed

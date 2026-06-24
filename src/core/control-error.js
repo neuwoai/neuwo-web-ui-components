@@ -4,21 +4,20 @@
 // toggles `aria-invalid` and `aria-describedby` on the announced element, and
 // toggles a presentational accent class on the portable wrapper.
 //
-// The `error-muted` attribute (only meaningful alongside `error`) de-escalates
-// the alarm without losing the note: the accent and `aria-invalid` drop and the
-// message line is marked `--muted`, but the text and its `aria-describedby`
-// association stay. It lets a consumer acknowledge interaction ("we heard you")
-// while leaving the message until the error owner re-validates. The consumer
-// drives it; clearing the error remains the consumer's job (see README).
+// The `error-muted` attribute (only meaningful alongside `error`) drops the heavy
+// control chrome once the user acts: the accent (red border + box-shadow ring)
+// comes off, but the red message and the invalid state stay until the error
+// owner re-validates and removes `error`. So the accent follows not-muted, while
+// `aria-invalid`, `aria-describedby` and the (red) message follow the error's
+// presence. The consumer drives both attributes (see README).
 export function syncError(host, refs) {
   const { announce, accentEl, accentClass, container, lineClass, lineId } = refs;
   const has = host.hasAttribute("error");
   const muted = has && host.hasAttribute("error-muted");
-  const active = has && !muted; // drives the accent + aria-invalid alarm
   const message = has ? host.getAttribute("error") : "";
 
-  accentEl.classList.toggle(accentClass, active);
-  if (active) announce.setAttribute("aria-invalid", "true");
+  accentEl.classList.toggle(accentClass, has && !muted);
+  if (has) announce.setAttribute("aria-invalid", "true");
   else announce.removeAttribute("aria-invalid");
 
   let line = container.querySelector(`.${lineClass}`);
@@ -29,7 +28,6 @@ export function syncError(host, refs) {
     line.id = lineId;
     container.append(line);
   }
-  line.classList.toggle(`${lineClass}--muted`, muted);
   line.textContent = message;
   if (message) announce.setAttribute("aria-describedby", lineId);
   else announce.removeAttribute("aria-describedby");

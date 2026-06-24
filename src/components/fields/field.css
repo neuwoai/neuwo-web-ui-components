@@ -68,12 +68,6 @@
   color: var(--color-red);
 }
 
-/* Softened ("we heard you"): the message stays as a calm hint after the user
-   acts, while the accent and aria-invalid drop. See `error-muted` in syncError. */
-.field__error--muted {
-  color: var(--color-text-muted);
-}
-
 @keyframes neuwo-field-shake {
   10%, 90% { transform: translateX(-1px); }
   20%, 80% { transform: translateX(2px); }

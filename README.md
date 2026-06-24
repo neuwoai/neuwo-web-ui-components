@@ -68,10 +68,11 @@ Every form control (fields and selection controls) shows an error from the consu
 component owns no error text of its own, so the consumer decides when the error appears and
 clears (`required` validity is reported natively and separately, not as this message).
 
-Add `error-muted` alongside `error` to soften the alarm without losing the note: the accent and
-`aria-invalid` drop and the message de-escalates to a calm hint, but the text and its
-`aria-describedby` association stay. Use it for the "reward early, punish late" pattern, flag on
-commit, acknowledge the instant the user acts:
+Add `error-muted` alongside `error` to drop the heavy control chrome without losing the note: the
+red border and box-shadow ring come off the instant the user acts, while the red message and the
+invalid state (`aria-invalid`, `aria-describedby`) stay until you re-validate and remove `error`.
+Use it for the "reward early, punish late" pattern, flag on commit, ease off the moment the user
+acts, clear once the input validates:
 
 ```js
 const group = document.querySelector("neuwo-radio-group");
