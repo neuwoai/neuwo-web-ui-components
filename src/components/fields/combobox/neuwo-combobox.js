@@ -4,10 +4,6 @@ import comboboxCss from "./combobox.css?raw";
 
 let cbUid = 0;
 
-// A fully styled single-select dropdown (ARIA select-only combobox). The trigger
-// reuses the field chrome; the option list is a top-layer popover listbox. Options
-// are authored as light-DOM <option>/<optgroup> children. Open/close and keyboard
-// behaviour are added in later tasks.
 /**
  * Fully styled dropdown that renders its list in the top layer, with optional
  * type-to-filter.

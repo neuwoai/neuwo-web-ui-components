@@ -21,8 +21,9 @@ function declByName(m, name) {
       if (dec.name === name) return dec;
   return null;
 }
-// Attributes resolved up the superclass chain (the analyzer keeps inherited
-// attributes on the base declaration, not flattened onto the subclass).
+// Attributes resolved up the superclass chain. The analyzer flattens inherited
+// attributes onto each subclass declaration; the chain walk below is a defensive
+// fallback in case a future analyzer version changes that behaviour.
 function attributesFor(m, tag) {
   const names = new Set();
   let dec = declByTag(m, tag);

@@ -17,10 +17,6 @@ let uid = 0;
  * @csspart input - the underlying native radio input.
  * @csspart label - the radio label text.
  */
-// A single radio. Not form-associated: the parent <neuwo-radio-group> owns the
-// value and drives this through the option-handle API (checked / tabbable /
-// disabledByGroup / focus). It renders the shared .form-check visual around a
-// real <input type="radio"> (no name, so there is no native grouping to fight).
 // tabbable / group-disabled are stored as fields so they apply even if the group
 // sets them before this element has rendered.
 export class NeuwoRadio extends NeuwoElement {
