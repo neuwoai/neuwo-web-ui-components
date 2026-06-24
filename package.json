@@ -3,11 +3,13 @@
   "version": "0.0.0",
   "description": "Neuwo design-system web components (vanilla custom elements).",
   "type": "module",
+  "types": "./dist/types/elements.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "custom-elements.json"
   ],
   "exports": {
-    ".": "./dist/neuwo.js",
+    ".": { "types": "./dist/types/elements.d.ts", "default": "./dist/neuwo.js" },
     "./neuwo.css": "./dist/neuwo.css",
     "./foundation/*": "./dist/foundation/*",
     "./components/*": "./dist/components/*",
@@ -17,7 +19,7 @@
   "private": true,
   "scripts": {
     "start": "node scripts/build.js --serve",
-    "build": "node scripts/build.js",
+    "build": "node scripts/build.js && npm run analyze && npm run types",
     "analyze": "cem analyze",
     "pretest": "npm run analyze",
     "test": "vitest run",

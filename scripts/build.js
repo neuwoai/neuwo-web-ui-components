@@ -54,6 +54,9 @@ await cp("src/components", "dist/components", {
   filter: (src) => !src.endsWith(".js"),
 });
 
+// Ship the hand-authored declaration files (the ?raw ambient and the tag map).
+await cp("src/types", "dist/types", { recursive: true });
+
 if (serve) {
   const ctx = await esbuild.context(options);
   await ctx.watch();
