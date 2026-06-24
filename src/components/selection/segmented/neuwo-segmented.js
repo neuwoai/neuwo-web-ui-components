@@ -3,6 +3,16 @@ import { sheet } from "../../../core/sheet.js";
 import { controlsSheet } from "../controls.js";
 import segmentedCss from "./segmented.css?raw";
 
+/**
+ * Segmented control: a compact pill of single-select buttons with a sliding
+ * selection indicator.
+ *
+ * @summary Neuwo segmented control.
+ * @customElement neuwo-segmented
+ * @slot - the `<option>` children defining the segments.
+ * @csspart indicator - the sliding selection pill.
+ * @csspart option - each segment button.
+ */
 export class NeuwoSegmented extends NeuwoSingleSelect {
   static formAssociated = true;
   static styles = [sheet(segmentedCss), controlsSheet];

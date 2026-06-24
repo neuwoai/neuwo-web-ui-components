@@ -2,6 +2,15 @@ import { NeuwoBooleanControl } from "../boolean-control.js";
 import { formCheckSheet } from "../form-check.js";
 import { controlsSheet } from "../controls.js";
 
+/**
+ * Checkbox with an optional indeterminate state.
+ *
+ * @summary Neuwo checkbox.
+ * @customElement neuwo-checkbox
+ * @prop {boolean} indeterminate - the mixed/partial state (property only, like the native checkbox).
+ * @csspart field - the label/box/text row.
+ * @csspart label - the checkbox label text.
+ */
 export class NeuwoCheckbox extends NeuwoBooleanControl {
   static formAssociated = true;
   static styles = [formCheckSheet, controlsSheet];

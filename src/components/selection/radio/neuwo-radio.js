@@ -3,6 +3,20 @@ import { formCheckSheet } from "../form-check.js";
 
 let uid = 0;
 
+/**
+ * A single radio. Not form-associated: the parent `<neuwo-radio-group>` owns the
+ * value and drives this through its option-handle API.
+ *
+ * @summary Neuwo radio (child of neuwo-radio-group).
+ * @customElement neuwo-radio
+ * @attr value - the value this option contributes to the group.
+ * @attr {boolean} disabled - disables just this option.
+ * @attr {boolean} checked - whether this option is selected (managed by the group).
+ * @slot - the radio label content.
+ * @csspart field - the label/circle/text row.
+ * @csspart input - the underlying native radio input.
+ * @csspart label - the radio label text.
+ */
 // A single radio. Not form-associated: the parent <neuwo-radio-group> owns the
 // value and drives this through the option-handle API (checked / tabbable /
 // disabledByGroup / focus). It renders the shared .form-check visual around a

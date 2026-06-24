@@ -3,6 +3,16 @@ import { sheet } from "../../../core/sheet.js";
 import { controlsSheet } from "../controls.js";
 import radioGroupCss from "./radio-group.css?raw";
 
+/**
+ * Radio group: a labelled set of `<neuwo-radio>` children with roving-focus
+ * keyboard and single selection.
+ *
+ * @summary Neuwo radio group.
+ * @customElement neuwo-radio-group
+ * @slot - the `<neuwo-radio>` children.
+ * @csspart legend - the group's visible label.
+ * @csspart options - the container that lays the radios out.
+ */
 export class NeuwoRadioGroup extends NeuwoSingleSelect {
   static formAssociated = true;
   static styles = [sheet(radioGroupCss), controlsSheet];

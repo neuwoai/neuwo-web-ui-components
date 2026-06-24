@@ -99,4 +99,17 @@ describe("custom-elements.json", () => {
   it("documents the select's chevron part", () => {
     expect(partsFor(manifest, "neuwo-select").has("chevron")).toBe(true);
   });
+
+  it("documents the selection-control parts", () => {
+    for (const p of ["field", "label"]) expect(partsFor(manifest, "neuwo-checkbox").has(p)).toBe(true);
+    for (const p of ["field", "track", "label"]) expect(partsFor(manifest, "neuwo-toggle").has(p)).toBe(true);
+    for (const p of ["field", "input", "label"]) expect(partsFor(manifest, "neuwo-radio").has(p)).toBe(true);
+    for (const p of ["legend", "options"]) expect(partsFor(manifest, "neuwo-radio-group").has(p)).toBe(true);
+    for (const p of ["indicator", "option"]) expect(partsFor(manifest, "neuwo-segmented").has(p)).toBe(true);
+  });
+
+  it("documents the radio's own attributes", () => {
+    const attrs = attributesFor(manifest, "neuwo-radio");
+    for (const a of ["value", "disabled", "checked"]) expect(attrs).toContain(a);
+  });
 });

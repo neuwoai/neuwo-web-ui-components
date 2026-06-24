@@ -3,6 +3,15 @@ import { sheet } from "../../../core/sheet.js";
 import { controlsSheet } from "../controls.js";
 import toggleCss from "./toggle.css?raw";
 
+/**
+ * On/off switch backed by a hidden native checkbox.
+ *
+ * @summary Neuwo toggle / switch.
+ * @customElement neuwo-toggle
+ * @csspart field - the track/label row.
+ * @csspart track - the switch track (its ::after is the thumb).
+ * @csspart label - the toggle label text.
+ */
 export class NeuwoToggle extends NeuwoBooleanControl {
   static formAssociated = true;
   static styles = [sheet(toggleCss), controlsSheet];
