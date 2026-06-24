@@ -6,3 +6,9 @@
   font-size: var(--font-size-sm);
   color: var(--color-red);
 }
+
+/* Softened ("we heard you"): the message stays as a calm hint after the user
+   acts, while the accent and aria-invalid drop. See `error-muted` in syncError. */
+.control-error--muted {
+  color: var(--color-text-muted);
+}

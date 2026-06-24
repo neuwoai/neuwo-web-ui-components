@@ -27,6 +27,7 @@ export class NeuwoFieldElement extends NeuwoElement {
     "autocomplete",
     "label",
     "error",
+    "error-muted",
   ];
 
   #internals;

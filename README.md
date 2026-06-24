@@ -61,6 +61,39 @@ Published styling files, for direct linking or non-web use:
 | Button recipe | `@neuwo/web-ui-components/components/button/button.css` |
 | Field chrome | `@neuwo/web-ui-components/components/fields/field.css` |
 
+## Form errors
+
+Every form control (fields and selection controls) shows an error from the consumer-set
+`error` attribute: the message text, a red accent, and `aria-invalid` on the control. The
+component owns no error text of its own, so the consumer decides when the error appears and
+clears (`required` validity is reported natively and separately, not as this message).
+
+Add `error-muted` alongside `error` to soften the alarm without losing the note: the accent and
+`aria-invalid` drop and the message de-escalates to a calm hint, but the text and its
+`aria-describedby` association stay. Use it for the "reward early, punish late" pattern, flag on
+commit, acknowledge the instant the user acts:
+
+```js
+const group = document.querySelector("neuwo-radio-group");
+
+// Punish late: assert the full error only on submit.
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  if (group.checkValidity()) {
+    group.removeAttribute("error");
+    group.removeAttribute("error-muted");
+  } else {
+    group.removeAttribute("error-muted");          // re-arm the red alarm
+    group.setAttribute("error", "Please choose a tier");
+  }
+});
+
+// Reward early: the instant the user acts, soften but keep the message.
+group.addEventListener("change", () => {
+  if (group.hasAttribute("error")) group.setAttribute("error-muted", "");
+});
+```
+
 ## Develop
 
 ```bash

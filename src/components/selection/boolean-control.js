@@ -11,7 +11,7 @@ let uid = 0;
 // markup (which input, which row) is supplied by createControl()/renderRow().
 export class NeuwoBooleanControl extends NeuwoElement {
   static formAssociated = true;
-  static observedAttributes = ["name", "value", "checked", "disabled", "required", "error"];
+  static observedAttributes = ["name", "value", "checked", "disabled", "required", "error", "error-muted"];
 
   #internals;
   #control;

@@ -13,7 +13,7 @@ let uid = 0;
 //   set disabledByGroup(on), focus() }.
 export class NeuwoSingleSelect extends NeuwoElement {
   static formAssociated = true;
-  static observedAttributes = ["name", "value", "disabled", "required", "label", "orientation", "error"];
+  static observedAttributes = ["name", "value", "disabled", "required", "label", "orientation", "error", "error-muted"];
 
   #internals;
   #group;

@@ -48,6 +48,47 @@ describe("syncError", () => {
     expect(announce.hasAttribute("aria-describedby")).toBe(false);
   });
 
+  it("keeps the message but drops the accent and aria-invalid when error-muted is set", () => {
+    const host = document.createElement("div");
+    host.setAttribute("error", "Nope");
+    host.setAttribute("error-muted", "");
+    const { container, accentEl, announce, refs } = harness();
+    syncError(host, refs);
+    const line = container.querySelector(".x-error");
+    expect(line.textContent).toBe("Nope"); // message stays
+    expect(line.classList.contains("x-error--muted")).toBe(true);
+    expect(accentEl.classList.contains("x--error")).toBe(false); // accent dropped
+    expect(announce.hasAttribute("aria-invalid")).toBe(false); // no longer flagged invalid
+    expect(announce.getAttribute("aria-describedby")).toBe("x-1"); // message still announced
+  });
+
+  it("ignores error-muted when there is no error", () => {
+    const host = document.createElement("div");
+    host.setAttribute("error-muted", "");
+    const { container, accentEl, announce, refs } = harness();
+    syncError(host, refs);
+    const line = container.querySelector(".x-error");
+    expect(line.textContent).toBe("");
+    expect(line.classList.contains("x-error--muted")).toBe(false);
+    expect(accentEl.classList.contains("x--error")).toBe(false);
+    expect(announce.hasAttribute("aria-invalid")).toBe(false);
+    expect(announce.hasAttribute("aria-describedby")).toBe(false);
+  });
+
+  it("re-arms the accent and aria-invalid when error-muted is removed", () => {
+    const host = document.createElement("div");
+    host.setAttribute("error", "Nope");
+    host.setAttribute("error-muted", "");
+    const { container, accentEl, announce, refs } = harness();
+    syncError(host, refs);
+    host.removeAttribute("error-muted");
+    syncError(host, refs);
+    const line = container.querySelector(".x-error");
+    expect(line.classList.contains("x-error--muted")).toBe(false);
+    expect(accentEl.classList.contains("x--error")).toBe(true);
+    expect(announce.getAttribute("aria-invalid")).toBe("true");
+  });
+
   it("does not create a second line on repeat calls", () => {
     const host = document.createElement("div");
     const { container, refs } = harness();
