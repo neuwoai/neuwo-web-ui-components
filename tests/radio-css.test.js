@@ -16,9 +16,8 @@ describe("radio-group.css recipe", () => {
     expect(css).toContain("var(--color-heading)");
     expect(css).toContain('[orientation="horizontal"]');
   });
-  it("accents the legend red on error, with no hex literals", () => {
-    expect(css).toContain(".radio-group--error");
-    expect(css).toContain("var(--color-red)");
+  it("uses only tokens and does not redden the legend (the error ring is on each radio)", () => {
     expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+    expect(css).not.toContain("var(--color-red)");
   });
 });

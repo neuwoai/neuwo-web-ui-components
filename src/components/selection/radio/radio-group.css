@@ -29,7 +29,3 @@
   flex-wrap: wrap;
   gap: var(--space-5);
 }
-
-.radio-group--error .radio-group__legend {
-  color: var(--color-red);
-}
