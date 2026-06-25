@@ -22,9 +22,29 @@
   border-radius: var(--radius-full);
 }
 
-/* Green variant (the source recipe's "new" modifier), swapping the blue tints. */
+/* Colour axis: blue is the base; green swaps the tints. */
 .badge--green {
   color: var(--color-green);
   background: var(--tint-green-8);
   border-color: var(--tint-green-20);
+}
+
+/* Border axis: drop the outline for a solid-looking pill. */
+.badge--borderless {
+  border-color: transparent;
+}
+
+/* Pulse axis: a continuous radial ring (the live-status idiom), variant-coloured
+   via currentColor; reproduces the design system's green pulse exactly. */
+.badge--pulse {
+  animation: badge-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes badge-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 20%, transparent); }
+  50%      { box-shadow: 0 0 0 6px color-mix(in srgb, currentColor 0%, transparent); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .badge--pulse { animation: none; }
 }

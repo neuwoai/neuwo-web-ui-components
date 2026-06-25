@@ -3,34 +3,46 @@ import { sheet } from "../../core/sheet.js";
 import badgeCss from "./badge.css?raw";
 
 /**
- * On-brand inline label pill. Blue by default, with a green variant. Renders the
- * design language's eyebrow "tag" recipe as a self-contained element.
+ * On-brand inline label pill with three independent, mix-and-match axes: colour
+ * (`variant`), border (`borderless`), and motion (`pulse`). Renders the design
+ * language's eyebrow "tag" recipe and, composed, its live-status look.
  * Presentational only -- no events, no role. For a label whose text changes at
  * runtime, set `aria-live` and/or an accessible name on the element.
  *
- * @summary Neuwo badge (inline label pill).
+ * @summary Neuwo badge (inline label / status pill).
  * @customElement neuwo-badge
  * @attr {blue|green} variant - colour (default blue).
+ * @attr {boolean} borderless - drop the outline for a solid-looking pill.
+ * @attr {boolean} pulse - continuous radial pulse ring; honours prefers-reduced-motion.
  * @slot - the label content.
  * @csspart badge - the pill element.
- * @cssprop --color-blue - brand accent for the default badge; re-theme on :root.
+ * @cssprop --color-blue - brand accent for the blue variant; re-theme on :root.
  * @cssprop --color-green - brand accent for the green variant; re-theme on :root.
  */
 export class NeuwoBadge extends NeuwoElement {
   static styles = sheet(badgeCss);
-  static observedAttributes = ["variant"];
+  static observedAttributes = ["variant", "borderless", "pulse"];
 
   get variant() { return this.getAttribute("variant") || "blue"; }
   set variant(value) {
     if (value == null || value === "") this.removeAttribute("variant");
     else this.setAttribute("variant", String(value));
   }
+  get borderless() { return this.hasAttribute("borderless"); }
+  set borderless(value) { this.toggleAttribute("borderless", Boolean(value)); }
+  get pulse() { return this.hasAttribute("pulse"); }
+  set pulse(value) { this.toggleAttribute("pulse", Boolean(value)); }
 
   render() {
+    const classes = ["badge"];
+    // Three orthogonal axes, freely combined. Only green deviates on colour; any
+    // other value (absent or unknown) renders the blue base.
+    if (this.getAttribute("variant") === "green") classes.push("badge--green");
+    if (this.hasAttribute("borderless")) classes.push("badge--borderless");
+    if (this.hasAttribute("pulse")) classes.push("badge--pulse");
+
     const badge = document.createElement("span");
-    // Only the green variant deviates from the base pill; any other value
-    // (including absent or unknown) renders the blue default.
-    badge.className = this.getAttribute("variant") === "green" ? "badge badge--green" : "badge";
+    badge.className = classes.join(" ");
     badge.setAttribute("part", "badge");
     badge.append(document.createElement("slot"));
     this.shadowRoot.replaceChildren(badge);

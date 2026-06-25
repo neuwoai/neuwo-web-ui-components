@@ -39,4 +39,27 @@ describe("<neuwo-badge>", () => {
     expect(el.hasAttribute("variant")).toBe(false);
     expect(el.shadowRoot.querySelector(".badge").classList.contains("badge--green")).toBe(false);
   });
+
+  it("drops the border via the borderless axis", () => {
+    expect(make(`<neuwo-badge>x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList.contains("badge--borderless")).toBe(false);
+    const el = make(`<neuwo-badge borderless>x</neuwo-badge>`);
+    expect(el.shadowRoot.querySelector(".badge").classList.contains("badge--borderless")).toBe(true);
+    el.borderless = false;
+    expect(el.shadowRoot.querySelector(".badge").classList.contains("badge--borderless")).toBe(false);
+  });
+
+  it("adds the pulse ring and toggles it from the property", () => {
+    const el = make(`<neuwo-badge pulse>x</neuwo-badge>`);
+    expect(el.shadowRoot.querySelector(".badge").classList.contains("badge--pulse")).toBe(true);
+    el.pulse = false;
+    expect(el.shadowRoot.querySelector(".badge").classList.contains("badge--pulse")).toBe(false);
+  });
+
+  it("mixes the three axes freely (the live badge: green + borderless + pulse)", () => {
+    const el = make(`<neuwo-badge variant="green" borderless pulse>Live</neuwo-badge>`);
+    const c = el.shadowRoot.querySelector(".badge").classList;
+    expect(c.contains("badge--green")).toBe(true);
+    expect(c.contains("badge--borderless")).toBe(true);
+    expect(c.contains("badge--pulse")).toBe(true);
+  });
 });

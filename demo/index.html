@@ -298,11 +298,17 @@
       });
     </script>
 
-    <h2>Badge (eyebrow label pill)</h2>
+    <h2>Badge (label + status, mix-and-match axes)</h2>
     <p>The page defines a hostile <code>.badge</code> rule. Shadow DOM keeps it out.</p>
     <div class="row">
       <neuwo-badge>For Publishers</neuwo-badge>
       <neuwo-badge variant="green">New</neuwo-badge>
+    </div>
+    <div class="row">
+      <neuwo-badge borderless>Borderless</neuwo-badge>
+      <neuwo-badge variant="green" pulse>Pulsing</neuwo-badge>
+      <neuwo-badge variant="green" borderless pulse>Live</neuwo-badge>
+      <neuwo-deal-id>NW-CA-2026-04-8A3F</neuwo-deal-id>
     </div>
     <h2>Badge token re-theming (inherits through the shadow boundary)</h2>
     <div class="row reskin">

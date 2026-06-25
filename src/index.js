@@ -10,6 +10,7 @@ import "./components/selection/radio/neuwo-radio.js"; // self-registers <neuwo-r
 import "./components/selection/radio/neuwo-radio-group.js"; // self-registers <neuwo-radio-group>
 import "./components/selection/segmented/neuwo-segmented.js"; // self-registers <neuwo-segmented>
 import "./components/badge/neuwo-badge.js"; // self-registers <neuwo-badge>
+import "./components/deal-id/neuwo-deal-id.js"; // self-registers <neuwo-deal-id>
 
 injectFonts();
 
@@ -24,3 +25,4 @@ export { NeuwoRadio } from "./components/selection/radio/neuwo-radio.js";
 export { NeuwoRadioGroup } from "./components/selection/radio/neuwo-radio-group.js";
 export { NeuwoSegmented } from "./components/selection/segmented/neuwo-segmented.js";
 export { NeuwoBadge } from "./components/badge/neuwo-badge.js";
+export { NeuwoDealId } from "./components/deal-id/neuwo-deal-id.js";
