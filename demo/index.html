@@ -39,6 +39,10 @@
         border-radius: 0 !important;
         box-shadow: none !important;
       }
+      /* Hostile rule: if Shadow DOM leaked, the CTA band would turn hot pink. */
+      .cta {
+        background: hotpink !important;
+      }
       .row {
         display: flex;
         gap: 1rem;
@@ -341,6 +345,25 @@
       <span style="display: inline-flex; align-items: center; gap: 0.5rem">
         <neuwo-status-dot variant="blue" motion="pulse"></neuwo-status-dot> Blue pulse
       </span>
+    </div>
+
+    <h2>CTA band (banner + spotlight variants)</h2>
+    <p>
+      The page defines a hostile <code>.cta</code> rule. Shadow DOM keeps it out.
+      Headline words wrapped in <code>data-accent</code> get the brand gradient.
+    </p>
+    <neuwo-cta>
+      Ready to <span data-accent>classify at scale</span>?
+      <span slot="sub">Get started with Neuwo's Classification API.</span>
+      <neuwo-button slot="actions" variant="solid">Get Started</neuwo-button>
+    </neuwo-cta>
+    <div style="margin-top: 2rem">
+      <neuwo-cta variant="spotlight">
+        Ready to <span data-accent>earn more</span> from your content?
+        <span slot="sub">Talk to our team about monetisation.</span>
+        <neuwo-button slot="actions" variant="solid" size="lg">Contact us</neuwo-button>
+        <neuwo-button slot="actions" variant="outline" size="lg">See pricing</neuwo-button>
+      </neuwo-cta>
     </div>
   </body>
 </html>

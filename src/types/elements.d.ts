@@ -16,6 +16,7 @@ import type { NeuwoSegmented } from "../components/selection/segmented/neuwo-seg
 import type { NeuwoBadge } from "../components/badge/neuwo-badge.js";
 import type { NeuwoDealId } from "../components/deal-id/neuwo-deal-id.js";
 import type { NeuwoStatusDot } from "../components/status-dot/neuwo-status-dot.js";
+import type { NeuwoCta } from "../components/cta/neuwo-cta.js";
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -32,5 +33,6 @@ declare global {
     "neuwo-badge": NeuwoBadge;
     "neuwo-deal-id": NeuwoDealId;
     "neuwo-status-dot": NeuwoStatusDot;
+    "neuwo-cta": NeuwoCta;
   }
 }
