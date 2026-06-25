@@ -20,12 +20,14 @@ function slot(name) {
  * buttons on a branded surface. Two variants: `banner` (a flat horizontal bar
  * for page-foot CTAs) and `spotlight` (a centred hero card framed by an animated
  * gradient border that comes alive on hover). Wrap headline words in an element
- * with `data-accent` to paint just those words with the brand gradient.
- * Presentational, the actions are slotted `<neuwo-button>`s.
+ * with `data-accent` to paint just those words with the brand gradient. With the
+ * `pulse` attribute, the primary (solid) action button radiates a ring synced to
+ * the surface shimmer. Presentational; the actions are slotted `<neuwo-button>`s.
  *
  * @summary Neuwo call-to-action band.
  * @customElement neuwo-cta
  * @attr {banner|spotlight} variant - layout and chrome (default banner).
+ * @attr {boolean} pulse - radiate a synchronised pulse ring on the primary (solid) button; honours prefers-reduced-motion.
  * @slot - the headline; wrap gradient fragments in an element with `data-accent`.
  * @slot sub - the supporting line under the headline.
  * @slot actions - one or two action buttons.
@@ -34,7 +36,7 @@ function slot(name) {
  * @csspart headline - the headline element.
  * @csspart sub - the supporting line.
  * @csspart actions - the actions row.
- * @cssprop --color-blue - brand accent (shimmer + gradient border); re-theme on :root.
+ * @cssprop --color-blue - brand accent (shimmer, pulse, gradient border); re-theme on :root.
  * @cssprop --color-green - brand accent (gradient border + text accent); re-theme on :root.
  */
 export class NeuwoCta extends NeuwoElement {
@@ -46,17 +48,29 @@ export class NeuwoCta extends NeuwoElement {
     if (value == null || value === "") this.removeAttribute("variant");
     else this.setAttribute("variant", String(value));
   }
+  // `pulse` is driven purely by the `:host([pulse])` rule, so it needs no render.
+  get pulse() { return this.hasAttribute("pulse"); }
+  set pulse(value) { this.toggleAttribute("pulse", Boolean(value)); }
+
+  connectedCallback() {
+    super.connectedCallback(); // builds via render()
+    // Light-DOM children may not be parsed yet at connect time; defer the
+    // content check until they are.
+    queueMicrotask(() => this.#validate());
+  }
 
   render() {
     const spotlight = this.getAttribute("variant") === "spotlight";
     const root = el("div", `cta cta--${spotlight ? "spotlight" : "banner"}`, "cta");
 
     const headline = el("h2", "cta__headline", "headline");
-    headline.append(slot()); // default slot carries the headline content
+    const headlineSlot = slot(); // default slot carries the headline content
+    headline.append(headlineSlot);
     const sub = el("p", "cta__sub", "sub");
     sub.append(slot("sub"));
     const actions = el("div", "cta__actions", "actions");
-    actions.append(slot("actions"));
+    const actionsSlot = slot("actions");
+    actions.append(actionsSlot);
 
     if (spotlight) {
       // card -> blurred glow halo + inner panel (the gradient-frame layering).
@@ -72,6 +86,27 @@ export class NeuwoCta extends NeuwoElement {
     }
 
     this.shadowRoot.replaceChildren(root);
+
+    // Re-check when slotted content changes at runtime.
+    headlineSlot.addEventListener("slotchange", () => this.#validate());
+    actionsSlot.addEventListener("slotchange", () => this.#validate());
+  }
+
+  // Dev-time guard: a CTA needs a headline and at least one action button.
+  // Slotted content cannot be "required" like a form field, so warn instead of
+  // failing. Reads the host's own light DOM, which is robust across environments.
+  #validate() {
+    const kids = [...this.childNodes];
+    const hasHeadline = kids.some(
+      (n) =>
+        (n.nodeType === Node.ELEMENT_NODE && !n.hasAttribute("slot")) ||
+        (n.nodeType === Node.TEXT_NODE && (n.textContent ?? "").trim() !== "")
+    );
+    const hasButton = kids.some(
+      (n) => n.nodeType === Node.ELEMENT_NODE && n.getAttribute("slot") === "actions"
+    );
+    if (!hasHeadline) console.warn("<neuwo-cta>: expected headline content in the default slot.");
+    if (!hasButton) console.warn('<neuwo-cta>: expected at least one button in the "actions" slot.');
   }
 }
 

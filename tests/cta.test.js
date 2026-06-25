@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import "../src/components/cta/neuwo-cta.js";
 
 function make(html) {
@@ -8,9 +8,15 @@ function make(html) {
   return host.firstElementChild;
 }
 
+// A complete CTA (headline + button) so the content guard stays quiet.
+const FULL = (attrs = "") =>
+  `<neuwo-cta ${attrs}>Ready to <span data-accent>go</span>?` +
+  `<span slot="sub">Sub line.</span>` +
+  `<neuwo-button slot="actions" variant="solid">Get Started</neuwo-button></neuwo-cta>`;
+
 describe("<neuwo-cta>", () => {
   it("registers and renders the banner variant by default", () => {
-    const el = make(`<neuwo-cta>Ready?</neuwo-cta>`);
+    const el = make(FULL());
     expect(customElements.get("neuwo-cta")).toBeTruthy();
     const cta = el.shadowRoot.querySelector(".cta");
     expect(cta.getAttribute("part")).toBe("cta");
@@ -20,9 +26,7 @@ describe("<neuwo-cta>", () => {
   });
 
   it("exposes the headline, sub and actions slots and parts", () => {
-    const el = make(`<neuwo-cta>Ready?</neuwo-cta>`);
-    const root = el.shadowRoot;
-    // default slot for the headline (unnamed), plus the two named slots
+    const root = make(FULL()).shadowRoot;
     expect([...root.querySelectorAll("slot")].some((s) => !s.name)).toBe(true);
     expect(root.querySelector('slot[name="sub"]')).toBeTruthy();
     expect(root.querySelector('slot[name="actions"]')).toBeTruthy();
@@ -31,8 +35,7 @@ describe("<neuwo-cta>", () => {
   });
 
   it("renders the spotlight variant with the glow + inner layers", () => {
-    const el = make(`<neuwo-cta variant="spotlight">Ready?</neuwo-cta>`);
-    const root = el.shadowRoot;
+    const root = make(FULL('variant="spotlight"')).shadowRoot;
     expect(root.querySelector(".cta").classList.contains("cta--spotlight")).toBe(true);
     expect(root.querySelector(".cta__glow")).toBeTruthy();
     expect(root.querySelector('[part="inner"]')).toBeTruthy();
@@ -40,12 +43,36 @@ describe("<neuwo-cta>", () => {
   });
 
   it("reflects the variant property to the attribute and re-renders", () => {
-    const el = make(`<neuwo-cta>x</neuwo-cta>`);
+    const el = make(FULL());
     el.variant = "spotlight";
     expect(el.getAttribute("variant")).toBe("spotlight");
     expect(el.shadowRoot.querySelector(".cta").classList.contains("cta--spotlight")).toBe(true);
     el.variant = "";
     expect(el.hasAttribute("variant")).toBe(false);
     expect(el.shadowRoot.querySelector(".cta").classList.contains("cta--banner")).toBe(true);
+  });
+
+  it("reflects the pulse property to the attribute", () => {
+    const el = make(FULL());
+    el.pulse = true;
+    expect(el.hasAttribute("pulse")).toBe(true);
+    el.pulse = false;
+    expect(el.hasAttribute("pulse")).toBe(false);
+  });
+
+  it("warns when the actions slot has no button", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    make(`<neuwo-cta>Ready?</neuwo-cta>`);
+    await Promise.resolve();
+    expect(warn.mock.calls.flat().join(" ")).toContain("actions");
+    warn.mockRestore();
+  });
+
+  it("does not warn for a complete CTA", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    make(FULL());
+    await Promise.resolve();
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
   });
 });

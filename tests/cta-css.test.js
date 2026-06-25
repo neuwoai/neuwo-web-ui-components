@@ -32,6 +32,11 @@ describe("cta.css recipe", () => {
     expect(css).toContain("prefers-reduced-motion: reduce");
   });
 
+  it("adds the synchronised button-pulse ring, reduced-motion-gated", () => {
+    expect(css).toContain(":host([pulse]) ::slotted(neuwo-button");
+    expect(css).toContain("@keyframes cta-button-pulse");
+  });
+
   it("uses no raw colour literals", () => {
     expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
     expect(css).not.toMatch(/rgba?\(/);

@@ -50,6 +50,19 @@
   color: transparent;
 }
 
+/* Opt-in synchronised pulse ring on the primary (solid) action button, sharing
+   the shimmer's 5.5s cadence so the band reads as one orchestrated motion. The
+   button host is already pill-shaped, so the box-shadow ring hugs it. */
+:host([pulse]) ::slotted(neuwo-button[variant="solid"]) {
+  animation: cta-button-pulse 5.5s ease-in-out infinite;
+}
+
+@keyframes cta-button-pulse {
+  0%        { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-blue) 40%, transparent); }
+  23%       { box-shadow: 0 0 0 12px color-mix(in srgb, var(--color-blue) 0%, transparent); }
+  45%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-blue) 40%, transparent); }
+}
+
 /* --- Banner variant: flat horizontal bar --- */
 .cta--banner {
   position: relative;
@@ -193,7 +206,8 @@
   .cta--banner::after,
   .cta__inner::before,
   .cta--spotlight:hover,
-  .cta--spotlight:hover .cta__glow {
+  .cta--spotlight:hover .cta__glow,
+  :host([pulse]) ::slotted(neuwo-button[variant="solid"]) {
     animation: none;
   }
 }
