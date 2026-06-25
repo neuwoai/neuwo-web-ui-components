@@ -33,6 +33,12 @@
         color: black !important;
         border-radius: 0 !important;
       }
+      /* Hostile rule: if Shadow DOM leaked, the status dots would square off. */
+      .status-dot {
+        background: hotpink !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+      }
       .row {
         display: flex;
         gap: 1rem;
@@ -318,6 +324,23 @@
     <h2>Deal ID (read-only identifier display)</h2>
     <div class="row">
       <neuwo-deal-id>NW-CA-2026-04-8A3F</neuwo-deal-id>
+    </div>
+
+    <h2>Status dot (colour + motion axes)</h2>
+    <p>The page defines a hostile <code>.status-dot</code> rule. Shadow DOM keeps it out.</p>
+    <div class="row">
+      <span style="display: inline-flex; align-items: center; gap: 0.5rem">
+        <neuwo-status-dot></neuwo-status-dot> Resting
+      </span>
+      <span style="display: inline-flex; align-items: center; gap: 0.5rem">
+        <neuwo-status-dot motion="pulse"></neuwo-status-dot> Pulse
+      </span>
+      <span style="display: inline-flex; align-items: center; gap: 0.5rem">
+        <neuwo-status-dot variant="blue" motion="blink"></neuwo-status-dot> Blue blink
+      </span>
+      <span style="display: inline-flex; align-items: center; gap: 0.5rem">
+        <neuwo-status-dot variant="blue" motion="pulse"></neuwo-status-dot> Blue pulse
+      </span>
     </div>
   </body>
 </html>

@@ -1,0 +1,49 @@
+:host {
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.status-dot {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 50%;
+  /* `color` drives both the core and the ring, so the colour axis is one line
+     and the ring stays in step with any variant (currentColor == the dot hue). */
+  color: var(--color-green);
+  background: currentColor;
+  box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 25%, transparent);
+  flex-shrink: 0;
+}
+
+/* Colour axis: green is the base; blue swaps the hue (core + ring follow). */
+.status-dot--blue {
+  color: var(--color-blue);
+}
+
+/* Motion axis: pulse expands the ring; blink fades the dot. Mutually exclusive. */
+.status-dot--pulse {
+  animation: status-dot-pulse 2s ease-in-out infinite;
+}
+
+.status-dot--blink {
+  animation: status-dot-blink 2s infinite;
+}
+
+@keyframes status-dot-pulse {
+  0%, 100% { box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 25%, transparent); }
+  50%      { box-shadow: 0 0 0 8px color-mix(in srgb, currentColor 10%, transparent); }
+}
+
+/* Inlined from the design system's global `blink` keyframe (a shadow root cannot
+   inherit it), scoped to this component. */
+@keyframes status-dot-blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.3; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-dot--pulse,
+  .status-dot--blink {
+    animation: none;
+  }
+}

@@ -15,6 +15,7 @@ import type { NeuwoRadioGroup } from "../components/selection/radio/neuwo-radio-
 import type { NeuwoSegmented } from "../components/selection/segmented/neuwo-segmented.js";
 import type { NeuwoBadge } from "../components/badge/neuwo-badge.js";
 import type { NeuwoDealId } from "../components/deal-id/neuwo-deal-id.js";
+import type { NeuwoStatusDot } from "../components/status-dot/neuwo-status-dot.js";
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -30,5 +31,6 @@ declare global {
     "neuwo-segmented": NeuwoSegmented;
     "neuwo-badge": NeuwoBadge;
     "neuwo-deal-id": NeuwoDealId;
+    "neuwo-status-dot": NeuwoStatusDot;
   }
 }
