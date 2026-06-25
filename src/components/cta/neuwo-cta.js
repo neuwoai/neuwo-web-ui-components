@@ -111,11 +111,11 @@ export class NeuwoCta extends NeuwoElement {
     const kids = [...this.childNodes];
     const hasHeadline = kids.some(
       (n) =>
-        (n.nodeType === Node.ELEMENT_NODE && !n.hasAttribute("slot")) ||
+        (n instanceof Element && !n.hasAttribute("slot")) ||
         (n.nodeType === Node.TEXT_NODE && (n.textContent ?? "").trim() !== "")
     );
     const hasButton = kids.some(
-      (n) => n.nodeType === Node.ELEMENT_NODE && n.getAttribute("slot") === "actions"
+      (n) => n instanceof Element && n.getAttribute("slot") === "actions"
     );
     if (!hasHeadline) console.warn("<neuwo-cta>: expected headline content in the default slot.");
     if (!hasButton) console.warn('<neuwo-cta>: expected at least one button in the "actions" slot.');
