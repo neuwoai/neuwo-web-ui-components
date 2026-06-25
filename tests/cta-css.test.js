@@ -27,9 +27,15 @@ describe("cta.css recipe", () => {
   it("inlines the shimmer and the conic-border spin, reduced-motion-gated", () => {
     expect(css).toContain("@keyframes cta-scan");
     expect(css).toContain("@keyframes cta-spin");
-    expect(css).toContain("@property --cta-angle");
+    expect(css).toContain("var(--cta-angle)");
     expect(css).toContain("conic-gradient");
     expect(css).toContain("prefers-reduced-motion: reduce");
+  });
+
+  it("stops the idle shimmer and pulse on hover", () => {
+    expect(css).toContain(".cta--banner:hover::after");
+    expect(css).toContain(":host([pulse]:hover) ::slotted(neuwo-button");
+    expect(css).toContain(".cta--spotlight:hover .cta__inner::before");
   });
 
   it("adds the synchronised button-pulse ring, reduced-motion-gated", () => {

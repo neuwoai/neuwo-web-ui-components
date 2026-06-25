@@ -2,6 +2,18 @@ import { NeuwoElement } from "../../core/base-element.js";
 import { sheet } from "../../core/sheet.js";
 import ctaCss from "./cta.css?raw";
 
+// The spotlight border animates `--cta-angle` through a conic gradient. A
+// `@property` rule inside an adopted (shadow) stylesheet does not register the
+// custom property in every engine, so register it document-globally here. Without
+// registration the angle cannot interpolate and the gradient never paints.
+if (typeof CSS !== "undefined" && CSS.registerProperty) {
+  try {
+    CSS.registerProperty({ name: "--cta-angle", syntax: "<angle>", inherits: false, initialValue: "0deg" });
+  } catch {
+    // Already registered (e.g. the module evaluated twice); ignore.
+  }
+}
+
 function el(tag, className, part) {
   const node = document.createElement(tag);
   if (className) node.className = className;

@@ -2,14 +2,6 @@
   display: block;
 }
 
-/* Registered so the conic-gradient border can animate its angle without a
-   repaint (spotlight variant). */
-@property --cta-angle {
-  syntax: "<angle>";
-  inherits: false;
-  initial-value: 0deg;
-}
-
 /* Shared scan-line shimmer, inlined and scoped from the design system's global
    `scan-line` keyframe (a shadow root cannot inherit it). */
 @keyframes cta-scan {
@@ -63,6 +55,11 @@
   45%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-blue) 40%, transparent); }
 }
 
+/* On hover the idle pulse yields to the hover state. */
+:host([pulse]:hover) ::slotted(neuwo-button[variant="solid"]) {
+  animation: none;
+}
+
 /* --- Banner variant: flat horizontal bar --- */
 .cta--banner {
   position: relative;
@@ -92,6 +89,12 @@
 
 .cta--banner:hover {
   box-shadow: 0 0.25rem 1rem var(--tint-blue-20), 0 0 2rem var(--tint-blue-10);
+}
+
+/* On hover the idle shimmer pauses, so the hover glow reads cleanly. */
+.cta--banner:hover::after {
+  animation: none;
+  opacity: 0;
 }
 
 @media (max-width: 40rem) {
