@@ -193,4 +193,16 @@ describe("<neuwo-button>", () => {
     expect(buttonCss).toContain("var(--shadow-glow)");
     expect(buttonCss).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
   });
+
+  it("projects start and end icon slots alongside the label", () => {
+    const el = make(`<neuwo-button><span slot="start">A</span>Go<span slot="end">B</span></neuwo-button>`);
+    const btn = el.shadowRoot.querySelector("button");
+    expect(btn.querySelector('slot[name="start"]')).toBeTruthy();
+    expect(btn.querySelector('slot[name="end"]')).toBeTruthy();
+    expect(btn.querySelector("slot:not([name])")).toBeTruthy();
+  });
+
+  it("lays the control out with a gap token for icons", () => {
+    expect(buttonCss).toContain("gap: var(--space-2)");
+  });
 });

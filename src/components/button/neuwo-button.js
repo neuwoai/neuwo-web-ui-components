@@ -19,7 +19,9 @@ import buttonCss from "./button.css?raw";
  * @attr target - link target, forwarded to the `<a>` when `href` is set.
  * @attr rel - link rel, forwarded to the `<a>` when `href` is set.
  * @attr download - link download, forwarded to the `<a>` when `href` is set.
- * @slot - the button label.
+ * @slot - the button label (default slot).
+ * @slot start - leading icon, sits before the label.
+ * @slot end - trailing icon, sits after the label.
  * @csspart button - the rendered `<button>` or `<a>`.
  * @cssprop --color-blue - brand accent; re-theme by setting it on :root.
  */
@@ -116,7 +118,12 @@ export class NeuwoButton extends NeuwoElement {
       }
     }
 
-    el.append(document.createElement("slot"));
+    const startSlot = document.createElement("slot");
+    startSlot.setAttribute("name", "start");
+    const endSlot = document.createElement("slot");
+    endSlot.setAttribute("name", "end");
+    // start icon, then the default (label) slot, then end icon.
+    el.append(startSlot, document.createElement("slot"), endSlot);
 
     this.shadowRoot.replaceChildren(el);
   }
