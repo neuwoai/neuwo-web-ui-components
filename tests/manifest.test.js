@@ -81,7 +81,7 @@ describe("custom-elements.json", () => {
 
   it("documents the button's own attributes and part", () => {
     const attrs = attributesFor(manifest, "neuwo-button");
-    for (const a of ["variant", "size", "wide", "xwide", "href", "disabled", "type"])
+    for (const a of ["variant", "size", "wide", "xwide", "href", "disabled", "type", "block"])
       expect(attrs).toContain(a);
     expect(partsFor(manifest, "neuwo-button").has("button")).toBe(true);
   });

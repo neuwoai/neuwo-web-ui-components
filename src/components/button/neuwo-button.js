@@ -13,6 +13,7 @@ import buttonCss from "./button.css?raw";
  * @attr {s|m|l} hover - hover-emphasis level: s calmer, l stronger (default m = base).
  * @attr {boolean} wide - extra horizontal padding.
  * @attr {boolean} xwide - maximal horizontal padding.
+ * @attr {boolean} block - stretch the button to the container width.
  * @attr href - when set (and not disabled), renders a navigable link.
  * @attr {boolean} disabled - disables the button (a disabled `href` stays a button to be inert).
  * @attr {boolean} loading - shows a spinner, sets aria-busy, and blocks activation while keeping the button's colour.
