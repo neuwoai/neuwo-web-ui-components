@@ -77,4 +77,18 @@ describe("<neuwo-badge>", () => {
     expect(c.contains("badge--borderless")).toBe(true);
     expect(c.contains("badge--pulse")).toBe(true);
   });
+
+  it("has no glow by default", () => {
+    expect(make(`<neuwo-badge>x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList.contains("badge--glow")).toBe(false);
+  });
+
+  it("adds the glow treatment, toggles it from the property, and composes with variant + motion", () => {
+    const el = make(`<neuwo-badge variant="green" glow motion="shimmer">Hot</neuwo-badge>`);
+    const c = el.shadowRoot.querySelector(".badge").classList;
+    expect(c.contains("badge--glow")).toBe(true);
+    expect(c.contains("badge--green")).toBe(true);
+    expect(c.contains("badge--shimmer")).toBe(true);
+    el.glow = false;
+    expect(el.shadowRoot.querySelector(".badge").classList.contains("badge--glow")).toBe(false);
+  });
 });

@@ -36,6 +36,11 @@ describe("badge.css recipe", () => {
     expect(css).toContain("prefers-reduced-motion: reduce");
   });
 
+  it("defines the glow treatment from currentColor (no raw hex)", () => {
+    expect(css).toContain(".badge--glow");
+    expect(css).toContain("color-mix(in srgb, currentColor");
+  });
+
   it("uses no raw colour literals", () => {
     expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
   });

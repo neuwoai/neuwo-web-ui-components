@@ -34,6 +34,14 @@
   border-color: transparent;
 }
 
+/* Glow treatment: a neon bloom keyed to the variant colour (currentColor),
+   composes with any variant and either motion. Static, no reduced-motion gate. */
+.badge--glow {
+  box-shadow: 0 0 0.75rem color-mix(in srgb, currentColor 30%, transparent),
+              0 0 1.5rem color-mix(in srgb, currentColor 15%, transparent);
+  text-shadow: 0 0 0.5rem color-mix(in srgb, currentColor 40%, transparent);
+}
+
 /* Pulse axis: a continuous radial ring (the live-status idiom), variant-coloured
    via currentColor; reproduces the design system's green pulse exactly. */
 .badge--pulse {
