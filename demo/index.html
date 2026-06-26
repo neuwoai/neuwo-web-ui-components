@@ -99,6 +99,16 @@
       <neuwo-button variant="glass" disabled>Glass</neuwo-button>
     </div>
 
+    <h2>neuwo-button hover intensity + loading + icons</h2>
+    <div class="row">
+      <neuwo-button hover="s">Calm (s)</neuwo-button>
+      <neuwo-button hover="m">Base (m)</neuwo-button>
+      <neuwo-button hover="l">Strong (l)</neuwo-button>
+      <neuwo-button loading>Loading</neuwo-button>
+      <neuwo-button><span slot="start">*</span>With icon</neuwo-button>
+      <neuwo-button block>Block</neuwo-button>
+    </div>
+
     <h2>Block (stretches to its container)</h2>
     <div>
       <neuwo-button block variant="solid">Full-width button</neuwo-button>
@@ -347,6 +357,15 @@
       </span>
     </div>
 
+    <h2>neuwo-status-dot halo intensity</h2>
+    <div class="row">
+      <neuwo-status-dot halo="s"></neuwo-status-dot>
+      <neuwo-status-dot halo="m"></neuwo-status-dot>
+      <neuwo-status-dot halo="l"></neuwo-status-dot>
+      <!-- glow look == halo="l" (plus motion="blink" for the blinking glow) -->
+      <neuwo-status-dot variant="blue" halo="l" motion="blink"></neuwo-status-dot>
+    </div>
+
     <h2>CTA band (banner + spotlight variants)</h2>
     <p>
       The page defines a hostile <code>.cta</code> rule. Shadow DOM keeps it out.
@@ -365,5 +384,19 @@
         <neuwo-button slot="actions" variant="outline" size="lg">See pricing</neuwo-button>
       </neuwo-cta>
     </div>
+
+    <h2>neuwo-cta heading level</h2>
+    <neuwo-cta heading-level="3">
+      Ready to <span data-accent>go</span>?
+      <span slot="sub">Sub line.</span>
+      <!-- inside a CTA, calm the primary button's hover -->
+      <neuwo-button slot="actions" variant="solid" hover="s">Get Started</neuwo-button>
+    </neuwo-cta>
+
+    <h2>Eyebrow utility (opt-in typography)</h2>
+    <p class="eyebrow">Kicker label</p>
+
+    <!-- Transient field-error flash from the host page (supported escape hatch):
+         neuwo-input[data-flash]::part(input) { border-color: var(--color-red); } -->
   </body>
 </html>
