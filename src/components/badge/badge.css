@@ -5,12 +5,13 @@
 
 .badge {
   /* Eyebrow typography, inlined because the shadow root cannot inherit the
-     design system's shared .eyebrow class rule (Outfit, xs, 600, 0.08em, caps). */
+     design system's shared .eyebrow class rule (Outfit, xs, 600, 0.08em). The
+     label renders as authored: pass upper-case text for the eyebrow look, or
+     mixed-case for a plain pill. The consumer owns casing, not the recipe. */
   font-family: var(--font-heading);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
   letter-spacing: 0.08em;
-  text-transform: uppercase;
 
   /* The pill itself. Layout margins from the source recipe are dropped: they
      are page-gutter concerns, the consumer owns spacing. */

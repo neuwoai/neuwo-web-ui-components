@@ -13,7 +13,8 @@ describe("badge.css recipe", () => {
   it("inlines eyebrow typography and the pill from tokens", () => {
     expect(css).toContain(".badge");
     expect(css).toContain("var(--font-heading)");
-    expect(css).toContain("text-transform: uppercase");
+    // The label renders as authored: the recipe must not force casing.
+    expect(css).not.toContain("text-transform: uppercase");
     expect(css).toContain("var(--radius-full)");
     expect(css).toContain("var(--tint-blue-8)");
     expect(css).toContain("var(--tint-blue-20)");
