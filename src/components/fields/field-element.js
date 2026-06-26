@@ -39,6 +39,7 @@ let uid = 0;
  */
 export class NeuwoFieldElement extends NeuwoElement {
   static formAssociated = true;
+  static delegatesFocus = true;
   /** @type {CSSStyleSheet | CSSStyleSheet[]} */
   static styles = fieldSheet;
   static observedAttributes = [

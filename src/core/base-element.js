@@ -22,7 +22,11 @@ if (typeof document !== "undefined" && !document.adoptedStyleSheets.includes(tok
 export class NeuwoElement extends HTMLElement {
   constructor() {
     super();
-    this.attachShadow({ mode: "open" });
+    const ctor = /** @type {any} */ (this.constructor);
+    // Standard `delegatesFocus` so real browsers honour it. Note: happy-dom
+    // reads a non-standard `delegateFocus` key, so a field's shadowRoot.delegatesFocus
+    // cannot be asserted in tests; the static-flag contract is tested instead.
+    this.attachShadow({ mode: "open", delegatesFocus: ctor.delegatesFocus ?? false });
     const own = /** @type {any} */ (this.constructor).styles ? [].concat(/** @type {any} */ (this.constructor).styles) : [];
     // Tokens inherit from the document; shadow root carries reset + recipe.
     this.shadowRoot.adoptedStyleSheets = [resetSheet, ...own];
