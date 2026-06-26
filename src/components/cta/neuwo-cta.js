@@ -40,6 +40,7 @@ function slot(name) {
  * @customElement neuwo-cta
  * @attr {banner|spotlight} variant - layout and chrome (default banner).
  * @attr {boolean} pulse - radiate a synchronised pulse ring on the primary (solid) button; honours prefers-reduced-motion.
+ * @attr {1|2|3|4|5|6} heading-level - heading level for the headline element (default 2).
  * @slot - the headline; wrap gradient fragments in an element with `data-accent`.
  * @slot sub - the supporting line under the headline.
  * @slot actions - one or two action buttons.
@@ -53,7 +54,7 @@ function slot(name) {
  */
 export class NeuwoCta extends NeuwoElement {
   static styles = sheet(ctaCss);
-  static observedAttributes = ["variant"];
+  static observedAttributes = ["variant", "heading-level"];
 
   get variant() { return this.getAttribute("variant") || "banner"; }
   set variant(value) {
@@ -64,6 +65,12 @@ export class NeuwoCta extends NeuwoElement {
   get pulse() { return this.hasAttribute("pulse"); }
   set pulse(value) { this.toggleAttribute("pulse", Boolean(value)); }
 
+  get headingLevel() { return this.getAttribute("heading-level") || "2"; }
+  set headingLevel(value) {
+    if (value == null || value === "") this.removeAttribute("heading-level");
+    else this.setAttribute("heading-level", String(value));
+  }
+
   connectedCallback() {
     super.connectedCallback(); // builds via render()
     // Light-DOM children may not be parsed yet at connect time; defer the
@@ -71,11 +78,16 @@ export class NeuwoCta extends NeuwoElement {
     queueMicrotask(() => this.#validate());
   }
 
+  #headingTag() {
+    const n = parseInt(this.getAttribute("heading-level") ?? "", 10);
+    return n >= 1 && n <= 6 ? `h${n}` : "h2";
+  }
+
   render() {
     const spotlight = this.getAttribute("variant") === "spotlight";
     const root = el("div", `cta cta--${spotlight ? "spotlight" : "banner"}`, "cta");
 
-    const headline = el("h2", "cta__headline", "headline");
+    const headline = el(this.#headingTag(), "cta__headline", "headline");
     const headlineSlot = slot(); // default slot carries the headline content
     headline.append(headlineSlot);
     const sub = el("p", "cta__sub", "sub");

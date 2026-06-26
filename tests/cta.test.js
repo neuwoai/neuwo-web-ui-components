@@ -75,4 +75,25 @@ describe("<neuwo-cta>", () => {
     expect(warn).not.toHaveBeenCalled();
     warn.mockRestore();
   });
+
+  it("renders the headline as an h2 by default and honours heading-level", () => {
+    expect(make(FULL()).shadowRoot.querySelector(".cta__headline").tagName).toBe("H2");
+    expect(make(FULL('heading-level="3"')).shadowRoot.querySelector(".cta__headline").tagName).toBe("H3");
+  });
+
+  it("clamps an out-of-range or non-numeric heading-level back to h2", () => {
+    expect(make(FULL('heading-level="9"')).shadowRoot.querySelector(".cta__headline").tagName).toBe("H2");
+    expect(make(FULL('heading-level="0"')).shadowRoot.querySelector(".cta__headline").tagName).toBe("H2");
+    expect(make(FULL('heading-level="foo"')).shadowRoot.querySelector(".cta__headline").tagName).toBe("H2");
+  });
+
+  it("reflects the headingLevel property to the attribute", () => {
+    const el = make(FULL());
+    expect(el.headingLevel).toBe("2");
+    el.headingLevel = "4";
+    expect(el.getAttribute("heading-level")).toBe("4");
+    expect(el.shadowRoot.querySelector(".cta__headline").tagName).toBe("H4");
+    el.headingLevel = "";
+    expect(el.hasAttribute("heading-level")).toBe(false);
+  });
 });
