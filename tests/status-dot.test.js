@@ -63,4 +63,36 @@ describe("<neuwo-status-dot>", () => {
     el.halo = "";
     expect(el.hasAttribute("halo")).toBe(false);
   });
+
+  it("maps glow intensity s/m/l to a modifier class; none/unknown add none", () => {
+    const base = make(`<neuwo-status-dot></neuwo-status-dot>`).shadowRoot.querySelector(".status-dot");
+    expect(base.className).toBe("status-dot");
+    expect(make(`<neuwo-status-dot glow="none"></neuwo-status-dot>`).shadowRoot.querySelector(".status-dot").className)
+      .toBe("status-dot");
+    expect(make(`<neuwo-status-dot glow="xl"></neuwo-status-dot>`).shadowRoot.querySelector(".status-dot").className)
+      .toBe("status-dot");
+    for (const level of ["s", "m", "l"]) {
+      expect(make(`<neuwo-status-dot glow="${level}"></neuwo-status-dot>`).shadowRoot.querySelector(".status-dot")
+        .classList.contains(`status-dot--glow-${level}`)).toBe(true);
+    }
+  });
+
+  it("composes glow with variant, halo and motion on one dot", () => {
+    const dot = make(`<neuwo-status-dot variant="blue" halo="l" glow="m" motion="blink"></neuwo-status-dot>`)
+      .shadowRoot.querySelector(".status-dot");
+    for (const cls of ["status-dot--blue", "status-dot--halo-l", "status-dot--glow-m", "status-dot--blink"])
+      expect(dot.classList.contains(cls)).toBe(true);
+  });
+
+  it("reflects the glow property to the attribute and defaults to none", () => {
+    const el = make(`<neuwo-status-dot></neuwo-status-dot>`);
+    expect(el.glow).toBe("none");
+    el.glow = "m";
+    expect(el.getAttribute("glow")).toBe("m");
+    expect(el.shadowRoot.querySelector(".status-dot").classList.contains("status-dot--glow-m")).toBe(true);
+    el.glow = "";
+    expect(el.hasAttribute("glow")).toBe(false);
+    expect(el.glow).toBe("none");
+    expect(el.shadowRoot.querySelector(".status-dot").classList.contains("status-dot--glow-m")).toBe(false);
+  });
 });

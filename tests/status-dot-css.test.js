@@ -37,4 +37,14 @@ describe("status-dot.css recipe", () => {
     expect(css).toContain("color-mix(in srgb, currentColor");
     expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
   });
+
+  it("defines the glow-intensity presets as currentColor drop-shadows that stack over the ring", () => {
+    for (const level of ["s", "m", "l"]) expect(css).toContain(`.status-dot--glow-${level}`);
+    // Glow lives on `filter`, not `box-shadow`, so it composes with the base
+    // ring and the halo axis instead of overriding them.
+    expect(css).toMatch(/\.status-dot--glow-[sml]\s*{\s*filter: drop-shadow/);
+    expect(css).toContain("drop-shadow(0 0 0.5rem currentColor)");
+    expect(css).not.toMatch(/\.status-dot--glow-[sml][^}]*box-shadow/);
+    expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+  });
 });

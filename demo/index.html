@@ -369,10 +369,25 @@
       <neuwo-status-dot halo="s"></neuwo-status-dot>
       <neuwo-status-dot halo="m"></neuwo-status-dot>
       <neuwo-status-dot halo="l"></neuwo-status-dot>
-      <!-- the glow look is just halo="l"; add motion="blink" to animate it. The
-           animation comes from motion, not colour: same blink on green and blue. -->
+      <!-- halo="l" is a wide, translucent ring; add motion="blink" to animate it.
+           The animation comes from motion, not colour: same blink on green and blue. -->
       <neuwo-status-dot halo="l" motion="blink"></neuwo-status-dot>
       <neuwo-status-dot variant="blue" halo="l" motion="blink"></neuwo-status-dot>
+    </div>
+
+    <h2>neuwo-status-dot glow intensity (saturated bloom; default none, composes with every axis)</h2>
+    <div class="row">
+      <!-- glow is a static, saturated bloom in the dot's own colour (currentColor),
+           unlike the translucent halo ring. none/absent = no bloom. -->
+      <neuwo-status-dot glow="none"></neuwo-status-dot>
+      <neuwo-status-dot glow="s"></neuwo-status-dot>
+      <neuwo-status-dot glow="m"></neuwo-status-dot>
+      <neuwo-status-dot glow="l"></neuwo-status-dot>
+      <neuwo-status-dot variant="blue" glow="l"></neuwo-status-dot>
+      <!-- the reference look: saturated blue bloom + blink, composed from glow + motion. -->
+      <neuwo-status-dot variant="blue" glow="m" motion="blink"></neuwo-status-dot>
+      <!-- glow stacks over the halo ring (filter vs box-shadow), no conflict. -->
+      <neuwo-status-dot variant="blue" halo="l" glow="m"></neuwo-status-dot>
     </div>
 
     <h2>CTA band (banner + spotlight variants)</h2>

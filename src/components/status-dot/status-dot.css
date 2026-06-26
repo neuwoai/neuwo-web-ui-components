@@ -40,6 +40,17 @@
               0 0 8px 2px color-mix(in srgb, currentColor 35%, transparent);
 }
 
+/* Glow intensity (static): a saturated bloom in the dot's own colour. On
+   `filter`, not `box-shadow`, so it stacks over the base ring and the halo
+   axis (which own box-shadow) instead of replacing them. currentColor keeps it
+   colour-agnostic. Default (absent/none) adds no class, so no glow. */
+.status-dot--glow-s { filter: drop-shadow(0 0 0.25rem currentColor); }
+.status-dot--glow-m { filter: drop-shadow(0 0 0.5rem currentColor); }
+.status-dot--glow-l {
+  filter: drop-shadow(0 0 0.5rem currentColor)
+          drop-shadow(0 0 1rem currentColor);
+}
+
 @keyframes status-dot-pulse {
   0%, 100% { box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 25%, transparent); }
   50%      { box-shadow: 0 0 0 8px color-mix(in srgb, currentColor 10%, transparent); }
