@@ -167,4 +167,30 @@ describe("<neuwo-button>", () => {
     expect(buttonCss).toContain(".btn:focus-visible");
     expect(buttonCss).toContain("var(--shadow-focus)");
   });
+
+  it("maps hover intensity s/l to a modifier class; m/none add none", () => {
+    expect(make(`<neuwo-button>Go</neuwo-button>`).shadowRoot.querySelector("button").className)
+      .toBe("btn btn--solid");
+    expect(make(`<neuwo-button hover="m">Go</neuwo-button>`).shadowRoot.querySelector("button").className)
+      .toBe("btn btn--solid");
+    expect(make(`<neuwo-button hover="s">Go</neuwo-button>`).shadowRoot.querySelector("button")
+      .classList.contains("btn--hover-s")).toBe(true);
+    expect(make(`<neuwo-button hover="l">Go</neuwo-button>`).shadowRoot.querySelector("button")
+      .classList.contains("btn--hover-l")).toBe(true);
+  });
+
+  it("reflects the hover property to the attribute", () => {
+    const el = make(`<neuwo-button>Go</neuwo-button>`);
+    el.hover = "s";
+    expect(el.getAttribute("hover")).toBe("s");
+    el.hover = "";
+    expect(el.hasAttribute("hover")).toBe(false);
+  });
+
+  it("defines the hover-emphasis presets from tokens", () => {
+    expect(buttonCss).toContain(".btn--hover-s:hover");
+    expect(buttonCss).toContain(".btn--hover-l:hover");
+    expect(buttonCss).toContain("var(--shadow-glow)");
+    expect(buttonCss).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+  });
 });

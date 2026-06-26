@@ -89,6 +89,18 @@
   transform: translateY(-0.125rem);
 }
 
+/* --- Modifier: hover emphasis (intensity scale; m == base variant hover) --- */
+
+.btn--hover-s:hover {
+  box-shadow: 0 0 0.75rem var(--tint-blue-20);
+  transform: translateY(-0.0625rem);
+}
+
+.btn--hover-l:hover {
+  box-shadow: var(--shadow-glow), 0 0 2rem var(--tint-blue-15);
+  transform: translateY(-0.1875rem);
+}
+
 /* --- State: keyboard focus --- */
 
 .btn:focus-visible {

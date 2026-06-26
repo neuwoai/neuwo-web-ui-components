@@ -10,6 +10,7 @@ import buttonCss from "./button.css?raw";
  * @customElement neuwo-button
  * @attr {solid|outline|glass} variant - visual style (default solid).
  * @attr {sm|lg} size - size preset (default medium when unset).
+ * @attr {s|m|l} hover - hover-emphasis level: s calmer, l stronger (default m = base).
  * @attr {boolean} wide - extra horizontal padding.
  * @attr {boolean} xwide - maximal horizontal padding.
  * @attr href - when set (and not disabled), renders a navigable link.
@@ -28,6 +29,7 @@ export class NeuwoButton extends NeuwoElement {
   static observedAttributes = [
     "variant",
     "size",
+    "hover",
     "wide",
     "xwide",
     "href",
@@ -67,6 +69,15 @@ export class NeuwoButton extends NeuwoElement {
     this.toggleAttribute("disabled", Boolean(value));
   }
 
+  get hover() {
+    return this.getAttribute("hover") || "m";
+  }
+
+  set hover(value) {
+    if (value == null || value === "") this.removeAttribute("hover");
+    else this.setAttribute("hover", String(value));
+  }
+
   render() {
     const variant = this.getAttribute("variant") || "solid";
     const size = this.getAttribute("size");
@@ -76,6 +87,8 @@ export class NeuwoButton extends NeuwoElement {
 
     const classes = ["btn", `btn--${variant}`];
     if (size) classes.push(`btn--${size}`);
+    const hover = this.getAttribute("hover");
+    if (hover === "s" || hover === "l") classes.push(`btn--hover-${hover}`);
     if (this.hasAttribute("wide")) classes.push("btn--wide");
     if (this.hasAttribute("xwide")) classes.push("btn--xwide");
 
