@@ -35,4 +35,11 @@ describe("typography stylesheet", () => {
       expect(tokensCss).toContain(`${token}:`);
     }
   });
+
+  it("ships the eyebrow utility class with the kicker type recipe", () => {
+    expect(typographyCss).toContain(".eyebrow");
+    expect(typographyCss).toContain("var(--font-heading)");
+    expect(typographyCss).toMatch(/letter-spacing:\s*0\.08em/);
+    expect(typographyCss).toContain("text-transform: uppercase");
+  });
 });

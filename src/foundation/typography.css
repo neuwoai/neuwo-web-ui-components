@@ -86,3 +86,14 @@ a {
 a:hover {
   color: var(--color-blue-dark);
 }
+
+/* Eyebrow / kicker: the small uppercase label above a heading. A utility class
+   (not a bare element) so consumers opt in per element. Type only, no colour,
+   matching the recipe inlined in the badge. */
+.eyebrow {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
