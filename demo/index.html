@@ -363,12 +363,15 @@
       </span>
     </div>
 
-    <h2>neuwo-status-dot halo intensity</h2>
+    <h2>neuwo-status-dot halo intensity (static ring size; motion is a separate axis)</h2>
     <div class="row">
+      <!-- halo is a static ring size, so these three are intentionally still -->
       <neuwo-status-dot halo="s"></neuwo-status-dot>
       <neuwo-status-dot halo="m"></neuwo-status-dot>
       <neuwo-status-dot halo="l"></neuwo-status-dot>
-      <!-- glow look == halo="l" (plus motion="blink" for the blinking glow) -->
+      <!-- the glow look is just halo="l"; add motion="blink" to animate it. The
+           animation comes from motion, not colour: same blink on green and blue. -->
+      <neuwo-status-dot halo="l" motion="blink"></neuwo-status-dot>
       <neuwo-status-dot variant="blue" halo="l" motion="blink"></neuwo-status-dot>
     </div>
 
