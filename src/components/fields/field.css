@@ -23,6 +23,11 @@
   color: var(--color-heading);
 }
 
+.field__required {
+  margin-left: var(--space-1);
+  color: var(--color-red);
+}
+
 /* --- The shared control chrome --- */
 
 .input {

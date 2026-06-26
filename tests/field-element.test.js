@@ -168,4 +168,15 @@ describe("NeuwoFieldElement", () => {
     el.value = "y";                   // writeValue + setFormValue
     expect(el.value).toBe("y");
   });
+
+  it("renders a required asterisk only when required and labelled", () => {
+    const el = make(`<test-field label="Email" required></test-field>`);
+    const star = el.shadowRoot.querySelector(".field__required");
+    expect(star).toBeTruthy();
+    expect(star.getAttribute("aria-hidden")).toBe("true");
+    expect(star.textContent).toBe("*");
+
+    expect(make(`<test-field label="Email"></test-field>`).shadowRoot.querySelector(".field__required")).toBeNull();
+    expect(make(`<test-field required></test-field>`).shadowRoot.querySelector(".field__required")).toBeNull();
+  });
 });

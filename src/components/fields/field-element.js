@@ -209,8 +209,17 @@ export class NeuwoFieldElement extends NeuwoElement {
       this.#labelEl.setAttribute("for", this.#id);
       this.#wrapper.prepend(this.#labelEl);
     }
-    if (has) this.#labelEl.textContent = this.getAttribute("label");
-    else if (this.#labelEl) {
+    if (has) {
+      // textContent resets children, so re-append the marker fresh each patch.
+      this.#labelEl.textContent = this.getAttribute("label");
+      if (this.hasAttribute("required")) {
+        const star = document.createElement("span");
+        star.className = "field__required";
+        star.setAttribute("aria-hidden", "true");
+        star.textContent = "*";
+        this.#labelEl.append(star);
+      }
+    } else if (this.#labelEl) {
       this.#labelEl.remove();
       this.#labelEl = null;
     }
