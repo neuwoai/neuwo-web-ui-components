@@ -15,6 +15,7 @@ import buttonCss from "./button.css?raw";
  * @attr {boolean} xwide - maximal horizontal padding.
  * @attr href - when set (and not disabled), renders a navigable link.
  * @attr {boolean} disabled - disables the button (a disabled `href` stays a button to be inert).
+ * @attr {boolean} loading - shows a spinner, sets aria-busy, and blocks activation while keeping the button's colour.
  * @attr {button|submit|reset} type - activation behaviour for the host form (default button).
  * @attr target - link target, forwarded to the `<a>` when `href` is set.
  * @attr rel - link rel, forwarded to the `<a>` when `href` is set.
@@ -36,6 +37,7 @@ export class NeuwoButton extends NeuwoElement {
     "xwide",
     "href",
     "disabled",
+    "loading",
     "type",
     "target",
     "rel",
@@ -47,7 +49,7 @@ export class NeuwoButton extends NeuwoElement {
   // The real control lives in the shadow root, so it cannot drive the outer form
   // natively. Replicate submit/reset on activation via ElementInternals.
   #onClick = () => {
-    if (this.hasAttribute("disabled") || this.getAttribute("href")) return;
+    if (this.hasAttribute("disabled") || this.hasAttribute("loading") || this.getAttribute("href")) return;
     const form = this.#internals?.form ?? this.closest("form");
     if (!form) return;
     const type = this.getAttribute("type") || "button";
@@ -71,6 +73,14 @@ export class NeuwoButton extends NeuwoElement {
     this.toggleAttribute("disabled", Boolean(value));
   }
 
+  get loading() {
+    return this.hasAttribute("loading");
+  }
+
+  set loading(value) {
+    this.toggleAttribute("loading", Boolean(value));
+  }
+
   get hover() {
     return this.getAttribute("hover") || "m";
   }
@@ -85,6 +95,7 @@ export class NeuwoButton extends NeuwoElement {
     const size = this.getAttribute("size");
     const href = this.getAttribute("href");
     const disabled = this.hasAttribute("disabled");
+    const loading = this.hasAttribute("loading");
     const type = this.getAttribute("type") || "button";
 
     const classes = ["btn", `btn--${variant}`];
@@ -93,6 +104,7 @@ export class NeuwoButton extends NeuwoElement {
     if (hover === "s" || hover === "l") classes.push(`btn--hover-${hover}`);
     if (this.hasAttribute("wide")) classes.push("btn--wide");
     if (this.hasAttribute("xwide")) classes.push("btn--xwide");
+    if (loading) classes.push("btn--loading");
 
     // An anchor when navigable; a real button otherwise -- a disabled anchor
     // is not a thing, so disabled+href must stay a button to be inert.
@@ -116,6 +128,15 @@ export class NeuwoButton extends NeuwoElement {
       if (name === "title" || name.startsWith("aria-") || name.startsWith("data-")) {
         el.setAttribute(name, value);
       }
+    }
+
+    if (loading) {
+      el.setAttribute("aria-busy", "true");
+      if (!asLink) /** @type {HTMLButtonElement} */ (el).disabled = true;
+      const spinner = document.createElement("span");
+      spinner.className = "btn__spinner";
+      spinner.setAttribute("aria-hidden", "true");
+      el.append(spinner);
     }
 
     const startSlot = document.createElement("slot");

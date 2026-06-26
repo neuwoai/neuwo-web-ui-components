@@ -205,4 +205,30 @@ describe("<neuwo-button>", () => {
   it("lays the control out with a gap token for icons", () => {
     expect(buttonCss).toContain("gap: var(--space-2)");
   });
+
+  it("enters a loading state: spinner, aria-busy, disabled control, class", () => {
+    const el = make(`<neuwo-button type="submit" loading>Save</neuwo-button>`);
+    const btn = el.shadowRoot.querySelector("button");
+    expect(btn.classList.contains("btn--loading")).toBe(true);
+    expect(btn.getAttribute("aria-busy")).toBe("true");
+    expect(btn.disabled).toBe(true);
+    expect(el.shadowRoot.querySelector(".btn__spinner")).toBeTruthy();
+  });
+
+  it("does not submit the form while loading", () => {
+    let submitted = false;
+    const form = document.createElement("form");
+    form.addEventListener("submit", (e) => { e.preventDefault(); submitted = true; });
+    form.innerHTML = `<neuwo-button type="submit" loading>Save</neuwo-button>`;
+    document.body.appendChild(form);
+    form.querySelector("neuwo-button").click();
+    expect(submitted).toBe(false);
+  });
+
+  it("defines the spinner keyframe with a reduced-motion guard", () => {
+    expect(buttonCss).toContain(".btn__spinner");
+    expect(buttonCss).toContain("@keyframes button-spin");
+    expect(buttonCss).toMatch(/prefers-reduced-motion: reduce/);
+    expect(buttonCss).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+  });
 });
