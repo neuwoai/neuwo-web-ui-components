@@ -45,6 +45,34 @@
   50%      { box-shadow: 0 0 0 6px color-mix(in srgb, currentColor 0%, transparent); }
 }
 
+/* Shimmer motion: a sweeping highlight (the design system's solutions badge),
+   variant-independent via --color-shimmer. Mutually exclusive with pulse. */
+.badge--shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.badge--shimmer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 35%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--color-shimmer), transparent);
+  animation: badge-shimmer 8s ease-in-out 2s infinite;
+  pointer-events: none;
+}
+
+@keyframes badge-shimmer {
+  0%   { left: -100%; }
+  30%  { left: 200%; }
+  100% { left: 200%; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .badge--pulse { animation: none; }
+  .badge--pulse,
+  .badge--shimmer::after {
+    animation: none;
+  }
 }

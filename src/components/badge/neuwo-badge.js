@@ -4,7 +4,7 @@ import badgeCss from "./badge.css?raw";
 
 /**
  * On-brand inline label pill with three independent, mix-and-match axes: colour
- * (`variant`), border (`borderless`), and motion (`pulse`). Renders the design
+ * (`variant`), border (`borderless`), and motion (`motion`). Renders the design
  * language's eyebrow "tag" recipe and, composed, its live-status look.
  * Presentational only -- no events, no role. For a label whose text changes at
  * runtime, set `aria-live` and/or an accessible name on the element.
@@ -13,7 +13,7 @@ import badgeCss from "./badge.css?raw";
  * @customElement neuwo-badge
  * @attr {blue|green} variant - colour (default blue).
  * @attr {boolean} borderless - drop the outline for a solid-looking pill.
- * @attr {boolean} pulse - continuous radial pulse ring; honours prefers-reduced-motion.
+ * @attr {pulse|shimmer} motion - optional animation: `pulse` a radial ring, `shimmer` a sweep; honours prefers-reduced-motion.
  * @slot - the label content.
  * @csspart badge - the pill element.
  * @cssprop --color-blue - brand accent for the blue variant; re-theme on :root.
@@ -21,7 +21,7 @@ import badgeCss from "./badge.css?raw";
  */
 export class NeuwoBadge extends NeuwoElement {
   static styles = sheet(badgeCss);
-  static observedAttributes = ["variant", "borderless", "pulse"];
+  static observedAttributes = ["variant", "borderless", "motion"];
 
   get variant() { return this.getAttribute("variant") || "blue"; }
   set variant(value) {
@@ -30,8 +30,11 @@ export class NeuwoBadge extends NeuwoElement {
   }
   get borderless() { return this.hasAttribute("borderless"); }
   set borderless(value) { this.toggleAttribute("borderless", Boolean(value)); }
-  get pulse() { return this.hasAttribute("pulse"); }
-  set pulse(value) { this.toggleAttribute("pulse", Boolean(value)); }
+  get motion() { return this.getAttribute("motion") || ""; }
+  set motion(value) {
+    if (value == null || value === "") this.removeAttribute("motion");
+    else this.setAttribute("motion", String(value));
+  }
 
   render() {
     const classes = ["badge"];
@@ -39,7 +42,9 @@ export class NeuwoBadge extends NeuwoElement {
     // other value (absent or unknown) renders the blue base.
     if (this.getAttribute("variant") === "green") classes.push("badge--green");
     if (this.hasAttribute("borderless")) classes.push("badge--borderless");
-    if (this.hasAttribute("pulse")) classes.push("badge--pulse");
+    const motion = this.getAttribute("motion");
+    if (motion === "pulse") classes.push("badge--pulse");
+    else if (motion === "shimmer") classes.push("badge--shimmer");
 
     const badge = document.createElement("span");
     badge.className = classes.join(" ");

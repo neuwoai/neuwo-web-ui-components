@@ -25,11 +25,14 @@ describe("badge.css recipe", () => {
     expect(css).toContain("var(--tint-green-20)");
   });
 
-  it("defines the border and pulse axes with reduced-motion handling", () => {
+  it("defines the border, pulse and shimmer motions with reduced-motion handling", () => {
     expect(css).toContain(".badge--borderless");
     expect(css).toContain("border-color: transparent");
     expect(css).toContain(".badge--pulse");
     expect(css).toContain("@keyframes badge-pulse");
+    expect(css).toContain(".badge--shimmer");
+    expect(css).toContain("@keyframes badge-shimmer");
+    expect(css).toContain("var(--color-shimmer)");
     expect(css).toContain("prefers-reduced-motion: reduce");
   });
 

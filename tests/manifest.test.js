@@ -117,7 +117,7 @@ describe("custom-elements.json", () => {
 
   it("documents the badge's three axes and part", () => {
     const attrs = attributesFor(manifest, "neuwo-badge");
-    for (const a of ["variant", "borderless", "pulse"]) expect(attrs).toContain(a);
+    for (const a of ["variant", "borderless", "motion"]) expect(attrs).toContain(a);
     expect(partsFor(manifest, "neuwo-badge").has("badge")).toBe(true);
   });
 

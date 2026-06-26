@@ -48,15 +48,30 @@ describe("<neuwo-badge>", () => {
     expect(el.shadowRoot.querySelector(".badge").classList.contains("badge--borderless")).toBe(false);
   });
 
-  it("adds the pulse ring and toggles it from the property", () => {
-    const el = make(`<neuwo-badge pulse>x</neuwo-badge>`);
+  it("selects the pulse animation via motion='pulse' and reflects the property", () => {
+    const el = make(`<neuwo-badge motion="pulse">x</neuwo-badge>`);
     expect(el.shadowRoot.querySelector(".badge").classList.contains("badge--pulse")).toBe(true);
-    el.pulse = false;
+    el.motion = "";
+    expect(el.hasAttribute("motion")).toBe(false);
     expect(el.shadowRoot.querySelector(".badge").classList.contains("badge--pulse")).toBe(false);
   });
 
-  it("mixes the three axes freely (the live badge: green + borderless + pulse)", () => {
-    const el = make(`<neuwo-badge variant="green" borderless pulse>Live</neuwo-badge>`);
+  it("selects the shimmer animation via motion='shimmer', independent of colour", () => {
+    const el = make(`<neuwo-badge variant="green" motion="shimmer">New</neuwo-badge>`);
+    const c = el.shadowRoot.querySelector(".badge").classList;
+    expect(c.contains("badge--shimmer")).toBe(true);
+    expect(c.contains("badge--green")).toBe(true);
+  });
+
+  it("adds no motion class for an absent or unknown motion value", () => {
+    expect(make(`<neuwo-badge>x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList.contains("badge--pulse")).toBe(false);
+    const c = make(`<neuwo-badge motion="xyz">x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList;
+    expect(c.contains("badge--pulse")).toBe(false);
+    expect(c.contains("badge--shimmer")).toBe(false);
+  });
+
+  it("mixes the axes freely (the live badge: green + borderless + motion=pulse)", () => {
+    const el = make(`<neuwo-badge variant="green" borderless motion="pulse">Live</neuwo-badge>`);
     const c = el.shadowRoot.querySelector(".badge").classList;
     expect(c.contains("badge--green")).toBe(true);
     expect(c.contains("badge--borderless")).toBe(true);
