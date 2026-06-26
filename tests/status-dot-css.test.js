@@ -30,4 +30,11 @@ describe("status-dot.css recipe", () => {
   it("uses no raw colour literals", () => {
     expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
   });
+
+  it("defines the halo-intensity presets from currentColor (no raw hex)", () => {
+    expect(css).toContain(".status-dot--halo-s");
+    expect(css).toContain(".status-dot--halo-l");
+    expect(css).toContain("color-mix(in srgb, currentColor");
+    expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+  });
 });

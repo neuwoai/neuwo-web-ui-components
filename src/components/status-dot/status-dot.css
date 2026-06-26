@@ -29,6 +29,17 @@
   animation: status-dot-blink 2s infinite;
 }
 
+/* Halo intensity (static ring; m == the base .status-dot ring). `s` tightens,
+   `l` is the wide glow halo. Authored after the base so it overrides the ring. */
+.status-dot--halo-s {
+  box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 25%, transparent);
+}
+
+.status-dot--halo-l {
+  box-shadow: 0 0 0 6px color-mix(in srgb, currentColor 20%, transparent),
+              0 0 8px 2px color-mix(in srgb, currentColor 35%, transparent);
+}
+
 @keyframes status-dot-pulse {
   0%, 100% { box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 25%, transparent); }
   50%      { box-shadow: 0 0 0 8px color-mix(in srgb, currentColor 10%, transparent); }

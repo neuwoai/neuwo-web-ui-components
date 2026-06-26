@@ -12,13 +12,14 @@ import statusDotCss from "./status-dot.css?raw";
  * @customElement neuwo-status-dot
  * @attr {green|blue} variant - dot colour (default green).
  * @attr {pulse|blink} motion - optional animation: `pulse` expands the ring, `blink` fades the dot. Honours prefers-reduced-motion.
+ * @attr {s|m|l} halo - ring intensity: s tighter, l a wide glow halo (default m = base ring).
  * @csspart dot - the dot element.
  * @cssprop --color-green - the default dot colour; re-theme on :root.
  * @cssprop --color-blue - the blue-variant dot colour; re-theme on :root.
  */
 export class NeuwoStatusDot extends NeuwoElement {
   static styles = sheet(statusDotCss);
-  static observedAttributes = ["variant", "motion"];
+  static observedAttributes = ["variant", "motion", "halo"];
 
   get variant() { return this.getAttribute("variant") || "green"; }
   set variant(value) {
@@ -30,6 +31,11 @@ export class NeuwoStatusDot extends NeuwoElement {
     if (value == null || value === "") this.removeAttribute("motion");
     else this.setAttribute("motion", String(value));
   }
+  get halo() { return this.getAttribute("halo") || "m"; }
+  set halo(value) {
+    if (value == null || value === "") this.removeAttribute("halo");
+    else this.setAttribute("halo", String(value));
+  }
 
   render() {
     const classes = ["status-dot"];
@@ -39,6 +45,8 @@ export class NeuwoStatusDot extends NeuwoElement {
     const motion = this.getAttribute("motion");
     if (motion === "pulse") classes.push("status-dot--pulse");
     else if (motion === "blink") classes.push("status-dot--blink");
+    const halo = this.getAttribute("halo");
+    if (halo === "s" || halo === "l") classes.push(`status-dot--halo-${halo}`);
 
     const dot = document.createElement("span");
     dot.className = classes.join(" ");

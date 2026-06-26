@@ -43,4 +43,24 @@ describe("<neuwo-status-dot>", () => {
     expect(el.hasAttribute("motion")).toBe(false);
     expect(el.shadowRoot.querySelector(".status-dot").classList.contains("status-dot--pulse")).toBe(false);
   });
+
+  it("maps halo intensity s/l to a modifier class; m/none add none", () => {
+    const base = make(`<neuwo-status-dot></neuwo-status-dot>`).shadowRoot.querySelector(".status-dot");
+    expect(base.classList.contains("status-dot--halo-s")).toBe(false);
+    expect(base.classList.contains("status-dot--halo-l")).toBe(false);
+    expect(make(`<neuwo-status-dot halo="m"></neuwo-status-dot>`).shadowRoot.querySelector(".status-dot").className)
+      .toBe("status-dot");
+    expect(make(`<neuwo-status-dot halo="s"></neuwo-status-dot>`).shadowRoot.querySelector(".status-dot")
+      .classList.contains("status-dot--halo-s")).toBe(true);
+    expect(make(`<neuwo-status-dot halo="l"></neuwo-status-dot>`).shadowRoot.querySelector(".status-dot")
+      .classList.contains("status-dot--halo-l")).toBe(true);
+  });
+
+  it("reflects the halo property to the attribute", () => {
+    const el = make(`<neuwo-status-dot></neuwo-status-dot>`);
+    el.halo = "l";
+    expect(el.getAttribute("halo")).toBe("l");
+    el.halo = "";
+    expect(el.hasAttribute("halo")).toBe(false);
+  });
 });
