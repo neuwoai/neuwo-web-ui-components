@@ -35,6 +35,12 @@
   border-color: transparent;
 }
 
+/* Size axis (density): a bounded scale. m (default, no class) is the eyebrow
+   xs; s shrinks to 2xs for compact chips, l grows to sm. Font-size only, so it
+   composes with every other axis. */
+.badge--s { font-size: var(--font-size-2xs); }
+.badge--l { font-size: var(--font-size-sm); }
+
 /* Glow treatment: a neon bloom keyed to the variant colour (currentColor),
    composes with any variant and either motion. Static, no reduced-motion gate. */
 .badge--glow {

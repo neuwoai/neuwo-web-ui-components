@@ -19,6 +19,14 @@ describe("deal-id.css recipe", () => {
     expect(css).toContain("var(--radius-md)");
   });
 
+  it("defines the size axis as font-size-only presets from tokens", () => {
+    expect(css).toContain(".deal-id--s");
+    expect(css).toContain("var(--font-size-xs)");
+    expect(css).toContain(".deal-id--l");
+    expect(css).toContain("var(--font-size-base)");
+    expect(css).not.toMatch(/\.deal-id--[sl][^}]*padding/);
+  });
+
   it("uses no raw colour literals", () => {
     expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
   });

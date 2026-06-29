@@ -78,6 +78,39 @@ describe("<neuwo-badge>", () => {
     expect(c.contains("badge--pulse")).toBe(true);
   });
 
+  it("is size m (no modifier class) by default", () => {
+    const el = make(`<neuwo-badge>x</neuwo-badge>`);
+    const c = el.shadowRoot.querySelector(".badge").classList;
+    expect(c.contains("badge--s")).toBe(false);
+    expect(c.contains("badge--l")).toBe(false);
+    expect(el.size).toBe("m");
+  });
+
+  it("maps size s and l to a modifier class, and m / unknown to none", () => {
+    expect(make(`<neuwo-badge size="s">x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList.contains("badge--s")).toBe(true);
+    expect(make(`<neuwo-badge size="l">x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList.contains("badge--l")).toBe(true);
+    const m = make(`<neuwo-badge size="m">x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList;
+    expect(m.contains("badge--s")).toBe(false);
+    expect(m.contains("badge--l")).toBe(false);
+    const unknown = make(`<neuwo-badge size="xl">x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList;
+    expect(unknown.contains("badge--s")).toBe(false);
+    expect(unknown.contains("badge--l")).toBe(false);
+  });
+
+  it("reflects the size property and composes with the other axes", () => {
+    const el = make(`<neuwo-badge>x</neuwo-badge>`);
+    el.size = "s";
+    expect(el.getAttribute("size")).toBe("s");
+    expect(el.shadowRoot.querySelector(".badge").classList.contains("badge--s")).toBe(true);
+    el.size = "";
+    expect(el.hasAttribute("size")).toBe(false);
+    expect(el.size).toBe("m");
+    const mixed = make(`<neuwo-badge variant="green" size="l" borderless>x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList;
+    expect(mixed.contains("badge--green")).toBe(true);
+    expect(mixed.contains("badge--l")).toBe(true);
+    expect(mixed.contains("badge--borderless")).toBe(true);
+  });
+
   it("has no glow by default", () => {
     expect(make(`<neuwo-badge>x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList.contains("badge--glow")).toBe(false);
   });

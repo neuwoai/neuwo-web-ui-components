@@ -37,6 +37,15 @@ describe("badge.css recipe", () => {
     expect(css).toContain("prefers-reduced-motion: reduce");
   });
 
+  it("defines the size axis as font-size-only presets from tokens", () => {
+    expect(css).toContain(".badge--s");
+    expect(css).toContain("var(--font-size-2xs)");
+    expect(css).toContain(".badge--l");
+    expect(css).toContain("var(--font-size-sm)");
+    // Size is font-size only: the size presets must not touch padding.
+    expect(css).not.toMatch(/\.badge--[sl][^}]*padding/);
+  });
+
   it("defines the glow treatment from currentColor (no raw hex)", () => {
     expect(css).toContain(".badge--glow");
     expect(css).toContain("color-mix(in srgb, currentColor");

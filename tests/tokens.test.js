@@ -21,6 +21,12 @@ describe("control tokens", () => {
   });
 });
 
+describe("font-size tokens", () => {
+  it("defines --font-size-2xs at 0.625rem for the compact badge size", () => {
+    expect(tokensCss).toContain("--font-size-2xs: 0.625rem");
+  });
+});
+
 describe("font-weight tokens", () => {
   it("defines --font-weight-medium at 500", () => {
     expect(tokensCss).toContain("--font-weight-medium: 500");

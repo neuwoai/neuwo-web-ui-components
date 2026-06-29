@@ -15,3 +15,9 @@
   border: 1px solid var(--tint-green-15);
   border-radius: var(--radius-md);
 }
+
+/* Size axis (density): a bounded scale. m (default, no class) is sm; s is the
+   responsive xs drop, l grows to base. Font-size only, composes with nothing
+   else here. */
+.deal-id--s { font-size: var(--font-size-xs); }
+.deal-id--l { font-size: var(--font-size-base); }
