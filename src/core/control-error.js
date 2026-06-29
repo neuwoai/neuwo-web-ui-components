@@ -12,6 +12,21 @@
 // presence. The consumer drives both attributes (see README).
 export function syncError(host, refs) {
   const { announce, accentEl, accentClass, container, lineClass, lineId } = refs;
+
+  // Opt-out: a control used as a plain toggle (no validation) can drop the
+  // reserved message line so it does not carry the empty row's vertical space.
+  // The whole affordance is suppressed (no accent, no aria, no line); the line
+  // reserves min-height, so not creating it reclaims the space. Setting `error`
+  // alongside the opt-out is a misconfiguration: the message has nowhere to go.
+  if (host.hasAttribute("no-error-line")) {
+    accentEl.classList.remove(accentClass);
+    announce.removeAttribute("aria-invalid");
+    announce.removeAttribute("aria-describedby");
+    const existing = container.querySelector(`.${lineClass}`);
+    if (existing) existing.remove();
+    return null;
+  }
+
   const has = host.hasAttribute("error");
   const muted = has && host.hasAttribute("error-muted");
   const message = has ? host.getAttribute("error") : "";

@@ -21,6 +21,7 @@ let uid = 0;
  * @attr {boolean} required - the control must be checked to be valid.
  * @attr error - error message; shows the red accent, the message, and aria-invalid.
  * @attr {boolean} error-muted - softens a shown error: drops the accent while the red message and invalid state stay.
+ * @attr {boolean} no-error-line - drop the reserved error message row (for a non-validated control); setting `error` alongside it is a misconfiguration.
  * @fires {Event} change - the checked state changed.
  * @slot - the control's label content.
  * @csspart input - the underlying native input.
@@ -29,7 +30,7 @@ let uid = 0;
  */
 export class NeuwoBooleanControl extends NeuwoElement {
   static formAssociated = true;
-  static observedAttributes = ["name", "value", "checked", "disabled", "required", "error", "error-muted"];
+  static observedAttributes = ["name", "value", "checked", "disabled", "required", "error", "error-muted", "no-error-line"];
 
   #internals;
   #control;
@@ -77,6 +78,8 @@ export class NeuwoBooleanControl extends NeuwoElement {
   set value(v) { this.setAttribute("value", String(v)); }
   get disabled() { return this.hasAttribute("disabled"); }
   set disabled(v) { this.toggleAttribute("disabled", Boolean(v)); }
+  get noErrorLine() { return this.hasAttribute("no-error-line"); }
+  set noErrorLine(v) { this.toggleAttribute("no-error-line", Boolean(v)); }
 
   checkValidity() {
     if (this.#internals && typeof this.#internals.checkValidity === "function")

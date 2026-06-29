@@ -29,6 +29,7 @@ let uid = 0;
  * @attr label - visible label text rendered above the control.
  * @attr error - error message; shows the red accent, the message, and aria-invalid.
  * @attr {boolean} error-muted - softens a shown error: drops the border/box-shadow accent while the red message and invalid state stay.
+ * @attr {boolean} no-error-line - drop the reserved error message row (for a non-validated control); setting `error` alongside it is a misconfiguration.
  * @fires {Event} change - the committed value changed.
  * @slot - not used; the label is set via the `label` attribute.
  * @csspart field - the wrapper around label, control, and error line.
@@ -53,6 +54,7 @@ export class NeuwoFieldElement extends NeuwoElement {
     "label",
     "error",
     "error-muted",
+    "no-error-line",
   ];
 
   #internals;
@@ -144,6 +146,12 @@ export class NeuwoFieldElement extends NeuwoElement {
   }
   set disabled(v) {
     this.toggleAttribute("disabled", Boolean(v));
+  }
+  get noErrorLine() {
+    return this.hasAttribute("no-error-line");
+  }
+  set noErrorLine(v) {
+    this.toggleAttribute("no-error-line", Boolean(v));
   }
   checkValidity() {
     return this.#control ? this.#control.checkValidity() : true;

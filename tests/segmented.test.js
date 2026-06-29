@@ -21,6 +21,17 @@ describe("<neuwo-segmented>", () => {
     expect(opts.every((b) => b.getAttribute("role") === "radio")).toBe(true);
   });
 
+  it("reserves the error line by default but drops it under no-error-line, reflecting the property", () => {
+    const withLine = make(`<neuwo-segmented value="visual">${OPTS}</neuwo-segmented>`);
+    expect(withLine.shadowRoot.querySelector(".control-error")).toBeTruthy();
+    const bare = make(`<neuwo-segmented no-error-line value="visual">${OPTS}</neuwo-segmented>`);
+    expect(bare.shadowRoot.querySelector(".control-error")).toBe(null);
+    expect(bare.noErrorLine).toBe(true);
+    bare.noErrorLine = false;
+    expect(bare.hasAttribute("no-error-line")).toBe(false);
+    expect(bare.shadowRoot.querySelector(".control-error")).toBeTruthy();
+  });
+
   it("renders an aria-hidden sliding indicator placed on the active option", () => {
     const el = make(`<neuwo-segmented value="visual">${OPTS}</neuwo-segmented>`);
     const indicator = el.shadowRoot.querySelector(".segmented__indicator");

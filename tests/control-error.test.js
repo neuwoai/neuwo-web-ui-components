@@ -94,4 +94,30 @@ describe("syncError", () => {
     syncError(host, refs);
     expect(container.querySelectorAll(".x-error").length).toBe(1);
   });
+
+  it("reserves no line and clears all aria when no-error-line is set", () => {
+    const host = document.createElement("div");
+    host.setAttribute("no-error-line", "");
+    const { container, accentEl, announce, refs } = harness();
+    expect(syncError(host, refs)).toBe(null);
+    expect(container.querySelector(".x-error")).toBe(null);
+    expect(accentEl.classList.contains("x--error")).toBe(false);
+    expect(announce.hasAttribute("aria-invalid")).toBe(false);
+    expect(announce.hasAttribute("aria-describedby")).toBe(false);
+  });
+
+  it("removes an existing line and accent when no-error-line is added later", () => {
+    const host = document.createElement("div");
+    host.setAttribute("error", "Nope");
+    const { container, accentEl, announce, refs } = harness();
+    syncError(host, refs);
+    expect(container.querySelector(".x-error")).toBeTruthy();
+    expect(accentEl.classList.contains("x--error")).toBe(true);
+    host.setAttribute("no-error-line", "");
+    expect(syncError(host, refs)).toBe(null);
+    expect(container.querySelector(".x-error")).toBe(null);
+    expect(accentEl.classList.contains("x--error")).toBe(false);
+    expect(announce.hasAttribute("aria-invalid")).toBe(false);
+    expect(announce.hasAttribute("aria-describedby")).toBe(false);
+  });
 });

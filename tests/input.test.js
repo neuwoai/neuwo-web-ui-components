@@ -15,6 +15,17 @@ describe("<neuwo-input>", () => {
     expect(control.type).toBe("text");
   });
 
+  it("drops the reserved error line under no-error-line and reflects the property", () => {
+    const withLine = make(`<neuwo-input label="Email"></neuwo-input>`);
+    expect(withLine.shadowRoot.querySelector(".field__error")).toBeTruthy();
+    const bare = make(`<neuwo-input label="Email" no-error-line></neuwo-input>`);
+    expect(bare.shadowRoot.querySelector(".field__error")).toBe(null);
+    expect(bare.noErrorLine).toBe(true);
+    bare.noErrorLine = false;
+    expect(bare.hasAttribute("no-error-line")).toBe(false);
+    expect(bare.shadowRoot.querySelector(".field__error")).toBeTruthy();
+  });
+
   it("maps an allowed type onto the inner input", () => {
     const control = make(`<neuwo-input type="email"></neuwo-input>`).shadowRoot.querySelector("input");
     expect(control.type).toBe("email");

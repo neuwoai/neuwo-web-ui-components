@@ -28,6 +28,7 @@ let uid = 0;
  * @attr {horizontal|vertical} orientation - layout and arrow-key axis (default vertical).
  * @attr error - error message; shows the red accent, the message, and aria-invalid.
  * @attr {boolean} error-muted - softens a shown error: drops the accent while the red message and invalid state stay.
+ * @attr {boolean} no-error-line - drop the reserved error message row (for a non-validated toggle, e.g. a toolbar segmented); setting `error` alongside it is a misconfiguration.
  * @fires {Event} change - the selected value changed.
  * @csspart group - the role=radiogroup container.
  * @csspart error - the reserved error message line.
@@ -35,7 +36,7 @@ let uid = 0;
  */
 export class NeuwoSingleSelect extends NeuwoElement {
   static formAssociated = true;
-  static observedAttributes = ["name", "value", "disabled", "required", "label", "orientation", "error", "error-muted"];
+  static observedAttributes = ["name", "value", "disabled", "required", "label", "orientation", "error", "error-muted", "no-error-line"];
 
   #internals;
   #group;
@@ -75,6 +76,8 @@ export class NeuwoSingleSelect extends NeuwoElement {
   }
   get disabled() { return this.hasAttribute("disabled"); }
   set disabled(v) { this.toggleAttribute("disabled", Boolean(v)); }
+  get noErrorLine() { return this.hasAttribute("no-error-line"); }
+  set noErrorLine(v) { this.toggleAttribute("no-error-line", Boolean(v)); }
 
   checkValidity() {
     if (this.#internals && typeof this.#internals.checkValidity === "function")
