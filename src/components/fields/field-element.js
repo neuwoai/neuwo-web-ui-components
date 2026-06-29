@@ -17,6 +17,9 @@ let uid = 0;
 /**
  * Base for the text-like field controls (input, textarea, select, combobox).
  * Owns form association, the value and disabled API, label and error rendering.
+ * Restyle the control from the host via `::part(input)`, including transient
+ * state the component does not own (e.g. `[data-flash]::part(input)` to flash a
+ * field red on a host-driven event without setting a persistent `error`).
  *
  * @summary Base class for Neuwo field controls.
  * @attr name - form field name submitted with the value.

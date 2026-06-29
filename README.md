@@ -34,6 +34,18 @@ consumers), use the combined stylesheet instead:
 <link rel="stylesheet" href="https://cdn.neuwo.ai/neuwo.css" />
 ```
 
+### Fonts
+
+`@font-face` is ignored inside shadow roots, so the script injects the brand
+font rules into `document.head` once and resolves the `woff2` files relative to
+its own URL (you do not link a font stylesheet). The font files ship next to the
+bundle under `fonts/`, so to preload them point at that directory:
+
+```html
+<link rel="preload" as="font" type="font/woff2" crossorigin
+      href="https://cdn.neuwo.ai/fonts/outfit-variable.woff2" />
+```
+
 ## Components
 
 | Component | Tag | Status |
@@ -47,9 +59,12 @@ consumers), use the combined stylesheet instead:
 | Toggle / Switch | `<neuwo-toggle>` | Stable |
 | Radio group | `<neuwo-radio-group>` / `<neuwo-radio>` | Stable |
 | Segmented control | `<neuwo-segmented>` | Stable |
+| Badge | `<neuwo-badge>` | Stable |
+| Deal-ID chip | `<neuwo-deal-id>` | Stable |
+| Status dot | `<neuwo-status-dot>` | Stable |
+| CTA band | `<neuwo-cta>` | Stable |
 | Modal | `<neuwo-modal>` | Planned |
 | Card | `<neuwo-card>` | Planned |
-| Badge | `<neuwo-badge>` | Planned |
 
 Published styling files, for direct linking or non-web use:
 
@@ -60,6 +75,55 @@ Published styling files, for direct linking or non-web use:
 | Tokens + typography (one file) | `@neuwo/web-ui-components/neuwo.css` |
 | Button recipe | `@neuwo/web-ui-components/components/button/button.css` |
 | Field chrome | `@neuwo/web-ui-components/components/fields/field.css` |
+
+## Restyling from the host
+
+Shadow DOM keeps the host page's CSS out, but two channels are deliberately
+open, and together they reach almost every visual detail without forking a
+component:
+
+- **`::part(...)`** is the intended restyling hook. Every element exposes its
+  internals as parts (`badge`, `value`, `dot`, `input`, `button`, `cta`, the
+  field `label` and `error`, and more, listed per component in the manifest).
+  Adjust size, weight, colour, font or spacing from the host:
+
+  ```css
+  .my-tag::part(badge) { font-weight: 500; }
+  .deal-ref::part(value) { font-family: ui-monospace, monospace; }
+  ```
+
+- **Inherited CSS properties** cross the boundary into slotted content. The
+  badge and deal-id render their text as authored, so the host controls casing
+  with `text-transform`:
+
+  ```css
+  .hero-tags neuwo-badge { text-transform: uppercase; } /* eyebrow look */
+  ```
+
+- **Transient state** is reachable too: the field controls expose
+  `::part(input)`, so a host-driven flag can flash a field without the
+  component owning a persistent `error`:
+
+  ```css
+  .api-field[data-flash]::part(input) {
+    border-color: var(--color-red);
+    box-shadow: var(--shadow-danger);
+  }
+  ```
+
+Prefer a size axis where one exists (`<neuwo-badge size>`, `<neuwo-deal-id
+size>`) over a `::part` font-size override, so the scale stays on-brand.
+
+## Form fields share one API
+
+`<neuwo-input>`, `<neuwo-textarea>`, `<neuwo-select>` and `<neuwo-combobox>`
+extend one base, so they share the same attributes and properties (`name`,
+`value`, `label`, `disabled`, `required`, `error`, `error-muted`,
+`no-error-line`), the same `change` event, and the same parts (`field`,
+`input`, `label`, `error`). The selection controls (`<neuwo-checkbox>`,
+`<neuwo-toggle>`, `<neuwo-radio-group>`, `<neuwo-segmented>`) share the error
+and `no-error-line` behaviour below. The generated `.d.ts` shows these on the
+base class each control `extends`.
 
 ## Form errors
 
@@ -94,6 +158,13 @@ group.addEventListener("change", () => {
   if (group.hasAttribute("error")) group.setAttribute("error-muted", "");
 });
 ```
+
+Every control reserves a fixed-height row for the message so toggling an error
+never shifts layout. A control used as a plain toggle with no validation (a
+toolbar `<neuwo-segmented>`, say) can drop that row with `no-error-line`, so it
+carries no empty vertical space. The control is then treated as non-validated:
+setting `error` alongside `no-error-line` is a misconfiguration, the message has
+nowhere to render.
 
 ## Develop
 
