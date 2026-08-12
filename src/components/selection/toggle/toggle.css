@@ -96,9 +96,44 @@
   box-shadow: var(--shadow-danger);
 }
 
+/* Attention pulse: a ring that invites the visitor to flip a switch they have
+   not noticed (the revenue calculator's Bid Enrichment switch). It rings only
+   while the switch is off, and the selector is what stops it, so turning it on
+   ends the animation without a re-render. The ring rides on its own ::before so
+   it never competes with the track's focus and error box-shadows.
+
+   Shaped like the CTA button's ring and parameterised the same way, but with a
+   keyframe of its own: a shadow root cannot inherit keyframes, and a published
+   recipe has to be complete on its own. The two knobs are read with a fallback
+   rather than declared, so a consumer can set either from :root or the host. */
+.form-toggle--pulse .form-toggle__input:not(:checked) + .form-toggle__track::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  animation: toggle-pulse 3s ease-in-out infinite;
+}
+
+@keyframes toggle-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-blue) var(--toggle-pulse-alpha, 40%), transparent);
+  }
+  23% {
+    box-shadow: 0 0 0 var(--toggle-pulse-spread, 12px) color-mix(in srgb, var(--color-blue) 0%, transparent);
+  }
+  45%, 100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-blue) var(--toggle-pulse-alpha, 40%), transparent);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .form-toggle__track,
   .form-toggle__track::after {
     transition: none;
+  }
+
+  .form-toggle--pulse .form-toggle__input:not(:checked) + .form-toggle__track::before {
+    animation: none;
   }
 }

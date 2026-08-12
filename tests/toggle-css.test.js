@@ -19,6 +19,19 @@ describe("toggle.css recipe", () => {
     expect(css).toContain("var(--color-blue)");
   });
 
+  it("rings an unchecked switch when the pulse axis is on", () => {
+    // Only while off: the ring is an invitation to flip it, so switching it on
+    // ends the animation through the selector rather than through JS.
+    expect(css).toMatch(/\.form-toggle--pulse \.form-toggle__input:not\(:checked\) \+ \.form-toggle__track::before/);
+    expect(css).toContain("@keyframes toggle-pulse");
+    // The ring reads in the brand accent, like the CTA's, not in the track's
+    // own muted colour, which would barely register against the glass.
+    expect(css).toMatch(/@keyframes toggle-pulse[\s\S]*var\(--color-blue\)/);
+    expect(css).toContain("var(--toggle-pulse-spread, 12px)");
+    expect(css).toContain("var(--toggle-pulse-alpha, 40%)");
+    expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*\.form-toggle--pulse[\s\S]*animation: none/);
+  });
+
   it("uses tokens for focus/disabled/error and guards reduced motion", () => {
     expect(css).toContain("var(--shadow-focus)");
     expect(css).toContain("var(--opacity-disabled)");

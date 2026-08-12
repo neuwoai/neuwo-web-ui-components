@@ -47,4 +47,29 @@ describe("<neuwo-toggle>", () => {
     el.formResetCallback();
     expect(el.checked).toBe(true);
   });
+
+  it("carries the attention pulse on the row, not the host", () => {
+    const el = make(`<neuwo-toggle pulse>Bid Enrichment</neuwo-toggle>`);
+    expect(el.shadowRoot.querySelector(".form-toggle").classList.contains("form-toggle--pulse")).toBe(true);
+    expect(make(`<neuwo-toggle></neuwo-toggle>`).shadowRoot.querySelector(".form-toggle").classList.contains("form-toggle--pulse")).toBe(false);
+  });
+
+  it("keeps the pulse class through a switch, since the CSS stops it when checked", () => {
+    // The ring is off while checked by selector, not by re-rendering: a class
+    // pulled on every toggle would restart the animation on the way back.
+    const el = make(`<neuwo-toggle pulse></neuwo-toggle>`);
+    el.checked = true;
+    expect(el.shadowRoot.querySelector(".form-toggle").classList.contains("form-toggle--pulse")).toBe(true);
+  });
+
+  it("reflects the pulse property to the attribute", () => {
+    const el = make(`<neuwo-toggle></neuwo-toggle>`);
+    expect(el.pulse).toBe(false);
+    el.pulse = true;
+    expect(el.hasAttribute("pulse")).toBe(true);
+    expect(el.shadowRoot.querySelector(".form-toggle").classList.contains("form-toggle--pulse")).toBe(true);
+    el.pulse = false;
+    expect(el.hasAttribute("pulse")).toBe(false);
+    expect(el.shadowRoot.querySelector(".form-toggle").classList.contains("form-toggle--pulse")).toBe(false);
+  });
 });

@@ -111,6 +111,7 @@ describe("custom-elements.json", () => {
   it("documents the selection-control parts", () => {
     for (const p of ["field", "label"]) expect(partsFor(manifest, "neuwo-checkbox").has(p)).toBe(true);
     for (const p of ["field", "track", "label"]) expect(partsFor(manifest, "neuwo-toggle").has(p)).toBe(true);
+    expect(attributesFor(manifest, "neuwo-toggle").has("pulse")).toBe(true);
     for (const p of ["field", "input", "label"]) expect(partsFor(manifest, "neuwo-radio").has(p)).toBe(true);
     for (const p of ["legend", "options"]) expect(partsFor(manifest, "neuwo-radio-group").has(p)).toBe(true);
     for (const p of ["indicator", "option"]) expect(partsFor(manifest, "neuwo-segmented").has(p)).toBe(true);

@@ -316,6 +316,20 @@
       <neuwo-toggle disabled>Disabled</neuwo-toggle>
     </div>
 
+    <h2>neuwo-toggle attention pulse (rings while off, stops once on)</h2>
+    <p>
+      For a switch the visitor is meant to notice, like the revenue
+      calculator's Bid Enrichment. Flip it and the ring stops; flip it back and
+      it resumes.
+    </p>
+    <div class="row">
+      <neuwo-toggle pulse>Bid Enrichment</neuwo-toggle>
+      <neuwo-toggle pulse checked>Already on, so no ring</neuwo-toggle>
+      <neuwo-toggle pulse disabled>Disabled</neuwo-toggle>
+      <!-- The ring's two knobs inherit through the shadow boundary. -->
+      <neuwo-toggle pulse style="--toggle-pulse-spread: 20px; --toggle-pulse-alpha: 60%">Louder ring</neuwo-toggle>
+    </div>
+
     <h2>Selection: radio group</h2>
     <form id="radio-form">
       <div class="row">

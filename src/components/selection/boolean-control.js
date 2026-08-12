@@ -61,6 +61,7 @@ export class NeuwoBooleanControl extends NeuwoElement {
   // --- protected ---
   get internals() { return this.#internals; }
   get control() { return this.#control; }
+  get row() { return this.#row; }
   get controlId() { return this.#id; }
 
   // --- public API ---
