@@ -115,9 +115,9 @@ describe("custom-elements.json", () => {
     for (const a of ["value", "disabled", "checked"]) expect(attrs).toContain(a);
   });
 
-  it("documents the badge's five axes and part", () => {
+  it("documents the badge's six axes and part", () => {
     const attrs = attributesFor(manifest, "neuwo-badge");
-    for (const a of ["variant", "size", "borderless", "motion", "glow"]) expect(attrs).toContain(a);
+    for (const a of ["variant", "size", "borderless", "motion", "intensity", "glow"]) expect(attrs).toContain(a);
     expect(partsFor(manifest, "neuwo-badge").has("badge")).toBe(true);
   });
 
@@ -134,7 +134,7 @@ describe("custom-elements.json", () => {
 
   it("documents the cta's attributes and parts", () => {
     const attrs = attributesFor(manifest, "neuwo-cta");
-    for (const a of ["variant", "pulse", "heading-level"]) expect(attrs).toContain(a);
+    for (const a of ["variant", "pulse", "intensity", "heading-level"]) expect(attrs).toContain(a);
     for (const p of ["cta", "inner", "headline", "sub", "actions"])
       expect(partsFor(manifest, "neuwo-cta").has(p)).toBe(true);
   });

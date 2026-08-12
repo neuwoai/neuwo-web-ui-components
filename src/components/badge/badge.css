@@ -50,19 +50,25 @@
 }
 
 /* Pulse axis: a continuous radial ring (the live-status idiom), variant-coloured
-   via currentColor; reproduces the design system's green pulse exactly. */
+   via currentColor; reproduces the design system's green pulse exactly. The ring
+   geometry sits in custom properties so the intensity axis can scale it without
+   a second keyframe block (a modifier class cannot reach inside @keyframes). */
 .badge--pulse {
+  --badge-pulse-spread: 6px;
+  --badge-pulse-alpha: 20%;
   animation: badge-pulse 2.5s ease-in-out infinite;
 }
 
 @keyframes badge-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 20%, transparent); }
-  50%      { box-shadow: 0 0 0 6px color-mix(in srgb, currentColor 0%, transparent); }
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor var(--badge-pulse-alpha), transparent); }
+  50%      { box-shadow: 0 0 0 var(--badge-pulse-spread) color-mix(in srgb, currentColor 0%, transparent); }
 }
 
 /* Shimmer motion: a sweeping highlight (the design system's solutions badge),
    variant-independent via --color-shimmer. Mutually exclusive with pulse. */
 .badge--shimmer {
+  --badge-shimmer-width: 35%;
+  --badge-shimmer-strength: 100%;
   position: relative;
   overflow: hidden;
 }
@@ -72,9 +78,14 @@
   position: absolute;
   top: 0;
   left: -100%;
-  width: 35%;
+  width: var(--badge-shimmer-width);
   height: 100%;
-  background: linear-gradient(90deg, transparent, var(--color-shimmer), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--color-shimmer) var(--badge-shimmer-strength), transparent),
+    transparent
+  );
   animation: badge-shimmer 8s ease-in-out 2s infinite;
   pointer-events: none;
 }
@@ -83,6 +94,25 @@
   0%   { left: -100%; }
   30%  { left: 200%; }
   100% { left: 200%; }
+}
+
+/* Intensity axis: how loud the active motion is. m (default, no class) is the
+   base recipe above; s is a restrained version for dense rows, l a pronounced
+   one for hero placements. Authored after both motions so it overrides their
+   defaults, and only ever sets custom properties, so it composes with either
+   motion and with every other axis. */
+.badge--intensity-s {
+  --badge-pulse-spread: 4px;
+  --badge-pulse-alpha: 14%;
+  --badge-shimmer-width: 25%;
+  --badge-shimmer-strength: 60%;
+}
+
+.badge--intensity-l {
+  --badge-pulse-spread: 10px;
+  --badge-pulse-alpha: 30%;
+  --badge-shimmer-width: 55%;
+  --badge-shimmer-strength: 100%;
 }
 
 @media (prefers-reduced-motion: reduce) {

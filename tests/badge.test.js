@@ -111,6 +111,47 @@ describe("<neuwo-badge>", () => {
     expect(mixed.contains("badge--borderless")).toBe(true);
   });
 
+  it("is intensity m (no modifier class) by default", () => {
+    const el = make(`<neuwo-badge motion="pulse">x</neuwo-badge>`);
+    const c = el.shadowRoot.querySelector(".badge").classList;
+    expect(c.contains("badge--intensity-s")).toBe(false);
+    expect(c.contains("badge--intensity-l")).toBe(false);
+    expect(el.intensity).toBe("m");
+  });
+
+  it("maps intensity s and l to a modifier class, and m / unknown to none", () => {
+    expect(make(`<neuwo-badge motion="pulse" intensity="s">x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList.contains("badge--intensity-s")).toBe(true);
+    expect(make(`<neuwo-badge motion="pulse" intensity="l">x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList.contains("badge--intensity-l")).toBe(true);
+    const unknown = make(`<neuwo-badge motion="pulse" intensity="xl">x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList;
+    expect(unknown.contains("badge--intensity-s")).toBe(false);
+    expect(unknown.contains("badge--intensity-l")).toBe(false);
+  });
+
+  it("scales either motion and stays silent without one", () => {
+    const shimmer = make(`<neuwo-badge motion="shimmer" intensity="l">x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList;
+    expect(shimmer.contains("badge--shimmer")).toBe(true);
+    expect(shimmer.contains("badge--intensity-l")).toBe(true);
+    // Amplitude with nothing to amplify: no class, so no dead custom properties.
+    const still = make(`<neuwo-badge intensity="l">x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList;
+    expect(still.contains("badge--intensity-l")).toBe(false);
+  });
+
+  it("reflects the intensity property and composes with the other axes", () => {
+    const el = make(`<neuwo-badge variant="green" size="s" borderless motion="pulse">Live</neuwo-badge>`);
+    el.intensity = "s";
+    expect(el.getAttribute("intensity")).toBe("s");
+    const c = el.shadowRoot.querySelector(".badge").classList;
+    expect(c.contains("badge--intensity-s")).toBe(true);
+    expect(c.contains("badge--green")).toBe(true);
+    expect(c.contains("badge--s")).toBe(true);
+    expect(c.contains("badge--borderless")).toBe(true);
+    expect(c.contains("badge--pulse")).toBe(true);
+    el.intensity = "";
+    expect(el.hasAttribute("intensity")).toBe(false);
+    expect(el.intensity).toBe("m");
+    expect(el.shadowRoot.querySelector(".badge").classList.contains("badge--intensity-s")).toBe(false);
+  });
+
   it("has no glow by default", () => {
     expect(make(`<neuwo-badge>x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList.contains("badge--glow")).toBe(false);
   });

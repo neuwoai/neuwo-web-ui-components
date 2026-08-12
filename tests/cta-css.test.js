@@ -43,6 +43,14 @@ describe("cta.css recipe", () => {
     expect(css).toContain("@keyframes cta-button-pulse");
   });
 
+  it("scales the ring from the intensity axis without a second keyframe block", () => {
+    expect(css).toContain(':host([pulse][intensity="s"])');
+    expect(css).toContain(':host([pulse][intensity="l"])');
+    expect(css).toContain("var(--cta-pulse-spread)");
+    expect(css).toContain("var(--cta-pulse-alpha)");
+    expect(css.match(/@keyframes cta-button-pulse/g)).toHaveLength(1);
+  });
+
   it("rings the first action button whatever its variant", () => {
     // A variant filter would silently drop the ring for an outline primary and
     // force the consumer to slot a solid button and repaint it via ::part.

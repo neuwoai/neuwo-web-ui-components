@@ -49,13 +49,28 @@
    primary action is the one authored first, and an outline or glass primary
    pulses exactly like a solid one. */
 :host([pulse]) ::slotted(neuwo-button:first-of-type) {
+  --cta-pulse-spread: 12px;
+  --cta-pulse-alpha: 40%;
   animation: cta-button-pulse 5.5s ease-in-out infinite;
 }
 
+/* Intensity axis: how loud the ring is. m (the rule above) is the base; s is a
+   restrained ring for a repeated in-page band, l a pronounced one for a hero.
+   Custom properties only, because a modifier cannot reach inside @keyframes. */
+:host([pulse][intensity="s"]) ::slotted(neuwo-button:first-of-type) {
+  --cta-pulse-spread: 8px;
+  --cta-pulse-alpha: 28%;
+}
+
+:host([pulse][intensity="l"]) ::slotted(neuwo-button:first-of-type) {
+  --cta-pulse-spread: 18px;
+  --cta-pulse-alpha: 55%;
+}
+
 @keyframes cta-button-pulse {
-  0%        { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-blue) 40%, transparent); }
-  23%       { box-shadow: 0 0 0 12px color-mix(in srgb, var(--color-blue) 0%, transparent); }
-  45%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-blue) 40%, transparent); }
+  0%        { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-blue) var(--cta-pulse-alpha), transparent); }
+  23%       { box-shadow: 0 0 0 var(--cta-pulse-spread) color-mix(in srgb, var(--color-blue) 0%, transparent); }
+  45%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-blue) var(--cta-pulse-alpha), transparent); }
 }
 
 /* On hover the idle pulse yields to the hover state. */

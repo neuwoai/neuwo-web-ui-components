@@ -351,6 +351,26 @@
       <neuwo-badge size="l">Large</neuwo-badge>
       <neuwo-badge variant="green" size="s" borderless motion="pulse">Live</neuwo-badge>
     </div>
+    <h2>Badge intensity axis (amplitude of the active motion, default m)</h2>
+    <p>
+      Intensity scales whichever motion is on: the pulse ring, or the shimmer sweep.
+      Without <code>motion</code> it does nothing.
+    </p>
+    <div class="row">
+      <neuwo-badge variant="green" motion="pulse" intensity="s">Quiet pulse</neuwo-badge>
+      <neuwo-badge variant="green" motion="pulse">Default pulse</neuwo-badge>
+      <neuwo-badge variant="green" motion="pulse" intensity="l">Loud pulse</neuwo-badge>
+    </div>
+    <div class="row">
+      <neuwo-badge motion="shimmer" intensity="s">Quiet shimmer</neuwo-badge>
+      <neuwo-badge motion="shimmer">Default shimmer</neuwo-badge>
+      <neuwo-badge motion="shimmer" intensity="l">Loud shimmer</neuwo-badge>
+    </div>
+    <div class="row">
+      <!-- the dense-row case the axis exists for: a small pill with a ring to match. -->
+      <neuwo-badge variant="green" size="s" borderless motion="pulse" intensity="s">Live</neuwo-badge>
+    </div>
+
     <h2>Badge token re-theming (inherits through the shadow boundary)</h2>
     <div class="row reskin">
       <neuwo-badge>Re-themed</neuwo-badge>
@@ -442,6 +462,20 @@
       <neuwo-button slot="actions" variant="outline">Book a demo</neuwo-button>
       <neuwo-button slot="actions" variant="glass">Read the docs</neuwo-button>
     </neuwo-cta>
+
+    <h2>neuwo-cta pulse intensity (amplitude of the ring, default m)</h2>
+    <div style="display: grid; gap: 1.5rem">
+      <neuwo-cta pulse intensity="s">
+        A <span data-accent>quiet</span> ring for a repeated band
+        <span slot="sub">intensity="s"</span>
+        <neuwo-button slot="actions" variant="solid">Get Started</neuwo-button>
+      </neuwo-cta>
+      <neuwo-cta pulse intensity="l">
+        A <span data-accent>loud</span> ring for a hero band
+        <span slot="sub">intensity="l"</span>
+        <neuwo-button slot="actions" variant="solid">Get Started</neuwo-button>
+      </neuwo-cta>
+    </div>
 
     <h2>neuwo-cta heading level</h2>
     <neuwo-cta heading-level="3">

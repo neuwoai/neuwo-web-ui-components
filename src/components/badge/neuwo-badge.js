@@ -3,9 +3,10 @@ import { sheet } from "../../core/sheet.js";
 import badgeCss from "./badge.css?raw";
 
 /**
- * On-brand inline label pill with five independent, mix-and-match axes: colour
- * (`variant`), size (`size`), border (`borderless`), motion (`motion`), and glow
- * (`glow`). Renders the design language's eyebrow "tag" recipe and, composed,
+ * On-brand inline label pill with six independent, mix-and-match axes: colour
+ * (`variant`), size (`size`), border (`borderless`), motion (`motion`), motion
+ * amplitude (`intensity`), and glow (`glow`). Renders the design language's
+ * eyebrow "tag" recipe and, composed,
  * its live-status look. The label renders as authored: pass upper-case text for
  * the eyebrow look, or mixed-case for a plain pill; the consumer owns casing
  * (host `text-transform` inherits through the shadow boundary into the label).
@@ -19,6 +20,7 @@ import badgeCss from "./badge.css?raw";
  * @attr {s|m|l} size - density scale, font-size only (default m): s 0.625rem, m 0.75rem, l 0.875rem.
  * @attr {boolean} borderless - drop the outline for a solid-looking pill.
  * @attr {pulse|shimmer} motion - optional animation: `pulse` a radial ring, `shimmer` a sweep; honours prefers-reduced-motion.
+ * @attr {s|m|l} intensity - amplitude of the active motion (default m): pulse ring size, shimmer sweep width. No effect without `motion`.
  * @attr {boolean} glow - neon bloom keyed to the variant colour; composes with any variant and motion.
  * @slot - the label content.
  * @csspart badge - the pill element.
@@ -27,7 +29,7 @@ import badgeCss from "./badge.css?raw";
  */
 export class NeuwoBadge extends NeuwoElement {
   static styles = sheet(badgeCss);
-  static observedAttributes = ["variant", "size", "borderless", "motion", "glow"];
+  static observedAttributes = ["variant", "size", "borderless", "motion", "intensity", "glow"];
 
   get variant() { return this.getAttribute("variant") || "blue"; }
   set variant(value) {
@@ -46,12 +48,17 @@ export class NeuwoBadge extends NeuwoElement {
     if (value == null || value === "") this.removeAttribute("motion");
     else this.setAttribute("motion", String(value));
   }
+  get intensity() { return this.getAttribute("intensity") || "m"; }
+  set intensity(value) {
+    if (value == null || value === "") this.removeAttribute("intensity");
+    else this.setAttribute("intensity", String(value));
+  }
   get glow() { return this.hasAttribute("glow"); }
   set glow(value) { this.toggleAttribute("glow", Boolean(value)); }
 
   render() {
     const classes = ["badge"];
-    // Four orthogonal axes, freely combined. Only green deviates on colour; any
+    // Orthogonal axes, freely combined. Only green deviates on colour; any
     // other value (absent or unknown) renders the blue base.
     if (this.getAttribute("variant") === "green") classes.push("badge--green");
     const size = this.getAttribute("size");
@@ -61,6 +68,10 @@ export class NeuwoBadge extends NeuwoElement {
     const motion = this.getAttribute("motion");
     if (motion === "pulse") classes.push("badge--pulse");
     else if (motion === "shimmer") classes.push("badge--shimmer");
+    // Intensity only scales an active motion, so it is emitted alongside one.
+    const intensity = this.getAttribute("intensity");
+    if ((motion === "pulse" || motion === "shimmer") && (intensity === "s" || intensity === "l"))
+      classes.push(`badge--intensity-${intensity}`);
 
     const badge = document.createElement("span");
     badge.className = classes.join(" ");

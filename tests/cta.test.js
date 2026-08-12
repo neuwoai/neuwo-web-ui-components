@@ -60,6 +60,16 @@ describe("<neuwo-cta>", () => {
     expect(el.hasAttribute("pulse")).toBe(false);
   });
 
+  it("reflects the intensity property to the attribute and defaults to m", () => {
+    const el = make(FULL("pulse"));
+    expect(el.intensity).toBe("m");
+    el.intensity = "l";
+    expect(el.getAttribute("intensity")).toBe("l");
+    el.intensity = "";
+    expect(el.hasAttribute("intensity")).toBe(false);
+    expect(el.intensity).toBe("m");
+  });
+
   it("warns when the actions slot has no button", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     make(`<neuwo-cta>Ready?</neuwo-cta>`);

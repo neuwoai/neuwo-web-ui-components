@@ -34,13 +34,14 @@ function slot(name) {
  * gradient border that comes alive on hover). Wrap headline words in an element
  * with `data-accent` to paint just those words with the brand gradient. With the
  * `pulse` attribute, the first slotted action button radiates a ring synced to
- * the surface shimmer, whatever its variant. Presentational; the actions are
- * slotted `<neuwo-button>`s.
+ * the surface shimmer, whatever its variant, and `intensity` scales that ring.
+ * Presentational; the actions are slotted `<neuwo-button>`s.
  *
  * @summary Neuwo call-to-action band.
  * @customElement neuwo-cta
  * @attr {banner|spotlight} variant - layout and chrome (default banner).
  * @attr {boolean} pulse - radiate a synchronised pulse ring on the first slotted action button, any variant; honours prefers-reduced-motion.
+ * @attr {s|m|l} intensity - amplitude of the pulse ring (default m). No effect without `pulse`.
  * @attr {1|2|3|4|5|6} heading-level - heading level for the headline element (default 2).
  * @slot - the headline; wrap gradient fragments in an element with `data-accent`.
  * @slot sub - the supporting line under the headline.
@@ -62,9 +63,16 @@ export class NeuwoCta extends NeuwoElement {
     if (value == null || value === "") this.removeAttribute("variant");
     else this.setAttribute("variant", String(value));
   }
-  // `pulse` is driven purely by the `:host([pulse])` rule, so it needs no render.
+  // `pulse` and `intensity` are driven purely by `:host([...])` rules, so
+  // neither needs a render pass or a place in observedAttributes.
   get pulse() { return this.hasAttribute("pulse"); }
   set pulse(value) { this.toggleAttribute("pulse", Boolean(value)); }
+
+  get intensity() { return this.getAttribute("intensity") || "m"; }
+  set intensity(value) {
+    if (value == null || value === "") this.removeAttribute("intensity");
+    else this.setAttribute("intensity", String(value));
+  }
 
   get headingLevel() { return this.getAttribute("heading-level") || "2"; }
   set headingLevel(value) {

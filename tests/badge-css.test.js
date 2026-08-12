@@ -46,6 +46,20 @@ describe("badge.css recipe", () => {
     expect(css).not.toMatch(/\.badge--[sl][^}]*padding/);
   });
 
+  it("scales both motions from the intensity axis without a second keyframe block", () => {
+    expect(css).toContain(".badge--intensity-s");
+    expect(css).toContain(".badge--intensity-l");
+    // The keyframes read the axis, so one block covers all three steps.
+    expect(css).toContain("var(--badge-pulse-spread)");
+    expect(css).toContain("var(--badge-pulse-alpha)");
+    expect(css).toContain("var(--badge-shimmer-width)");
+    expect(css).toContain("var(--badge-shimmer-strength)");
+    expect(css.match(/@keyframes badge-pulse/g)).toHaveLength(1);
+    expect(css.match(/@keyframes badge-shimmer/g)).toHaveLength(1);
+    // Intensity is amplitude only: it must not redefine the motions themselves.
+    expect(css).not.toMatch(/\.badge--intensity-[sl][^}]*animation/);
+  });
+
   it("defines the glow treatment from currentColor (no raw hex)", () => {
     expect(css).toContain(".badge--glow");
     expect(css).toContain("color-mix(in srgb, currentColor");
