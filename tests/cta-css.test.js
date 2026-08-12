@@ -66,6 +66,13 @@ describe("cta.css recipe", () => {
     expect(css).toMatch(/@media \(max-width: 40rem\)[\s\S]*\.cta__field[^}]*margin-inline: auto/);
   });
 
+  it("tokenises the three status states and costs no space when empty", () => {
+    expect(css).toMatch(/\.cta__status\s*\{[^}]*color:\s*var\(--color-grey-400\)/);
+    expect(css).toMatch(/\.cta__status--success\s*\{[^}]*color:\s*var\(--color-green\)/);
+    expect(css).toMatch(/\.cta__status--error\s*\{[^}]*color:\s*var\(--color-red\)/);
+    expect(css).toMatch(/\.cta__status:empty\s*\{[^}]*margin-top:\s*0/);
+  });
+
   it("uses no raw colour literals", () => {
     expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
     expect(css).not.toMatch(/rgba?\(/);

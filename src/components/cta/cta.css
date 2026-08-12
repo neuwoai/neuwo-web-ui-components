@@ -40,6 +40,27 @@
   display: none;
 }
 
+/* Feedback after the band's action (a capture confirmation, a failure). The
+   paragraph is always present so its live region announces reliably; empty, it
+   has no line boxes and drops its margin, so it costs no space until used. */
+.cta__status {
+  margin-top: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-grey-400);
+}
+
+.cta__status:empty {
+  margin-top: 0;
+}
+
+.cta__status--success {
+  color: var(--color-green);
+}
+
+.cta__status--error {
+  color: var(--color-red);
+}
+
 .cta__actions {
   display: flex;
   flex-wrap: wrap;

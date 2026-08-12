@@ -140,8 +140,9 @@ describe("custom-elements.json", () => {
 
   it("documents the cta's attributes and parts", () => {
     const attrs = attributesFor(manifest, "neuwo-cta");
-    for (const a of ["variant", "pulse", "intensity", "heading-level"]) expect(attrs).toContain(a);
-    for (const p of ["cta", "inner", "headline", "sub", "actions"])
+    for (const a of ["variant", "pulse", "intensity", "heading-level", "status", "status-state"])
+      expect(attrs).toContain(a);
+    for (const p of ["cta", "inner", "headline", "sub", "actions", "field", "status"])
       expect(partsFor(manifest, "neuwo-cta").has(p)).toBe(true);
   });
 

@@ -130,6 +130,58 @@ describe("<neuwo-cta>", () => {
     expect(el.shadowRoot.querySelector(".cta__field").classList.contains("cta__field--empty")).toBe(false);
   });
 
+  it("renders the status line as a live region, empty by default", () => {
+    const root = make(FULL()).shadowRoot;
+    const status = root.querySelector(".cta__status");
+    expect(status.getAttribute("part")).toBe("status");
+    expect(status.getAttribute("role")).toBe("status");
+    expect(status.getAttribute("aria-live")).toBe("polite");
+    expect(status.textContent).toBe("");
+    // Present but empty, never display:none: a live region that is injected or
+    // un-hidden with its text already in place does not reliably announce.
+    expect(status.classList.contains("cta__status--success")).toBe(false);
+  });
+
+  it("writes the status message and switches its state", () => {
+    const el = make(FULL());
+    const status = el.shadowRoot.querySelector(".cta__status");
+    el.status = "Thanks, we will be in touch shortly.";
+    el.statusState = "success";
+    expect(status.textContent).toBe("Thanks, we will be in touch shortly.");
+    expect(status.classList.contains("cta__status--success")).toBe(true);
+    el.statusState = "error";
+    expect(status.classList.contains("cta__status--success")).toBe(false);
+    expect(status.classList.contains("cta__status--error")).toBe(true);
+  });
+
+  it("falls back to the muted state for an unknown status state", () => {
+    const status = make(FULL('status="Working" status-state="loud"')).shadowRoot.querySelector(".cta__status");
+    expect(status.textContent).toBe("Working");
+    expect(status.classList.contains("cta__status--success")).toBe(false);
+    expect(status.classList.contains("cta__status--error")).toBe(false);
+  });
+
+  it("reflects the status properties to their attributes", () => {
+    const el = make(FULL());
+    expect(el.status).toBe("");
+    expect(el.statusState).toBe("muted");
+    el.status = "Sent";
+    el.statusState = "success";
+    expect(el.getAttribute("status")).toBe("Sent");
+    expect(el.getAttribute("status-state")).toBe("success");
+    el.status = "";
+    el.statusState = "muted";
+    expect(el.hasAttribute("status")).toBe(false);
+    expect(el.hasAttribute("status-state")).toBe(false);
+  });
+
+  it("keeps the built card when only the status changes", () => {
+    const el = make(FULL());
+    const card = el.shadowRoot.querySelector(".cta");
+    el.status = "Sent";
+    expect(el.shadowRoot.querySelector(".cta")).toBe(card);
+  });
+
   it("keeps the tree it built across a re-render, and replaces it on a structural change", () => {
     const el = make(FULL());
     const card = el.shadowRoot.querySelector(".cta");

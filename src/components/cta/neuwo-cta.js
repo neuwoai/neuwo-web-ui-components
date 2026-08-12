@@ -46,6 +46,8 @@ function slot(name) {
  * @attr {boolean} pulse - radiate a synchronised pulse ring on the first slotted action button, any variant; honours prefers-reduced-motion.
  * @attr {s|m|l} intensity - amplitude of the pulse ring (default m). No effect without `pulse`.
  * @attr {1|2|3|4|5|6} heading-level - heading level for the headline element (default 2).
+ * @attr status - message shown under the field after the band's action; the consumer sets it, the component renders the line and its live region.
+ * @attr {muted|success|error} status-state - colour of the status message (default muted).
  * @slot - the headline; wrap gradient fragments in an element with `data-accent`.
  * @slot sub - the supporting line under the headline.
  * @slot field - an inline field in the text column (an email capture); wrap the band in your own <form> and the slotted control submits with it.
@@ -55,6 +57,7 @@ function slot(name) {
  * @csspart headline - the headline element.
  * @csspart sub - the supporting line.
  * @csspart field - the wrapper around the slotted field.
+ * @csspart status - the status message line.
  * @csspart actions - the actions row.
  * @cssprop --color-blue - brand accent (shimmer, pulse, gradient border); re-theme on :root.
  * @cssprop --color-green - brand accent (gradient border + text accent); re-theme on :root.
@@ -62,7 +65,7 @@ function slot(name) {
  */
 export class NeuwoCta extends NeuwoElement {
   static styles = sheet(ctaCss);
-  static observedAttributes = ["variant", "heading-level"];
+  static observedAttributes = ["variant", "heading-level", "status", "status-state"];
 
   get variant() { return this.getAttribute("variant") || "banner"; }
   set variant(value) {
@@ -86,9 +89,22 @@ export class NeuwoCta extends NeuwoElement {
     else this.setAttribute("heading-level", String(value));
   }
 
+  get status() { return this.getAttribute("status") ?? ""; }
+  set status(value) {
+    if (value == null || value === "") this.removeAttribute("status");
+    else this.setAttribute("status", String(value));
+  }
+
+  get statusState() { return this.getAttribute("status-state") || "muted"; }
+  set statusState(value) {
+    if (value == null || value === "" || value === "muted") this.removeAttribute("status-state");
+    else this.setAttribute("status-state", String(value));
+  }
+
   // What the current tree was built from, so a non-structural change patches.
   #builtWith = null;
   #fieldEl = null;
+  #statusEl = null;
 
   connectedCallback() {
     super.connectedCallback(); // builds via render()
@@ -130,6 +146,13 @@ export class NeuwoCta extends NeuwoElement {
     const fieldSlot = slot("field");
     field.append(fieldSlot);
     this.#fieldEl = field;
+    // Always in the DOM and never display:none. A live region that is injected,
+    // or un-hidden with its text already in place, does not reliably announce;
+    // one that is present and then written to does.
+    const status = el("p", "cta__status", "status");
+    status.setAttribute("role", "status");
+    status.setAttribute("aria-live", "polite");
+    this.#statusEl = status;
     const actions = el("div", "cta__actions", "actions");
     const actionsSlot = slot("actions");
     actions.append(actionsSlot);
@@ -139,11 +162,11 @@ export class NeuwoCta extends NeuwoElement {
       const glow = el("div", "cta__glow");
       glow.setAttribute("aria-hidden", "true");
       const inner = el("div", "cta__inner", "inner");
-      inner.append(headline, sub, field, actions);
+      inner.append(headline, sub, field, status, actions);
       root.append(glow, inner);
     } else {
       const body = el("div", "cta__body");
-      body.append(headline, sub, field);
+      body.append(headline, sub, field, status);
       root.append(body, actions);
     }
 
@@ -162,6 +185,13 @@ export class NeuwoCta extends NeuwoElement {
     // before the first slot assignment and in every rendering environment.
     const hasField = this.querySelector(':scope > [slot="field"]') !== null;
     this.#fieldEl.classList.toggle("cta__field--empty", !hasField);
+
+    const status = this.getAttribute("status") ?? "";
+    if (this.#statusEl.textContent !== status) this.#statusEl.textContent = status;
+    // Only the two named states colour the line; anything else stays muted.
+    const state = this.getAttribute("status-state");
+    this.#statusEl.classList.toggle("cta__status--success", state === "success");
+    this.#statusEl.classList.toggle("cta__status--error", state === "error");
   }
 
   // Dev-time guard: a CTA needs a headline and at least one action button.
