@@ -27,6 +27,12 @@
         color: black !important;
         border-radius: 0 !important;
       }
+      /* Hostile rule: if Shadow DOM leaked, the sliders would turn hot pink too. */
+      .range {
+        background: hotpink !important;
+        border: 4px solid black !important;
+        height: 3rem !important;
+      }
       /* Hostile rule: if Shadow DOM leaked, the badges would turn hot pink too. */
       .badge {
         background: hotpink !important;
@@ -186,6 +192,45 @@
         <span slot="label">API key <neuwo-badge size="s" variant="green">Beta</neuwo-badge></span>
       </neuwo-input>
     </div>
+
+    <h2>Range slider (the component fills the track, the page formats the value)</h2>
+    <p>
+      The filled portion left of the thumb is the component's job: it writes
+      <code>--range-fill</code> on every value change, which is the only way WebKit
+      can paint it. The page keeps what only the page knows, the formatting of the
+      readout, and no longer carries any slider plumbing.
+    </p>
+    <div class="row" style="display: block; max-width: 32rem">
+      <neuwo-range
+        id="demo-views"
+        name="pageviews"
+        label="Monthly page views"
+        min="10000"
+        max="5000000"
+        step="10000"
+        value="500000"
+        no-error-line
+      ></neuwo-range>
+      <output id="demo-views-value" for="demo-views"></output>
+    </div>
+    <div class="row" style="display: block; max-width: 32rem">
+      <neuwo-range label="Ad units" min="1" max="10" step="1" value="3"></neuwo-range>
+      <neuwo-range label="Disabled" min="0" max="100" value="35" disabled></neuwo-range>
+      <neuwo-range label="With error" min="0" max="100" value="95" error="That is above your plan's cap"></neuwo-range>
+    </div>
+    <div class="row reskin" style="display: block; max-width: 32rem">
+      <neuwo-range label="Re-themed (token inherits through the shadow boundary)" min="0" max="100" value="70"></neuwo-range>
+    </div>
+    <script>
+      const views = document.getElementById("demo-views");
+      const viewsOut = document.getElementById("demo-views-value");
+      const showViews = () => {
+        viewsOut.value = Number(views.value).toLocaleString("en-GB");
+        views.setAttribute("aria-valuetext", viewsOut.value + " page views");
+      };
+      views.addEventListener("input", showViews);
+      showViews();
+    </script>
 
     <h2>Combobox (fully styled dropdown)</h2>
     <form id="combobox-form">

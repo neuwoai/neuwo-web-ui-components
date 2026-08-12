@@ -47,7 +47,7 @@ export { manifest, attributesFor, partsFor };
 
 const EXPECTED_TAGS = [
   "neuwo-button", "neuwo-input", "neuwo-textarea", "neuwo-select",
-  "neuwo-combobox", "neuwo-checkbox", "neuwo-toggle", "neuwo-radio",
+  "neuwo-combobox", "neuwo-range", "neuwo-checkbox", "neuwo-toggle", "neuwo-radio",
   "neuwo-radio-group", "neuwo-segmented", "neuwo-badge", "neuwo-deal-id",
   "neuwo-status-dot", "neuwo-cta",
 ];
@@ -90,6 +90,12 @@ describe("custom-elements.json", () => {
     const attrs = attributesFor(manifest, "neuwo-input");
     for (const a of ["type", "min", "max", "step", "pattern", "minlength", "maxlength"])
       expect(attrs).toContain(a);
+  });
+
+  it("documents the range's bounds and its input part", () => {
+    const attrs = attributesFor(manifest, "neuwo-range");
+    for (const a of ["min", "max", "step", "value", "label", "disabled"]) expect(attrs).toContain(a);
+    expect(partsFor(manifest, "neuwo-range").has("input")).toBe(true);
   });
 
   it("documents the combobox's searchable attribute and parts", () => {

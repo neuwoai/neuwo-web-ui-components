@@ -8,6 +8,7 @@ import type { NeuwoInput } from "../components/fields/input/neuwo-input.js";
 import type { NeuwoTextarea } from "../components/fields/textarea/neuwo-textarea.js";
 import type { NeuwoSelect } from "../components/fields/select/neuwo-select.js";
 import type { NeuwoCombobox } from "../components/fields/combobox/neuwo-combobox.js";
+import type { NeuwoRange } from "../components/fields/range/neuwo-range.js";
 import type { NeuwoCheckbox } from "../components/selection/checkbox/neuwo-checkbox.js";
 import type { NeuwoToggle } from "../components/selection/toggle/neuwo-toggle.js";
 import type { NeuwoRadio } from "../components/selection/radio/neuwo-radio.js";
@@ -25,6 +26,7 @@ declare global {
     "neuwo-textarea": NeuwoTextarea;
     "neuwo-select": NeuwoSelect;
     "neuwo-combobox": NeuwoCombobox;
+    "neuwo-range": NeuwoRange;
     "neuwo-checkbox": NeuwoCheckbox;
     "neuwo-toggle": NeuwoToggle;
     "neuwo-radio": NeuwoRadio;
