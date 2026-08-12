@@ -63,7 +63,7 @@ describe("custom-elements.json", () => {
 
   it("documents the shared field attributes on field elements", () => {
     const attrs = attributesFor(manifest, "neuwo-input");
-    for (const a of ["name", "value", "label", "disabled", "required", "error", "error-muted", "no-error-line"])
+    for (const a of ["name", "value", "label", "disabled", "required", "error", "error-muted", "no-error-line", "size"])
       expect(attrs).toContain(a);
   });
 

@@ -229,4 +229,29 @@ describe("NeuwoFieldElement", () => {
     expect(make(`<test-field label="Email"></test-field>`).shadowRoot.querySelector(".field__required")).toBeNull();
     expect(make(`<test-field required></test-field>`).shadowRoot.querySelector(".field__required")).toBeNull();
   });
+
+  it("takes a compact size on both the wrapper and the control", () => {
+    const el = make(`<test-field size="sm"></test-field>`);
+    expect(el.shadowRoot.querySelector(".field").classList.contains("field--sm")).toBe(true);
+    expect(el.shadowRoot.querySelector("input").classList.contains("input--sm")).toBe(true);
+  });
+
+  it("renders at the default size when the axis is absent or unknown", () => {
+    for (const markup of [`<test-field></test-field>`, `<test-field size="tiny"></test-field>`]) {
+      const el = make(markup);
+      expect(el.shadowRoot.querySelector(".field").classList.contains("field--sm")).toBe(false);
+      expect(el.shadowRoot.querySelector("input").classList.contains("input--sm")).toBe(false);
+    }
+  });
+
+  it("reflects the size property to the attribute and back", () => {
+    const el = make(`<test-field></test-field>`);
+    expect(el.size).toBe("");
+    el.size = "sm";
+    expect(el.getAttribute("size")).toBe("sm");
+    expect(el.shadowRoot.querySelector("input").classList.contains("input--sm")).toBe(true);
+    el.size = "";
+    expect(el.hasAttribute("size")).toBe(false);
+    expect(el.shadowRoot.querySelector("input").classList.contains("input--sm")).toBe(false);
+  });
 });

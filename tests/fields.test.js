@@ -31,4 +31,13 @@ describe("field.css recipe", () => {
     expect(fieldCss).toContain("@keyframes neuwo-field-shake");
     expect(fieldCss).toContain("prefers-reduced-motion: reduce");
   });
+
+  it("carries a compact size step for the control, the label and the error line", () => {
+    expect(fieldCss).toMatch(/\.input--sm\s*\{[^}]*padding:\s*var\(--space-2\) var\(--space-3\)/);
+    expect(fieldCss).toMatch(/\.input--sm\s*\{[^}]*font-size:\s*var\(--font-size-sm\)/);
+    expect(fieldCss).toMatch(/\.field--sm\s*\{[^}]*gap:\s*var\(--space-1\)/);
+    expect(fieldCss).toContain(".field--sm .field__label");
+    expect(fieldCss).toContain(".field--sm .field__error");
+    expect(fieldCss).toContain("var(--font-size-xs)");
+  });
 });

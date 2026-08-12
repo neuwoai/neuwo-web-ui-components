@@ -29,6 +29,7 @@ let uid = 0;
  * @attr {boolean} required - the field must have a value to be valid.
  * @attr {boolean} readonly - the value is shown but cannot be edited.
  * @attr autocomplete - native autocomplete hint forwarded to the control.
+ * @attr {sm} size - compact density step for the control, label and error line (default: the standard size when the attribute is absent).
  * @attr label - visible label text rendered above the control; the fallback for the `label` slot.
  * @attr error - error message; shows the red accent, the message, and aria-invalid.
  * @attr {boolean} error-muted - softens a shown error: drops the border/box-shadow accent while the red message and invalid state stay.
@@ -55,6 +56,7 @@ export class NeuwoFieldElement extends NeuwoElement {
     "required",
     "readonly",
     "autocomplete",
+    "size",
     "label",
     "error",
     "error-muted",
@@ -153,6 +155,13 @@ export class NeuwoFieldElement extends NeuwoElement {
   set disabled(v) {
     this.toggleAttribute("disabled", Boolean(v));
   }
+  get size() {
+    return this.getAttribute("size") ?? "";
+  }
+  set size(v) {
+    if (v == null || v === "") this.removeAttribute("size");
+    else this.setAttribute("size", String(v));
+  }
   get noErrorLine() {
     return this.hasAttribute("no-error-line");
   }
@@ -211,6 +220,11 @@ export class NeuwoFieldElement extends NeuwoElement {
     this.#defaultValue = this.getAttribute("value") ?? "";
     this.#syncLabel();
     this.#control.disabled = this.hasAttribute("disabled");
+    // Only the one known value compacts; anything else renders at the default
+    // size rather than inventing a `.input--<whatever>` class.
+    const compact = this.getAttribute("size") === "sm";
+    this.#wrapper.classList.toggle("field--sm", compact);
+    this.#control.classList.toggle("input--sm", compact);
     this.#forward();
     this.#syncError();
     this.syncControl();

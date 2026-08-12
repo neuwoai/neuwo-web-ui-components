@@ -64,6 +64,24 @@
   cursor: not-allowed;
 }
 
+/* --- Size axis: `sm` is a density step, not only a smaller control --- */
+
+.input--sm {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+}
+
+/* A compact control under a full-size label reads wrong, so the whole column
+   tightens: the gap closes and the label and error line drop one step. */
+.field--sm {
+  gap: var(--space-1);
+}
+
+.field--sm .field__label,
+.field--sm .field__error {
+  font-size: var(--font-size-xs);
+}
+
 /* --- State: error (red border + danger ring + a single shake) --- */
 
 .input--error {
