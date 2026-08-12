@@ -107,6 +107,29 @@ describe("<neuwo-cta>", () => {
     expect(el.hasAttribute("heading-level")).toBe(false);
   });
 
+  it("exposes a field slot after the sub in both variants", () => {
+    for (const attrs of ["", 'variant="spotlight"']) {
+      const root = make(FULL(attrs)).shadowRoot;
+      const field = root.querySelector(".cta__field");
+      expect(field.getAttribute("part")).toBe("field");
+      expect(field.querySelector('slot[name="field"]')).toBeTruthy();
+      expect(field.previousElementSibling.classList.contains("cta__sub")).toBe(true);
+    }
+  });
+
+  it("collapses the field wrapper when nothing is slotted into it", () => {
+    const el = make(FULL());
+    expect(el.shadowRoot.querySelector(".cta__field").classList.contains("cta__field--empty")).toBe(true);
+  });
+
+  it("keeps the field wrapper when a field is slotted", () => {
+    const el = make(
+      `<neuwo-cta>Headline<input slot="field" type="email" />` +
+        `<neuwo-button slot="actions" variant="solid">Go</neuwo-button></neuwo-cta>`
+    );
+    expect(el.shadowRoot.querySelector(".cta__field").classList.contains("cta__field--empty")).toBe(false);
+  });
+
   it("keeps the tree it built across a re-render, and replaces it on a structural change", () => {
     const el = make(FULL());
     const card = el.shadowRoot.querySelector(".cta");

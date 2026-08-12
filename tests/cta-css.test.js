@@ -57,6 +57,15 @@ describe("cta.css recipe", () => {
     expect(css).not.toContain('neuwo-button[variant=');
   });
 
+  it("caps the slotted field with a knob it never declares", () => {
+    // Declaring the default on the element would beat the value a consumer
+    // inherits in from :root or the host, which is the only way it gets set.
+    expect(css).toContain("max-width: var(--cta-field-width, 24rem)");
+    expect(css).not.toMatch(/--cta-field-width:/);
+    expect(css).toMatch(/\.cta__field--empty\s*\{\s*display:\s*none/);
+    expect(css).toMatch(/@media \(max-width: 40rem\)[\s\S]*\.cta__field[^}]*margin-inline: auto/);
+  });
+
   it("uses no raw colour literals", () => {
     expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
     expect(css).not.toMatch(/rgba?\(/);

@@ -35,7 +35,10 @@ function slot(name) {
  * with `data-accent` to paint just those words with the brand gradient. With the
  * `pulse` attribute, the first slotted action button radiates a ring synced to
  * the surface shimmer, whatever its variant, and `intensity` scales that ring.
- * Presentational; the actions are slotted `<neuwo-button>`s.
+ * Presentational; the actions are slotted `<neuwo-button>`s, and an optional
+ * `field` slot takes an inline control so a capture band needs no rebuild by
+ * hand. Submission stays with the consumer: wrap the band in a `<form>` and a
+ * slotted `<neuwo-button type="submit">` drives it.
  *
  * @summary Neuwo call-to-action band.
  * @customElement neuwo-cta
@@ -45,14 +48,17 @@ function slot(name) {
  * @attr {1|2|3|4|5|6} heading-level - heading level for the headline element (default 2).
  * @slot - the headline; wrap gradient fragments in an element with `data-accent`.
  * @slot sub - the supporting line under the headline.
+ * @slot field - an inline field in the text column (an email capture); wrap the band in your own <form> and the slotted control submits with it.
  * @slot actions - one or two action buttons.
  * @csspart cta - the outer band.
  * @csspart inner - the inner panel (spotlight variant only).
  * @csspart headline - the headline element.
  * @csspart sub - the supporting line.
+ * @csspart field - the wrapper around the slotted field.
  * @csspart actions - the actions row.
  * @cssprop --color-blue - brand accent (shimmer, pulse, gradient border); re-theme on :root.
  * @cssprop --color-green - brand accent (gradient border + text accent); re-theme on :root.
+ * @cssprop --cta-field-width - cap on the slotted field's width (default 24rem).
  */
 export class NeuwoCta extends NeuwoElement {
   static styles = sheet(ctaCss);
@@ -82,6 +88,7 @@ export class NeuwoCta extends NeuwoElement {
 
   // What the current tree was built from, so a non-structural change patches.
   #builtWith = null;
+  #fieldEl = null;
 
   connectedCallback() {
     super.connectedCallback(); // builds via render()
@@ -119,6 +126,10 @@ export class NeuwoCta extends NeuwoElement {
     headline.append(headlineSlot);
     const sub = el("p", "cta__sub", "sub");
     sub.append(slot("sub"));
+    const field = el("div", "cta__field", "field");
+    const fieldSlot = slot("field");
+    field.append(fieldSlot);
+    this.#fieldEl = field;
     const actions = el("div", "cta__actions", "actions");
     const actionsSlot = slot("actions");
     actions.append(actionsSlot);
@@ -128,11 +139,11 @@ export class NeuwoCta extends NeuwoElement {
       const glow = el("div", "cta__glow");
       glow.setAttribute("aria-hidden", "true");
       const inner = el("div", "cta__inner", "inner");
-      inner.append(headline, sub, actions);
+      inner.append(headline, sub, field, actions);
       root.append(glow, inner);
     } else {
       const body = el("div", "cta__body");
-      body.append(headline, sub);
+      body.append(headline, sub, field);
       root.append(body, actions);
     }
 
@@ -141,11 +152,17 @@ export class NeuwoCta extends NeuwoElement {
     // Re-check when slotted content changes at runtime.
     headlineSlot.addEventListener("slotchange", () => this.#validate());
     actionsSlot.addEventListener("slotchange", () => this.#validate());
+    fieldSlot.addEventListener("slotchange", () => this.#patch());
 
     this.#builtWith = { variant, headingTag };
   }
 
-  #patch() {}
+  #patch() {
+    // Read the light DOM rather than assignedNodes(), so the answer is right
+    // before the first slot assignment and in every rendering environment.
+    const hasField = this.querySelector(':scope > [slot="field"]') !== null;
+    this.#fieldEl.classList.toggle("cta__field--empty", !hasField);
+  }
 
   // Dev-time guard: a CTA needs a headline and at least one action button.
   // Slotted content cannot be "required" like a form field, so warn instead of

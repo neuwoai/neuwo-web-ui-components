@@ -26,6 +26,20 @@
   line-height: 1.5;
 }
 
+/* An inline field in the text column: an email capture, a search box. The cap
+   is read with a fallback rather than declared, because a declaration here
+   would beat the value a consumer inherits in from :root or the host. */
+.cta__field {
+  max-width: var(--cta-field-width, 24rem);
+  margin-top: var(--space-4);
+}
+
+/* Nothing slotted: the wrapper leaves no box behind, so a band without a field
+   is exactly the band it was before the slot existed. */
+.cta__field--empty {
+  display: none;
+}
+
 .cta__actions {
   display: flex;
   flex-wrap: wrap;
@@ -124,6 +138,12 @@
   }
   .cta--banner .cta__actions {
     justify-content: center;
+  }
+  /* One centred column at this width, so the field centres with the text
+     instead of hugging the left edge. */
+  .cta--banner .cta__field {
+    max-width: none;
+    margin-inline: auto;
   }
 }
 
