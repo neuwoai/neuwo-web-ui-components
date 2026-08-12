@@ -11,6 +11,18 @@
   cursor: pointer;
 }
 
+/* Compact: the gutter and the chevron move together, so the gap between the
+   value and the chevron is unchanged at the smaller padding. Written here
+   rather than in field.css because this sheet is adopted after it and would
+   otherwise win with the full-size gutter. */
+.input--sm {
+  padding-right: var(--space-8);
+}
+
+.field--sm .select__chevron {
+  right: var(--space-3);
+}
+
 /* The unselected placeholder option reads in the muted placeholder colour. */
 .input:invalid {
   color: var(--color-grey-400);

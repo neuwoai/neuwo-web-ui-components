@@ -19,6 +19,16 @@
   cursor: pointer;
 }
 
+/* Compact: the gutter and the chevron move together, so the gap between the
+   value and the chevron is unchanged at the smaller padding. */
+.field--sm .combobox__trigger {
+  padding-right: var(--space-8);
+}
+
+.field--sm .combobox__chevron {
+  right: var(--space-3);
+}
+
 .combobox__trigger[aria-expanded="true"] .combobox__chevron {
   transform: translateY(-50%) rotate(180deg);
 }

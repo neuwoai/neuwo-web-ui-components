@@ -41,4 +41,17 @@ describe("<neuwo-select>", () => {
     expect(selectCss).toContain("background-color: var(--color-text-muted)");
     expect(selectCss).toContain("mask:");
   });
+
+  it("tightens the chevron gutter at the compact size", () => {
+    // The gutter and the chevron move together, so the gap between the value
+    // and the chevron stays the same at the smaller padding.
+    expect(selectCss).toMatch(/\.input--sm\s*\{[^}]*padding-right:\s*var\(--space-8\)/);
+    expect(selectCss).toMatch(/\.field--sm \.select__chevron\s*\{[^}]*right:\s*var\(--space-3\)/);
+  });
+
+  it("inherits the compact size axis from the field base", () => {
+    const el = make(`<neuwo-select size="sm" label="Role"><option value="a">A</option></neuwo-select>`);
+    expect(el.shadowRoot.querySelector(".field").classList.contains("field--sm")).toBe(true);
+    expect(el.shadowRoot.querySelector("select").classList.contains("input--sm")).toBe(true);
+  });
 });
