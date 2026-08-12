@@ -106,4 +106,17 @@ describe("<neuwo-cta>", () => {
     el.headingLevel = "";
     expect(el.hasAttribute("heading-level")).toBe(false);
   });
+
+  it("keeps the tree it built across a re-render, and replaces it on a structural change", () => {
+    const el = make(FULL());
+    const card = el.shadowRoot.querySelector(".cta");
+    // Driven directly: every attribute observed today is structural, so this is
+    // the only way to prove the non-structural path before `status` exists.
+    el.render();
+    expect(el.shadowRoot.querySelector(".cta")).toBe(card);
+    el.variant = "spotlight";
+    expect(el.shadowRoot.querySelector(".cta")).not.toBe(card);
+    el.setAttribute("heading-level", "3");
+    expect(el.shadowRoot.querySelector(".cta__headline").tagName).toBe("H3");
+  });
 });

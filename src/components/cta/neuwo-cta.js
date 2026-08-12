@@ -80,6 +80,9 @@ export class NeuwoCta extends NeuwoElement {
     else this.setAttribute("heading-level", String(value));
   }
 
+  // What the current tree was built from, so a non-structural change patches.
+  #builtWith = null;
+
   connectedCallback() {
     super.connectedCallback(); // builds via render()
     // Light-DOM children may not be parsed yet at connect time; defer the
@@ -93,10 +96,25 @@ export class NeuwoCta extends NeuwoElement {
   }
 
   render() {
-    const spotlight = this.getAttribute("variant") === "spotlight";
-    const root = el("div", `cta cta--${spotlight ? "spotlight" : "banner"}`, "cta");
+    const variant = this.getAttribute("variant") === "spotlight" ? "spotlight" : "banner";
+    const headingTag = this.#headingTag();
+    // Both of these change the tree itself: a spotlight nests the card in a glow
+    // and an inner panel, and the heading level is an element's tag name. Every
+    // other attribute is patched, so writing one at runtime never rebuilds the
+    // band under the visitor and restarts the shimmer.
+    const structural =
+      !this.#builtWith ||
+      this.#builtWith.variant !== variant ||
+      this.#builtWith.headingTag !== headingTag;
+    if (structural) this.#build(variant, headingTag);
+    this.#patch();
+  }
 
-    const headline = el(this.#headingTag(), "cta__headline", "headline");
+  #build(variant, headingTag) {
+    const spotlight = variant === "spotlight";
+    const root = el("div", `cta cta--${variant}`, "cta");
+
+    const headline = el(headingTag, "cta__headline", "headline");
     const headlineSlot = slot(); // default slot carries the headline content
     headline.append(headlineSlot);
     const sub = el("p", "cta__sub", "sub");
@@ -123,7 +141,11 @@ export class NeuwoCta extends NeuwoElement {
     // Re-check when slotted content changes at runtime.
     headlineSlot.addEventListener("slotchange", () => this.#validate());
     actionsSlot.addEventListener("slotchange", () => this.#validate());
+
+    this.#builtWith = { variant, headingTag };
   }
+
+  #patch() {}
 
   // Dev-time guard: a CTA needs a headline and at least one action button.
   // Slotted content cannot be "required" like a form field, so warn instead of
