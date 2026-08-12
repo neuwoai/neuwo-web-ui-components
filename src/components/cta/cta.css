@@ -42,10 +42,13 @@
   color: transparent;
 }
 
-/* Opt-in synchronised pulse ring on the primary (solid) action button, sharing
-   the shimmer's 5.5s cadence so the band reads as one orchestrated motion. The
-   button host is already pill-shaped, so the box-shadow ring hugs it. */
-:host([pulse]) ::slotted(neuwo-button[variant="solid"]) {
+/* Opt-in synchronised pulse ring on the primary action button, sharing the
+   shimmer's 5.5s cadence so the band reads as one orchestrated motion. The
+   button host is already pill-shaped, so the box-shadow ring hugs it.
+   `:first-of-type` picks the first slotted button, whatever its variant: the
+   primary action is the one authored first, and an outline or glass primary
+   pulses exactly like a solid one. */
+:host([pulse]) ::slotted(neuwo-button:first-of-type) {
   animation: cta-button-pulse 5.5s ease-in-out infinite;
 }
 
@@ -56,7 +59,7 @@
 }
 
 /* On hover the idle pulse yields to the hover state. */
-:host([pulse]:hover) ::slotted(neuwo-button[variant="solid"]) {
+:host([pulse]:hover) ::slotted(neuwo-button:first-of-type) {
   animation: none;
 }
 
@@ -210,7 +213,7 @@
   .cta__inner::before,
   .cta--spotlight:hover,
   .cta--spotlight:hover .cta__glow,
-  :host([pulse]) ::slotted(neuwo-button[variant="solid"]) {
+  :host([pulse]) ::slotted(neuwo-button:first-of-type) {
     animation: none;
   }
 }

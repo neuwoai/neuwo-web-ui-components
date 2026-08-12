@@ -431,6 +431,18 @@
       </neuwo-cta>
     </div>
 
+    <h2>neuwo-cta pulse on a non-solid primary</h2>
+    <p>
+      The ring follows the <em>first</em> slotted action button, not its variant, so an
+      outline primary pulses without being restyled through <code>::part(button)</code>.
+    </p>
+    <neuwo-cta pulse>
+      Prefer a <span data-accent>quieter</span> primary?
+      <span slot="sub">Same synchronised ring, outline button.</span>
+      <neuwo-button slot="actions" variant="outline">Book a demo</neuwo-button>
+      <neuwo-button slot="actions" variant="glass">Read the docs</neuwo-button>
+    </neuwo-cta>
+
     <h2>neuwo-cta heading level</h2>
     <neuwo-cta heading-level="3">
       Ready to <span data-accent>go</span>?

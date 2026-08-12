@@ -39,8 +39,14 @@ describe("cta.css recipe", () => {
   });
 
   it("adds the synchronised button-pulse ring, reduced-motion-gated", () => {
-    expect(css).toContain(":host([pulse]) ::slotted(neuwo-button");
+    expect(css).toContain(":host([pulse]) ::slotted(neuwo-button:first-of-type)");
     expect(css).toContain("@keyframes cta-button-pulse");
+  });
+
+  it("rings the first action button whatever its variant", () => {
+    // A variant filter would silently drop the ring for an outline primary and
+    // force the consumer to slot a solid button and repaint it via ::part.
+    expect(css).not.toContain('neuwo-button[variant=');
   });
 
   it("uses no raw colour literals", () => {

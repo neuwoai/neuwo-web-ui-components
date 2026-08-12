@@ -33,13 +33,14 @@ function slot(name) {
  * for page-foot CTAs) and `spotlight` (a centred hero card framed by an animated
  * gradient border that comes alive on hover). Wrap headline words in an element
  * with `data-accent` to paint just those words with the brand gradient. With the
- * `pulse` attribute, the primary (solid) action button radiates a ring synced to
- * the surface shimmer. Presentational; the actions are slotted `<neuwo-button>`s.
+ * `pulse` attribute, the first slotted action button radiates a ring synced to
+ * the surface shimmer, whatever its variant. Presentational; the actions are
+ * slotted `<neuwo-button>`s.
  *
  * @summary Neuwo call-to-action band.
  * @customElement neuwo-cta
  * @attr {banner|spotlight} variant - layout and chrome (default banner).
- * @attr {boolean} pulse - radiate a synchronised pulse ring on the primary (solid) button; honours prefers-reduced-motion.
+ * @attr {boolean} pulse - radiate a synchronised pulse ring on the first slotted action button, any variant; honours prefers-reduced-motion.
  * @attr {1|2|3|4|5|6} heading-level - heading level for the headline element (default 2).
  * @slot - the headline; wrap gradient fragments in an element with `data-accent`.
  * @slot sub - the supporting line under the headline.
