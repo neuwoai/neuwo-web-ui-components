@@ -29,12 +29,13 @@ let uid = 0;
  * @attr {boolean} required - the field must have a value to be valid.
  * @attr {boolean} readonly - the value is shown but cannot be edited.
  * @attr autocomplete - native autocomplete hint forwarded to the control.
- * @attr label - visible label text rendered above the control.
+ * @attr label - visible label text rendered above the control; the fallback for the `label` slot.
  * @attr error - error message; shows the red accent, the message, and aria-invalid.
  * @attr {boolean} error-muted - softens a shown error: drops the border/box-shadow accent while the red message and invalid state stay.
  * @attr {boolean} no-error-line - drop the reserved error message row (for a non-validated control); setting `error` alongside it is a misconfiguration.
  * @fires {Event} change - the committed value changed.
- * @slot - not used; the label is set via the `label` attribute.
+ * @slot label - rich label content (a help link, a badge, emphasis) replacing the `label` attribute text, inside the associated `<label>`. The required marker still follows it.
+ * @slot - not used; plain label text is set via the `label` attribute.
  * @csspart field - the wrapper around label, control, and error line.
  * @csspart input - the native control element.
  * @csspart label - the field's label element.
@@ -64,6 +65,8 @@ export class NeuwoFieldElement extends NeuwoElement {
   #wrapper;
   #control;
   #labelEl = null;
+  #labelSlot = null;
+  #requiredEl = null;
   #errorEl = null;
   #id = `neuwo-field-${++uid}`;
   #defaultValue = "";
@@ -183,6 +186,8 @@ export class NeuwoFieldElement extends NeuwoElement {
     this.#wrapper.className = "field";
     this.#wrapper.setAttribute("part", "field");
 
+    this.#buildLabel();
+
     this.#control = this.createControl();
     this.#control.classList.add("input");
     this.#control.setAttribute("part", "input");
@@ -211,28 +216,51 @@ export class NeuwoFieldElement extends NeuwoElement {
     this.syncControl();
   }
 
+  // The label element is built once and kept, even while empty, so the label
+  // slot always exists to fire `slotchange` when rich label content arrives.
+  // An empty label is hidden by `.field__label--empty`, which keeps it out of
+  // the flex column's gap and out of the accessibility tree.
+  #buildLabel() {
+    this.#labelEl = document.createElement("label");
+    this.#labelEl.className = "field__label";
+    this.#labelEl.setAttribute("part", "label");
+    this.#labelEl.setAttribute("for", this.#id);
+    // The `label` attribute becomes the slot's fallback content, so slotted
+    // markup replaces it without either side needing to know about the other.
+    this.#labelSlot = document.createElement("slot");
+    this.#labelSlot.setAttribute("name", "label");
+    this.#labelSlot.addEventListener("slotchange", () => this.#syncLabel());
+    this.#labelEl.append(this.#labelSlot);
+    this.#wrapper.append(this.#labelEl);
+  }
+
+  // Read from the light DOM rather than assignedNodes(), so the answer is right
+  // before the first slot assignment and in every rendering environment.
+  #hasSlottedLabel() {
+    return this.querySelector(':scope > [slot="label"]') !== null;
+  }
+
   #syncLabel() {
-    const has = this.hasAttribute("label");
-    if (has && !this.#labelEl) {
-      this.#labelEl = document.createElement("label");
-      this.#labelEl.className = "field__label";
-      this.#labelEl.setAttribute("part", "label");
-      this.#labelEl.setAttribute("for", this.#id);
-      this.#wrapper.prepend(this.#labelEl);
-    }
-    if (has) {
-      // textContent resets children, so re-append the marker fresh each patch.
-      this.#labelEl.textContent = this.getAttribute("label");
-      if (this.hasAttribute("required")) {
-        const star = document.createElement("span");
-        star.className = "field__required";
-        star.setAttribute("aria-hidden", "true");
-        star.textContent = "*";
-        this.#labelEl.append(star);
-      }
-    } else if (this.#labelEl) {
-      this.#labelEl.remove();
-      this.#labelEl = null;
+    // Rewriting the slot's fallback content mutates its children, which the
+    // browser reports as a slot change, which calls this back. Only write when
+    // the text actually differs, or the listener below feeds itself forever.
+    const text = this.getAttribute("label") ?? "";
+    if (this.#labelSlot.textContent !== text) this.#labelSlot.textContent = text;
+    const labelled = this.hasAttribute("label") || this.#hasSlottedLabel();
+    this.#labelEl.classList.toggle("field__label--empty", !labelled);
+
+    // The marker is a sibling of the slot, so setting the fallback text above
+    // never clobbers it. Only a labelled field carries one.
+    const marked = labelled && this.hasAttribute("required");
+    if (marked && !this.#requiredEl) {
+      this.#requiredEl = document.createElement("span");
+      this.#requiredEl.className = "field__required";
+      this.#requiredEl.setAttribute("aria-hidden", "true");
+      this.#requiredEl.textContent = "*";
+      this.#labelEl.append(this.#requiredEl);
+    } else if (!marked && this.#requiredEl) {
+      this.#requiredEl.remove();
+      this.#requiredEl = null;
     }
   }
 

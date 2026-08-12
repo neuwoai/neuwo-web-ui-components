@@ -23,6 +23,13 @@
   color: var(--color-heading);
 }
 
+/* The label element is always present so its slot can receive rich content at
+   any time; with neither attribute text nor slotted content it is taken out of
+   the flow entirely, so the column gap does not reserve space for it. */
+.field__label--empty {
+  display: none;
+}
+
 .field__required {
   margin-left: var(--space-1);
   color: var(--color-red);

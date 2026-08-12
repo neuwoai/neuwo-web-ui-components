@@ -35,6 +35,56 @@ describe("NeuwoFieldElement", () => {
     expect(label.getAttribute("for")).toBe(control.id);
   });
 
+  it("hides the label element while the field is unlabelled", () => {
+    const label = make(`<test-field></test-field>`).shadowRoot.querySelector("label.field__label");
+    // Present so its slot can receive content later, but out of the flow.
+    expect(label).toBeTruthy();
+    expect(label.classList.contains("field__label--empty")).toBe(true);
+  });
+
+  it("projects rich label content through the label slot, inside the associated label", () => {
+    const el = make(
+      `<test-field><span slot="label">Work email <a href="#why">why?</a></span></test-field>`
+    );
+    const label = el.shadowRoot.querySelector("label.field__label");
+    const slot = label.querySelector('slot[name="label"]');
+    expect(slot).toBeTruthy();
+    expect(label.classList.contains("field__label--empty")).toBe(false);
+    expect(label.getAttribute("for")).toBe(el.shadowRoot.querySelector("input").id);
+    // The attribute text is only the slot's fallback, so it is not rendered too.
+    expect(slot.textContent).toBe("");
+  });
+
+  it("keeps the attribute text as the slot fallback when nothing is slotted", () => {
+    const el = make(`<test-field label="Work email"></test-field>`);
+    const slot = el.shadowRoot.querySelector('slot[name="label"]');
+    expect(slot.textContent).toBe("Work email");
+  });
+
+  it("leaves the fallback text node alone when the label has not changed", () => {
+    // A rewrite mutates the slot's children, which the browser reports as a
+    // slot change, which calls back into the sync: an unguarded write loops
+    // forever and hangs the page. happy-dom does not fire that event, so the
+    // invariant is asserted directly instead.
+    const el = make(`<test-field label="Work email"></test-field>`);
+    const slot = el.shadowRoot.querySelector('slot[name="label"]');
+    const textNode = slot.firstChild;
+    el.setAttribute("placeholder", "you@company.com");
+    expect(slot.firstChild).toBe(textNode);
+    el.setAttribute("label", "Company email");
+    expect(slot.textContent).toBe("Company email");
+  });
+
+  it("still marks a required field whose label is slotted", () => {
+    const el = make(
+      `<test-field required><span slot="label">Work email</span></test-field>`
+    );
+    const star = el.shadowRoot.querySelector(".field__required");
+    expect(star).toBeTruthy();
+    // The marker follows the slot, so it reads after the label content.
+    expect(star.previousElementSibling.getAttribute("name")).toBe("label");
+  });
+
   it("seeds the initial value and mirrors the value property", () => {
     const el = make(`<test-field value="hi"></test-field>`);
     const control = el.shadowRoot.querySelector("input");

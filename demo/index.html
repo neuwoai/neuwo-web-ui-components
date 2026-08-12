@@ -171,6 +171,22 @@
       });
     </script>
 
+    <h2>Field label slot (markup in the label, still associated)</h2>
+    <p>
+      The <code>label</code> attribute stays the fallback for plain text. Slot
+      <code>label</code> when the label needs markup: a help link, a badge, emphasis.
+      The label keeps its <code>for</code> association and the required marker still
+      follows the content.
+    </p>
+    <div class="row">
+      <neuwo-input name="rich-email" type="email" placeholder="you@company.com" required>
+        <span slot="label">Work email <a href="#why-we-ask">why we ask</a></span>
+      </neuwo-input>
+      <neuwo-input name="rich-key" placeholder="nw_live_...">
+        <span slot="label">API key <neuwo-badge size="s" variant="green">Beta</neuwo-badge></span>
+      </neuwo-input>
+    </div>
+
     <h2>Combobox (fully styled dropdown)</h2>
     <form id="combobox-form">
       <div class="row">

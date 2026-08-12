@@ -19,6 +19,11 @@ describe("field.css recipe", () => {
     expect(fieldCss).toContain("var(--color-grey-400)");
   });
 
+  it("takes an empty label out of the flow so the column gap ignores it", () => {
+    expect(fieldCss).toContain(".field__label--empty");
+    expect(fieldCss).toMatch(/\.field__label--empty\s*\{\s*display:\s*none/);
+  });
+
   it("carries a tokenised error state with a reduced-motion guard", () => {
     expect(fieldCss).toContain(".input--error");
     expect(fieldCss).toContain("var(--color-red)");
