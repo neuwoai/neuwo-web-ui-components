@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Neuwo Web UI Components: Typography</title>
+
+    <!--
+      One link, both foundation layers: dist/neuwo.css is tokens.css followed by
+      typography.css. Tokens are therefore present at first paint for this page's
+      own chrome, not only after the module loads.
+
+      The module is still needed: it injects the @font-face rules into
+      <head> (a shadow root ignores @font-face, so the library does it in JS) and
+      resolves the woff2 URLs against its own location. Without it the page falls
+      back to system fonts, so every specimen below would be a lie.
+    -->
+    <link rel="stylesheet" href="/dist/neuwo.css" />
+    <script type="module" src="/dist/neuwo.js"></script>
+
+    <style>
+      /* Page chrome only. Everything visible in a specimen comes from
+         typography.css and the tokens, never from this block. */
+      body {
+        margin: 0 auto;
+        padding: var(--space-12) var(--space-6) var(--space-24);
+        max-width: 64rem;
+        background: var(--color-body-bg);
+      }
+
+      .demo-nav {
+        margin-bottom: var(--space-12);
+        font-family: var(--font-text);
+        font-size: var(--font-size-sm);
+        color: var(--color-text-muted);
+      }
+
+      .demo-section {
+        margin-top: var(--space-16);
+        padding-top: var(--space-8);
+        border-top: 1px solid var(--glass-border);
+      }
+
+      .demo-note {
+        color: var(--color-text-muted);
+        font-size: var(--font-size-sm);
+      }
+
+      code {
+        font-family: ui-monospace, monospace;
+        font-size: 0.9em;
+        color: var(--color-blue-light);
+      }
+
+      /* Specimen row: token name and value on the left, live sample on the right. */
+      .demo-row {
+        display: grid;
+        grid-template-columns: minmax(0, 14rem) minmax(0, 1fr);
+        gap: var(--space-4);
+        align-items: baseline;
+        padding-block: var(--space-3);
+        border-bottom: 1px solid var(--color-grid-line);
+      }
+
+      .demo-row__meta {
+        font-family: ui-monospace, monospace;
+        font-size: var(--font-size-xs);
+        line-height: var(--line-height-body);
+        color: var(--color-text-muted);
+      }
+
+      .demo-row__meta b {
+        display: block;
+        font-weight: var(--font-weight-normal);
+        color: var(--color-blue-light);
+      }
+
+      .demo-row__sample {
+        min-width: 0;
+        overflow-x: auto;
+        white-space: nowrap;
+        font-family: var(--font-heading);
+        color: var(--color-heading);
+      }
+
+      .demo-row__sample--text {
+        font-family: var(--font-text);
+        color: var(--color-text);
+      }
+
+      /* Line-height samples need to wrap, unlike the single-line scale samples.
+         Overflow goes back to visible so a tight line-height (1.05) is not
+         clipped into a scroll box. */
+      .demo-row__sample--block {
+        white-space: normal;
+        overflow: visible;
+        max-width: 34rem;
+      }
+
+      @media (max-width: 40rem) {
+        .demo-row {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <p class="demo-nav">
+      Typography specimen. The component gallery is on
+      <a href="/demo/">the demo index</a>.
+    </p>
+
+    <p class="eyebrow">Foundation</p>
+    <h1>Neuwo typography</h1>
+    <p>
+      Every heading, paragraph and link on this page is styled by
+      <code>foundation/typography.css</code> alone, driven entirely by the tokens in
+      <code>foundation/tokens.css</code>. Nothing here is a component: typography is an
+      <strong>opt-in stylesheet on native elements</strong>, so a consumer links it and its own
+      markup inherits the Neuwo type language.
+    </p>
+    <p class="demo-note">
+      Tokens auto-adopt onto the document when <code>neuwo.js</code> loads, so components are
+      themed without any link tag. Typography is never injected: global element rules are
+      intrusive, so adopting them is the consumer's decision.
+    </p>
+
+    <section class="demo-section">
+      <h2>How to load it</h2>
+      <p>Three published entry points, pick one:</p>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>neuwo.css</b>tokens + typography</span>
+        <span class="demo-row__sample demo-row__sample--text"
+          ><code>&lt;link rel="stylesheet" href="/neuwo/neuwo.css"&gt;</code></span
+        >
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>foundation/tokens.css</b>tokens only</span>
+        <span class="demo-row__sample demo-row__sample--text"
+          >For a consumer that keeps its own element styling.</span
+        >
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>foundation/typography.css</b>type only</span>
+        <span class="demo-row__sample demo-row__sample--text"
+          >Needs the tokens present, from the link above or from the module.</span
+        >
+      </div>
+      <p class="demo-note">
+        The fonts arrive from the module, not from any stylesheet. Preload them from
+        <code>/neuwo/fonts/</code> to avoid a swap on first paint.
+      </p>
+    </section>
+
+    <section class="demo-section">
+      <h2>Type roles</h2>
+      <p>
+        Bare tags map to the design-system roles. <code>h5</code> and <code>h6</code> step the
+        Subsection recipe down the scale, as there is no role below xl.
+      </p>
+
+      <div class="demo-row">
+        <span class="demo-row__meta"
+          ><b>h1 Display</b>6xl / extrabold / 1.05 / -0.04em</span
+        >
+        <span class="demo-row__sample"><h1 style="margin: 0">Contextual intelligence</h1></span>
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>h2 Section</b>4xl, 5xl from 48rem / bold / 1.2</span>
+        <span class="demo-row__sample"><h2 style="margin: 0">Contextual intelligence</h2></span>
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>h3 Subsection</b>2xl / bold / 1.3</span>
+        <span class="demo-row__sample"><h3 style="margin: 0">Contextual intelligence</h3></span>
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>h4 Subsection</b>xl / bold / 1.3</span>
+        <span class="demo-row__sample"><h4 style="margin: 0">Contextual intelligence</h4></span>
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>h5 Subsection</b>lg / bold / 1.3</span>
+        <span class="demo-row__sample"><h5 style="margin: 0">Contextual intelligence</h5></span>
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>h6 Subsection</b>base / bold / 1.3</span>
+        <span class="demo-row__sample"><h6 style="margin: 0">Contextual intelligence</h6></span>
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>p Body</b>base / normal / 1.6</span>
+        <span class="demo-row__sample demo-row__sample--text"
+          ><span style="white-space: normal">Body copy in Noto Sans.</span></span
+        >
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>a Prose link</b>--color-blue, underlined</span>
+        <span class="demo-row__sample demo-row__sample--text"
+          ><a href="https://neuwo.ai">An inline prose link</a> (hover for the dark shade)</span
+        >
+      </div>
+      <p class="demo-note">
+        Headings are the only elements that resize with the viewport, and only
+        <code>h2</code> does so. Narrow this window past 48rem to watch it step down.
+      </p>
+    </section>
+
+    <section class="demo-section">
+      <h2>Type scale</h2>
+      <p>
+        Thirteen steps, all in Outfit here so the sizes compare cleanly. A specimen wider than the
+        column scrolls rather than wrapping.
+      </p>
+
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>--font-size-2xs</b>0.625rem, badge s</span>
+        <span class="demo-row__sample" style="font-size: var(--font-size-2xs)">Neuwo</span>
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>--font-size-xs</b>0.75rem, eyebrow, badge m</span>
+        <span class="demo-row__sample" style="font-size: var(--font-size-xs)">Neuwo</span>
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>--font-size-sm</b>0.875rem</span>
+        <span class="demo-row__sample" style="font-size: var(--font-size-sm)">Neuwo</span>
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>--font-size-base</b>1rem, body, h6</span>
+        <span class="demo-row__sample" style="font-size: var(--font-size-base)">Neuwo</span>
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>--font-size-lg</b>1.125rem, h5</span>
+        <span class="demo-row__sample" style="font-size: var(--font-size-lg)">Neuwo</span>
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>--font-size-xl</b>1.25rem, h4</span>
+        <span class="demo-row__sample" style="font-size: var(--font-size-xl)">Neuwo</span>
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>--font-size-2xl</b>1.5rem, h3</span>
+        <span class="demo-row__sample" style="font-size: var(--font-size-2xl)">Neuwo</span>
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>--font-size-3xl</b>1.875rem</span>
+        <span class="demo-row__sample" style="font-size: var(--font-size-3xl)">Neuwo</span>
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>--font-size-4xl</b>2.25rem, h2</span>
+        <span class="demo-row__sample" style="font-size: var(--font-size-4xl)">Neuwo</span>
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>--font-size-5xl</b>3rem, h2 from 48rem</span>
+        <span class="demo-row__sample" style="font-size: var(--font-size-5xl)">Neuwo</span>
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>--font-size-6xl</b>3.75rem, h1</span>
+        <span class="demo-row__sample" style="font-size: var(--font-size-6xl)">Neuwo</span>
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>--font-size-7xl</b>4.5rem</span>
+        <span class="demo-row__sample" style="font-size: var(--font-size-7xl)">Neuwo</span>
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>--font-size-8xl</b>5.5rem</span>
+        <span class="demo-row__sample" style="font-size: var(--font-size-8xl)">Neuwo</span>
+      </div>
+    </section>
+
+    <section class="demo-section">
+      <h2>Families</h2>
+      <p>
+        Two families, each with a metric-matched local fallback so a font swap does not shift the
+        layout. Reference them through the token, never by raw family name.
+      </p>
+
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>--font-heading</b>Outfit, headings and labels</span>
+        <span class="demo-row__sample" style="font-size: var(--font-size-2xl)"
+          >Sphinx of black quartz, judge my vow</span
+        >
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>--font-text</b>Noto Sans, body copy</span>
+        <span class="demo-row__sample demo-row__sample--text" style="font-size: var(--font-size-2xl)"
+          >Sphinx of black quartz, judge my vow</span
+        >
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>Numerals</b>Outfit / Noto Sans</span>
+        <span class="demo-row__sample" style="font-size: var(--font-size-xl)"
+          >0123456789 &nbsp;
+          <span style="font-family: var(--font-text)">0123456789</span></span
+        >
+      </div>
+    </section>
+
+    <section class="demo-section">
+      <h2>Weights</h2>
+      <p>Five steps. Headings use bold and extrabold; the eyebrow and labels use semibold.</p>
+
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>--font-weight-normal</b>400, body</span>
+        <span class="demo-row__sample" style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-normal)">Contextual intelligence</span>
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>--font-weight-medium</b>500</span>
+        <span class="demo-row__sample" style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-medium)">Contextual intelligence</span>
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>--font-weight-semibold</b>600, eyebrow, badge</span>
+        <span class="demo-row__sample" style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-semibold)">Contextual intelligence</span>
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>--font-weight-bold</b>700, h2 to h6</span>
+        <span class="demo-row__sample" style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold)">Contextual intelligence</span>
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>--font-weight-extrabold</b>800, h1</span>
+        <span class="demo-row__sample" style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-extrabold)">Contextual intelligence</span>
+      </div>
+    </section>
+
+    <section class="demo-section">
+      <h2>Line height and letter spacing</h2>
+      <p>Four line-height roles. Only the Display role tightens its tracking.</p>
+
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>--line-height-display</b>1.05, h1</span>
+        <span
+          class="demo-row__sample demo-row__sample--block"
+          style="font-size: var(--font-size-2xl); line-height: var(--line-height-display)"
+          >Contextual intelligence for the open web, wrapped over several lines</span
+        >
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>--line-height-heading</b>1.2, h2</span>
+        <span
+          class="demo-row__sample demo-row__sample--block"
+          style="font-size: var(--font-size-2xl); line-height: var(--line-height-heading)"
+          >Contextual intelligence for the open web, wrapped over several lines</span
+        >
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>--line-height-subheading</b>1.3, h3 to h6</span>
+        <span
+          class="demo-row__sample demo-row__sample--block"
+          style="font-size: var(--font-size-2xl); line-height: var(--line-height-subheading)"
+          >Contextual intelligence for the open web, wrapped over several lines</span
+        >
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>--line-height-body</b>1.6, p</span>
+        <span
+          class="demo-row__sample demo-row__sample--text demo-row__sample--block"
+          style="line-height: var(--line-height-body)"
+          >Contextual intelligence for the open web, wrapped over several lines so the rhythm of
+          the body role is visible against the headings above it.</span
+        >
+      </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>--letter-spacing-display</b>-0.04em, h1 only</span>
+        <span class="demo-row__sample" style="font-size: var(--font-size-4xl)"
+          >Tight
+          <span style="letter-spacing: var(--letter-spacing-display)">Tight</span></span
+        >
+      </div>
+    </section>
+
+    <section class="demo-section">
+      <h2>Eyebrow utility</h2>
+      <p>
+        The one <em>class</em> in the sheet, everything else styles bare elements. It is the small
+        uppercase kicker above a heading: Outfit, xs, semibold, 0.08em, uppercase. Type only, no
+        colour, so it inherits from its context.
+      </p>
+
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>.eyebrow</b>on any element</span>
+        <span class="demo-row__sample demo-row__sample--block">
+          <p class="eyebrow" style="margin: 0">Contextual audiences</p>
+          <h3 style="margin: 0">Reach the right page, not the wrong person</h3>
+        </span>
+      </div>
+      <p class="demo-note">
+        This is the same recipe <code>neuwo-badge</code> inlines. A shadow root cannot use a
+        document class, so the badge repeats it from the same tokens rather than importing it.
+      </p>
+    </section>
+
+    <section class="demo-section">
+      <h2>In context</h2>
+      <p class="eyebrow">Classification API</p>
+      <h2>Every page, understood in milliseconds</h2>
+      <p>
+        Neuwo reads a page the way a person would: the subject, the tone, and whether it is a safe
+        place for a brand to appear. The result is a set of contextual signals a buyer can act on
+        without a single identifier. Read
+        <a href="https://neuwo.ai">the documentation</a> to see the taxonomy.
+      </p>
+      <h3>What comes back</h3>
+      <p>
+        A ranked topic list, IAB categories, brand-safety flags and sentiment, all from the page
+        text alone. No cookies, no fingerprints, nothing that follows a reader between sites.
+      </p>
+    </section>
+
+    <section class="demo-section">
+      <h2>What this sheet does not do</h2>
+      <p>
+        Typography stops at the shadow boundary. A component's own text is styled by its recipe, so
+        linking this sheet cannot restyle a <code>neuwo-button</code> label or a
+        <code>neuwo-cta</code> headline. Those are reached through their tokens or their
+        <code>::part</code> names.
+      </p>
+      <p class="demo-note">
+        It also styles nothing else: no lists, tables, blockquotes, <code>code</code> or
+        <code>hr</code>. Everything monospaced on this page is page chrome, not a library recipe.
+      </p>
+    </section>
+  </body>
+</html>
