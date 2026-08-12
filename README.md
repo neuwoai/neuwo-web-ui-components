@@ -122,7 +122,7 @@ size>`) over a `::part` font-size override, so the scale stays on-brand.
 `<neuwo-range>`
 extend one base, so they share the same attributes and properties (`name`,
 `value`, `label`, `disabled`, `required`, `error`, `error-muted`,
-`no-error-line`), the same `change` event, and the same parts (`field`,
+`no-error-line`, `size`), the same `change` event, and the same parts (`field`,
 `input`, `label`, `error`). The selection controls (`<neuwo-checkbox>`,
 `<neuwo-toggle>`, `<neuwo-radio-group>`, `<neuwo-segmented>`) share the error
 and `no-error-line` behaviour below. The generated `.d.ts` shows these on the
@@ -168,6 +168,39 @@ toolbar `<neuwo-segmented>`, say) can drop that row with `no-error-line`, so it
 carries no empty vertical space. The control is then treated as non-validated:
 setting `error` alongside `no-error-line` is a misconfiguration, the message has
 nowhere to render.
+
+## Capture CTAs
+
+`<neuwo-cta>` takes an inline control in its `field` slot, so an email-capture
+band is the same element as any other band rather than a hand-rebuilt copy of
+it. Submission stays with the page: wrap the band in your own `<form>`, and the
+slotted control and the submit button drive it.
+
+```html
+<form id="capture">
+  <neuwo-cta pulse>
+    Ready to <span data-accent>classify at scale</span>?
+    <span slot="sub">Get started with the Classification API.</span>
+    <neuwo-input slot="field" type="email" name="email" size="sm" required
+                 autocomplete="email" label="Work email"
+                 placeholder="you@company.com"></neuwo-input>
+    <neuwo-button slot="actions" type="submit" variant="solid">Get started</neuwo-button>
+    <neuwo-button slot="actions" variant="outline" href="/contact/">Contact us</neuwo-button>
+  </neuwo-cta>
+</form>
+```
+
+Report the outcome through `status` and `status-state` (`muted`, `success`,
+`error`). The band owns the message line and its live region, so the page's
+submit handler only writes the text:
+
+```js
+cta.status = "Thanks, we will be in touch shortly.";
+cta.statusState = "success";
+```
+
+Fields carry a `size="sm"` density step for placements like this one, which
+tightens the control, its label and its error line together.
 
 ## Notices
 

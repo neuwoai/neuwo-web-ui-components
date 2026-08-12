@@ -183,6 +183,18 @@
       });
     </script>
 
+    <h2>Field size axis (density: control, label and error line; default when absent)</h2>
+    <div class="row" style="align-items: flex-end">
+      <neuwo-input label="Default" placeholder="you@company.com"></neuwo-input>
+      <neuwo-input size="sm" label="Compact" placeholder="you@company.com"></neuwo-input>
+      <neuwo-select size="sm" label="Compact select">
+        <option value="" disabled selected>Select one</option>
+        <option value="publisher">Publisher</option>
+        <option value="advertiser">Advertiser</option>
+      </neuwo-select>
+      <neuwo-button size="sm" variant="solid">Get started</neuwo-button>
+    </div>
+
     <h2>Field label slot (markup in the label, still associated)</h2>
     <p>
       The <code>label</code> attribute stays the fallback for plain text. Slot
@@ -543,6 +555,41 @@
         <neuwo-button slot="actions" variant="solid">Get Started</neuwo-button>
       </neuwo-cta>
     </div>
+
+    <h2>Email-capture CTA (field slot + status line, inside your own form)</h2>
+    <p>
+      The band contributes the layout and the status line. The
+      <code>&lt;form&gt;</code>, the endpoint and the submit handler stay with
+      the page, exactly as they were before the slot existed.
+    </p>
+    <form id="capture-form">
+      <neuwo-cta pulse>
+        Ready to <span data-accent>classify at scale</span>?
+        <span slot="sub">Get started with Neuwo's Classification API.</span>
+        <neuwo-input
+          slot="field"
+          type="email"
+          name="email"
+          size="sm"
+          label="Work email"
+          placeholder="you@company.com"
+          autocomplete="email"
+          required
+        ></neuwo-input>
+        <neuwo-button slot="actions" type="submit" variant="solid">Get started</neuwo-button>
+        <neuwo-button slot="actions" variant="outline">Contact us</neuwo-button>
+      </neuwo-cta>
+    </form>
+    <script>
+      const captureForm = document.getElementById("capture-form");
+      const captureCta = captureForm.querySelector("neuwo-cta");
+      captureForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        // A real page POSTs here; the band only needs the outcome.
+        captureCta.status = "Thanks, we will be in touch shortly.";
+        captureCta.statusState = "success";
+      });
+    </script>
 
     <h2>neuwo-cta heading level</h2>
     <neuwo-cta heading-level="3">
