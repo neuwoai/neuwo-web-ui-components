@@ -1,0 +1,199 @@
+/* ==========================================================================
+   Notice -- a dismissible glass card
+   ========================================================================== */
+
+/* One card for every message the visitor did not ask for: a consent banner
+   centred at the foot of the page, a language hint in the corner, a toast. They
+   share the glass surface, radius and shadow so the whole family reads as one
+   thing.
+
+   Placement is composed from independent edge modifiers (`--fixed --bottom
+   --end`) rather than one class per corner, so a class-only consumer can write
+   the same list by hand and a new corner costs no new rule. Visibility is the
+   native `hidden` attribute, which the shared reset already honours on the
+   host, so the component adds no second way to hide a card. */
+
+:host {
+  display: block;
+}
+
+.notice {
+  /* How far the card travels on entrance, flipped by the top modifier so it
+     always arrives from the edge it is docked to. Internal, unlike the two
+     knobs below, so it is declared rather than read with a fallback. */
+  --notice-rise: 0.5rem;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  /* The two knobs worth setting from outside: how wide the card may grow, and
+     how much air a fixed card keeps from the viewport edges. Both are read with
+     a fallback rather than declared here, because a declaration on this element
+     would beat the value a consumer inherits in from `:root` or the host. */
+  max-width: var(--notice-max-width, 24rem);
+  padding: var(--space-5);
+  color: var(--color-text);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  box-shadow: var(--shadow-xl);
+  animation: notice-in var(--transition-base) both;
+}
+
+/* The entrance rides on `translate`, not on `transform`: the centred placement
+   owns `transform`, and the two properties compose instead of overwriting. */
+@keyframes notice-in {
+  from {
+    opacity: 0;
+    translate: 0 var(--notice-rise);
+  }
+}
+
+/* --- Placement --- */
+
+.notice--fixed {
+  position: fixed;
+  z-index: var(--z-overlay);
+  /* Full width less an equal gutter each side until the card hits its cap. */
+  width: calc(100% - var(--notice-gutter, var(--space-4)) * 2);
+}
+
+.notice--top {
+  top: var(--notice-gutter, var(--space-4));
+  --notice-rise: -0.5rem;
+}
+
+.notice--bottom {
+  bottom: var(--notice-gutter, var(--space-4));
+}
+
+.notice--start {
+  inset-inline-start: var(--notice-gutter, var(--space-4));
+}
+
+.notice--end {
+  inset-inline-end: var(--notice-gutter, var(--space-4));
+}
+
+.notice--center {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* --- Content --- */
+
+.notice__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.notice__title {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.4;
+  color: var(--color-heading);
+}
+
+.notice__message {
+  font-size: var(--font-size-sm);
+  line-height: 1.55;
+  color: var(--color-text);
+}
+
+.notice__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: flex-end;
+}
+
+/* A slot nobody filled leaves no box behind, so the card's gaps never open
+   around content that is not there. */
+.notice__title--empty,
+.notice__message--empty,
+.notice__actions--empty {
+  display: none;
+}
+
+/* Actions beside the text once there is room for both. A narrow viewport always
+   stacks, whatever the layout asks for. */
+@media (min-width: 48rem) {
+  .notice--row {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-6);
+  }
+
+  .notice--row .notice__content {
+    flex: 1;
+  }
+
+  .notice--row .notice__actions {
+    flex-shrink: 0;
+  }
+}
+
+/* --- Dismiss --- */
+
+.notice__dismiss {
+  position: absolute;
+  /* Inset so the glyph sits on the first line of the title. */
+  top: var(--space-3);
+  inset-inline-end: var(--space-3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-8);
+  height: var(--space-8);
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+/* The cross is a mask over the button's own colour, so it follows the hover and
+   any consumer re-colour without a second asset. */
+.notice__dismiss::before {
+  content: "";
+  width: 0.875rem;
+  height: 0.875rem;
+  background: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round'%3E%3Cpath d='M3.5 3.5l7 7m0-7l-7 7'/%3E%3C/svg%3E") center / contain no-repeat;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round'%3E%3Cpath d='M3.5 3.5l7 7m0-7l-7 7'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.notice__dismiss:hover,
+.notice__dismiss:focus-visible {
+  color: var(--color-heading);
+}
+
+.notice__dismiss:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+/* The button's corner is reserved on the card, not on the first line, so
+   nothing can collide with it in either layout. */
+.notice--dismissible {
+  padding-inline-end: calc(var(--space-3) + var(--space-8));
+}
+
+/* Reduced motion keeps the card still: it already announces itself by arriving,
+   and the hover colour change is what marks the close button. */
+@media (prefers-reduced-motion: reduce) {
+  .notice {
+    animation: none;
+  }
+
+  .notice__dismiss {
+    transition: none;
+  }
+}

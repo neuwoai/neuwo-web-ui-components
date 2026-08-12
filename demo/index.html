@@ -49,6 +49,12 @@
       .cta {
         background: hotpink !important;
       }
+      /* Hostile rule: if Shadow DOM leaked, the notice cards would square off. */
+      .notice {
+        background: hotpink !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+      }
       .row {
         display: flex;
         gap: 1rem;
@@ -545,6 +551,73 @@
       <!-- inside a CTA, calm the primary button's hover -->
       <neuwo-button slot="actions" variant="solid" hover="s">Get Started</neuwo-button>
     </neuwo-cta>
+
+    <h2>Notice card (one element: consent banner, language hint, toast)</h2>
+    <p>
+      The page defines a hostile <code>.notice</code> rule. Shadow DOM keeps it out.
+      These first three use <code>position="static"</code> so they sit in the page;
+      the buttons below dock live ones to the viewport.
+    </p>
+    <div style="display: grid; gap: 1.5rem; max-width: 48rem">
+      <!-- Language hint: a headline with an inline link, and nothing else.
+           The link takes its colour from the page's typography.css, because a
+           shadow root cannot reach an <a> nested inside slotted markup. -->
+      <neuwo-notice position="static" dismissible dismiss-label="Close">
+        <span slot="title">Read this page in <a href="#">Polski</a>?</span>
+      </neuwo-notice>
+
+      <!-- Consent banner: a question, so no close button and role="dialog". -->
+      <neuwo-notice
+        position="static"
+        layout="row"
+        role="dialog"
+        aria-label="Cookies"
+        style="--notice-max-width: 48rem"
+      >
+        <span slot="title">We use cookies</span>
+        We use analytics cookies to understand how the site is used.
+        <a href="#">Read the policy</a>.
+        <neuwo-button slot="actions" variant="glass" size="sm">Reject</neuwo-button>
+        <neuwo-button slot="actions" variant="solid" size="sm">Accept</neuwo-button>
+      </neuwo-notice>
+
+      <!-- Token re-theming reaches the card like every other component. -->
+      <neuwo-notice class="reskin" position="static" dismissible>
+        <span slot="title">Re-themed notice</span>
+        Same recipe, a different <code>--color-blue</code> on the wrapper.
+        <neuwo-button slot="actions" variant="outline" size="sm">Undo</neuwo-button>
+      </neuwo-notice>
+    </div>
+
+    <h2>neuwo-notice placement (fixed to the viewport)</h2>
+    <div class="row">
+      <neuwo-button id="notice-corner" variant="outline" size="sm">Corner hint</neuwo-button>
+      <neuwo-button id="notice-toast" variant="outline" size="sm">Top-centre toast</neuwo-button>
+    </div>
+
+    <neuwo-notice id="demo-corner" dismissible hidden>
+      <span slot="title">Docked bottom-end</span>
+      The default corner. Dismissing fires <code>dismiss</code>; this page just
+      logs it, a real one would remember the answer.
+    </neuwo-notice>
+
+    <neuwo-notice id="demo-toast" position="top-center" dismissible hidden>
+      <span slot="title">Saved</span>
+      Docked top-centre, so the entrance arrives from above.
+    </neuwo-notice>
+
+    <script>
+      const corner = document.getElementById("demo-corner");
+      const toast = document.getElementById("demo-toast");
+      document.getElementById("notice-corner").addEventListener("click", () => {
+        corner.hidden = false;
+      });
+      document.getElementById("notice-toast").addEventListener("click", () => {
+        toast.hidden = false;
+      });
+      for (const notice of [corner, toast])
+        notice.addEventListener("dismiss", (e) => console.log("dismissed", e.target.id));
+    </script>
 
     <h2>Eyebrow utility (opt-in typography)</h2>
     <p class="eyebrow">Kicker label</p>

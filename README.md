@@ -64,6 +64,7 @@ bundle under `fonts/`, so to preload them point at that directory:
 | Deal-ID chip | `<neuwo-deal-id>` | Stable |
 | Status dot | `<neuwo-status-dot>` | Stable |
 | CTA band | `<neuwo-cta>` | Stable |
+| Notice card | `<neuwo-notice>` | Stable |
 | Modal | `<neuwo-modal>` | Planned |
 | Card | `<neuwo-card>` | Planned |
 
@@ -167,6 +168,36 @@ toolbar `<neuwo-segmented>`, say) can drop that row with `no-error-line`, so it
 carries no empty vertical space. The control is then treated as non-validated:
 setting `error` alongside `no-error-line` is a misconfiguration, the message has
 nowhere to render.
+
+## Notices
+
+`<neuwo-notice>` is one card for every message the visitor did not ask for: a
+consent banner, a language hint, a toast. What differs between those is separate
+axes rather than one bundled variant, so they mix freely: `position` (which
+viewport corner, or `static` to flow with the page), `layout` (actions under the
+text or beside it), and `dismissible` (a consent banner deliberately is not).
+
+Visibility is the native `hidden` attribute, so a card that waits on a decision
+starts hidden in the markup. Closing is the page's to remember: the component
+hides the card and fires a cancelable `dismiss`.
+
+```html
+<neuwo-notice id="lang-hint" dismissible dismiss-label="Zamknij" hidden>
+  <span slot="title">Read this page in <a href="/pl/">Polski</a>?</span>
+</neuwo-notice>
+```
+
+```js
+const hint = document.getElementById("lang-hint");
+hint.addEventListener("dismiss", () => localStorage.setItem("lang-hint", "1"));
+if (!localStorage.getItem("lang-hint")) hint.hidden = false;
+```
+
+A notice announces itself politely (`role="status"`) unless you declare something
+stronger; a consent banner is a question, so give it `role="dialog"` and a label.
+Links inside slotted content are styled by the host page, not from inside the
+component: a shadow root cannot reach an `<a>` nested in slotted markup, so link
+the published `typography.css` to give them the brand treatment.
 
 ## Develop
 

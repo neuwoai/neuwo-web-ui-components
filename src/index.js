@@ -14,6 +14,7 @@ import "./components/badge/neuwo-badge.js"; // self-registers <neuwo-badge>
 import "./components/deal-id/neuwo-deal-id.js"; // self-registers <neuwo-deal-id>
 import "./components/status-dot/neuwo-status-dot.js"; // self-registers <neuwo-status-dot>
 import "./components/cta/neuwo-cta.js"; // self-registers <neuwo-cta>
+import "./components/notice/neuwo-notice.js"; // self-registers <neuwo-notice>
 
 injectFonts();
 
@@ -32,3 +33,4 @@ export { NeuwoBadge } from "./components/badge/neuwo-badge.js";
 export { NeuwoDealId } from "./components/deal-id/neuwo-deal-id.js";
 export { NeuwoStatusDot } from "./components/status-dot/neuwo-status-dot.js";
 export { NeuwoCta } from "./components/cta/neuwo-cta.js";
+export { NeuwoNotice } from "./components/notice/neuwo-notice.js";

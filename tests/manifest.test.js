@@ -49,7 +49,7 @@ const EXPECTED_TAGS = [
   "neuwo-button", "neuwo-input", "neuwo-textarea", "neuwo-select",
   "neuwo-combobox", "neuwo-range", "neuwo-checkbox", "neuwo-toggle", "neuwo-radio",
   "neuwo-radio-group", "neuwo-segmented", "neuwo-badge", "neuwo-deal-id",
-  "neuwo-status-dot", "neuwo-cta",
+  "neuwo-status-dot", "neuwo-cta", "neuwo-notice",
 ];
 
 describe("custom-elements.json", () => {
@@ -143,5 +143,12 @@ describe("custom-elements.json", () => {
     for (const a of ["variant", "pulse", "intensity", "heading-level"]) expect(attrs).toContain(a);
     for (const p of ["cta", "inner", "headline", "sub", "actions"])
       expect(partsFor(manifest, "neuwo-cta").has(p)).toBe(true);
+  });
+
+  it("documents the notice's axes and parts", () => {
+    const attrs = attributesFor(manifest, "neuwo-notice");
+    for (const a of ["position", "layout", "dismissible", "dismiss-label"]) expect(attrs).toContain(a);
+    for (const p of ["notice", "content", "title", "message", "actions", "dismiss"])
+      expect(partsFor(manifest, "neuwo-notice").has(p)).toBe(true);
   });
 });
