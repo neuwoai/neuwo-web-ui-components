@@ -4,6 +4,7 @@
 export * from "../index.js";
 
 import type { NeuwoButton } from "../components/button/neuwo-button.js";
+import type { NeuwoDropdown } from "../components/dropdown/neuwo-dropdown.js";
 import type { NeuwoInput } from "../components/fields/input/neuwo-input.js";
 import type { NeuwoTextarea } from "../components/fields/textarea/neuwo-textarea.js";
 import type { NeuwoCombobox } from "../components/fields/combobox/neuwo-combobox.js";
@@ -22,6 +23,7 @@ import type { NeuwoNotice } from "../components/notice/neuwo-notice.js";
 declare global {
   interface HTMLElementTagNameMap {
     "neuwo-button": NeuwoButton;
+    "neuwo-dropdown": NeuwoDropdown;
     "neuwo-input": NeuwoInput;
     "neuwo-textarea": NeuwoTextarea;
     "neuwo-combobox": NeuwoCombobox;

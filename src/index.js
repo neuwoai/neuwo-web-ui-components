@@ -1,5 +1,6 @@
 import { injectFonts } from "./core/fonts.js";
 import "./components/button/neuwo-button.js"; // self-registers <neuwo-button>
+import "./components/dropdown/neuwo-dropdown.js"; // self-registers <neuwo-dropdown>
 import "./components/fields/input/neuwo-input.js"; // self-registers <neuwo-input>
 import "./components/fields/textarea/neuwo-textarea.js"; // self-registers <neuwo-textarea>
 import "./components/fields/combobox/neuwo-combobox.js"; // self-registers <neuwo-combobox>
@@ -18,6 +19,7 @@ import "./components/notice/neuwo-notice.js"; // self-registers <neuwo-notice>
 injectFonts();
 
 export { NeuwoButton } from "./components/button/neuwo-button.js";
+export { NeuwoDropdown } from "./components/dropdown/neuwo-dropdown.js";
 export { NeuwoInput } from "./components/fields/input/neuwo-input.js";
 export { NeuwoTextarea } from "./components/fields/textarea/neuwo-textarea.js";
 export { NeuwoCombobox } from "./components/fields/combobox/neuwo-combobox.js";
