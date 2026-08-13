@@ -51,6 +51,7 @@ bundle under `fonts/`, so to preload them point at that directory:
 | Component | Tag | Status |
 | --- | --- | --- |
 | Button | `<neuwo-button>` | Stable |
+| Dropdown | `<neuwo-dropdown>` | Stable |
 | Text input | `<neuwo-input>` | Stable |
 | Textarea | `<neuwo-textarea>` | Stable |
 | Combobox | `<neuwo-combobox>` | Stable |
