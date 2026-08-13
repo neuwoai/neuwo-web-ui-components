@@ -40,7 +40,7 @@ export class NeuwoSingleSelect extends NeuwoElement {
 
   #internals;
   #group;
-  #id = `neuwo-select-${++uid}`;
+  #id = `neuwo-single-select-${++uid}`;
   #defaultValue = "";
   #formDisabled = false;
   #built = false;

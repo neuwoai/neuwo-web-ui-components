@@ -53,7 +53,6 @@ bundle under `fonts/`, so to preload them point at that directory:
 | Button | `<neuwo-button>` | Stable |
 | Text input | `<neuwo-input>` | Stable |
 | Textarea | `<neuwo-textarea>` | Stable |
-| Select | `<neuwo-select>` | Stable |
 | Combobox | `<neuwo-combobox>` | Stable |
 | Range slider | `<neuwo-range>` | Stable |
 | Checkbox | `<neuwo-checkbox>` | Stable |
@@ -118,7 +117,7 @@ size>`) over a `::part` font-size override, so the scale stays on-brand.
 
 ## Form fields share one API
 
-`<neuwo-input>`, `<neuwo-textarea>`, `<neuwo-select>`, `<neuwo-combobox>` and
+`<neuwo-input>`, `<neuwo-textarea>`, `<neuwo-combobox>` and
 `<neuwo-range>`
 extend one base, so they share the same attributes and properties (`name`,
 `value`, `label`, `disabled`, `required`, `error`, `error-muted`,

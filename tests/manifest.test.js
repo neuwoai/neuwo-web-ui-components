@@ -46,11 +46,15 @@ function partsFor(m, tag) {
 export { manifest, attributesFor, partsFor };
 
 const EXPECTED_TAGS = [
-  "neuwo-button", "neuwo-input", "neuwo-textarea", "neuwo-select",
+  "neuwo-button", "neuwo-input", "neuwo-textarea",
   "neuwo-combobox", "neuwo-range", "neuwo-checkbox", "neuwo-toggle", "neuwo-radio",
   "neuwo-radio-group", "neuwo-segmented", "neuwo-badge", "neuwo-deal-id",
   "neuwo-status-dot", "neuwo-cta", "neuwo-notice",
 ];
+
+// Elements deliberately removed. `neuwo-select` wrapped a native <select>, so its
+// popup was drawn by the OS and could not be styled; the styled combobox replaces it.
+const REMOVED_TAGS = ["neuwo-select"];
 
 describe("custom-elements.json", () => {
   it("declares every registered neuwo-* element", () => {
@@ -59,6 +63,14 @@ describe("custom-elements.json", () => {
       .filter((d) => d.customElement && d.tagName)
       .map((d) => d.tagName);
     for (const tag of EXPECTED_TAGS) expect(tags).toContain(tag);
+  });
+
+  it("does not declare removed elements", () => {
+    const tags = (manifest.modules ?? [])
+      .flatMap((mod) => mod.declarations ?? [])
+      .filter((d) => d.customElement && d.tagName)
+      .map((d) => d.tagName);
+    for (const tag of REMOVED_TAGS) expect(tags).not.toContain(tag);
   });
 
   it("documents the shared field attributes on field elements", () => {
@@ -102,10 +114,6 @@ describe("custom-elements.json", () => {
     expect(attributesFor(manifest, "neuwo-combobox").has("searchable")).toBe(true);
     for (const p of ["chevron", "popup"])
       expect(partsFor(manifest, "neuwo-combobox").has(p)).toBe(true);
-  });
-
-  it("documents the select's chevron part", () => {
-    expect(partsFor(manifest, "neuwo-select").has("chevron")).toBe(true);
   });
 
   it("documents the selection-control parts", () => {

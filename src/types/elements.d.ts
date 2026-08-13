@@ -6,7 +6,6 @@ export * from "../index.js";
 import type { NeuwoButton } from "../components/button/neuwo-button.js";
 import type { NeuwoInput } from "../components/fields/input/neuwo-input.js";
 import type { NeuwoTextarea } from "../components/fields/textarea/neuwo-textarea.js";
-import type { NeuwoSelect } from "../components/fields/select/neuwo-select.js";
 import type { NeuwoCombobox } from "../components/fields/combobox/neuwo-combobox.js";
 import type { NeuwoRange } from "../components/fields/range/neuwo-range.js";
 import type { NeuwoCheckbox } from "../components/selection/checkbox/neuwo-checkbox.js";
@@ -25,7 +24,6 @@ declare global {
     "neuwo-button": NeuwoButton;
     "neuwo-input": NeuwoInput;
     "neuwo-textarea": NeuwoTextarea;
-    "neuwo-select": NeuwoSelect;
     "neuwo-combobox": NeuwoCombobox;
     "neuwo-range": NeuwoRange;
     "neuwo-checkbox": NeuwoCheckbox;
