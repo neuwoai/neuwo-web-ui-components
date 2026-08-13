@@ -96,9 +96,17 @@
     <p>
       This paragraph and the headings above use
       <code>foundation/typography.css</code>, applied to native tags and driven by tokens.
-      <a href="https://neuwo.ai">A prose link</a> sits inside it. The full specimen sheet, every
-      role, scale step, weight and line height, is on
-      <a href="/demo/typography.html">the typography page</a>.
+      <a class="link" href="https://neuwo.ai">A prose link</a> sits inside it. The full specimen
+      sheet, every role, scale step, weight and line height, is on
+      <a class="link" href="/demo/typography.html">the typography page</a>.
+    </p>
+    <p>
+      Links are the sheet's job, not a component's. The bare element already carries the
+      treatment; <code>.link</code> states it explicitly for an anchor whose surroundings strip
+      link styling, and
+      <a class="link link--hover-green" href="https://neuwo.ai">.link--hover-green</a>
+      swaps the hover colour to the brand green. Both underline at rest and carry the underline
+      into the hover colour with them.
     </p>
     <p>The page defines a hostile <code>.btn</code> rule. Shadow DOM keeps it out.</p>
 
@@ -219,7 +227,7 @@
     </p>
     <div class="row">
       <neuwo-input name="rich-email" type="email" placeholder="you@company.com" required>
-        <span slot="label">Work email <a href="#why-we-ask">why we ask</a></span>
+        <span slot="label">Work email <a class="link" href="#why-we-ask">why we ask</a></span>
       </neuwo-input>
       <neuwo-input name="rich-key" placeholder="nw_live_...">
         <span slot="label">API key <neuwo-badge size="s" variant="green">Beta</neuwo-badge></span>
@@ -680,10 +688,11 @@
     </p>
     <div style="display: grid; gap: 1.5rem; max-width: 48rem">
       <!-- Language hint: a headline with an inline link, and nothing else.
-           The link takes its colour from the page's typography.css, because a
-           shadow root cannot reach an <a> nested inside slotted markup. -->
+           The link takes its colour from the page's typography.css via .link,
+           because a shadow root cannot reach an <a> nested inside slotted
+           markup. -->
       <neuwo-notice position="static" dismissible dismiss-label="Close">
-        <span slot="title">Read this page in <a href="#">Polski</a>?</span>
+        <span slot="title">Read this page in <a class="link" href="#">Polski</a>?</span>
       </neuwo-notice>
 
       <!-- Consent banner: a question, so no close button and role="dialog". -->
@@ -696,7 +705,7 @@
       >
         <span slot="title">We use cookies</span>
         We use analytics cookies to understand how the site is used.
-        <a href="#">Read the policy</a>.
+        <a class="link" href="#">Read the policy</a>.
         <neuwo-button slot="actions" variant="glass" size="sm">Reject</neuwo-button>
         <neuwo-button slot="actions" variant="solid" size="sm">Accept</neuwo-button>
       </neuwo-notice>

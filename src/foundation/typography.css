@@ -75,16 +75,29 @@ p {
   margin-bottom: var(--space-4);
 }
 
-/* Inline prose link */
-a {
+/* Inline prose link. The bare element carries the treatment, and `.link` applies
+   the same recipe explicitly: for an anchor sitting in a context that strips link
+   styling, and for slotted content inside a component, where the shadow root
+   cannot reach a nested `<a>` and the host page has to style it. */
+a,
+.link {
   color: var(--color-blue);
   text-decoration: underline;
   text-underline-offset: 2px;
   transition: color var(--transition-fast);
 }
 
-a:hover {
+/* Default hover: deepen the same blue. */
+a:hover,
+.link:hover {
   color: var(--color-blue-dark);
+}
+
+/* Opt-in hover, one class on top of `.link`: switch to the brand green instead.
+   text-decoration-color follows currentColor, so the underline travels with the
+   text. The class beats `a:hover` on specificity, so it needs no !important. */
+.link--hover-green:hover {
+  color: var(--color-green);
 }
 
 /* Eyebrow / kicker: the small uppercase label above a heading. A utility class

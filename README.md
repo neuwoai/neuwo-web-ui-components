@@ -34,6 +34,28 @@ consumers), use the combined stylesheet instead:
 <link rel="stylesheet" href="https://cdn.neuwo.ai/neuwo.css" />
 ```
 
+### Links
+
+The sheet styles bare `<a>` in prose: brand blue, underlined, deepening to `--color-blue-dark`
+on hover. Two classes ride along with it.
+
+```html
+<a class="link" href="/privacy/">Privacy Policy</a>
+<a class="link link--hover-green" href="/cookies/">Cookie Policy</a>
+```
+
+`.link` states the same recipe explicitly, for an anchor whose surroundings strip link styling,
+and for slotted content inside a component, where the shadow root cannot reach a nested `<a>` and
+the host page has to style it. `.link--hover-green` swaps the hover colour to the brand green.
+Both underline at rest and carry the underline into the hover colour, because
+`text-decoration-color` follows `currentColor`.
+
+There is deliberately no `<neuwo-link>` element. Prose is authored in Markdown and CMSes that
+emit `<a href>`, so a component would be bypassed by the very content it was built for, and a
+class keeps the anchor in the source HTML: crawlable, and still a working link with the script
+blocked. The trade is that a host page's own CSS can override these rules, which a shadow root
+would have prevented.
+
 ### Fonts
 
 `@font-face` is ignored inside shadow roots, so the script injects the brand
@@ -230,7 +252,7 @@ A notice announces itself politely (`role="status"`) unless you declare somethin
 stronger; a consent banner is a question, so give it `role="dialog"` and a label.
 Links inside slotted content are styled by the host page, not from inside the
 component: a shadow root cannot reach an `<a>` nested in slotted markup, so link
-the published `typography.css` to give them the brand treatment.
+the published `typography.css` and mark them `.link` to get the brand treatment.
 
 ## Dropdown
 

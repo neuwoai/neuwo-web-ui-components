@@ -36,6 +36,22 @@ describe("typography stylesheet", () => {
     }
   });
 
+  it("ships both link hover treatments off one recipe", () => {
+    // The bare element and .link share the resting rule, so the recipe is
+    // authored once rather than restated for the class.
+    expect(typographyCss).toMatch(/^a,\n\.link \{$/m);
+    expect(typographyCss).toMatch(/^a:hover,\n\.link:hover \{$/m);
+    expect(typographyCss).toMatch(
+      /\.link:hover \{[^}]*color:\s*var\(--color-blue-dark\)/
+    );
+    expect(typographyCss).toMatch(
+      /\.link--hover-green:hover \{[^}]*color:\s*var\(--color-green\)/
+    );
+    // The green modifier outranks a:hover on specificity, so it must not need
+    // !important, which a consumer could then not override at all.
+    expect(typographyCss).not.toMatch(/\.link--hover-green:hover \{[^}]*!important/);
+  });
+
   it("ships the eyebrow utility class with the kicker type recipe", () => {
     expect(typographyCss).toContain(".eyebrow");
     expect(typographyCss).toContain("var(--font-heading)");
