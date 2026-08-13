@@ -197,3 +197,108 @@ describe("<neuwo-dropdown> open and close", () => {
     expect(el.shadowRoot.querySelector(".dropdown__panel").hidden).toBe(false);
   });
 });
+
+function keydown(target, key) {
+  target.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true }));
+}
+
+describe("<neuwo-dropdown> keyboard", () => {
+  const markup = `<neuwo-dropdown label="X">
+      <a href="/a">A</a>
+      <a href="/b">B</a>
+      <span aria-current="true">C</span>
+    </neuwo-dropdown>`;
+
+  it("opens onto the first item with ArrowDown", () => {
+    const el = make(markup);
+    keydown(el.shadowRoot.querySelector(".dropdown__trigger"), "ArrowDown");
+    expect(el.open).toBe(true);
+    expect(document.activeElement).toBe(el.querySelector('a[href="/a"]'));
+  });
+
+  it("opens onto the last focusable item with ArrowUp, skipping the current span", () => {
+    const el = make(markup);
+    keydown(el.shadowRoot.querySelector(".dropdown__trigger"), "ArrowUp");
+    expect(document.activeElement).toBe(el.querySelector('a[href="/b"]'));
+  });
+
+  it("moves between items with the arrow keys", () => {
+    const el = make(markup);
+    const [a, b] = [el.querySelector('a[href="/a"]'), el.querySelector('a[href="/b"]')];
+    el.show();
+    a.focus();
+    keydown(a, "ArrowDown");
+    expect(document.activeElement).toBe(b);
+    keydown(b, "ArrowUp");
+    expect(document.activeElement).toBe(a);
+  });
+
+  it("returns focus to the trigger on ArrowUp from the first item", () => {
+    const el = make(markup);
+    const trigger = el.shadowRoot.querySelector(".dropdown__trigger");
+    const a = el.querySelector('a[href="/a"]');
+    el.show();
+    a.focus();
+    keydown(a, "ArrowUp");
+    expect(el.shadowRoot.activeElement).toBe(trigger);
+  });
+
+  it("jumps to the ends with Home and End", () => {
+    const el = make(markup);
+    const [a, b] = [el.querySelector('a[href="/a"]'), el.querySelector('a[href="/b"]')];
+    el.show();
+    a.focus();
+    keydown(a, "End");
+    expect(document.activeElement).toBe(b);
+    keydown(b, "Home");
+    expect(document.activeElement).toBe(a);
+  });
+
+  it("closes on Escape from the trigger and keeps focus there", () => {
+    const el = make(markup);
+    const trigger = el.shadowRoot.querySelector(".dropdown__trigger");
+    el.show();
+    keydown(trigger, "Escape");
+    expect(el.open).toBe(false);
+  });
+
+  it("closes on Escape from an item and returns focus to the trigger", () => {
+    const el = make(markup);
+    const trigger = el.shadowRoot.querySelector(".dropdown__trigger");
+    const a = el.querySelector('a[href="/a"]');
+    el.show();
+    a.focus();
+    keydown(a, "Escape");
+    expect(el.open).toBe(false);
+    expect(el.shadowRoot.activeElement).toBe(trigger);
+  });
+
+  it("closes when focus leaves the component entirely", () => {
+    const el = make(markup);
+    const outside = document.createElement("button");
+    document.body.append(outside);
+    el.show();
+    el.querySelector('a[href="/a"]').dispatchEvent(
+      new FocusEvent("focusout", { bubbles: true, relatedTarget: outside })
+    );
+    expect(el.open).toBe(false);
+  });
+
+  it("stays open when focus moves between its own items", () => {
+    const el = make(markup);
+    const [a, b] = [el.querySelector('a[href="/a"]'), el.querySelector('a[href="/b"]')];
+    el.show();
+    a.dispatchEvent(new FocusEvent("focusout", { bubbles: true, relatedTarget: b }));
+    expect(el.open).toBe(true);
+  });
+
+  it("stays open when focus is lost to nothing, not to another element", () => {
+    // A window blur reports a null relatedTarget; closing there would be wrong.
+    const el = make(markup);
+    el.show();
+    el.querySelector('a[href="/a"]').dispatchEvent(
+      new FocusEvent("focusout", { bubbles: true, relatedTarget: null })
+    );
+    expect(el.open).toBe(true);
+  });
+});

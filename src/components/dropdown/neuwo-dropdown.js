@@ -164,6 +164,9 @@ export class NeuwoDropdown extends NeuwoElement {
 
     this.#trigger.addEventListener("click", this.#onTriggerClick);
     this.#panel.addEventListener("toggle", this.#onPopoverToggle);
+    this.#trigger.addEventListener("keydown", this.#onTriggerKeydown);
+    this.addEventListener("keydown", this.#onItemKeydown);
+    this.addEventListener("focusout", this.#onFocusOut);
 
     this.#built = true;
     this.#patch();
@@ -283,6 +286,84 @@ export class NeuwoDropdown extends NeuwoElement {
   // mirror that back onto the attribute that drives our state.
   #onPopoverToggle = (e) => {
     if (e.newState === "closed" && this.open) this.hide();
+  };
+
+  // Focus the item at `index`; a negative index counts back from the end.
+  #focusItem(index) {
+    const items = /** @type {HTMLElement[]} */ (this.#items());
+    if (!items.length) return;
+    const i = index < 0 ? items.length + index : index;
+    items[Math.min(items.length - 1, Math.max(0, i))]?.focus();
+  }
+
+  // Enter and Space are deliberately absent: a native <button> synthesises a
+  // click for both, and #onTriggerClick already toggles.
+  #onTriggerKeydown = (e) => {
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        this.show();
+        this.#focusItem(0);
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        this.show();
+        this.#focusItem(-1);
+        break;
+      case "Escape":
+        if (this.open) {
+          e.preventDefault();
+          this.hide();
+        }
+        break;
+    }
+  };
+
+  // Listens on the host, not the panel. A slotted item's keydown reaches the host by
+  // ordinary light-DOM bubbling, which every environment supports; reaching the panel
+  // would need the event to cross the shadow boundary via the slot, which real
+  // browsers do but this project's test environment (happy-dom) does not, so a panel
+  // listener cannot be exercised by the suite. The trigger's own keydown can also
+  // reach the host once it crosses the shadow boundary, but retargeted so e.target is
+  // the host itself, never a member of #items(), so the guard below discards it
+  // without double-handling what #onTriggerKeydown already did.
+  #onItemKeydown = (e) => {
+    const items = this.#items();
+    const current = items.indexOf(/** @type {HTMLElement} */ (e.target));
+    if (current < 0) return; // not one of our items: the trigger, or slotted label content
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        this.#focusItem(current + 1);
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        // Past the first item, focus goes back to the trigger (APG).
+        if (current === 0) this.#trigger.focus();
+        else this.#focusItem(current - 1);
+        break;
+      case "Home":
+        e.preventDefault();
+        this.#focusItem(0);
+        break;
+      case "End":
+        e.preventDefault();
+        this.#focusItem(-1);
+        break;
+      case "Escape":
+        e.preventDefault();
+        this.hide();
+        this.#trigger.focus();
+        break;
+    }
+  };
+
+  // Tab walks the items and out, and leaving the component closes it. A null
+  // relatedTarget means focus went nowhere (a window blur), which must not close.
+  #onFocusOut = (e) => {
+    if (!this.open || !e.relatedTarget) return;
+    if (this.contains(e.relatedTarget) || this.shadowRoot.contains(e.relatedTarget)) return;
+    this.hide();
   };
 }
 
