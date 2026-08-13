@@ -5,14 +5,17 @@ import path from "node:path";
 const serve = process.argv.includes("--serve");
 
 // Make `import x from "./y.css?raw"` return the file's text (matches Vite's ?raw).
-const cssRaw = {
-  name: "css-raw",
+// Also covers .svg, which the logo inlines. Vitest resolves ?raw itself, but only
+// honours it for the SVG: a CSS import there yields an empty string, which is why
+// the CSS specs read their file off disk.
+const rawText = {
+  name: "raw-text",
   setup(build) {
-    build.onResolve({ filter: /\.css\?raw$/ }, (args) => ({
+    build.onResolve({ filter: /\.(css|svg)\?raw$/ }, (args) => ({
       path: path.resolve(args.resolveDir, args.path.replace(/\?raw$/, "")),
-      namespace: "css-raw",
+      namespace: "raw-text",
     }));
-    build.onLoad({ filter: /.*/, namespace: "css-raw" }, async (args) => ({
+    build.onLoad({ filter: /.*/, namespace: "raw-text" }, async (args) => ({
       contents: await readFile(args.path, "utf8"),
       loader: "text",
     }));
@@ -24,13 +27,18 @@ const options = {
   bundle: true,
   format: "esm",
   outfile: "dist/neuwo.js",
-  plugins: [cssRaw],
+  plugins: [rawText],
   logLevel: "info",
 };
 
 await rm("dist", { recursive: true, force: true });
 await mkdir("dist", { recursive: true });
 await cp("src/foundation/fonts", "dist/fonts", { recursive: true });
+
+// The logo element inlines these, but they are published too: an <img> is the
+// better choice wherever the logo is the LCP element, and the design system
+// hands the files out.
+await cp("src/foundation/logos", "dist/logos", { recursive: true });
 
 // Publish the raw CSS so the design system can parse it and non-web outputs can copy it.
 await mkdir("dist/foundation", { recursive: true });

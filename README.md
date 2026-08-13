@@ -87,6 +87,7 @@ bundle under `fonts/`, so to preload them point at that directory:
 | Status dot | `<neuwo-status-dot>` | Stable |
 | CTA band | `<neuwo-cta>` | Stable |
 | Notice card | `<neuwo-notice>` | Stable |
+| Logo | `<neuwo-logo>` | Stable |
 | Modal | `<neuwo-modal>` | Planned |
 | Card | `<neuwo-card>` | Planned |
 
@@ -99,6 +100,7 @@ Published styling files, for direct linking or non-web use:
 | Tokens + typography (one file) | `@neuwo/web-ui-components/neuwo.css` |
 | Button recipe | `@neuwo/web-ui-components/components/button/button.css` |
 | Field chrome | `@neuwo/web-ui-components/components/fields/field.css` |
+| Logo files | `@neuwo/web-ui-components/logos/neuwo-logo--bg-dark.svg` |
 
 ## Restyling from the host
 
@@ -302,12 +304,56 @@ Item colour cannot be overridden from a document stylesheet: the recipe puts `!i
 against `foundation/typography.css` styling the same `<a>`. Re-theme through `--color-blue`,
 `--color-text` and `--color-heading` instead.
 
+## Logo
+
+`<neuwo-logo>` draws the Neuwo wordmark in one of the brand's four ink pairs, each named for
+the background it belongs on. It inlines the SVG, so a logo costs no request.
+
+```html
+<neuwo-logo></neuwo-logo>                      <!-- bg-dark, the default -->
+<neuwo-logo variant="bg-light"></neuwo-logo>
+<neuwo-logo variant="bg-colour"></neuwo-logo>
+```
+
+| `variant` | `n e u` | `w o` | Use on |
+| --- | --- | --- | --- |
+| `bg-dark` (default) | white | blue | dark backgrounds |
+| `bg-dark-alt` | blue | white | dark backgrounds, alternative |
+| `bg-light` | blue | near-black | light backgrounds |
+| `bg-colour` | white | near-black | brand-coloured backgrounds, where blue would vanish |
+
+Size it with `--logo-height` (default `1.75rem`); the width follows the aspect ratio. The
+accessible name defaults to `Neuwo`, and `label=""` marks the logo decorative instead, for a
+link or heading that already names the brand:
+
+```html
+<a href="/" aria-label="Neuwo home" style="--logo-height: 2.5rem">
+  <neuwo-logo label=""></neuwo-logo>
+</a>
+```
+
+The same four files are published under `logos/`, and an `<img>` is the better choice wherever
+the logo is the page's largest paint: an element cannot draw until the bundle executes, so a
+site header logo should stay a preloaded image.
+
+```html
+<link rel="preload" as="image" fetchpriority="high"
+      href="https://cdn.neuwo.ai/logos/neuwo-logo--bg-dark.svg" />
+<img src="https://cdn.neuwo.ai/logos/neuwo-logo--bg-dark.svg" alt="Neuwo"
+     width="320" height="50" class="logo" />
+```
+
+The published files are the brand's own exports, byte for byte, so a future export can be
+diffed against them. The recipe holds no colour at all: each tone lives in its file, which is
+why `variant` picks a drawing rather than recolouring one, and why the four files cost about
+100 bytes between them once gzipped, the path data being identical.
+
 ## Develop
 
 ```bash
 npm install
 npm start     # build + watch + serve the demo at http://localhost:8000/demo/
-npm run build # produce dist/ (neuwo.js, neuwo.css, fonts/, foundation/*.css, components/**/*.css)
+npm run build # produce dist/ (neuwo.js, neuwo.css, fonts/, logos/, foundation/*.css, components/**/*.css)
 npm test      # Vitest + happy-dom
 ```
 

@@ -14,6 +14,7 @@
     "./foundation/*": "./dist/foundation/*",
     "./components/*": "./dist/components/*",
     "./fonts/*": "./dist/fonts/*",
+    "./logos/*": "./dist/logos/*",
     "./package.json": "./package.json"
   },
   "private": true,

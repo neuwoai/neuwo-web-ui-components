@@ -55,6 +55,40 @@
         border-radius: 0 !important;
         box-shadow: none !important;
       }
+      /* Hostile rule: if Shadow DOM leaked, the logo would be boxed and squashed. */
+      .logo {
+        background: hotpink !important;
+        height: 4rem !important;
+        outline: 4px solid black !important;
+      }
+      /* Panels so each logo tone sits on the background it is named for. */
+      .panel {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 1.25rem 1.5rem;
+        border-radius: 12px;
+        margin-block: 1rem;
+      }
+      .panel--light {
+        background: #f1f5f9;
+        color: #0f172a;
+      }
+      .panel--dark {
+        background: #0f172a;
+      }
+      .panel--colour {
+        background: linear-gradient(100deg, #0aa5c3, #8acb46);
+        color: #0f172a;
+      }
+      /* The published file, sized by hand. It would normally use the same .logo
+         class the recipe publishes, but this page poisons .logo on purpose, and a
+         document-scope <img> has no shadow root to hide behind. */
+      .logo-file {
+        display: block;
+        height: 1.75rem;
+        width: auto;
+      }
       /* Hostile rules: prove the shadow boundary holds. */
       .dropdown,
       .dropdown__trigger,
@@ -747,6 +781,58 @@
       for (const notice of [corner, toast])
         notice.addEventListener("dismiss", (e) => console.log("dismissed", e.target.id));
     </script>
+
+    <h2>Logo (four brand ink pairs, each named for its background)</h2>
+    <div class="panel panel--dark">
+      <neuwo-logo></neuwo-logo>
+      <neuwo-logo variant="bg-dark-alt"></neuwo-logo>
+      <code>bg-dark</code> (the default) and <code>bg-dark-alt</code>
+    </div>
+    <div class="panel panel--light">
+      <neuwo-logo variant="bg-light"></neuwo-logo>
+      <code>bg-light</code>
+    </div>
+    <div class="panel panel--colour">
+      <neuwo-logo variant="bg-colour"></neuwo-logo>
+      <code>bg-colour</code>, for a background where the brand blue would vanish
+    </div>
+    <p>
+      The page defines a hostile <code>.logo</code> rule that would box the wordmark in
+      hot pink and stretch it to 4rem. Shadow DOM keeps it out. An unknown variant falls
+      back to <code>bg-dark</code>:
+    </p>
+    <div class="panel panel--dark">
+      <neuwo-logo variant="teal"></neuwo-logo>
+    </div>
+
+    <h2>Logo sizing and linking</h2>
+    <div class="row">
+      <neuwo-logo style="--logo-height: 1rem"></neuwo-logo>
+      <neuwo-logo></neuwo-logo>
+      <neuwo-logo style="--logo-height: 3rem"></neuwo-logo>
+    </div>
+    <p>
+      Height only, via <code>--logo-height</code>; the width follows the aspect ratio.
+      Below, a link that already says Neuwo, so the logo inside it is marked decorative
+      with <code>label=""</code> and the name is announced once:
+    </p>
+    <div class="row">
+      <a class="link" href="https://neuwo.ai" aria-label="Neuwo home">
+        <neuwo-logo label=""></neuwo-logo>
+      </a>
+    </div>
+
+    <h2>Logo as a published file (no element, no JS)</h2>
+    <div class="panel panel--dark">
+      <img class="logo-file" src="/dist/logos/neuwo-logo--bg-dark.svg" alt="Neuwo"
+           width="320" height="50" />
+      <code>dist/logos/neuwo-logo--bg-dark.svg</code>
+    </div>
+    <p>
+      The same four files the element inlines are published for an
+      <code>&lt;img&gt;</code>. Prefer this wherever the logo is the page's largest
+      paint: an element cannot draw until the bundle runs.
+    </p>
 
     <h2>Eyebrow utility (opt-in typography)</h2>
     <p class="eyebrow">Kicker label</p>
