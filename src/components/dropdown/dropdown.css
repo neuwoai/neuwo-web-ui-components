@@ -1,0 +1,182 @@
+/* ==========================================================================
+   Dropdown -- disclosure navigation menu: a bare trigger over a panel of links
+   ========================================================================== */
+
+/* --- Host: layout only --- */
+
+:host {
+  display: inline-block;
+}
+
+/* An in-flow panel has to be able to push the host's siblings down. */
+:host([inline]) {
+  display: block;
+}
+
+.dropdown {
+  /* Used by the trigger and, through inheritance down the flattened tree, by
+     the slotted items. Local to the recipe, not a global token. */
+  --dropdown-underline: 2px;
+  position: relative;
+}
+
+/* --- Trigger: a bare nav link with a chevron --- */
+
+.dropdown__trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background-color: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-family: var(--font-text);
+  font-size: var(--font-size-base);
+  text-align: left;
+  cursor: pointer;
+  /* Centre-out underline. A gradient background rather than ::after, so the
+     trigger and the slotted items share one idiom: a pseudo-element cannot be
+     reliably attached to slotted content. background-origin defaults to
+     padding-box, so 100% minus twice the padding is the content width. */
+  background-image: linear-gradient(var(--color-blue), var(--color-blue));
+  background-repeat: no-repeat;
+  background-position: center calc(100% - 0.375rem);
+  background-size: 0 var(--dropdown-underline);
+  transition: background-size var(--transition-fast);
+}
+
+.dropdown__trigger:hover,
+.dropdown__trigger:focus-visible {
+  background-size: calc(100% - 2 * var(--space-3)) var(--dropdown-underline);
+}
+
+.dropdown__trigger:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+/* Reserves one line, so a trigger with no label keeps its height. */
+.dropdown__label {
+  min-height: 1lh;
+}
+
+slot[name="icon"]::slotted(*) {
+  flex: none;
+}
+
+.dropdown__arrow {
+  flex: none;
+  width: 0.625rem;
+  height: 0.375rem;
+  background-color: currentColor;
+  transition: transform var(--transition-fast);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E") center / contain no-repeat;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.dropdown__trigger[aria-expanded="true"] .dropdown__arrow {
+  transform: rotate(180deg);
+}
+
+/* --- Panel: the same surface as the combobox popup --- */
+
+.dropdown__panel {
+  margin: 0;
+  padding: var(--space-2);
+  min-width: 14rem;
+  max-height: 16rem;
+  overflow-y: auto;
+  background: var(--color-surface-solid);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  color-scheme: dark;
+}
+
+/* A [popover] is display:none while closed, but inline mode carries no popover
+   attribute and happy-dom implements neither, so hide it explicitly. */
+.dropdown__panel[hidden] {
+  display: none;
+}
+
+.dropdown__panel:popover-open {
+  animation: neuwo-dropdown-in var(--transition-fast);
+}
+
+.dropdown--top .dropdown__panel:popover-open {
+  animation: neuwo-dropdown-in-up var(--transition-fast);
+}
+
+/* --- Inline mode: no surface, an indented in-flow list --- */
+
+.dropdown--inline .dropdown__panel {
+  min-width: 0;
+  max-height: none;
+  overflow: visible;
+  padding: var(--space-1) 0 var(--space-1) var(--space-4);
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* --- Items: slotted, so document rules outrank these for normal declarations.
+       The three properties typography.css also sets must be important or the
+       recipe loses to it. Nothing else here may be important. --- */
+
+.dropdown__panel slot::slotted(*) {
+  display: block;
+  width: fit-content;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+  background-image: linear-gradient(var(--color-blue), var(--color-blue));
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: 0 var(--dropdown-underline);
+  color: var(--color-text) !important;
+  text-decoration: none !important;
+  transition: background-size var(--transition-fast) !important;
+}
+
+.dropdown__panel slot::slotted(a:hover),
+.dropdown__panel slot::slotted(a:focus-visible) {
+  background-size: calc(100% - 2 * var(--space-4)) var(--dropdown-underline);
+  color: var(--color-heading) !important;
+}
+
+/* The current page or locale: present, but not a destination. */
+.dropdown__panel slot::slotted([aria-current]) {
+  color: var(--color-heading) !important;
+  cursor: default;
+}
+
+/* --- Motion --- */
+
+@keyframes neuwo-dropdown-in {
+  from { opacity: 0; transform: translateY(-0.25rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes neuwo-dropdown-in-up {
+  from { opacity: 0; transform: translateY(0.25rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dropdown__trigger,
+  .dropdown__arrow {
+    transition: none;
+  }
+
+  .dropdown__panel slot::slotted(*) {
+    transition: none !important;
+  }
+
+  .dropdown__panel:popover-open,
+  .dropdown--top .dropdown__panel:popover-open {
+    animation: none;
+  }
+}
