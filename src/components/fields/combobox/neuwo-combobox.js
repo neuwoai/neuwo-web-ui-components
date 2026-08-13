@@ -1,5 +1,6 @@
 import { NeuwoFieldElement, fieldSheet } from "../field-element.js";
 import { sheet } from "../../../core/sheet.js";
+import { positionPopup } from "../../../core/position-popup.js";
 import comboboxCss from "./combobox.css?raw";
 
 let cbUid = 0;
@@ -257,21 +258,8 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   // Place the popup under the trigger, flipping above when there is no room,
   // matching the trigger width. The popover renders in the top layer (fixed).
   #position() {
-    if (!this.#open || typeof this.#trigger.getBoundingClientRect !== "function") return;
-    const r = this.#trigger.getBoundingClientRect();
-    const popup = this.#popup;
-    popup.style.position = "fixed";
-    popup.style.minWidth = `${r.width}px`;
-    popup.style.left = `${r.left}px`;
-    const below = window.innerHeight - r.bottom;
-    const ph = popup.offsetHeight || 0;
-    if (below < ph && r.top > below) {
-      popup.style.top = "auto";
-      popup.style.bottom = `${window.innerHeight - r.top + 4}px`;
-    } else {
-      popup.style.bottom = "auto";
-      popup.style.top = `${r.bottom + 4}px`;
-    }
+    if (!this.#open) return;
+    positionPopup(this.#trigger, this.#popup);
   }
 
   #onPopoverToggle = (e) => {
