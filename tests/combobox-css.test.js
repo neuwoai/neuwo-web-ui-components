@@ -29,6 +29,13 @@ describe("combobox.css recipe", () => {
     expect(css).toContain("min-height: 1lh");
   });
 
+  it("marks the selected option with blue text and no check-mark gutter", () => {
+    expect(css).toMatch(
+      /\.combobox__option\[aria-selected="true"\]\s*\{[^}]*color:\s*var\(--color-blue\)/
+    );
+    expect(css).not.toContain(".combobox__option::before");
+  });
+
   it("tightens the chevron gutter at the compact size", () => {
     expect(css).toMatch(/\.field--sm \.combobox__trigger\s*\{[^}]*padding-right:\s*var\(--space-8\)/);
     expect(css).toMatch(/\.field--sm \.combobox__chevron\s*\{[^}]*right:\s*var\(--space-3\)/);

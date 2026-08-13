@@ -85,9 +85,7 @@
 }
 
 .combobox__option {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
+  display: block;
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   color: var(--color-text);
@@ -103,24 +101,10 @@
   background: var(--tint-blue-15);
 }
 
+/* The selection is marked by brand-blue text, so every row starts at the same
+   text edge (a leading check-mark gutter would indent all of them). */
 .combobox__option[aria-selected="true"] {
-  color: var(--color-heading);
-}
-
-/* Selected check mark (masked so its colour is a token). */
-.combobox__option::before {
-  content: "";
-  width: 1rem;
-  height: 1rem;
-  flex-shrink: 0;
-  background-color: var(--color-blue);
-  opacity: 0;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 8.5l3 3 7-7'/%3E%3C/svg%3E") center / contain no-repeat;
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 8.5l3 3 7-7'/%3E%3C/svg%3E") center / contain no-repeat;
-}
-
-.combobox__option[aria-selected="true"]::before {
-  opacity: 1;
+  color: var(--color-blue);
 }
 
 .combobox__option[aria-disabled="true"] {
