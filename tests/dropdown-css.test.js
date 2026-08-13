@@ -43,10 +43,22 @@ describe("dropdown.css recipe", () => {
   it("draws the centre-out underline from tokens on both the trigger and the items", () => {
     expect(css).toContain("--dropdown-underline: 2px");
     expect(css).toContain("linear-gradient(var(--color-blue), var(--color-blue))");
-    expect(css).toContain("background-position: center calc(100% - 0.375rem)");
+    expect(css).toContain("background-position: center calc(100% - 0.375rem)"); // trigger, lifted
+    expect(css).toContain("background-position: center bottom"); // items, on the baseline
     expect(css).toContain("background-size: 0 var(--dropdown-underline)");
-    expect(css).toContain("calc(100% - 2 * var(--space-3))");
-    expect(css).toContain("calc(100% - 2 * var(--space-4))");
+    expect(css).toContain("calc(100% - 2 * var(--dropdown-gutter))");
+  });
+
+  it("authors the underline once and derives its width from each surface's padding", () => {
+    // One gradient, one resting size, one hover size: the trigger and the items
+    // share the rule rather than repeating it with different numbers.
+    expect(css.match(/linear-gradient\(var\(--color-blue\), var\(--color-blue\)\)/g)).toHaveLength(1);
+    expect(css.match(/background-size:\s*0 var\(--dropdown-underline\)/g)).toHaveLength(1);
+    expect(css.match(/calc\(100% - 2 \* var\(--dropdown-gutter\)\)/g)).toHaveLength(1);
+    // The gutter is the padding, so the two cannot drift apart.
+    expect(css).toContain("--dropdown-gutter: var(--space-3)");
+    expect(css).toContain("--dropdown-gutter: var(--space-4)");
+    expect(css.match(/padding:\s*var\(--space-2\) var\(--dropdown-gutter\)/g)).toHaveLength(2);
   });
 
   it("shows the underline on keyboard focus, not hover alone", () => {
