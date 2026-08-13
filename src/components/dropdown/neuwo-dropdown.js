@@ -17,12 +17,12 @@ const ALIGNMENTS = ["start", "end"];
  *
  * @summary Neuwo dropdown (navigation menu).
  * @customElement neuwo-dropdown
- * @attr label - the trigger's text; the fallback for the `label` slot.
+ * @attr {string} label - the trigger's text; the fallback for the `label` slot (default "").
  * @attr {bottom|top} placement - which side the panel opens on (default bottom). Ignored while `inline` is set.
  * @attr {start|end} align - which trigger edge the panel lines up with (default start). Ignored while `inline` is set.
  * @attr {boolean} inline - render the panel in flow, pushing siblings down, instead of in the top layer.
  * @attr {boolean} open - whether the panel is open; reflected.
- * @fires {Event} toggle - the panel opened or closed.
+ * @fires {Event} toggle - the panel opened or closed; carries no state payload, read `event.target.open`.
  * @slot - the items: links or buttons, kept in the light DOM.
  * @slot label - rich trigger content, replacing the `label` attribute's text. The icon and chevron stay owned by the recipe.
  * @slot icon - a leading icon, before the trigger's label.
@@ -55,6 +55,7 @@ export class NeuwoDropdown extends NeuwoElement {
   get label() {
     return this.getAttribute("label") ?? "";
   }
+  /** @param {string | null} v */
   set label(v) {
     if (v == null || v === "") this.removeAttribute("label");
     else this.setAttribute("label", String(v));
@@ -167,6 +168,7 @@ export class NeuwoDropdown extends NeuwoElement {
     this.#trigger.addEventListener("keydown", this.#onTriggerKeydown);
     this.addEventListener("keydown", this.#onItemKeydown);
     this.addEventListener("focusout", this.#onFocusOut);
+    this.addEventListener("click", this.#onItemClick);
 
     this.#built = true;
     this.#patch();
@@ -205,7 +207,20 @@ export class NeuwoDropdown extends NeuwoElement {
     }
 
     // Leaving popover mode: remove only after #doClose has hidden the panel.
-    if (this.#inline) this.#panel.removeAttribute("popover");
+    if (this.#inline) {
+      this.#panel.removeAttribute("popover");
+      // positionPopup() (called from #position(), popover mode only) is the
+      // only writer of inline styles on the panel (position, minWidth, left,
+      // right, top, bottom). Inline styles beat every stylesheet rule, so
+      // without this, a dropdown opened once in popover mode and then switched
+      // to inline would keep the panel `position: fixed` at stale viewport
+      // coordinates, which `.dropdown--inline .dropdown__panel` cannot override.
+      this.#panel.removeAttribute("style");
+    }
+
+    // Reposition if placement/align changed, or the trigger moved, while open.
+    // Self-guards on inline/closed, so it is a no-op the rest of the time.
+    this.#position();
   }
 
   // The focusable items, in light-DOM order. A non-focusable child (the current
@@ -268,18 +283,30 @@ export class NeuwoDropdown extends NeuwoElement {
     positionPopup(this.#trigger, this.#panel, {
       placement: this.placement,
       align: this.align,
+      matchWidth: false,
     });
   }
 
-  #onTriggerClick = (e) => {
-    e.stopPropagation();
+  #onTriggerClick = () => {
     this.open = !this.open;
   };
 
-  // A click inside the shadow root retargets to the host, so containment covers
-  // the trigger, the panel and the slotted items alike.
+  // Activating an item, a real navigation or an SPA route swallowing the
+  // click, should close the panel: popover=auto does not light-dismiss on a
+  // click inside itself, and #onDocumentClick treats items as contained.
+  #onItemClick = (e) => {
+    if (this.#items().some((item) => item.contains(e.target))) this.hide();
+  };
+
+  // composedPath(), not `!this.contains(e.target)`: a click that crosses the
+  // shadow boundary (the trigger, the panel) only has e.target retargeted to
+  // the host in a real browser. This project's test environment (happy-dom)
+  // does not retarget it, so a contains()-based check misreads a click on our
+  // own trigger as outside and closes the panel the instant it opens, now that
+  // #onTriggerClick no longer stops it from propagating. composedPath() reports
+  // the same containment correctly either way.
   #onDocumentClick = (e) => {
-    if (!this.contains(e.target)) this.hide();
+    if (!e.composedPath().includes(this)) this.hide();
   };
 
   // The browser can close an auto popover on its own (Escape, outside click), so

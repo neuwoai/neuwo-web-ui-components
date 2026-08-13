@@ -26,10 +26,8 @@ describe("dropdown.css recipe", () => {
   });
 
   it("puts every visual value on portable BEM classes", () => {
-    // `.dropdown--end` is deliberately absent. align="end" is realised by
-    // positionPopup writing an inline `right`, because a top-layer popover can
-    // only be placed by inline styles. The modifier is still emitted as a state
-    // hook for consumers, but it carries no CSS rule of its own.
+    // `.dropdown--end` is deliberately absent; see the comment above
+    // `.dropdown__panel` in dropdown.css for why.
     for (const cls of [
       ".dropdown",
       ".dropdown__trigger",

@@ -15,7 +15,7 @@ let uid = 0;
 // syncValidity): native controls use the defaults; a custom-value subclass (the
 // combobox) overrides them.
 /**
- * Base for the text-like field controls (input, textarea, select, combobox).
+ * Base for the text-like field controls (input, textarea, combobox, range).
  * Owns form association, the value and disabled API, label and error rendering.
  * Restyle the control from the host via `::part(input)`, including transient
  * state the component does not own (e.g. `[data-flash]::part(input)` to flash a

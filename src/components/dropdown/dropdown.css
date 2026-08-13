@@ -79,7 +79,12 @@ slot[name="icon"]::slotted(*) {
   transform: rotate(180deg);
 }
 
-/* --- Panel: the same surface as the combobox popup --- */
+/* --- Panel: the same surface as the combobox popup ---
+   .dropdown--end carries no rule in this file, on purpose: align="end" is
+   realised by positionPopup writing an inline `right` on the panel, because a
+   top-layer popover can only be placed with inline styles. The modifier class
+   is still emitted on .dropdown as a state hook for consumers; it just has
+   nothing here to match it. --- */
 
 .dropdown__panel {
   margin: 0;

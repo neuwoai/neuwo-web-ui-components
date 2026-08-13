@@ -232,6 +232,54 @@ Links inside slotted content are styled by the host page, not from inside the
 component: a shadow root cannot reach an `<a>` nested in slotted markup, so link
 the published `typography.css` to give them the brand treatment.
 
+## Dropdown
+
+`<neuwo-dropdown>` is a disclosure navigation menu: a trigger button over a panel of items.
+Unlike `<neuwo-combobox>`, the items are **direct children** kept in the light DOM as real
+`<a>` or `<button>` elements, never cloned or read into an internal model. That is the reason
+to reach for it over the combobox: `href` keeps working, so middle-click, Ctrl-click, the
+context menu and crawlability all survive, and a delegated document click listener still sees
+the real element as `event.target`.
+
+```html
+<neuwo-dropdown label="Publishers">
+  <a href="/monetisation/">Monetisation Platform</a>
+  <a href="/enrichment/">Bid Enrichment</a>
+  <span aria-current="true">Auto-Tagging API</span>
+</neuwo-dropdown>
+```
+
+Items must be **direct children** of `<neuwo-dropdown>`. Wrapping them, `<ul><li><a>...`,
+loses both keyboard navigation and item styling silently: the component only ever reads
+`this.children`, and the recipe only styles slotted content through `::slotted()`, which
+likewise only sees the host's direct children, so a nested `<a>` is invisible to both. An item
+marked `aria-current` (a `<span>` with no `href`, as above) is styled as the current entry;
+leaving out `href` and `tabindex` is what keeps it out of keyboard navigation, not the
+attribute itself.
+
+`inline` swaps the top-layer `popover="auto"` panel for one that renders in flow and pushes
+its siblings down, the pattern for a mobile-nav breakpoint. The default mode's
+`popover="auto"` gives outside-click dismissal and closes sibling dropdowns for free, native
+browser behaviour, no script needed. `inline` mode has no such built-in grouping, so a page
+coordinating several inline dropdowns, closing the others when one opens, does it by listening
+for `toggle`:
+
+```js
+const menus = document.querySelectorAll("neuwo-dropdown[inline]");
+menus.forEach((menu) =>
+  menu.addEventListener("toggle", () => {
+    if (menu.open) menus.forEach((other) => other !== menu && other.hide());
+  })
+);
+```
+
+`toggle` fires on open and close but carries no state payload; read `event.target.open`.
+
+Item colour cannot be overridden from a document stylesheet: the recipe puts `!important` on
+`color`, `text-decoration` and `transition` so the slotted links keep the brand treatment even
+against `foundation/typography.css` styling the same `<a>`. Re-theme through `--color-blue`,
+`--color-text` and `--color-heading` instead.
+
 ## Develop
 
 ```bash

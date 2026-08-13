@@ -177,15 +177,33 @@ describe("<neuwo-dropdown> open and close", () => {
     expect(el.shadowRoot.querySelector(".dropdown__panel").hasAttribute("popover")).toBe(false);
   });
 
-  it("closes on a click outside and ignores clicks within", () => {
-    const el = make(`<neuwo-dropdown label="X"><a href="/a">A</a></neuwo-dropdown>`);
+  it("closes on a click outside and ignores clicks within on a non-item", () => {
+    const el = make(
+      `<neuwo-dropdown label="X"><a href="/a">A</a><span aria-current="true">B</span></neuwo-dropdown>`
+    );
     el.show();
 
-    el.querySelector("a").dispatchEvent(new Event("click", { bubbles: true }));
+    el.querySelector("span").dispatchEvent(new Event("click", { bubbles: true }));
     expect(el.open).toBe(true);
 
     document.body.dispatchEvent(new Event("click", { bubbles: true }));
     expect(el.open).toBe(false);
+  });
+
+  it("closes when a click activates an item", () => {
+    // popover=auto does not light-dismiss on a click inside itself, so this is
+    // an explicit close: a navigation menu item should collapse the panel.
+    const el = make(`<neuwo-dropdown label="X"><a href="/a">A</a></neuwo-dropdown>`);
+    el.show();
+    el.querySelector("a").dispatchEvent(new Event("click", { bubbles: true }));
+    expect(el.open).toBe(false);
+  });
+
+  it("does not close when a click lands on the panel but not an item", () => {
+    const el = make(`<neuwo-dropdown label="X"><a href="/a">A</a></neuwo-dropdown>`);
+    el.show();
+    el.shadowRoot.querySelector(".dropdown__panel").click();
+    expect(el.open).toBe(true);
   });
 
   it("keeps a declaratively open inline dropdown open on first connect", () => {
@@ -258,8 +276,10 @@ describe("<neuwo-dropdown> keyboard", () => {
     const el = make(markup);
     const trigger = el.shadowRoot.querySelector(".dropdown__trigger");
     el.show();
+    trigger.focus();
     keydown(trigger, "Escape");
     expect(el.open).toBe(false);
+    expect(el.shadowRoot.activeElement).toBe(trigger);
   });
 
   it("closes on Escape from an item and returns focus to the trigger", () => {

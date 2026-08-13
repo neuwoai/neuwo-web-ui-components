@@ -10,17 +10,20 @@
  *
  * @param {HTMLElement} trigger - the element to position against.
  * @param {HTMLElement} popup - the popup to move.
- * @param {{ placement?: "bottom" | "top", align?: "start" | "end", gap?: number }} [options]
+ * @param {{ placement?: "bottom" | "top", align?: "start" | "end", gap?: number, matchWidth?: boolean }} [options]
  *   `placement` is the preferred side (default bottom), `align` the trigger edge
- *   the popup lines up with (default start), `gap` the offset in px (default 4).
+ *   the popup lines up with (default start), `gap` the offset in px (default 4),
+ *   `matchWidth` sets the popup's `min-width` to the trigger's width (default
+ *   true); pass false when the popup wants its own width floor instead of
+ *   matching a possibly-narrower trigger.
  */
 export function positionPopup(trigger, popup, options = {}) {
   if (!trigger || typeof trigger.getBoundingClientRect !== "function") return;
-  const { placement = "bottom", align = "start", gap = 4 } = options;
+  const { placement = "bottom", align = "start", gap = 4, matchWidth = true } = options;
   const r = trigger.getBoundingClientRect();
 
   popup.style.position = "fixed";
-  popup.style.minWidth = `${r.width}px`;
+  if (matchWidth) popup.style.minWidth = `${r.width}px`;
 
   if (align === "end") {
     popup.style.left = "auto";

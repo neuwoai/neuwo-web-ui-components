@@ -67,4 +67,18 @@ describe("positionPopup", () => {
     expect(() => positionPopup({}, p)).not.toThrow();
     expect(p.style.position).toBeUndefined();
   });
+
+  it("sets minWidth to the trigger's width by default", () => {
+    const p = popup();
+    positionPopup(trigger({ left: 0, right: 200, top: 0, bottom: 40, width: 200 }), p);
+    expect(p.style.minWidth).toBe("200px");
+  });
+
+  it("does not write minWidth when matchWidth is false", () => {
+    const p = popup();
+    positionPopup(trigger({ left: 0, right: 200, top: 0, bottom: 40, width: 200 }), p, {
+      matchWidth: false,
+    });
+    expect(p.style.minWidth).toBeUndefined();
+  });
 });
