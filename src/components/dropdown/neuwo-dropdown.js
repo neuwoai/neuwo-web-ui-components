@@ -1,5 +1,6 @@
 import { NeuwoElement } from "../../core/base-element.js";
 import { sheet } from "../../core/sheet.js";
+import { positionPopup } from "../../core/position-popup.js";
 import dropdownCss from "./dropdown.css?raw";
 
 let ddUid = 0;
@@ -21,6 +22,7 @@ const ALIGNMENTS = ["start", "end"];
  * @attr {start|end} align - which trigger edge the panel lines up with (default start). Ignored while `inline` is set.
  * @attr {boolean} inline - render the panel in flow, pushing siblings down, instead of in the top layer.
  * @attr {boolean} open - whether the panel is open; reflected.
+ * @fires {Event} toggle - the panel opened or closed.
  * @slot - the items: links or buttons, kept in the light DOM.
  * @slot label - rich trigger content, replacing the `label` attribute's text. The icon and chevron stay owned by the recipe.
  * @slot icon - a leading icon, before the trigger's label.
@@ -45,6 +47,8 @@ export class NeuwoDropdown extends NeuwoElement {
   #built = false;
   #open = false;
   #inline = false;
+  #reposition = () => this.#position();
+  #dismissBound = false;
 
   // --- Public API ---
 
@@ -56,19 +60,23 @@ export class NeuwoDropdown extends NeuwoElement {
     else this.setAttribute("label", String(v));
   }
 
+  /** @returns {"bottom" | "top"} */
   get placement() {
     const v = this.getAttribute("placement");
-    return PLACEMENTS.includes(v) ? v : "bottom";
+    return PLACEMENTS.includes(v) ? /** @type {"bottom" | "top"} */ (v) : "bottom";
   }
+  /** @param {string | null} v */
   set placement(v) {
     if (v == null || v === "") this.removeAttribute("placement");
     else this.setAttribute("placement", String(v));
   }
 
+  /** @returns {"start" | "end"} */
   get align() {
     const v = this.getAttribute("align");
-    return ALIGNMENTS.includes(v) ? v : "start";
+    return ALIGNMENTS.includes(v) ? /** @type {"start" | "end"} */ (v) : "start";
   }
+  /** @param {string | null} v */
   set align(v) {
     if (v == null || v === "") this.removeAttribute("align");
     else this.setAttribute("align", String(v));
@@ -96,6 +104,11 @@ export class NeuwoDropdown extends NeuwoElement {
   /** Close the panel. */
   hide() {
     this.open = false;
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback?.();
+    this.#teardownDismiss();
   }
 
   // --- Render: build once, then patch ---
@@ -149,30 +162,128 @@ export class NeuwoDropdown extends NeuwoElement {
     this.#wrapper.append(this.#trigger, this.#panel);
     this.shadowRoot.append(this.#wrapper);
 
+    this.#trigger.addEventListener("click", this.#onTriggerClick);
+    this.#panel.addEventListener("toggle", this.#onPopoverToggle);
+
     this.#built = true;
     this.#patch();
   }
 
   #patch() {
-    this.#inline = this.hasAttribute("inline");
+    const inline = this.hasAttribute("inline");
+    // Removing `popover` from an open popover is a spec edge case. Close first,
+    // which re-enters #patch() to finish the reconfigure.
+    if (inline !== this.#inline && this.#open) {
+      this.#inline = inline;
+      this.removeAttribute("open");
+      return;
+    }
+    this.#inline = inline;
 
-    // Only non-default modifiers are emitted, so the CSS carries rules for
-    // exactly the classes that appear.
     const classes = ["dropdown"];
     if (this.placement === "top") classes.push("dropdown--top");
     if (this.align === "end") classes.push("dropdown--end");
     if (this.#inline) classes.push("dropdown--inline");
     this.#wrapper.className = classes.join(" ");
 
-    // Rewriting the fallback text mutates the slot's children, which the browser
-    // reports as a slot change; only write when it actually differs.
     const text = this.getAttribute("label") ?? "";
     if (this.#labelSlot.textContent !== text) this.#labelSlot.textContent = text;
 
-    this.#open = this.hasAttribute("open");
-    this.#trigger.setAttribute("aria-expanded", this.#open ? "true" : "false");
-    this.#panel.hidden = !this.#open;
+    // Entering popover mode: the attribute must exist before #doOpen shows it.
+    if (!this.#inline && !this.#panel.hasAttribute("popover")) {
+      this.#panel.setAttribute("popover", "auto");
+    }
+
+    // The `open` attribute is the single source of truth; reconcile to it.
+    const wantOpen = this.hasAttribute("open");
+    if (wantOpen !== this.#open) {
+      if (wantOpen) this.#doOpen();
+      else this.#doClose();
+    }
+
+    // Leaving popover mode: remove only after #doClose has hidden the panel.
+    if (this.#inline) this.#panel.removeAttribute("popover");
   }
+
+  // The focusable items, in light-DOM order. A non-focusable child (the current
+  // locale rendered as a <span>) is present but never a navigation target.
+  #items() {
+    return Array.from(this.children).filter((el) =>
+      el.matches?.('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])')
+    );
+  }
+
+  #doOpen() {
+    this.#open = true;
+    this.#trigger.setAttribute("aria-expanded", "true");
+    this.#panel.hidden = false;
+    if (!this.#inline) {
+      if (typeof this.#panel.showPopover === "function") {
+        try {
+          this.#panel.showPopover();
+        } catch {
+          /* already open, or popover unsupported */
+        }
+      }
+      this.#position();
+      window.addEventListener("scroll", this.#reposition, true);
+      window.addEventListener("resize", this.#reposition);
+    }
+    // `popover=auto` dismisses on an outside click by itself, but inline mode and
+    // environments without popover support need this.
+    document.addEventListener("click", this.#onDocumentClick);
+    this.#dismissBound = true;
+    this.dispatchEvent(new Event("toggle", { bubbles: true }));
+  }
+
+  #doClose() {
+    this.#open = false;
+    this.#trigger.setAttribute("aria-expanded", "false");
+    if (this.#panel.hasAttribute("popover") && typeof this.#panel.hidePopover === "function") {
+      try {
+        this.#panel.hidePopover();
+      } catch {
+        /* already closed */
+      }
+    }
+    this.#panel.hidden = true;
+    this.#teardownDismiss();
+    this.dispatchEvent(new Event("toggle", { bubbles: true }));
+  }
+
+  #teardownDismiss() {
+    window.removeEventListener("scroll", this.#reposition, true);
+    window.removeEventListener("resize", this.#reposition);
+    if (this.#dismissBound) {
+      document.removeEventListener("click", this.#onDocumentClick);
+      this.#dismissBound = false;
+    }
+  }
+
+  #position() {
+    if (!this.#open || this.#inline) return;
+    positionPopup(this.#trigger, this.#panel, {
+      placement: this.placement,
+      align: this.align,
+    });
+  }
+
+  #onTriggerClick = (e) => {
+    e.stopPropagation();
+    this.open = !this.open;
+  };
+
+  // A click inside the shadow root retargets to the host, so containment covers
+  // the trigger, the panel and the slotted items alike.
+  #onDocumentClick = (e) => {
+    if (!this.contains(e.target)) this.hide();
+  };
+
+  // The browser can close an auto popover on its own (Escape, outside click), so
+  // mirror that back onto the attribute that drives our state.
+  #onPopoverToggle = (e) => {
+    if (e.newState === "closed" && this.open) this.hide();
+  };
 }
 
 customElements.define("neuwo-dropdown", NeuwoDropdown);

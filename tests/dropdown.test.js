@@ -120,3 +120,80 @@ describe("<neuwo-dropdown> structure", () => {
     expect(el.shadowRoot.querySelector(".dropdown__panel")).toBe(panel);
   });
 });
+
+describe("<neuwo-dropdown> open and close", () => {
+  it("toggles on trigger click", () => {
+    const el = make(`<neuwo-dropdown label="X"><a href="/a">A</a></neuwo-dropdown>`);
+    const trigger = el.shadowRoot.querySelector(".dropdown__trigger");
+
+    trigger.click();
+    expect(el.open).toBe(true);
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    expect(el.shadowRoot.querySelector(".dropdown__panel").hidden).toBe(false);
+
+    trigger.click();
+    expect(el.open).toBe(false);
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    expect(el.shadowRoot.querySelector(".dropdown__panel").hidden).toBe(true);
+  });
+
+  it("fires toggle once per state change", () => {
+    const el = make(`<neuwo-dropdown label="X"><a href="/a">A</a></neuwo-dropdown>`);
+    let count = 0;
+    el.addEventListener("toggle", () => count++);
+    el.show();
+    expect(count).toBe(1);
+    el.show(); // already open, no change
+    expect(count).toBe(1);
+    el.hide();
+    expect(count).toBe(2);
+  });
+
+  it("opens on load when the open attribute is present", () => {
+    const el = make(`<neuwo-dropdown label="X" open><a href="/a">A</a></neuwo-dropdown>`);
+    expect(el.shadowRoot.querySelector(".dropdown__trigger").getAttribute("aria-expanded")).toBe(
+      "true"
+    );
+  });
+
+  it("carries popover in the default mode and drops it when inline", () => {
+    const el = make(`<neuwo-dropdown label="X"><a href="/a">A</a></neuwo-dropdown>`);
+    const panel = el.shadowRoot.querySelector(".dropdown__panel");
+    expect(panel.getAttribute("popover")).toBe("auto");
+
+    el.inline = true;
+    expect(panel.hasAttribute("popover")).toBe(false);
+
+    el.inline = false;
+    expect(panel.getAttribute("popover")).toBe("auto");
+  });
+
+  it("closes when inline changes while open, rather than reconfiguring a live popover", () => {
+    const el = make(`<neuwo-dropdown label="X"><a href="/a">A</a></neuwo-dropdown>`);
+    el.show();
+    expect(el.open).toBe(true);
+    el.inline = true;
+    expect(el.open).toBe(false);
+    expect(el.shadowRoot.querySelector(".dropdown__panel").hasAttribute("popover")).toBe(false);
+  });
+
+  it("closes on a click outside and ignores clicks within", () => {
+    const el = make(`<neuwo-dropdown label="X"><a href="/a">A</a></neuwo-dropdown>`);
+    el.show();
+
+    el.querySelector("a").dispatchEvent(new Event("click", { bubbles: true }));
+    expect(el.open).toBe(true);
+
+    document.body.dispatchEvent(new Event("click", { bubbles: true }));
+    expect(el.open).toBe(false);
+  });
+
+  it("keeps a declaratively open inline dropdown open on first connect", () => {
+    // The inline-transition guard must not mistake the first sync for a live
+    // change, or it strips the open attribute the consumer declared.
+    const el = make(`<neuwo-dropdown label="X" inline open><a href="/a">A</a></neuwo-dropdown>`);
+    expect(el.hasAttribute("open")).toBe(true);
+    expect(el.shadowRoot.querySelector(".dropdown__trigger").getAttribute("aria-expanded")).toBe("true");
+    expect(el.shadowRoot.querySelector(".dropdown__panel").hidden).toBe(false);
+  });
+});
