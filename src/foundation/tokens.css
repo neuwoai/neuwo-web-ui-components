@@ -147,8 +147,9 @@
   --line-height-subheading: 1.3;
   --line-height-body: 1.6;
 
-  /* Letter spacing */
+  /* Letter spacing. Hero-section titles only */
   --letter-spacing-display: -0.04em;
+  --letter-spacing-display-secondary: -0.03em;
 
   /* Spacing */
   --space-1: 0.25rem;

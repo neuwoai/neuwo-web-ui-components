@@ -17,8 +17,16 @@ describe("typography stylesheet", () => {
     expect(typographyCss).toContain("var(--font-size-6xl)");
     expect(typographyCss).toContain("var(--font-weight-extrabold)");
     expect(typographyCss).toContain("var(--line-height-display)");
-    expect(typographyCss).toContain("var(--letter-spacing-display)");
     expect(typographyCss).toContain("var(--color-text)");
+  });
+
+  it("leaves h1 at normal tracking, since the display value is hero-only", () => {
+    // --letter-spacing-display is tuned for a hero title, not for whatever h1
+    // a page happens to have, so the sheet must not apply it automatically.
+    const [h1Rule] = typographyCss.match(/(?:^|\n)h1 \{[^}]*\}/);
+    expect(h1Rule).toContain("var(--font-size-6xl)");
+    expect(h1Rule).not.toContain("letter-spacing");
+    expect(typographyCss).not.toContain("var(--letter-spacing-display)");
   });
 
   it("only uses typography tokens that tokens.css defines", () => {
@@ -31,6 +39,7 @@ describe("typography stylesheet", () => {
       "--line-height-subheading",
       "--line-height-body",
       "--letter-spacing-display",
+      "--letter-spacing-display-secondary",
     ]) {
       expect(tokensCss).toContain(`${token}:`);
     }
