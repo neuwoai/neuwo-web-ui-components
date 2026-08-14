@@ -25,7 +25,24 @@
         margin: 0 auto;
         padding: var(--space-12) var(--space-6) var(--space-24);
         max-width: 64rem;
-        background: var(--color-body-bg);
+      }
+
+      /* The page surface, wired exactly as the main website wires it: the
+         library ships the visuals (`.body`, `.background__gradient`), the
+         consumer owns where the wash sits and how it stacks. */
+      .background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: var(--z-background);
+        overflow: hidden;
+      }
+
+      .background__gradient {
+        width: 100%;
+        height: 100%;
       }
 
       .demo-nav {
@@ -105,7 +122,11 @@
     </style>
   </head>
 
-  <body>
+  <body class="body">
+    <div class="background">
+      <div class="background__gradient"></div>
+    </div>
+
     <p class="demo-nav">
       Typography specimen. The component gallery is on
       <a class="link" href="/demo/">the demo index</a>.

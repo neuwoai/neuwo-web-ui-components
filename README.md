@@ -27,8 +27,8 @@ Opt into Neuwo typography for native headings and text by linking the stylesheet
 
 or, in a bundler, `import "@neuwo/web-ui-components/foundation/typography.css"`.
 
-To link tokens and typography as a single file (handy for CSS-only or no-bundler
-consumers), use the combined stylesheet instead:
+To link tokens, typography and the page surface as a single file (handy for
+CSS-only or no-bundler consumers), use the combined stylesheet instead:
 
 ```html
 <link rel="stylesheet" href="https://cdn.neuwo.ai/neuwo.css" />
@@ -55,6 +55,48 @@ emit `<a href>`, so a component would be bypassed by the very content it was bui
 class keeps the anchor in the source HTML: crawlable, and still a working link with the script
 blocked. The trade is that a host page's own CSS can override these rules, which a shadow root
 would have prevented.
+
+### Page surface
+
+`foundation/background.css` carries the two visuals a Neuwo page sits on, as two independent
+classes:
+
+- **`.body`** is the base ink and paper: the text font, size and line height, `--color-text`,
+  `--color-body-bg`, and the two font-smoothing hints. Put it on `<body>`.
+- **`.background__gradient`** is the brand's ambient wash: four translucent blue and green
+  blobs. It reads correctly only over a dark surface, so pair it with `.body`.
+
+Neither class owns a box, a position or a z-index. That is deliberate: where the wash sits and
+how tall it is are page decisions, not brand ones. To reproduce the full-viewport treatment the
+main website uses, the consumer supplies the frame:
+
+```html
+<body class="body">
+  <div class="background">
+    <div class="background__gradient"></div>
+  </div>
+```
+
+```css
+.background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: var(--z-background);
+  overflow: hidden;
+}
+
+.background__gradient {
+  width: 100%;
+  height: 100%;
+}
+```
+
+`--z-background` is a library token, so the stacking stays consistent with the rest of the
+system. Both demo pages are wired exactly this way. The same gradient class also works on an
+ordinary sized element, for a single washed panel rather than a whole page.
 
 ### Fonts
 
@@ -97,7 +139,8 @@ Published styling files, for direct linking or non-web use:
 | --- | --- |
 | Tokens | `@neuwo/web-ui-components/foundation/tokens.css` |
 | Typography | `@neuwo/web-ui-components/foundation/typography.css` |
-| Tokens + typography (one file) | `@neuwo/web-ui-components/neuwo.css` |
+| Page surface | `@neuwo/web-ui-components/foundation/background.css` |
+| All three foundation layers (one file) | `@neuwo/web-ui-components/neuwo.css` |
 | Button recipe | `@neuwo/web-ui-components/components/button/button.css` |
 | Field chrome | `@neuwo/web-ui-components/components/fields/field.css` |
 | Logo files | `@neuwo/web-ui-components/logos/neuwo-logo--bg-dark.svg` |

@@ -1,0 +1,27 @@
+/* Neuwo page surface for native elements. Opt-in: link or import this file.
+   Two independent classes, visuals only: `.body` is the page's base ink and
+   paper, `.background__gradient` is the brand's ambient blob wash. Neither
+   owns a box, a position or a z-index, so the consumer decides where each
+   one sits and how it is stacked. */
+
+.body {
+  font-family: var(--font-text);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-body);
+  color: var(--color-text);
+  background-color: var(--color-body-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Four translucent blobs, so this reads as the brand wash only over a dark
+   surface: pair it with `.body` or an equivalent background colour. The 10%
+   and 5% steps are on the tint scale; 7% and 6% are not, and each occurs
+   once, so they stay inline rather than growing the scale. */
+.background__gradient {
+  background:
+    radial-gradient(ellipse 50% 40% at 20% 20%, var(--tint-blue-10) 0%, transparent 100%),
+    radial-gradient(ellipse 40% 50% at 75% 15%, color-mix(in srgb, var(--color-green) 7%, transparent) 0%, transparent 100%),
+    radial-gradient(ellipse 60% 35% at 50% 60%, color-mix(in srgb, var(--color-blue) 6%, transparent) 0%, transparent 100%),
+    radial-gradient(ellipse 45% 45% at 80% 70%, var(--tint-green-5) 0%, transparent 100%);
+}
