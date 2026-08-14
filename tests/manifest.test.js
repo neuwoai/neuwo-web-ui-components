@@ -49,12 +49,15 @@ const EXPECTED_TAGS = [
   "neuwo-button", "neuwo-input", "neuwo-textarea",
   "neuwo-combobox", "neuwo-range", "neuwo-checkbox", "neuwo-toggle", "neuwo-radio",
   "neuwo-radio-group", "neuwo-segmented", "neuwo-badge", "neuwo-deal-id",
-  "neuwo-status-dot", "neuwo-cta", "neuwo-notice", "neuwo-dropdown", "neuwo-logo",
+  "neuwo-status-dot", "neuwo-cta", "neuwo-notice", "neuwo-logo",
 ];
 
 // Elements deliberately removed. `neuwo-select` wrapped a native <select>, so its
 // popup was drawn by the OS and could not be styled; the styled combobox replaces it.
-const REMOVED_TAGS = ["neuwo-select"];
+// `neuwo-dropdown` bundled a disclosure toggle with the nav-link styling, which made
+// it too rigid for site navigation; `foundation/navigation.css` publishes the styling
+// on its own so the consumer owns the structure and any collapsing.
+const REMOVED_TAGS = ["neuwo-select", "neuwo-dropdown"];
 
 describe("custom-elements.json", () => {
   it("declares every registered neuwo-* element", () => {
@@ -166,12 +169,5 @@ describe("custom-elements.json", () => {
     const attrs = attributesFor(manifest, "neuwo-logo");
     for (const a of ["variant", "label"]) expect(attrs).toContain(a);
     expect(partsFor(manifest, "neuwo-logo").has("logo")).toBe(true);
-  });
-
-  it("documents the dropdown's attributes and parts", () => {
-    const attrs = attributesFor(manifest, "neuwo-dropdown");
-    for (const a of ["label", "placement", "align", "inline", "open"]) expect(attrs).toContain(a);
-    for (const p of ["trigger", "label", "arrow", "panel"])
-      expect(partsFor(manifest, "neuwo-dropdown").has(p)).toBe(true);
   });
 });

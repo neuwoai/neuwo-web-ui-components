@@ -104,23 +104,6 @@
         height: 1.75rem;
         width: auto;
       }
-      /* Hostile rules: prove the shadow boundary holds. */
-      .dropdown,
-      .dropdown__trigger,
-      .dropdown__panel {
-        background: hotpink !important;
-        color: lime !important;
-        padding: 3rem !important;
-      }
-      /* And a document-scope anchor rule, which is what foundation/typography.css
-         does. Normal declarations from the outer tree beat ::slotted(), so this is
-         the exact clash the recipe's three !important properties defend against.
-         The items must stay grey with no browser underline. */
-      .dropdown-hostile a {
-        color: var(--color-red);
-        text-decoration: underline;
-        transition: color 1ms;
-      }
       .row {
         display: flex;
         gap: 1rem;
@@ -375,50 +358,6 @@
           "submitted " + [...data.entries()].map(([k, v]) => k + "=" + v).join(", ");
       });
     </script>
-
-    <h2>Dropdown</h2>
-    <div class="dropdown-hostile">
-      <div class="row">
-        <neuwo-dropdown label="Publishers">
-          <a href="#monetisation">Monetisation Platform</a>
-          <a href="#enrichment">Bid Enrichment</a>
-          <a href="#tagging">Auto-Tagging API</a>
-        </neuwo-dropdown>
-        <neuwo-dropdown label="Resources">
-          <a href="#blog">Blog</a>
-          <a href="#demo">Live Demo</a>
-        </neuwo-dropdown>
-        <neuwo-dropdown label="Company">
-          <a href="#about">About</a>
-        </neuwo-dropdown>
-      </div>
-      <p>
-        Opening one closes the others: <code>popover="auto"</code> does that with no
-        script. Hover or tab through the items to see the centre-out underline.
-      </p>
-
-      <div class="row">
-        <neuwo-dropdown label="English" placement="top" align="end">
-          <svg slot="icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-            <circle cx="12" cy="12" r="9" />
-            <path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18" />
-          </svg>
-          <a href="#fi">Suomi</a>
-          <a href="#de">Deutsch</a>
-          <span aria-current="true">English</span>
-        </neuwo-dropdown>
-      </div>
-      <p>Opens upward, right-aligned, with a leading icon and a current item.</p>
-
-      <div class="row">
-        <neuwo-dropdown label="Inline (mobile nav)" inline>
-          <a href="#one">First</a>
-          <a href="#two">Second</a>
-        </neuwo-dropdown>
-      </div>
-      <p>The panel renders in flow and pushes this paragraph down.</p>
-    </div>
 
     <h2>Selection: checkbox</h2>
     <form id="checkbox-form" class="row">
