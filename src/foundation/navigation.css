@@ -1,0 +1,78 @@
+/* Neuwo navigation links for native elements. Opt-in: link or import this file.
+   Two classes, visuals only: `.nav-link` is a top-level entry and
+   `.nav-link--sm` the nested one. Neither owns placement, a list reset or a
+   panel surface, so the consumer decides the structure and whether sections
+   collapse at all. No custom element is involved, so `<ul><li><a>` and native
+   `<details>` both work, and nothing here needs !important. */
+
+.nav-link {
+  /* Drives the horizontal padding and the underline's endpoints together, so
+     the bar cannot drift from the text it sits under. Retune it in one place
+     (for a denser desktop bar, say) and both follow. */
+  --nav-link-gutter: var(--space-4);
+  display: block;
+  position: relative;
+  width: fit-content;
+  padding: 0 var(--nav-link-gutter);
+  /* A 44px tap target. */
+  min-height: 2.75rem;
+  line-height: 2.75rem;
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-family: var(--font-text);
+  font-size: var(--font-size-base);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+/* A nested entry: compact, so it takes its height from the line rather than a
+   tap target of its own. */
+.nav-link--sm {
+  min-height: auto;
+  line-height: var(--line-height-body);
+  padding: var(--space-2) var(--nav-link-gutter);
+  font-size: var(--font-size-sm);
+}
+
+/* Centre-out underline. A pseudo-element rather than a gradient background,
+   which the light DOM allows: `left`/`right` animate from the middle out to the
+   gutter, so the bar spans the text and not the padding. */
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  right: 50%;
+  bottom: 0.375rem;
+  height: 2px;
+  background: var(--color-blue);
+  border-radius: 1px;
+  transition: left var(--transition-fast), right var(--transition-fast);
+}
+
+/* The compact entry has no lifted baseline to clear. */
+.nav-link--sm::after {
+  bottom: 0;
+}
+
+/* The class outranks `a` and `a:hover` from typography.css on specificity, so
+   these are normal declarations and a consumer can still override any of them. */
+.nav-link:hover,
+.nav-link:focus-visible,
+.nav-link[aria-current] {
+  color: var(--color-heading);
+}
+
+/* `aria-current` is absent here on purpose: the current page is marked, not a
+   destination, so it takes the lifted ink without the underline. */
+.nav-link:hover::after,
+.nav-link:focus-visible::after {
+  left: var(--nav-link-gutter);
+  right: var(--nav-link-gutter);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-link,
+  .nav-link::after {
+    transition: none;
+  }
+}

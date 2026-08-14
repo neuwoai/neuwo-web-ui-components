@@ -27,8 +27,9 @@ Opt into Neuwo typography for native headings and text by linking the stylesheet
 
 or, in a bundler, `import "@neuwo/web-ui-components/foundation/typography.css"`.
 
-To link tokens, typography and the page surface as a single file (handy for
-CSS-only or no-bundler consumers), use the combined stylesheet instead:
+To link tokens, typography, the page surface and the navigation links as a single
+file (handy for CSS-only or no-bundler consumers), use the combined stylesheet
+instead:
 
 ```html
 <link rel="stylesheet" href="https://cdn.neuwo.ai/neuwo.css" />
@@ -98,6 +99,75 @@ main website uses, the consumer supplies the frame:
 system. Both demo pages are wired exactly this way. The same gradient class also works on an
 ordinary sized element, for a single washed panel rather than a whole page.
 
+### Navigation links
+
+`foundation/navigation.css` carries the brand's nav-link treatment, the centre-out underline
+that grows from the middle of the text on hover and focus. Two classes:
+
+- **`.nav-link`** is a top-level entry: base type, a 44px tap target, and the underline lifted
+  off the baseline.
+- **`.nav-link--sm`** is a nested entry: small type, compact, and the underline flush to the
+  bottom edge.
+
+`aria-current` takes the lifted ink without the underline, marking the current page as present
+rather than as a destination.
+
+```html
+<nav aria-label="Main">
+  <ul>
+    <li><a class="nav-link" href="/publishers/">Publishers</a></li>
+    <li><a class="nav-link" href="/company/" aria-current="page">Company</a></li>
+  </ul>
+</nav>
+```
+
+The sheet styles links and nothing else. Placement, the list reset and any panel surface are
+the consumer's, so navigation stays ordinary markup: a real `<ul>` keeps its list semantics,
+nesting works to any depth, and a section that should collapse uses native
+`<details>`/`<summary>`, which brings its own keyboard and ARIA behaviour. No script ships for
+navigation.
+
+A section heading takes `.nav-link` like any other entry, whether it is a link to the section's
+own page or a `<summary>` that only toggles. There is no separate heading recipe, and no
+opinion here about whether a heading is part of the navigation at all; that is the consumer's
+structure to decide.
+
+```html
+<li>
+  <a class="nav-link" href="/guides/">Guides</a>
+  <ul>
+    <li><a class="nav-link nav-link--sm" href="/guides/quickstart/">Quickstart</a></li>
+  </ul>
+</li>
+```
+
+One interaction to know when the heading is a `<summary>`: `.nav-link` sets `display: block`,
+which is the documented way to strip a summary's disclosure triangle. Restore it with
+`display: list-item` (and `list-style-position: inside`, so the underline still spans the
+label) if you want the marker rather than your own chevron.
+
+One value is tunable per instance. `--nav-link-gutter` drives the horizontal padding and the
+underline's endpoints together, so they cannot drift apart; set it once for a denser bar:
+
+```css
+@media (min-width: 64rem) {
+  .site-nav .nav-link {
+    --nav-link-gutter: var(--space-3);
+  }
+}
+```
+
+Nothing in the recipe is `!important`. `.nav-link` outranks `typography.css`'s bare `a`, and
+`.nav-link:hover` outranks its `a:hover`, on specificity alone, so a consumer can still
+override any property from a document stylesheet.
+
+This replaces `<neuwo-dropdown>`, removed in the same change. That element bundled the styling
+with a disclosure toggle it could not turn off, which made it unusable for navigation that is
+permanently visible, and its shadow root forced items to be direct children and forced
+`!important` onto their colour. Migrating: drop the element, keep the links, put `.nav-link`
+(or `.nav-link--sm` inside a section) on each one, and wrap them in whatever structure the
+navigation actually needs.
+
 ### Fonts
 
 `@font-face` is ignored inside shadow roots, so the script injects the brand
@@ -139,7 +209,8 @@ Published styling files, for direct linking or non-web use:
 | Tokens | `@neuwo/web-ui-components/foundation/tokens.css` |
 | Typography | `@neuwo/web-ui-components/foundation/typography.css` |
 | Page surface | `@neuwo/web-ui-components/foundation/background.css` |
-| All three foundation layers (one file) | `@neuwo/web-ui-components/neuwo.css` |
+| Navigation links | `@neuwo/web-ui-components/foundation/navigation.css` |
+| All four foundation layers (one file) | `@neuwo/web-ui-components/neuwo.css` |
 | Button recipe | `@neuwo/web-ui-components/components/button/button.css` |
 | Field chrome | `@neuwo/web-ui-components/components/fields/field.css` |
 | Logo files | `@neuwo/web-ui-components/logos/neuwo-logo--bg-dark.svg` |

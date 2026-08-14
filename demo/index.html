@@ -111,6 +111,42 @@
         align-items: center;
         margin-block: 1.5rem;
       }
+      /* Consumer-owned nav structure: foundation/navigation.css ships the two link
+         recipes and nothing else, so the list reset and the placement live here. */
+      .nav-demo ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .nav-demo__row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .nav-demo__sidebar {
+        width: 16rem;
+        margin-block: 1.5rem;
+      }
+
+      .nav-demo__sidebar ul ul {
+        padding-left: 1rem;
+      }
+
+      .nav-demo__sidebar > ul > li + li {
+        margin-top: 1rem;
+      }
+
+      /* .nav-link sets display: block, which is the documented way to strip a
+         summary's disclosure triangle. Put it back, inside the content box so the
+         underline still spans the label. */
+      .nav-demo summary.nav-link {
+        display: list-item;
+        list-style-position: inside;
+        cursor: pointer;
+      }
       /* Re-theme via a token that inherits through the shadow boundary. */
       .reskin {
         --color-blue: darkslateblue;
@@ -358,6 +394,54 @@
           "submitted " + [...data.entries()].map(([k, v]) => k + "=" + v).join(", ");
       });
     </script>
+
+    <h2>Navigation links</h2>
+    <p>
+      Plain classes on real markup, no custom element and no script. The page loads
+      <code>foundation/typography.css</code>, which styles every bare
+      <code>&lt;a&gt;</code> blue and underlined, so these links staying grey with a
+      centre-out bar on hover is the specificity check: the recipe wins with normal
+      declarations, and you can still override it from here.
+    </p>
+    <nav class="nav-demo" aria-label="Demo top level">
+      <ul class="nav-demo__row">
+        <li><a class="nav-link" href="#publishers">Publishers</a></li>
+        <li><a class="nav-link" href="#advertisers">Advertisers</a></li>
+        <li><a class="nav-link" href="#resources">Resources</a></li>
+        <li><a class="nav-link" href="#company" aria-current="page">Company</a></li>
+      </ul>
+    </nav>
+
+    <nav class="nav-demo nav-demo__sidebar" aria-label="Demo sidebar">
+      <ul>
+        <li>
+          <a class="nav-link" href="#guides">Guides</a>
+          <ul>
+            <li><a class="nav-link nav-link--sm" href="#overview">Overview</a></li>
+            <li><a class="nav-link nav-link--sm" href="#quickstart">Quickstart</a></li>
+            <li>
+              <a class="nav-link nav-link--sm" href="#auth" aria-current="page">Authentication</a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <details open>
+            <summary class="nav-link">API reference</summary>
+            <ul>
+              <li><a class="nav-link nav-link--sm" href="#tagging">Auto-Tagging</a></li>
+              <li><a class="nav-link nav-link--sm" href="#enrichment">Bid Enrichment</a></li>
+            </ul>
+          </details>
+        </li>
+      </ul>
+    </nav>
+    <p>
+      A sidebar. The section headings are <code>.nav-link</code> too: a section is usually
+      a page of its own, and whether a heading is part of the navigation is the consumer's
+      call, not the library's. The first section is a plain nested list; the second wraps
+      the same markup in native <code>&lt;details&gt;</code>, which is where the keyboard
+      and ARIA behaviour comes from now that no component owns the toggle.
+    </p>
 
     <h2>Selection: checkbox</h2>
     <form id="checkbox-form" class="row">
