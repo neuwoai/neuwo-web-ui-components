@@ -35,18 +35,27 @@
 }
 
 /* Centre-out underline. A pseudo-element rather than a gradient background,
-   which the light DOM allows: `left`/`right` animate from the middle out to the
-   gutter, so the bar spans the text and not the padding. */
+   which the light DOM allows: the bar is laid out at its full span between the
+   gutters, so it covers the text and not the padding, and grows into it from
+   the middle.
+
+   The growth is a transform, not a pair of insets meeting at 50%. `left` and
+   `right` are layout properties, so animating them ran layout on every frame of
+   every hover; and two insets at 50% resolve independently at sub-pixel
+   precision, so on a link of fractional width the resting bar kept a hair of
+   width instead of none. `scaleX(0)` composites, and is exactly nothing. */
 .nav-link::after {
   content: "";
   position: absolute;
-  left: 50%;
-  right: 50%;
+  left: var(--nav-link-gutter);
+  right: var(--nav-link-gutter);
   bottom: 0.375rem;
   height: 2px;
   background: var(--color-blue);
   border-radius: 1px;
-  transition: left var(--transition-fast), right var(--transition-fast);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform var(--transition-fast);
 }
 
 /* The compact entry has no lifted baseline to clear. */
@@ -58,16 +67,23 @@
    these are normal declarations and a consumer can still override any of them. */
 .nav-link:hover,
 .nav-link:focus-visible,
-.nav-link[aria-current] {
+.nav-link[aria-current],
+.nav-link--active {
   color: var(--color-heading);
 }
 
-/* `aria-current` is absent here on purpose: the current page is marked, not a
-   destination, so it takes the lifted ink without the underline. */
+/* `aria-current` is absent here on purpose: in a horizontal bar the current page
+   is marked, not offered, so it takes the lifted ink without the underline.
+
+   A vertical nav wants the opposite, and it wants the same treatment on the
+   section the current page sits under. `.nav-link--active` is that opt-in: it
+   holds the bar open, and it composes with `aria-current` rather than replacing
+   it, so the current page keeps its semantics either way. One modifier covers
+   both, because to a reader the current page and its open section look alike. */
 .nav-link:hover::after,
-.nav-link:focus-visible::after {
-  left: var(--nav-link-gutter);
-  right: var(--nav-link-gutter);
+.nav-link:focus-visible::after,
+.nav-link--active::after {
+  transform: scaleX(1);
 }
 
 @media (prefers-reduced-motion: reduce) {

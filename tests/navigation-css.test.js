@@ -30,38 +30,59 @@ describe("navigation stylesheet", () => {
     expect(rule).toMatch(/line-height:\s*var\(--line-height-body\)/);
   });
 
-  // The gutter drives the padding and the underline's endpoints from one value,
-  // so the bar cannot drift from the text above it.
+  // The gutter drives the padding and the underline's span from one value, so
+  // the bar cannot drift from the text above it.
   it("derives the padding and the underline endpoints from one gutter property", () => {
     expect(css).toMatch(/--nav-link-gutter:\s*var\(--space-4\)/);
     expect(css).toMatch(/padding:\s*0 var\(--nav-link-gutter\)/);
     expect(css).toMatch(/padding:\s*var\(--space-2\) var\(--nav-link-gutter\)/);
-    const hover = css.match(/\.nav-link:hover::after,[^{]*\{[^}]*\}/)[0];
-    expect(hover).toMatch(/left:\s*var\(--nav-link-gutter\)/);
-    expect(hover).toMatch(/right:\s*var\(--nav-link-gutter\)/);
+    const rule = css.match(/(?:^|\n)\.nav-link::after \{[^}]*\}/)[0];
+    expect(rule).toMatch(/left:\s*var\(--nav-link-gutter\)/);
+    expect(rule).toMatch(/right:\s*var\(--nav-link-gutter\)/);
   });
 
   it("draws the underline as a centre-out bar in the brand blue", () => {
     const rule = css.match(/(?:^|\n)\.nav-link::after \{[^}]*\}/)[0];
     expect(rule).toMatch(/content:\s*""/);
-    expect(rule).toMatch(/left:\s*50%/);
-    expect(rule).toMatch(/right:\s*50%/);
     expect(rule).toMatch(/height:\s*2px/);
     expect(rule).toMatch(/background:\s*var\(--color-blue\)/);
-    expect(rule).toMatch(/transition:\s*left var\(--transition-fast\), right var\(--transition-fast\)/);
     // The lifted baseline is the top-level entry's; the compact one sits flush.
     expect(rule).toMatch(/bottom:\s*0\.375rem/);
     expect(css).toMatch(/\.nav-link--sm::after \{[^}]*bottom:\s*0;/);
   });
 
-  it("lifts the ink on hover, focus and for the current page", () => {
+  // A transform rather than two insets meeting at 50%: `left`/`right` are layout
+  // properties, and a pair of them at 50% leaves a sub-pixel residue at rest on
+  // a link of fractional width. scaleX(0) composites, and is exactly nothing.
+  it("grows the bar with a transform, never by animating layout", () => {
+    const rule = css.match(/(?:^|\n)\.nav-link::after \{[^}]*\}/)[0];
+    expect(rule).toMatch(/transform:\s*scaleX\(0\)/);
+    expect(rule).toMatch(/transform-origin:\s*center/);
+    expect(rule).toMatch(/transition:\s*transform var\(--transition-fast\)/);
+    expect(rule).not.toMatch(/left:\s*50%/);
+    expect(rule).not.toMatch(/right:\s*50%/);
+    const shown = css.match(/\.nav-link:hover::after,[^{]*\{[^}]*\}/)[0];
+    expect(shown).toMatch(/transform:\s*scaleX\(1\)/);
+    expect(shown).not.toMatch(/left:|right:/);
+  });
+
+  it("lifts the ink on hover, focus, for the current page and when active", () => {
     const rule = css.match(
-      /\.nav-link:hover,\n\.nav-link:focus-visible,\n\.nav-link\[aria-current\] \{[^}]*\}/
+      /\.nav-link:hover,\n\.nav-link:focus-visible,\n\.nav-link\[aria-current\],\n\.nav-link--active \{[^}]*\}/
     )[0];
     expect(rule).toMatch(/color:\s*var\(--color-heading\)/);
-    // The current page is marked, not a destination, so no underline for it.
-    const hover = css.match(/\.nav-link:hover::after,[^{]*\{/)[0];
-    expect(hover).not.toContain("aria-current");
+    // In a horizontal bar the current page is marked, not offered, so the bar
+    // is withheld from `aria-current` alone.
+    const shown = css.match(/\.nav-link:hover::after,[^{]*\{/)[0];
+    expect(shown).not.toContain("aria-current");
+  });
+
+  // A vertical nav wants the bar held open on the current page and on the
+  // section it sits under, which `aria-current` alone cannot express.
+  it("holds the bar open for an active entry, composing with aria-current", () => {
+    const shown = css.match(/\.nav-link:hover::after,[^{]*\{[^}]*\}/)[0];
+    expect(shown).toContain(".nav-link--active::after");
+    expect(shown).toMatch(/transform:\s*scaleX\(1\)/);
   });
 
   // The class beats typography.css's `a` (0,1,0 over 0,0,1) and its `a:hover`

@@ -121,6 +121,27 @@ rather than as a destination.
 </nav>
 ```
 
+**`.nav-link--active`** holds the underline open. That bar-less treatment for `aria-current` is
+right for a horizontal bar, where the current entry is one of several and the absent bar reads
+as "you are here". Down the side of a page it is close to invisible, and a sidebar also needs to
+mark the *section* the current page sits under, which `aria-current` cannot express without
+lying about which page is current. One class covers both, because to a reader an open section
+and the current page look alike, and it composes with `aria-current` rather than replacing it:
+
+```html
+<li>
+  <a class="nav-link nav-link--active" href="/guides/">Guides</a>
+  <ul>
+    <li><a class="nav-link nav-link--sm" href="/guides/quickstart/">Quickstart</a></li>
+    <li>
+      <a class="nav-link nav-link--sm nav-link--active" href="/guides/auth/" aria-current="page"
+        >Authentication</a
+      >
+    </li>
+  </ul>
+</li>
+```
+
 The sheet styles links and nothing else. Placement, the list reset and any panel surface are
 the consumer's, so navigation stays ordinary markup: a real `<ul>` keeps its list semantics,
 nesting works to any depth, and a section that should collapse uses native
@@ -156,6 +177,13 @@ underline's endpoints together, so they cannot drift apart; set it once for a de
   }
 }
 ```
+
+The bar is laid out at its full span and grown with `transform: scaleX()`, not by animating a
+pair of insets out from 50%. `left` and `right` are layout properties, so the old form ran
+layout on every frame of every hover, and two insets at 50% resolve independently at sub-pixel
+precision, which left a hair of width on a link of fractional width instead of none. If you were
+overriding `::after`'s `left`/`right` to hold a bar open, that no longer works: use
+`.nav-link--active`.
 
 Nothing in the recipe is `!important`. `.nav-link` outranks `typography.css`'s bare `a`, and
 `.nav-link:hover` outranks its `a:hover`, on specificity alone, so a consumer can still

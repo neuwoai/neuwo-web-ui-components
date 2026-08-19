@@ -415,12 +415,17 @@
     <nav class="nav-demo nav-demo__sidebar" aria-label="Demo sidebar">
       <ul>
         <li>
-          <a class="nav-link" href="#guides">Guides</a>
+          <a class="nav-link nav-link--active" href="#guides">Guides</a>
           <ul>
             <li><a class="nav-link nav-link--sm" href="#overview">Overview</a></li>
             <li><a class="nav-link nav-link--sm" href="#quickstart">Quickstart</a></li>
             <li>
-              <a class="nav-link nav-link--sm" href="#auth" aria-current="page">Authentication</a>
+              <a
+                class="nav-link nav-link--sm nav-link--active"
+                href="#auth"
+                aria-current="page"
+                >Authentication</a
+              >
             </li>
           </ul>
         </li>
@@ -441,6 +446,14 @@
       call, not the library's. The first section is a plain nested list; the second wraps
       the same markup in native <code>&lt;details&gt;</code>, which is where the keyboard
       and ARIA behaviour comes from now that no component owns the toggle.
+    </p>
+    <p>
+      Both &ldquo;Guides&rdquo; and &ldquo;Authentication&rdquo; carry
+      <code>.nav-link--active</code>, which holds the bar open. In the row above,
+      <code>aria-current</code> alone takes the lifted ink without a bar, because a
+      horizontal entry that is the current page is marked rather than offered. A sidebar
+      wants the opposite, and wants it on the section too, so the bar is an opt-in class
+      and <code>aria-current</code> keeps its semantic job either way.
     </p>
 
     <h2>Selection: checkbox</h2>
