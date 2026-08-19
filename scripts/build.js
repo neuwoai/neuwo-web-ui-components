@@ -27,6 +27,9 @@ const options = {
   bundle: true,
   format: "esm",
   outfile: "dist/neuwo.js",
+  // Parse and compile cost scales with raw bytes, not compressed ones, so this
+  // buys more than the transfer saving suggests.
+  minify: true,
   plugins: [rawText],
   logLevel: "info",
 };
