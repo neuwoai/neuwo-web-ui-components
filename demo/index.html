@@ -111,6 +111,21 @@
         align-items: center;
         margin-block: 1.5rem;
       }
+      /* The corner control assumes a panel with room to spare. A chip has none,
+         so the consumer supplies the clearance: the library owns no box. */
+      .copy-chip {
+        display: inline-block;
+        padding-right: 2rem;
+        --copy-inset: 0.125rem;
+      }
+      /* Hostile rule: if Shadow DOM leaked, the copy controls would turn hot pink
+         and square off. They must NOT. */
+      .copy {
+        background: hotpink !important;
+        border-radius: 0 !important;
+        opacity: 1 !important;
+        width: 4rem !important;
+      }
       /* The library ships no warning intent, because the brand has no amber. This
          is a consumer supplying one through the recipe's own knob: a raw colour
          here on purpose, since the point is that the value comes from outside. */
@@ -487,9 +502,11 @@
       <blockquote>
         A quote marked by the brand blue edge, in muted italic ink.
       </blockquote>
-      <pre><code>const topics = await neuwo.classify(url);
+      <neuwo-copy>
+        <pre><code>const topics = await neuwo.classify(url);
 // A panel scrolls rather than wraps: wrapping
 // mid-token would misrepresent the code.</code></pre>
+      </neuwo-copy>
       <table>
         <thead>
           <tr>
@@ -550,6 +567,57 @@
         </p>
       </div>
     </div>
+
+    <h2>Copy to clipboard</h2>
+    <p>
+      <code>&lt;neuwo-copy&gt;</code> wraps anything whose text is worth pasting and puts a
+      control in the corner. The page defines a hostile <code>.copy</code> rule, so a leaked
+      shadow root would show a wide pink square instead of the control. The code panel in the
+      Markdown section above is wrapped the same way.
+    </p>
+    <p>
+      The wrapped content stays in the light DOM, which is the point: the panel keeps the
+      <code>.markdown pre</code> styling and any syntax colouring the page applies. Only the
+      control is encapsulated. It copies <code>textContent</code>, so nothing has to name the
+      source.
+    </p>
+    <div class="markdown">
+      <neuwo-copy id="copy-demo">
+        <pre><code>curl -X POST https://api.neuwo.ai/v1/classify \
+  -H "Authorization: Bearer $NEUWO_TOKEN" \
+  -d '{"url": "https://example.com/article"}'</code></pre>
+      </neuwo-copy>
+    </div>
+    <p id="copy-log">The <code>copied</code> event will report here.</p>
+
+    <p>
+      Not only for code. A deal ID exists to be pasted into a DSP, so wrapping one is the
+      other obvious use, and it needs no attribute to say what to copy:
+    </p>
+    <div class="row">
+      <neuwo-copy class="copy-chip">
+        <neuwo-deal-id>NEUWO-CTX-000123</neuwo-deal-id>
+      </neuwo-copy>
+    </div>
+    <p>
+      This one shows the honest limit of a corner overlay: the control assumes a panel with
+      room to spare, and a chip has none, so it would sit on top of the identifier. The
+      library owns no box, so the clearance is the consumer's, and
+      <code>--copy-inset</code> pulls the control in to match the smaller target:
+    </p>
+    <div class="markdown">
+      <pre><code>.copy-chip {
+  display: inline-block;
+  padding-right: 2rem;
+  --copy-inset: 0.125rem;
+}</code></pre>
+    </div>
+    <script>
+      document.getElementById("copy-demo").addEventListener("copied", (event) => {
+        document.getElementById("copy-log").textContent =
+          `copied ${event.detail.text.length} characters to the clipboard`;
+      });
+    </script>
 
     <h2>Selection: checkbox</h2>
     <form id="checkbox-form" class="row">

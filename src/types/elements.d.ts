@@ -19,6 +19,7 @@ import type { NeuwoStatusDot } from "../components/status-dot/neuwo-status-dot.j
 import type { NeuwoCta } from "../components/cta/neuwo-cta.js";
 import type { NeuwoNotice } from "../components/notice/neuwo-notice.js";
 import type { NeuwoLogo } from "../components/logo/neuwo-logo.js";
+import type { NeuwoCopy } from "../components/copy/neuwo-copy.js";
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -38,5 +39,6 @@ declare global {
     "neuwo-cta": NeuwoCta;
     "neuwo-notice": NeuwoNotice;
     "neuwo-logo": NeuwoLogo;
+    "neuwo-copy": NeuwoCopy;
   }
 }

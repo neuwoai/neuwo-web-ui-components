@@ -49,7 +49,7 @@ const EXPECTED_TAGS = [
   "neuwo-button", "neuwo-input", "neuwo-textarea",
   "neuwo-combobox", "neuwo-range", "neuwo-checkbox", "neuwo-toggle", "neuwo-radio",
   "neuwo-radio-group", "neuwo-segmented", "neuwo-badge", "neuwo-deal-id",
-  "neuwo-status-dot", "neuwo-cta", "neuwo-notice", "neuwo-logo",
+  "neuwo-status-dot", "neuwo-cta", "neuwo-notice", "neuwo-logo", "neuwo-copy",
 ];
 
 // Elements deliberately removed. `neuwo-select` wrapped a native <select>, so its
@@ -169,5 +169,12 @@ describe("custom-elements.json", () => {
     const attrs = attributesFor(manifest, "neuwo-logo");
     for (const a of ["variant", "label"]) expect(attrs).toContain(a);
     expect(partsFor(manifest, "neuwo-logo").has("logo")).toBe(true);
+  });
+
+  it("documents the copy wrapper's three labels and both parts", () => {
+    const attrs = attributesFor(manifest, "neuwo-copy");
+    for (const a of ["label", "copied-label", "failed-label"]) expect(attrs).toContain(a);
+    const parts = partsFor(manifest, "neuwo-copy");
+    for (const p of ["button", "status"]) expect(parts.has(p)).toBe(true);
   });
 });

@@ -15,6 +15,7 @@ import "./components/status-dot/neuwo-status-dot.js"; // self-registers <neuwo-s
 import "./components/cta/neuwo-cta.js"; // self-registers <neuwo-cta>
 import "./components/notice/neuwo-notice.js"; // self-registers <neuwo-notice>
 import "./components/logo/neuwo-logo.js"; // self-registers <neuwo-logo>
+import "./components/copy/neuwo-copy.js"; // self-registers <neuwo-copy>
 
 injectFonts();
 
@@ -34,3 +35,4 @@ export { NeuwoStatusDot } from "./components/status-dot/neuwo-status-dot.js";
 export { NeuwoCta } from "./components/cta/neuwo-cta.js";
 export { NeuwoNotice } from "./components/notice/neuwo-notice.js";
 export { NeuwoLogo } from "./components/logo/neuwo-logo.js";
+export { NeuwoCopy } from "./components/copy/neuwo-copy.js";

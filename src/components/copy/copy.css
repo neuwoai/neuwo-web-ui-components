@@ -1,0 +1,90 @@
+:host {
+  /* Layout only: the control positions against this box, and the wrapper must
+     not change how the content it wraps lays out. */
+  display: block;
+  position: relative;
+}
+
+.copy {
+  position: absolute;
+  /* Read with a fallback rather than declared, so a consumer can pull the
+     control further in without fighting a declaration on this element. */
+  top: var(--copy-inset, var(--space-3));
+  inset-inline-end: var(--copy-inset, var(--space-3));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-8);
+  height: var(--space-8);
+  padding: 0;
+  color: var(--color-text-muted);
+  background: var(--color-surface-solid);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  /* Visible at rest, so the affordance is found without hunting for it, and
+     solid on hover. Deliberately not a hover-only reveal: a tap leaves a touch
+     screen in :hover with nothing to take it out, so a control that only exists
+     on hover either never appears or never leaves. */
+  opacity: 0.45;
+  transition: opacity var(--transition-fast), color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.copy:hover,
+.copy:focus-visible {
+  opacity: 1;
+  color: var(--color-heading);
+  border-color: var(--glass-border-hover);
+}
+
+.copy:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+/* The glyph is a mask over the button's own colour, as on the notice's close
+   control, so it follows the hover and any consumer re-colour without a second
+   asset and without the JS building an icon. */
+.copy::before {
+  content: "";
+  width: 0.875rem;
+  height: 0.875rem;
+  background: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='9' y='9' width='11' height='11' rx='2'/%3E%3Cpath d='M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1'/%3E%3C/svg%3E") center / contain no-repeat;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='9' y='9' width='11' height='11' rx='2'/%3E%3Cpath d='M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* Confirmation: the tick replaces the sheets, and the button is held solid and
+   green so the state reads without hovering. */
+.copy--done {
+  opacity: 1;
+  color: var(--color-green);
+  border-color: var(--tint-green-25);
+}
+
+.copy--done::before {
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E");
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E");
+}
+
+/* The outcome, for a screen reader only. The button's own name stays put:
+   relabelling a control the user has just activated is announced
+   inconsistently, where a live region is announced reliably. */
+.copy__status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .copy {
+    transition: none;
+  }
+}

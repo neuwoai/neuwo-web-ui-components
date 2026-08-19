@@ -119,6 +119,19 @@
   border-color: var(--color-blue);
 }
 
+/* A panel wrapped for copying keeps its top-right corner clear, so a long first
+   line scrolls rather than running under the control. Derived from the control's
+   own size and inset, so the two cannot drift.
+
+   This lives here, not in the component's recipe, for a reason worth knowing:
+   the shadow root's `::slotted(pre)` would lose to `.markdown pre` whatever its
+   specificity, because a declaration from the outer tree beats one from a shadow
+   tree for slotted content. So the only place that can widen this padding is the
+   document, which is this sheet. */
+.markdown neuwo-copy pre {
+  padding-right: calc(var(--space-8) + var(--space-3) * 2);
+}
+
 /* --- Tables --- */
 
 /* Sized by its container, so a table wider than the column scrolls its own

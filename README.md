@@ -270,6 +270,65 @@ custom element's upgrade shift costs most, so a class that paints with the first
 right trade. `<neuwo-notice>` still owns the interrupting case, where the dismiss button and the
 docking are the point.
 
+#### Copying a code panel
+
+`<neuwo-copy>` wraps anything whose text is worth pasting and puts a control in its top-right
+corner. It is the one part of this surface that is an element rather than a class, because the
+clipboard needs behaviour.
+
+```html
+<neuwo-copy>
+  <pre><code>curl -X POST https://api.neuwo.ai/v1/classify</code></pre>
+</neuwo-copy>
+```
+
+The wrapped content **stays in the light DOM**, and that is the whole design. Only the control
+lives in the shadow root, so the panel keeps its `.markdown pre` styling and whatever syntax
+colouring the page applies. An element that owned the panel inside its own shadow root could not
+colour the syntax tokens at all, because `::slotted` matches only top-level slotted nodes, never
+the spans nested inside the `<pre>`.
+
+It copies `textContent`, trimmed, so nothing has to name the source: no ids, no `for` attribute,
+no selector to keep in step with your renderer's output. The trim is what makes indented markup
+safe, since the whitespace around a nested `<pre>` is your formatting, not the sample.
+
+For an Eleventy site, that is a one-line transform:
+
+```js
+eleventyConfig.addTransform("copyButtons", function (content) {
+  if (!(this.page.outputPath || "").endsWith(".html")) return content;
+  return content.replace(/<pre[\s\S]*?<\/pre>/g, (block) => `<neuwo-copy>${block}</neuwo-copy>`);
+});
+```
+
+There is deliberately no helper that walks the page and wraps every `<pre>` for you. Emitting the
+element keeps the markup in the shipped HTML and keeps the library declarative, and a DOM-walking
+pass would be a second way to do the same thing.
+
+Three details worth knowing:
+
+- **The control appears only where the clipboard is reachable.** An insecure context leaves
+  `navigator.clipboard` undefined, so rather than offer a button that silently fails, the element
+  renders none. The wrapped content is projected either way.
+- **The outcome goes to a live region**, not to the button's label. Relabelling a control the user
+  has just activated is announced inconsistently; a `role="status"` region is announced reliably.
+  `label`, `copied-label` and `failed-label` are all yours to translate.
+- **The corner overlay assumes a panel with room.** `.markdown neuwo-copy pre` widens the panel's
+  right padding so a long first line scrolls rather than running underneath. Around something
+  small, a chip say, give the wrapper its own clearance and pull the control in with
+  `--copy-inset`; the library owns no box:
+
+```css
+.deal-id-copy {
+  display: inline-block;
+  padding-right: 2rem;
+  --copy-inset: 0.125rem;
+}
+```
+
+A `copied` event fires after a successful write, with the text in `detail.text`. It bubbles and is
+composed, so it is reachable from the document.
+
 ### Fonts
 
 `@font-face` is ignored inside shadow roots, so the script injects the brand
@@ -298,6 +357,7 @@ bundle under `fonts/`, so to preload them point at that directory:
 | Badge | `<neuwo-badge>` | Stable |
 | Deal-ID chip | `<neuwo-deal-id>` | Stable |
 | Status dot | `<neuwo-status-dot>` | Stable |
+| Copy wrapper | `<neuwo-copy>` | Stable |
 | CTA band | `<neuwo-cta>` | Stable |
 | Notice card | `<neuwo-notice>` | Stable |
 | Logo | `<neuwo-logo>` | Stable |
