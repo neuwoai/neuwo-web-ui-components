@@ -38,6 +38,30 @@ describe("cta.css recipe", () => {
     expect(css).toContain(".cta--spotlight:hover .cta__inner::before");
   });
 
+  // A tap leaves the element in :hover with nothing to take it out again. For a
+  // colour that is invisible; for a rule that starts or stops an animation it
+  // sticks for the life of the page, so every one of those is guarded.
+  it("guards every hover rule that starts or stops an animation", () => {
+    const guarded = [...css.matchAll(/@media \(hover: hover\) \{[\s\S]*?\n\}/g)].map((m) => m[0]);
+    const animating = [
+      ":host([pulse]:hover) ::slotted(neuwo-button:first-of-type)",
+      ".cta--banner:hover::after",
+      ".cta--spotlight:hover {",
+      ".cta--spotlight:hover .cta__glow",
+      ".cta--spotlight:hover .cta__inner::before",
+    ];
+    for (const selector of animating) {
+      expect(guarded.some((block) => block.includes(selector))).toBe(true);
+    }
+  });
+
+  // Guarding these too would risk losing them wholesale in any environment that
+  // misreports `hover: none`, and a stuck shadow costs nothing.
+  it("leaves the plain colour and shadow hovers unguarded", () => {
+    const outside = css.replace(/@media \(hover: hover\) \{[\s\S]*?\n\}/g, "");
+    expect(outside).toMatch(/\.cta--banner:hover \{[^}]*box-shadow/);
+  });
+
   it("adds the synchronised button-pulse ring, reduced-motion-gated", () => {
     expect(css).toContain(":host([pulse]) ::slotted(neuwo-button:first-of-type)");
     expect(css).toContain("@keyframes cta-button-pulse");

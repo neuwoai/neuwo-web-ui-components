@@ -108,9 +108,13 @@
   45%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-blue) var(--cta-pulse-alpha), transparent); }
 }
 
-/* On hover the idle pulse yields to the hover state. */
-:host([pulse]:hover) ::slotted(neuwo-button:first-of-type) {
-  animation: none;
+/* On hover the idle pulse yields to the hover state. Guarded, because a tap on
+   a touch screen leaves the element in :hover with nothing to take it out
+   again, and that would silence the pulse for the rest of the page's life. */
+@media (hover: hover) {
+  :host([pulse]:hover) ::slotted(neuwo-button:first-of-type) {
+    animation: none;
+  }
 }
 
 /* --- Banner variant: flat horizontal bar --- */
@@ -144,10 +148,19 @@
   box-shadow: 0 0.25rem 1rem var(--tint-blue-20), 0 0 2rem var(--tint-blue-10);
 }
 
-/* On hover the idle shimmer pauses, so the hover glow reads cleanly. */
-.cta--banner:hover::after {
-  animation: none;
-  opacity: 0;
+/* On hover the idle shimmer pauses, so the hover glow reads cleanly.
+
+   Guarded, and so are the spotlight's three below. A tap on a touch screen
+   leaves the element in :hover with nothing to take it out again, which for a
+   rule that only changes a colour is invisible, but these four start or stop an
+   animation: without the guard one tap kills this shimmer for the rest of the
+   page's life. The plain colour and shadow hovers elsewhere stay unguarded on
+   purpose, since sticking costs them nothing. */
+@media (hover: hover) {
+  .cta--banner:hover::after {
+    animation: none;
+    opacity: 0;
+  }
 }
 
 @media (max-width: 40rem) {
@@ -177,15 +190,18 @@
   transition: background var(--transition-base);
 }
 
-.cta--spotlight:hover {
-  background: conic-gradient(
-    from var(--cta-angle),
-    var(--color-blue) 0deg,
-    var(--color-green) 120deg,
-    var(--color-blue) 240deg,
-    var(--color-blue) 360deg
-  );
-  animation: cta-spin 3s linear infinite;
+/* Without the guard, one tap sets this spinning and nothing ever stops it. */
+@media (hover: hover) {
+  .cta--spotlight:hover {
+    background: conic-gradient(
+      from var(--cta-angle),
+      var(--color-blue) 0deg,
+      var(--color-green) 120deg,
+      var(--color-blue) 240deg,
+      var(--color-blue) 360deg
+    );
+    animation: cta-spin 3s linear infinite;
+  }
 }
 
 @keyframes cta-spin {
@@ -210,9 +226,13 @@
   transition: opacity var(--transition-base);
 }
 
-.cta--spotlight:hover .cta__glow {
-  opacity: 0.4;
-  animation: cta-spin 3s linear infinite;
+/* The halo is the same case: revealed and spun by hover, so it needs the guard
+   to stay hidden on a touch screen. */
+@media (hover: hover) {
+  .cta--spotlight:hover .cta__glow {
+    opacity: 0.4;
+    animation: cta-spin 3s linear infinite;
+  }
 }
 
 .cta__inner {
@@ -237,9 +257,11 @@
   pointer-events: none;
 }
 
-.cta--spotlight:hover .cta__inner::before {
-  animation: none;
-  opacity: 0;
+@media (hover: hover) {
+  .cta--spotlight:hover .cta__inner::before {
+    animation: none;
+    opacity: 0;
+  }
 }
 
 .cta--spotlight .cta__headline {
