@@ -46,6 +46,7 @@ await cp("src/foundation/tokens.css", "dist/foundation/tokens.css");
 await cp("src/foundation/typography.css", "dist/foundation/typography.css");
 await cp("src/foundation/background.css", "dist/foundation/background.css");
 await cp("src/foundation/navigation.css", "dist/foundation/navigation.css");
+await cp("src/foundation/markdown.css", "dist/foundation/markdown.css");
 
 // One combined foundation stylesheet so a consumer can link a single file:
 // tokens first, then the sheets that depend on them.
@@ -54,10 +55,11 @@ const combinedCss = [
   await readFile("src/foundation/typography.css", "utf8"),
   await readFile("src/foundation/background.css", "utf8"),
   await readFile("src/foundation/navigation.css", "utf8"),
+  await readFile("src/foundation/markdown.css", "utf8"),
 ].join("\n");
 await writeFile(
   "dist/neuwo.css",
-  `/* @neuwo/web-ui-components foundation: design tokens, typography, page surface, navigation. */\n${combinedCss}`
+  `/* @neuwo/web-ui-components foundation: design tokens, typography, page surface, navigation, Markdown. */\n${combinedCss}`
 );
 
 // Component recipes only (the .js stays bundled into neuwo.js).

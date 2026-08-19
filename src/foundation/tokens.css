@@ -120,6 +120,9 @@
   /* Typography */
   --font-text: 'Noto Sans', 'Noto Sans Fallback', system-ui, -apple-system, sans-serif;
   --font-heading: 'Outfit', 'Outfit Fallback', sans-serif;
+  /* Code. The brand ships no monospace face, so this is a system stack: the
+     platform's own UI mono first, then the developer faces most likely present. */
+  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Consolas, monospace;
   --font-size-2xs: 0.625rem;
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;

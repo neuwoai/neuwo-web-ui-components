@@ -1,0 +1,210 @@
+/* Neuwo Markdown surface. Opt-in: link or import this file, then put `.markdown`
+   on the container a Markdown renderer writes into.
+
+   One sheet for the whole surface, because none of it is a component: the
+   elements a renderer emits, and the callout an author drops in among them.
+   Splitting them would only make a consumer link two files and get their order
+   right.
+
+   The element rules are scoped rather than bare-tag on purpose. typography.css
+   can style `h1`..`h6`, `p` and `a` globally because those are unambiguous, but
+   a `<ul>` in a nav and a `<ul>` in an article want different treatment, so
+   lists, quotes, code and tables only take the recipe inside a container that
+   asked for it. `.callout` is a class, so it carries its own scope and works
+   outside a rendered document as well.
+
+   This sheet covers exactly the elements typography.css leaves alone: it never
+   restates a heading or a paragraph, so the two compose without either winning.
+
+   It owns no box. No measure, no max-width, no margin on `.markdown` itself: how
+   wide the column is and where it sits are page decisions, as in
+   background.css and navigation.css. */
+
+/* --- Lists --- */
+
+.markdown ul,
+.markdown ol {
+  color: var(--color-text);
+  line-height: var(--line-height-body);
+  margin-bottom: var(--space-4);
+  padding-left: var(--space-6);
+}
+
+.markdown li {
+  margin-bottom: var(--space-2);
+}
+
+/* A nested list belongs to its parent item, so it closes flush and the gap
+   above it matches the gap between siblings. */
+.markdown li > ul,
+.markdown li > ol {
+  margin-top: var(--space-2);
+  margin-bottom: 0;
+}
+
+/* --- Emphasis --- */
+
+/* Bold text is the one inline run that reads as a heading, so it takes the
+   heading ink. Semibold rather than bold: the body face at 700 next to 400 is
+   a wider jump than long-form copy wants. */
+.markdown strong {
+  color: var(--color-heading);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* --- Quotes and rules --- */
+
+.markdown blockquote {
+  margin: var(--space-6) 0;
+  padding-left: var(--space-4);
+  border-left: 3px solid var(--color-blue);
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.markdown hr {
+  margin: var(--space-8) 0;
+  border: none;
+  border-top: 1px solid var(--glass-border);
+}
+
+/* --- Images --- */
+
+.markdown img {
+  max-width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+
+/* A standalone image is its own block and takes the panel radius; an inline
+   badge or icon sharing a paragraph with text does not. */
+.markdown p > img:only-child {
+  display: block;
+  margin: var(--space-6) 0;
+  border-radius: var(--radius-lg);
+}
+
+/* --- Code --- */
+
+.markdown code {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+}
+
+/* Inline only. A sample inside `pre` already sits on the panel, and the chrome
+   would double up. `anywhere` counts towards the min-content width, unlike
+   `break-word`, so a long identifier in a table cell or a list item lets its box
+   fit the column instead of forcing the page sideways. */
+.markdown :not(pre) > code {
+  padding: var(--space-1) var(--space-2);
+  background: var(--color-grey-100);
+  border-radius: var(--radius-sm);
+  overflow-wrap: anywhere;
+}
+
+/* Scrolls rather than wraps: wrapping mid-token would misrepresent the code. */
+.markdown pre {
+  margin: 0 0 var(--space-6);
+  padding: var(--space-4);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  line-height: var(--line-height-body);
+  overflow-x: auto;
+  tab-size: 2;
+}
+
+/* A scrollable panel is reachable by keyboard, so it shows where focus landed. */
+.markdown pre:focus-visible {
+  border-color: var(--color-blue);
+}
+
+/* --- Tables --- */
+
+/* Sized by its container, so a table wider than the column scrolls its own
+   wrapper rather than the page. The wrapper is the consumer's: most Markdown
+   renderers can emit one, and this sheet owns no structure. */
+.markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.markdown th,
+.markdown td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--glass-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.markdown th {
+  color: var(--color-heading);
+  font-family: var(--font-heading);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* --- Callout ---
+   The tinted aside that sits in the middle of a document: a note, a tip, a
+   caveat.
+
+   Not `<neuwo-notice>`. That is a docked glass card with an entrance animation,
+   for a message the visitor did not ask for. This is a static block at the full
+   measure of the column, and it is part of the document.
+
+   Not a custom element either. Nothing here needs behaviour, a Markdown renderer
+   can emit the markup at build time, and body content is exactly where an
+   element's upgrade shift costs most: a class paints with the first frame.
+
+   It follows the element rules above so a callout ending in a list keeps its own
+   bottom padding; the two rules tie on specificity, and the later one wins. */
+
+.callout {
+  /* Contains the children's margins, so the padding is not collapsed through
+     by a leading heading or a trailing paragraph. */
+  display: flow-root;
+  margin: var(--space-6) 0;
+  padding: var(--space-4) var(--space-5);
+  color: var(--color-text);
+  /* The one knob, read with a fallback rather than declared: a declaration here
+     would beat the value a consumer inherits in from `:root` or a wrapper. The
+     modifiers below declare it, so they still win on specificity. */
+  background: color-mix(in srgb, var(--callout-accent, var(--color-blue)) 8%, transparent);
+  border-left: 3px solid var(--callout-accent, var(--color-blue));
+  border-radius: var(--radius-md);
+}
+
+/* The block's own padding is the bottom gap; the last child's margin would
+   double it. */
+.callout > :last-child {
+  margin-bottom: 0;
+}
+
+/* Optional label line. A span rather than a heading, so it never enters the
+   document outline: a callout is an aside, not a section. */
+.callout__title {
+  display: block;
+  margin-bottom: var(--space-2);
+  color: var(--callout-accent, var(--color-blue));
+  font-family: var(--font-heading);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Three intents, because the brand has three semantic hues. There is
+   deliberately no `warning`: no amber exists in the tokens, the frozen reference
+   or the design system, and inventing one is a brand decision rather than a
+   recipe decision. Until it exists, a consumer sets `--callout-accent` on its
+   own class. */
+
+.callout--info {
+  --callout-accent: var(--color-blue);
+}
+
+.callout--tip {
+  --callout-accent: var(--color-green);
+}
+
+.callout--danger {
+  --callout-accent: var(--color-red);
+}

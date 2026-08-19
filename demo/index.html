@@ -111,6 +111,13 @@
         align-items: center;
         margin-block: 1.5rem;
       }
+      /* The library ships no warning intent, because the brand has no amber. This
+         is a consumer supplying one through the recipe's own knob: a raw colour
+         here on purpose, since the point is that the value comes from outside. */
+      .callout--warning-demo {
+        --callout-accent: #d99a2b;
+      }
+
       /* Consumer-owned nav structure: foundation/navigation.css ships the two link
          recipes and nothing else, so the list reset and the placement live here. */
       .nav-demo ul {
@@ -455,6 +462,94 @@
       wants the opposite, and wants it on the section too, so the bar is an opt-in class
       and <code>aria-current</code> keeps its semantic job either way.
     </p>
+
+    <h2>Markdown surface</h2>
+    <p>
+      <code>foundation/markdown.css</code> styles exactly the elements
+      <code>foundation/typography.css</code> leaves alone. Scoped to a
+      <code>.markdown</code> container, so a list in the nav above keeps its own treatment.
+    </p>
+    <div class="markdown">
+      <p>
+        A paragraph, styled by typography.css. This sheet never restates one, so the two
+        compose. Inline <code>code</code> takes the mono token and its own chrome.
+      </p>
+      <ul>
+        <li>A list item on the body rhythm.</li>
+        <li>
+          One with a nested list:
+          <ul>
+            <li><strong>Bold</strong> lifts to the heading ink at semibold.</li>
+            <li>The nested list closes flush against its parent item.</li>
+          </ul>
+        </li>
+      </ul>
+      <blockquote>
+        A quote marked by the brand blue edge, in muted italic ink.
+      </blockquote>
+      <pre><code>const topics = await neuwo.classify(url);
+// A panel scrolls rather than wraps: wrapping
+// mid-token would misrepresent the code.</code></pre>
+      <table>
+        <thead>
+          <tr>
+            <th>Field</th>
+            <th>Type</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>marketing_categories</code></td>
+            <td>object</td>
+            <td>A long identifier wraps anywhere, so the column still fits.</td>
+          </tr>
+          <tr>
+            <td><code>brand_safety</code></td>
+            <td>object</td>
+            <td>Ruled on the glass border.</td>
+          </tr>
+        </tbody>
+      </table>
+      <hr />
+      <p>The sheet owns no box: this column is as wide as the demo page made it.</p>
+    </div>
+
+    <h2>Callouts</h2>
+    <p>
+      Same sheet, because a callout is part of the same surface and none of it is a
+      component. It is a different thing from <code>&lt;neuwo-notice&gt;</code>, the docked
+      card for a message the visitor did not ask for. A class rather than an element,
+      because nothing here needs behaviour and body content is where an upgrade shift
+      costs most.
+    </p>
+    <div class="markdown">
+      <div class="callout callout--info">
+        <span class="callout__title">Note</span>
+        <p>The default intent. The accent drives both the edge and the tint.</p>
+      </div>
+      <div class="callout callout--tip">
+        <span class="callout__title">Tip</span>
+        <p>A callout needs no title; this one has one to show the label line.</p>
+      </div>
+      <div class="callout callout--danger">
+        <p>
+          No title, and a list as the last child, to prove the block keeps its own bottom
+          padding:
+        </p>
+        <ul>
+          <li>The list's margin would otherwise double the padding.</li>
+        </ul>
+      </div>
+      <div class="callout callout--warning-demo">
+        <span class="callout__title">Warning</span>
+        <p>
+          There is no <code>warning</code> intent: the brand has no amber, and inventing
+          one is a brand decision. Until it exists a consumer sets
+          <code>--callout-accent</code> on its own class, which is what this block does.
+        </p>
+      </div>
+    </div>
 
     <h2>Selection: checkbox</h2>
     <form id="checkbox-form" class="row">

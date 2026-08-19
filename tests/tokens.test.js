@@ -27,6 +27,16 @@ describe("font-size tokens", () => {
   });
 });
 
+describe("font-family tokens", () => {
+  // The brand ships no monospace face, so the token is a system stack. It was
+  // promoted because the same value was hand-written across both consumers.
+  it("defines --font-mono as a system stack, not a brand face", () => {
+    expect(tokensCss).toContain(
+      "--font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Consolas, monospace"
+    );
+  });
+});
+
 describe("font-weight tokens", () => {
   it("defines --font-weight-medium at 500", () => {
     expect(tokensCss).toContain("--font-weight-medium: 500");

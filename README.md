@@ -27,9 +27,9 @@ Opt into Neuwo typography for native headings and text by linking the stylesheet
 
 or, in a bundler, `import "@neuwo/web-ui-components/foundation/typography.css"`.
 
-To link tokens, typography, the page surface and the navigation links as a single
-file (handy for CSS-only or no-bundler consumers), use the combined stylesheet
-instead:
+To link every foundation sheet as one file (handy for CSS-only or no-bundler consumers), use the
+combined stylesheet instead: tokens, typography, the page surface, navigation links and the
+Markdown surface, in that order.
 
 ```html
 <link rel="stylesheet" href="https://cdn.neuwo.ai/neuwo.css" />
@@ -195,6 +195,80 @@ permanently visible, and its shadow root forced items to be direct children and 
 `!important` onto their colour. Migrating: drop the element, keep the links, put `.nav-link`
 (or `.nav-link--sm` inside a section) on each one, and wrap them in whatever structure the
 navigation actually needs.
+
+### Markdown surface
+
+`foundation/markdown.css` is one sheet for everything a rendered document needs and no component
+covers: the elements a Markdown renderer emits that `typography.css` has no opinion about
+(lists, `strong`, `blockquote`, `hr`, images, `code`, `pre`, tables), plus the `.callout` an
+author drops in among them. Put `.markdown` on the container the renderer writes into.
+
+```html
+<article class="markdown">{{ content }}</article>
+```
+
+It is scoped rather than bare-tag on purpose. `typography.css` can style `h1`..`h6`, `p` and `a`
+globally because those are unambiguous, but a `<ul>` in a nav and a `<ul>` in an article want
+different treatment, so the element rules only apply inside a container that asked for them.
+`.callout` is a class, so it carries its own scope and works outside a rendered document too.
+
+It also **never restates a heading or a paragraph**. The two sheets compose: link both, and a
+document gets its type from one and its lists, quotes and code panels from the other.
+Overriding the heading scale for long-form copy (a docs page usually wants a smaller `h1` than a
+landing page) stays a consumer decision, and needs no `!important`.
+
+`.markdown` owns no box. There is no measure, no `max-width` and no margin on the container, because
+how wide the reading column is and where it sits are page decisions, exactly as in
+`background.css` and `navigation.css`. A table wider than its column needs a scroll wrapper,
+which is yours to emit:
+
+```css
+.table-scroll { overflow-x: auto; }
+```
+
+Code is set in `--font-mono`, a system stack (`ui-monospace`, then the developer faces most
+likely installed). The brand ships no monospace face, so this is the one family token that is
+not a Neuwo font.
+
+#### Callouts
+
+The tinted aside that sits in the middle of a document: a note, a tip, a caveat. Three classes
+and one knob, in the same sheet, because none of it is a component and splitting it would only
+make you link two files and get their order right.
+
+```html
+<div class="callout callout--tip">
+  <span class="callout__title">Tip</span>
+  <p>Cache the classification; the same URL returns the same topics.</p>
+</div>
+```
+
+- **`.callout`** is the block: a tinted surface, an accent edge, and enough padding that a
+  leading title and a trailing paragraph both sit inside it.
+- **`.callout__title`** is the optional label line. A `<span>`, not a heading, so a callout never
+  enters the document outline; it is an aside, not a section.
+- **`.callout--info`**, **`.callout--tip`** and **`.callout--danger`** set the intent.
+
+Intent is one property. Each modifier declares `--callout-accent` and nothing else, and the block
+reads that knob for both its edge and its tint. So a fourth intent needs no library change:
+
+```css
+.callout--warning {
+  --callout-accent: #d99a2b;
+}
+```
+
+That example is also the honest gap. **There is no `warning` intent**, because the brand has no
+amber: `--color-blue`, `--color-green` and `--color-red` are the only semantic hues in the system,
+and adding a fourth is a brand decision rather than a recipe one. Until one exists, the knob above
+is the supported workaround.
+
+This is deliberately not `<neuwo-notice>`, and deliberately not an element at all. `notice` is a
+docked glass card with an entrance animation, for a message the visitor did not ask for; a callout
+is static body content at the full measure of the column. And body content is exactly where a
+custom element's upgrade shift costs most, so a class that paints with the first frame is the
+right trade. `<neuwo-notice>` still owns the interrupting case, where the dismiss button and the
+docking are the point.
 
 ### Fonts
 
