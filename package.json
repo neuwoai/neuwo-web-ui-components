@@ -18,7 +18,8 @@
   "types": "./dist/types/elements.d.ts",
   "files": [
     "dist",
-    "custom-elements.json"
+    "custom-elements.json",
+    "CHANGELOG.md"
   ],
   "exports": {
     ".": { "types": "./dist/types/elements.d.ts", "default": "./dist/neuwo.js" },
