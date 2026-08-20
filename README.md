@@ -1,14 +1,60 @@
-# @neuwo/web-ui-components
+# Neuwo Web UI Library
 
 Neuwo design-language web components: vanilla custom elements, Shadow DOM, zero runtime deps.
 The single source for reusable Neuwo UI and its styling (tokens, component recipes, typography).
+
+## Install
+
+Three ways in, depending on the consumer.
+
+**npm**, for anything with a build step:
+
+```bash
+npm install @neuwo/web-ui-library--demo
+```
+
+**jsDelivr**, for a page with no build step. Every published file is served straight from the
+npm tarball, with permissive CORS headers, so the fonts load without any configuration:
+
+```html
+<script type="module" src="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.1/dist/neuwo.js"></script>
+```
+
+Pin as tightly as you can bear: `@0.1` follows the latest 0.1.x and is cached at the edge for
+about half a day, while `@0.1.0` is immutable and cached for a year.
+
+**Self-hosted**, to keep every runtime request on your own origin and take the registry out of
+the runtime path entirely. Copy the published `dist/` into your own static output at build time:
+
+```js
+// Eleventy
+eleventyConfig.addPassthroughCopy({
+  "node_modules/@neuwo/web-ui-library--demo/dist": "vendor/neuwo",
+});
+```
+
+```html
+<script type="module" src="/vendor/neuwo/neuwo.js"></script>
+```
+
+Next.js and Vite serve `public/` verbatim, so a `prebuild` script copying the same directory
+into `public/vendor/neuwo` achieves the same thing.
+
+### Keep `fonts/` beside `neuwo.js`
+
+`injectFonts()` resolves the woff2 URLs against `import.meta.url`, so the bundle expects `fonts/`
+to be its own sibling. Serving `dist/` as a directory satisfies that everywhere. Bundling
+`neuwo.js` into an application chunk does not: `import.meta.url` then points at the emitted
+chunk, nothing puts the fonts next to it, and the brand faces silently 404 into a system
+fallback. If you must bundle, pre-inject your own `@font-face` rules inside a
+`<style data-neuwo-fonts>` element; the library detects that attribute and leaves fonts alone.
 
 ## Consume
 
 Load one script; components self-register.
 
 ```html
-<script type="module" src="https://cdn.neuwo.ai/neuwo.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.1/dist/neuwo.js"></script>
 <neuwo-button variant="solid">Get started</neuwo-button>
 ```
 
@@ -22,17 +68,17 @@ re-theme by setting tokens on `:root`:
 Opt into Neuwo typography for native headings and text by linking the stylesheet:
 
 ```html
-<link rel="stylesheet" href="https://cdn.neuwo.ai/foundation/typography.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.1/dist/foundation/typography.css" />
 ```
 
-or, in a bundler, `import "@neuwo/web-ui-components/foundation/typography.css"`.
+or, in a bundler, `import "@neuwo/web-ui-library--demo/foundation/typography.css"`.
 
 To link every foundation sheet as one file (handy for CSS-only or no-bundler consumers), use the
 combined stylesheet instead: tokens, typography, the page surface, navigation links and the
 Markdown surface, in that order.
 
 ```html
-<link rel="stylesheet" href="https://cdn.neuwo.ai/neuwo.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.1/dist/neuwo.css" />
 ```
 
 ### Links
@@ -338,7 +384,7 @@ bundle under `fonts/`, so to preload them point at that directory:
 
 ```html
 <link rel="preload" as="font" type="font/woff2" crossorigin
-      href="https://cdn.neuwo.ai/fonts/outfit-variable.woff2" />
+      href="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.1/dist/fonts/outfit-variable.woff2" />
 ```
 
 ## Components
@@ -368,14 +414,14 @@ Published styling files, for direct linking or non-web use:
 
 | Artifact | Import path |
 | --- | --- |
-| Tokens | `@neuwo/web-ui-components/foundation/tokens.css` |
-| Typography | `@neuwo/web-ui-components/foundation/typography.css` |
-| Page surface | `@neuwo/web-ui-components/foundation/background.css` |
-| Navigation links | `@neuwo/web-ui-components/foundation/navigation.css` |
-| All four foundation layers (one file) | `@neuwo/web-ui-components/neuwo.css` |
-| Button recipe | `@neuwo/web-ui-components/components/button/button.css` |
-| Field chrome | `@neuwo/web-ui-components/components/fields/field.css` |
-| Logo files | `@neuwo/web-ui-components/logos/neuwo-logo--bg-dark.svg` |
+| Tokens | `@neuwo/web-ui-library--demo/foundation/tokens.css` |
+| Typography | `@neuwo/web-ui-library--demo/foundation/typography.css` |
+| Page surface | `@neuwo/web-ui-library--demo/foundation/background.css` |
+| Navigation links | `@neuwo/web-ui-library--demo/foundation/navigation.css` |
+| All four foundation layers (one file) | `@neuwo/web-ui-library--demo/neuwo.css` |
+| Button recipe | `@neuwo/web-ui-library--demo/components/button/button.css` |
+| Field chrome | `@neuwo/web-ui-library--demo/components/fields/field.css` |
+| Logo files | `@neuwo/web-ui-library--demo/logos/neuwo-logo--bg-dark.svg` |
 
 ## Restyling from the host
 
@@ -565,8 +611,8 @@ site header logo should stay a preloaded image.
 
 ```html
 <link rel="preload" as="image" fetchpriority="high"
-      href="https://cdn.neuwo.ai/logos/neuwo-logo--bg-dark.svg" />
-<img src="https://cdn.neuwo.ai/logos/neuwo-logo--bg-dark.svg" alt="Neuwo"
+      href="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.1/dist/logos/neuwo-logo--bg-dark.svg" />
+<img src="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.1/dist/logos/neuwo-logo--bg-dark.svg" alt="Neuwo"
      width="320" height="50" class="logo" />
 ```
 

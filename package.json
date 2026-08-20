@@ -1,7 +1,19 @@
 {
-  "name": "@neuwo/web-ui-components",
-  "version": "0.0.0",
-  "description": "Neuwo design-system web components (vanilla custom elements).",
+  "name": "@neuwo/web-ui-library--demo",
+  "version": "0.1.0",
+  "description": "Neuwo Web UI Library: vanilla custom elements and published CSS recipes for the Neuwo design language.",
+  "keywords": [
+    "neuwo",
+    "web-components",
+    "custom-elements",
+    "design-system",
+    "design-tokens",
+    "shadow-dom",
+    "css"
+  ],
+  "homepage": "https://designsystem.neuwo.ai",
+  "license": "MIT",
+  "author": "Neuwo",
   "type": "module",
   "types": "./dist/types/elements.d.ts",
   "files": [
@@ -17,7 +29,9 @@
     "./logos/*": "./dist/logos/*",
     "./package.json": "./package.json"
   },
-  "private": true,
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "start": "node scripts/build.js --serve",
     "build": "node scripts/build.js && npm run analyze && npm run types",
@@ -25,7 +39,8 @@
     "pretest": "npm run analyze",
     "test": "vitest run",
     "test:watch": "vitest",
-    "types": "tsc -p tsconfig.json"
+    "types": "tsc -p tsconfig.json",
+    "prepack": "npm run build"
   },
   "devDependencies": {
     "@custom-elements-manifest/analyzer": "^0.10.10",

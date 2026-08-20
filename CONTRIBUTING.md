@@ -1,6 +1,6 @@
 # Contributing
 
-How to develop `@neuwo/web-ui-components` and keep the Neuwo Design System in sync. This covers
+How to develop the Neuwo Web UI Library and keep the Neuwo Design System in sync. This covers
 the **library side only**; the design system's own procedure lives in that repo.
 
 ## Principles

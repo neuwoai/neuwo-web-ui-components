@@ -62,7 +62,7 @@ const combinedCss = [
 ].join("\n");
 await writeFile(
   "dist/neuwo.css",
-  `/* @neuwo/web-ui-components foundation: design tokens, typography, page surface, navigation, Markdown. */\n${combinedCss}`
+  `/* Neuwo Web UI Library (@neuwo/web-ui-library--demo) foundation: design tokens, typography, page surface, navigation, Markdown. */\n${combinedCss}`
 );
 
 // Component recipes only (the .js stays bundled into neuwo.js).
