@@ -1,4 +1,4 @@
-/* Neuwo Markdown surface. Opt-in: link or import this file, then put `.markdown`
+/* Neuwo Markdown surface. Opt-in: link or import this file, then put `.neuwo-markdown`
    on the container a Markdown renderer writes into.
 
    One sheet for the whole surface, because none of it is a component: the
@@ -10,34 +10,34 @@
    can style `h1`..`h6`, `p` and `a` globally because those are unambiguous, but
    a `<ul>` in a nav and a `<ul>` in an article want different treatment, so
    lists, quotes, code and tables only take the recipe inside a container that
-   asked for it. `.callout` is a class, so it carries its own scope and works
+   asked for it. `.neuwo-callout` is a class, so it carries its own scope and works
    outside a rendered document as well.
 
    This sheet covers exactly the elements typography.css leaves alone: it never
    restates a heading or a paragraph, so the two compose without either winning.
 
-   It owns no box. No measure, no max-width, no margin on `.markdown` itself: how
+   It owns no box. No measure, no max-width, no margin on `.neuwo-markdown` itself: how
    wide the column is and where it sits are page decisions, as in
    background.css and navigation.css. */
 
 /* --- Lists --- */
 
-.markdown ul,
-.markdown ol {
+.neuwo-markdown ul,
+.neuwo-markdown ol {
   color: var(--neuwo-color-text);
   line-height: var(--neuwo-line-height-body);
   margin-bottom: var(--neuwo-space-4);
   padding-left: var(--neuwo-space-6);
 }
 
-.markdown li {
+.neuwo-markdown li {
   margin-bottom: var(--neuwo-space-2);
 }
 
 /* A nested list belongs to its parent item, so it closes flush and the gap
    above it matches the gap between siblings. */
-.markdown li > ul,
-.markdown li > ol {
+.neuwo-markdown li > ul,
+.neuwo-markdown li > ol {
   margin-top: var(--neuwo-space-2);
   margin-bottom: 0;
 }
@@ -47,14 +47,14 @@
 /* Bold text is the one inline run that reads as a heading, so it takes the
    heading ink. Semibold rather than bold: the body face at 700 next to 400 is
    a wider jump than long-form copy wants. */
-.markdown strong {
+.neuwo-markdown strong {
   color: var(--neuwo-color-heading);
   font-weight: var(--neuwo-font-weight-semibold);
 }
 
 /* --- Quotes and rules --- */
 
-.markdown blockquote {
+.neuwo-markdown blockquote {
   margin: var(--neuwo-space-6) 0;
   padding-left: var(--neuwo-space-4);
   border-left: 3px solid var(--neuwo-color-blue);
@@ -62,7 +62,7 @@
   font-style: italic;
 }
 
-.markdown hr {
+.neuwo-markdown hr {
   margin: var(--neuwo-space-8) 0;
   border: none;
   border-top: 1px solid var(--neuwo-glass-border);
@@ -70,7 +70,7 @@
 
 /* --- Images --- */
 
-.markdown img {
+.neuwo-markdown img {
   max-width: 100%;
   height: auto;
   vertical-align: middle;
@@ -78,7 +78,7 @@
 
 /* A standalone image is its own block and takes the panel radius; an inline
    badge or icon sharing a paragraph with text does not. */
-.markdown p > img:only-child {
+.neuwo-markdown p > img:only-child {
   display: block;
   margin: var(--neuwo-space-6) 0;
   border-radius: var(--neuwo-radius-lg);
@@ -86,7 +86,7 @@
 
 /* --- Code --- */
 
-.markdown code {
+.neuwo-markdown code {
   font-family: var(--neuwo-font-mono);
   font-size: var(--neuwo-font-size-sm);
 }
@@ -95,7 +95,7 @@
    would double up. `anywhere` counts towards the min-content width, unlike
    `break-word`, so a long identifier in a table cell or a list item lets its box
    fit the column instead of forcing the page sideways. */
-.markdown :not(pre) > code {
+.neuwo-markdown :not(pre) > code {
   padding: var(--neuwo-space-1) var(--neuwo-space-2);
   background: var(--neuwo-color-grey-100);
   border-radius: var(--neuwo-radius-sm);
@@ -103,7 +103,7 @@
 }
 
 /* Scrolls rather than wraps: wrapping mid-token would misrepresent the code. */
-.markdown pre {
+.neuwo-markdown pre {
   margin: 0 0 var(--neuwo-space-6);
   padding: var(--neuwo-space-4);
   background: var(--neuwo-glass-bg);
@@ -115,7 +115,7 @@
 }
 
 /* A scrollable panel is reachable by keyboard, so it shows where focus landed. */
-.markdown pre:focus-visible {
+.neuwo-markdown pre:focus-visible {
   border-color: var(--neuwo-color-blue);
 }
 
@@ -124,11 +124,11 @@
    own size and inset, so the two cannot drift.
 
    This lives here, not in the component's recipe, for a reason worth knowing:
-   the shadow root's `::slotted(pre)` would lose to `.markdown pre` whatever its
+   the shadow root's `::slotted(pre)` would lose to `.neuwo-markdown pre` whatever its
    specificity, because a declaration from the outer tree beats one from a shadow
    tree for slotted content. So the only place that can widen this padding is the
    document, which is this sheet. */
-.markdown neuwo-copy pre {
+.neuwo-markdown neuwo-copy pre {
   padding-right: calc(var(--neuwo-space-8) + var(--neuwo-space-3) * 2);
 }
 
@@ -137,21 +137,21 @@
 /* Sized by its container, so a table wider than the column scrolls its own
    wrapper rather than the page. The wrapper is the consumer's: most Markdown
    renderers can emit one, and this sheet owns no structure. */
-.markdown table {
+.neuwo-markdown table {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--neuwo-font-size-sm);
 }
 
-.markdown th,
-.markdown td {
+.neuwo-markdown th,
+.neuwo-markdown td {
   padding: var(--neuwo-space-2) var(--neuwo-space-3);
   border-bottom: 1px solid var(--neuwo-glass-border);
   text-align: left;
   vertical-align: top;
 }
 
-.markdown th {
+.neuwo-markdown th {
   color: var(--neuwo-color-heading);
   font-family: var(--neuwo-font-heading);
   font-weight: var(--neuwo-font-weight-semibold);
@@ -172,7 +172,7 @@
    It follows the element rules above so a callout ending in a list keeps its own
    bottom padding; the two rules tie on specificity, and the later one wins. */
 
-.callout {
+.neuwo-callout {
   /* Contains the children's margins, so the padding is not collapsed through
      by a leading heading or a trailing paragraph. */
   display: flow-root;
@@ -189,13 +189,13 @@
 
 /* The block's own padding is the bottom gap; the last child's margin would
    double it. */
-.callout > :last-child {
+.neuwo-callout > :last-child {
   margin-bottom: 0;
 }
 
 /* Optional label line. A span rather than a heading, so it never enters the
    document outline: a callout is an aside, not a section. */
-.callout__title {
+.neuwo-callout__title {
   display: block;
   margin-bottom: var(--neuwo-space-2);
   color: var(--neuwo-callout-accent, var(--neuwo-color-blue));
@@ -210,14 +210,14 @@
    recipe decision. Until it exists, a consumer sets `--neuwo-callout-accent` on its
    own class. */
 
-.callout--info {
+.neuwo-callout--info {
   --neuwo-callout-accent: var(--neuwo-color-blue);
 }
 
-.callout--tip {
+.neuwo-callout--tip {
   --neuwo-callout-accent: var(--neuwo-color-green);
 }
 
-.callout--danger {
+.neuwo-callout--danger {
   --neuwo-callout-accent: var(--neuwo-color-red);
 }

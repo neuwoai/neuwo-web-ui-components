@@ -1,11 +1,11 @@
 /* Neuwo navigation links for native elements. Opt-in: link or import this file.
-   Two classes, visuals only: `.nav-link` is a top-level entry and
-   `.nav-link--sm` the nested one. Neither owns placement, a list reset or a
+   Two classes, visuals only: `.neuwo-nav-link` is a top-level entry and
+   `.neuwo-nav-link--sm` the nested one. Neither owns placement, a list reset or a
    panel surface, so the consumer decides the structure and whether sections
    collapse at all. No custom element is involved, so `<ul><li><a>` and native
    `<details>` both work, and nothing here needs !important. */
 
-.nav-link {
+.neuwo-nav-link {
   /* Drives the horizontal padding and the underline's endpoints together, so
      the bar cannot drift from the text it sits under. Retune it in one place
      (for a denser desktop bar, say) and both follow. */
@@ -27,7 +27,7 @@
 
 /* A nested entry: compact, so it takes its height from the line rather than a
    tap target of its own. */
-.nav-link--sm {
+.neuwo-nav-link--sm {
   min-height: auto;
   line-height: var(--neuwo-line-height-body);
   padding: var(--neuwo-space-2) var(--neuwo-nav-link-gutter);
@@ -44,7 +44,7 @@
    every hover; and two insets at 50% resolve independently at sub-pixel
    precision, so on a link of fractional width the resting bar kept a hair of
    width instead of none. `scaleX(0)` composites, and is exactly nothing. */
-.nav-link::after {
+.neuwo-nav-link::after {
   content: "";
   position: absolute;
   left: var(--neuwo-nav-link-gutter);
@@ -59,16 +59,16 @@
 }
 
 /* The compact entry has no lifted baseline to clear. */
-.nav-link--sm::after {
+.neuwo-nav-link--sm::after {
   bottom: 0;
 }
 
 /* The class outranks `a` and `a:hover` from typography.css on specificity, so
    these are normal declarations and a consumer can still override any of them. */
-.nav-link:hover,
-.nav-link:focus-visible,
-.nav-link[aria-current],
-.nav-link--active {
+.neuwo-nav-link:hover,
+.neuwo-nav-link:focus-visible,
+.neuwo-nav-link[aria-current],
+.neuwo-nav-link--active {
   color: var(--neuwo-color-heading);
 }
 
@@ -76,19 +76,19 @@
    is marked, not offered, so it takes the lifted ink without the underline.
 
    A vertical nav wants the opposite, and it wants the same treatment on the
-   section the current page sits under. `.nav-link--active` is that opt-in: it
+   section the current page sits under. `.neuwo-nav-link--active` is that opt-in: it
    holds the bar open, and it composes with `aria-current` rather than replacing
    it, so the current page keeps its semantics either way. One modifier covers
    both, because to a reader the current page and its open section look alike. */
-.nav-link:hover::after,
-.nav-link:focus-visible::after,
-.nav-link--active::after {
+.neuwo-nav-link:hover::after,
+.neuwo-nav-link:focus-visible::after,
+.neuwo-nav-link--active::after {
   transform: scaleX(1);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .nav-link,
-  .nav-link::after {
+  .neuwo-nav-link,
+  .neuwo-nav-link::after {
     transition: none;
   }
 }

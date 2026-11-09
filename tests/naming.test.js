@@ -16,4 +16,15 @@ describe("custom property naming", () => {
       }
     }
   });
+
+  it("prefixes every class in the foundation sheets", () => {
+    const sheets = allCss.filter((file) => file.startsWith("foundation"));
+    expect(sheets.length).toBeGreaterThan(0);
+    for (const file of sheets) {
+      const code = read(file).replace(/\/\*[\s\S]*?\*\//g, "").replace(/url\([^)]*\)/g, "");
+      for (const [, name] of code.matchAll(/\.([a-zA-Z_][\w-]*)/g)) {
+        expect(name, `${file}: .${name}`).toMatch(/^neuwo-(?!neuwo-)/);
+      }
+    }
+  });
 });

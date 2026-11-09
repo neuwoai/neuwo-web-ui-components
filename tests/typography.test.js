@@ -46,23 +46,23 @@ describe("typography stylesheet", () => {
   });
 
   it("ships both link hover treatments off one recipe", () => {
-    // The bare element and .link share the resting rule, so the recipe is
+    // The bare element and .neuwo-link share the resting rule, so the recipe is
     // authored once rather than restated for the class.
-    expect(typographyCss).toMatch(/^a,\n\.link \{$/m);
-    expect(typographyCss).toMatch(/^a:hover,\n\.link:hover \{$/m);
+    expect(typographyCss).toMatch(/^a,\n\.neuwo-link \{$/m);
+    expect(typographyCss).toMatch(/^a:hover,\n\.neuwo-link:hover \{$/m);
     expect(typographyCss).toMatch(
-      /\.link:hover \{[^}]*color:\s*var\(--neuwo-color-blue-dark\)/
+      /\.neuwo-link:hover \{[^}]*color:\s*var\(--neuwo-color-blue-dark\)/
     );
     expect(typographyCss).toMatch(
-      /\.link--hover-green:hover \{[^}]*color:\s*var\(--neuwo-color-green\)/
+      /\.neuwo-link--hover-green:hover \{[^}]*color:\s*var\(--neuwo-color-green\)/
     );
     // The green modifier outranks a:hover on specificity, so it must not need
     // !important, which a consumer could then not override at all.
-    expect(typographyCss).not.toMatch(/\.link--hover-green:hover \{[^}]*!important/);
+    expect(typographyCss).not.toMatch(/\.neuwo-link--hover-green:hover \{[^}]*!important/);
   });
 
   it("ships the eyebrow utility class with the kicker type recipe", () => {
-    expect(typographyCss).toContain(".eyebrow");
+    expect(typographyCss).toContain(".neuwo-eyebrow");
     expect(typographyCss).toContain("var(--neuwo-font-heading)");
     expect(typographyCss).toMatch(/letter-spacing:\s*0\.08em/);
     expect(typographyCss).toContain("text-transform: uppercase");

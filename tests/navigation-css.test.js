@@ -14,7 +14,7 @@ const declarations = css.replace(/\/\*[\s\S]*?\*\//g, "");
 
 describe("navigation stylesheet", () => {
   it("styles a top-level entry from tokens, at a 44px tap target", () => {
-    const rule = css.match(/(?:^|\n)\.nav-link \{[^}]*\}/)[0];
+    const rule = css.match(/(?:^|\n)\.neuwo-nav-link \{[^}]*\}/)[0];
     expect(rule).toMatch(/color:\s*var\(--neuwo-color-text\)/);
     expect(rule).toMatch(/font-family:\s*var\(--neuwo-font-text\)/);
     expect(rule).toMatch(/font-size:\s*var\(--neuwo-font-size-base\)/);
@@ -24,7 +24,7 @@ describe("navigation stylesheet", () => {
   });
 
   it("steps the nested entry down a size and drops the tap target", () => {
-    const rule = css.match(/(?:^|\n)\.nav-link--sm \{[^}]*\}/)[0];
+    const rule = css.match(/(?:^|\n)\.neuwo-nav-link--sm \{[^}]*\}/)[0];
     expect(rule).toMatch(/font-size:\s*var\(--neuwo-font-size-sm\)/);
     expect(rule).toMatch(/min-height:\s*auto/);
     expect(rule).toMatch(/line-height:\s*var\(--neuwo-line-height-body\)/);
@@ -36,52 +36,52 @@ describe("navigation stylesheet", () => {
     expect(css).toMatch(/--neuwo-nav-link-gutter:\s*var\(--neuwo-space-4\)/);
     expect(css).toMatch(/padding:\s*0 var\(--neuwo-nav-link-gutter\)/);
     expect(css).toMatch(/padding:\s*var\(--neuwo-space-2\) var\(--neuwo-nav-link-gutter\)/);
-    const rule = css.match(/(?:^|\n)\.nav-link::after \{[^}]*\}/)[0];
+    const rule = css.match(/(?:^|\n)\.neuwo-nav-link::after \{[^}]*\}/)[0];
     expect(rule).toMatch(/left:\s*var\(--neuwo-nav-link-gutter\)/);
     expect(rule).toMatch(/right:\s*var\(--neuwo-nav-link-gutter\)/);
   });
 
   it("draws the underline as a centre-out bar in the brand blue", () => {
-    const rule = css.match(/(?:^|\n)\.nav-link::after \{[^}]*\}/)[0];
+    const rule = css.match(/(?:^|\n)\.neuwo-nav-link::after \{[^}]*\}/)[0];
     expect(rule).toMatch(/content:\s*""/);
     expect(rule).toMatch(/height:\s*2px/);
     expect(rule).toMatch(/background:\s*var\(--neuwo-color-blue\)/);
     // The lifted baseline is the top-level entry's; the compact one sits flush.
     expect(rule).toMatch(/bottom:\s*0\.375rem/);
-    expect(css).toMatch(/\.nav-link--sm::after \{[^}]*bottom:\s*0;/);
+    expect(css).toMatch(/\.neuwo-nav-link--sm::after \{[^}]*bottom:\s*0;/);
   });
 
   // A transform rather than two insets meeting at 50%: `left`/`right` are layout
   // properties, and a pair of them at 50% leaves a sub-pixel residue at rest on
   // a link of fractional width. scaleX(0) composites, and is exactly nothing.
   it("grows the bar with a transform, never by animating layout", () => {
-    const rule = css.match(/(?:^|\n)\.nav-link::after \{[^}]*\}/)[0];
+    const rule = css.match(/(?:^|\n)\.neuwo-nav-link::after \{[^}]*\}/)[0];
     expect(rule).toMatch(/transform:\s*scaleX\(0\)/);
     expect(rule).toMatch(/transform-origin:\s*center/);
     expect(rule).toMatch(/transition:\s*transform var\(--neuwo-transition-fast\)/);
     expect(rule).not.toMatch(/left:\s*50%/);
     expect(rule).not.toMatch(/right:\s*50%/);
-    const shown = css.match(/\.nav-link:hover::after,[^{]*\{[^}]*\}/)[0];
+    const shown = css.match(/\.neuwo-nav-link:hover::after,[^{]*\{[^}]*\}/)[0];
     expect(shown).toMatch(/transform:\s*scaleX\(1\)/);
     expect(shown).not.toMatch(/left:|right:/);
   });
 
   it("lifts the ink on hover, focus, for the current page and when active", () => {
     const rule = css.match(
-      /\.nav-link:hover,\n\.nav-link:focus-visible,\n\.nav-link\[aria-current\],\n\.nav-link--active \{[^}]*\}/
+      /\.neuwo-nav-link:hover,\n\.neuwo-nav-link:focus-visible,\n\.neuwo-nav-link\[aria-current\],\n\.neuwo-nav-link--active \{[^}]*\}/
     )[0];
     expect(rule).toMatch(/color:\s*var\(--neuwo-color-heading\)/);
     // In a horizontal bar the current page is marked, not offered, so the bar
     // is withheld from `aria-current` alone.
-    const shown = css.match(/\.nav-link:hover::after,[^{]*\{/)[0];
+    const shown = css.match(/\.neuwo-nav-link:hover::after,[^{]*\{/)[0];
     expect(shown).not.toContain("aria-current");
   });
 
   // A vertical nav wants the bar held open on the current page and on the
   // section it sits under, which `aria-current` alone cannot express.
   it("holds the bar open for an active entry, composing with aria-current", () => {
-    const shown = css.match(/\.nav-link:hover::after,[^{]*\{[^}]*\}/)[0];
-    expect(shown).toContain(".nav-link--active::after");
+    const shown = css.match(/\.neuwo-nav-link:hover::after,[^{]*\{[^}]*\}/)[0];
+    expect(shown).toContain(".neuwo-nav-link--active::after");
     expect(shown).toMatch(/transform:\s*scaleX\(1\)/);
   });
 
@@ -94,8 +94,8 @@ describe("navigation stylesheet", () => {
 
   it("stills both transitions under reduced motion", () => {
     const block = css.match(/@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\n\}/)[0];
-    expect(block).toContain(".nav-link,");
-    expect(block).toContain(".nav-link::after");
+    expect(block).toContain(".neuwo-nav-link,");
+    expect(block).toContain(".neuwo-nav-link::after");
     expect(block).toMatch(/transition:\s*none/);
   });
 

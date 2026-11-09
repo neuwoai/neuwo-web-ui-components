@@ -74,12 +74,12 @@ p {
   margin-bottom: var(--neuwo-space-4);
 }
 
-/* Inline prose link. The bare element carries the treatment, and `.link` applies
+/* Inline prose link. The bare element carries the treatment, and `.neuwo-link` applies
    the same recipe explicitly: for an anchor sitting in a context that strips link
    styling, and for slotted content inside a component, where the shadow root
    cannot reach a nested `<a>` and the host page has to style it. */
 a,
-.link {
+.neuwo-link {
   color: var(--neuwo-color-blue);
   text-decoration: underline;
   text-underline-offset: 2px;
@@ -88,21 +88,21 @@ a,
 
 /* Default hover: deepen the same blue. */
 a:hover,
-.link:hover {
+.neuwo-link:hover {
   color: var(--neuwo-color-blue-dark);
 }
 
-/* Opt-in hover, one class on top of `.link`: switch to the brand green instead.
+/* Opt-in hover, one class on top of `.neuwo-link`: switch to the brand green instead.
    text-decoration-color follows currentColor, so the underline travels with the
    text. The class beats `a:hover` on specificity, so it needs no !important. */
-.link--hover-green:hover {
+.neuwo-link--hover-green:hover {
   color: var(--neuwo-color-green);
 }
 
 /* Eyebrow / kicker: the small uppercase label above a heading. A utility class
    (not a bare element) so consumers opt in per element. Type only, no colour,
    matching the recipe inlined in the badge. */
-.eyebrow {
+.neuwo-eyebrow {
   font-family: var(--neuwo-font-heading);
   font-size: var(--neuwo-font-size-xs);
   font-weight: var(--neuwo-font-weight-semibold);

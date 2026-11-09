@@ -124,7 +124,7 @@ describe("copy.css recipe", () => {
   it("leaves the panel gutter to markdown.css, which is the only sheet that can set it", () => {
     expect(declarations).not.toMatch(/::slotted/);
     expect(markdownCss).toMatch(
-      /\.markdown neuwo-copy pre \{[^}]*padding-right:\s*calc\(var\(--neuwo-space-8\) \+ var\(--neuwo-space-3\) \* 2\)/
+      /\.neuwo-markdown neuwo-copy pre \{[^}]*padding-right:\s*calc\(var\(--neuwo-space-8\) \+ var\(--neuwo-space-3\) \* 2\)/
     );
   });
 });

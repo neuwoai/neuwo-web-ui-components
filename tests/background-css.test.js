@@ -11,13 +11,13 @@ const tokensCss = readFileSync(join(__dirname, "../src/foundation/tokens.css"), 
 
 describe("page surface stylesheet", () => {
   it("styles the page body from tokens", () => {
-    expect(css).toMatch(/\.body \{[^}]*font-family:\s*var\(--neuwo-font-text\)/);
-    expect(css).toMatch(/\.body \{[^}]*font-size:\s*var\(--neuwo-font-size-base\)/);
-    expect(css).toMatch(/\.body \{[^}]*line-height:\s*var\(--neuwo-line-height-body\)/);
-    expect(css).toMatch(/\.body \{[^}]*color:\s*var\(--neuwo-color-text\)/);
-    expect(css).toMatch(/\.body \{[^}]*background-color:\s*var\(--neuwo-color-body-bg\)/);
-    expect(css).toMatch(/\.body \{[^}]*-webkit-font-smoothing:\s*antialiased/);
-    expect(css).toMatch(/\.body \{[^}]*-moz-osx-font-smoothing:\s*grayscale/);
+    expect(css).toMatch(/\.neuwo-body \{[^}]*font-family:\s*var\(--neuwo-font-text\)/);
+    expect(css).toMatch(/\.neuwo-body \{[^}]*font-size:\s*var\(--neuwo-font-size-base\)/);
+    expect(css).toMatch(/\.neuwo-body \{[^}]*line-height:\s*var\(--neuwo-line-height-body\)/);
+    expect(css).toMatch(/\.neuwo-body \{[^}]*color:\s*var\(--neuwo-color-text\)/);
+    expect(css).toMatch(/\.neuwo-body \{[^}]*background-color:\s*var\(--neuwo-color-body-bg\)/);
+    expect(css).toMatch(/\.neuwo-body \{[^}]*-webkit-font-smoothing:\s*antialiased/);
+    expect(css).toMatch(/\.neuwo-body \{[^}]*-moz-osx-font-smoothing:\s*grayscale/);
   });
 
   // The geometry is copied verbatim from the main website, so a future change
@@ -33,7 +33,7 @@ describe("page surface stylesheet", () => {
   });
 
   it("tints each blob at the opacity the brand uses, blue then green alternating", () => {
-    const gradient = css.slice(css.indexOf(".background__gradient"));
+    const gradient = css.slice(css.indexOf(".neuwo-background__gradient"));
     expect(gradient).toContain("var(--neuwo-tint-blue-10)");
     expect(gradient).toContain("color-mix(in srgb, var(--neuwo-color-green) 7%, transparent)");
     expect(gradient).toContain("color-mix(in srgb, var(--neuwo-color-blue) 6%, transparent)");

@@ -91,13 +91,13 @@ The sheet styles bare `<a>` in prose: brand blue, underlined, deepening to `--ne
 on hover. Two classes ride along with it.
 
 ```html
-<a class="link" href="/privacy/">Privacy Policy</a>
-<a class="link link--hover-green" href="/cookies/">Cookie Policy</a>
+<a class="neuwo-link" href="/privacy/">Privacy Policy</a>
+<a class="neuwo-link neuwo-link--hover-green" href="/cookies/">Cookie Policy</a>
 ```
 
-`.link` states the same recipe explicitly, for an anchor whose surroundings strip link styling,
+`.neuwo-link` states the same recipe explicitly, for an anchor whose surroundings strip link styling,
 and for slotted content inside a component, where the shadow root cannot reach a nested `<a>` and
-the host page has to style it. `.link--hover-green` swaps the hover colour to the brand green.
+the host page has to style it. `.neuwo-link--hover-green` swaps the hover colour to the brand green.
 Both underline at rest and carry the underline into the hover colour, because
 `text-decoration-color` follows `currentColor`.
 
@@ -112,19 +112,19 @@ would have prevented.
 `foundation/background.css` carries the two visuals a Neuwo page sits on, as two independent
 classes:
 
-- **`.body`** is the base ink and paper: the text font, size and line height, `--neuwo-color-text`,
+- **`.neuwo-body`** is the base ink and paper: the text font, size and line height, `--neuwo-color-text`,
   `--neuwo-color-body-bg`, and the two font-smoothing hints. Put it on `<body>`.
-- **`.background__gradient`** is the brand's ambient wash: four translucent blue and green
-  blobs. It reads correctly only over a dark surface, so pair it with `.body`.
+- **`.neuwo-background__gradient`** is the brand's ambient wash: four translucent blue and green
+  blobs. It reads correctly only over a dark surface, so pair it with `.neuwo-body`.
 
 Neither class owns a box, a position or a z-index. That is deliberate: where the wash sits and
 how tall it is are page decisions, not brand ones. To reproduce the full-viewport treatment the
 main website uses, the consumer supplies the frame:
 
 ```html
-<body class="body">
+<body class="neuwo-body">
   <div class="background">
-    <div class="background__gradient"></div>
+    <div class="neuwo-background__gradient"></div>
   </div>
 ```
 
@@ -139,7 +139,7 @@ main website uses, the consumer supplies the frame:
   overflow: hidden;
 }
 
-.background__gradient {
+.neuwo-background__gradient {
   width: 100%;
   height: 100%;
 }
@@ -154,9 +154,9 @@ ordinary sized element, for a single washed panel rather than a whole page.
 `foundation/navigation.css` carries the brand's nav-link treatment, the centre-out underline
 that grows from the middle of the text on hover and focus. Two classes:
 
-- **`.nav-link`** is a top-level entry: base type, a 44px tap target, and the underline lifted
+- **`.neuwo-nav-link`** is a top-level entry: base type, a 44px tap target, and the underline lifted
   off the baseline.
-- **`.nav-link--sm`** is a nested entry: small type, compact, and the underline flush to the
+- **`.neuwo-nav-link--sm`** is a nested entry: small type, compact, and the underline flush to the
   bottom edge.
 
 `aria-current` takes the lifted ink without the underline, marking the current page as present
@@ -165,13 +165,13 @@ rather than as a destination.
 ```html
 <nav aria-label="Main">
   <ul>
-    <li><a class="nav-link" href="/publishers/">Publishers</a></li>
-    <li><a class="nav-link" href="/company/" aria-current="page">Company</a></li>
+    <li><a class="neuwo-nav-link" href="/publishers/">Publishers</a></li>
+    <li><a class="neuwo-nav-link" href="/company/" aria-current="page">Company</a></li>
   </ul>
 </nav>
 ```
 
-**`.nav-link--active`** holds the underline open. That bar-less treatment for `aria-current` is
+**`.neuwo-nav-link--active`** holds the underline open. That bar-less treatment for `aria-current` is
 right for a horizontal bar, where the current entry is one of several and the absent bar reads
 as "you are here". Down the side of a page it is close to invisible, and a sidebar also needs to
 mark the *section* the current page sits under, which `aria-current` cannot express without
@@ -180,11 +180,11 @@ and the current page look alike, and it composes with `aria-current` rather than
 
 ```html
 <li>
-  <a class="nav-link nav-link--active" href="/guides/">Guides</a>
+  <a class="neuwo-nav-link neuwo-nav-link--active" href="/guides/">Guides</a>
   <ul>
-    <li><a class="nav-link nav-link--sm" href="/guides/quickstart/">Quickstart</a></li>
+    <li><a class="neuwo-nav-link neuwo-nav-link--sm" href="/guides/quickstart/">Quickstart</a></li>
     <li>
-      <a class="nav-link nav-link--sm nav-link--active" href="/guides/auth/" aria-current="page"
+      <a class="neuwo-nav-link neuwo-nav-link--sm neuwo-nav-link--active" href="/guides/auth/" aria-current="page"
         >Authentication</a
       >
     </li>
@@ -198,21 +198,21 @@ nesting works to any depth, and a section that should collapse uses native
 `<details>`/`<summary>`, which brings its own keyboard and ARIA behaviour. No script ships for
 navigation.
 
-A section heading takes `.nav-link` like any other entry, whether it is a link to the section's
+A section heading takes `.neuwo-nav-link` like any other entry, whether it is a link to the section's
 own page or a `<summary>` that only toggles. There is no separate heading recipe, and no
 opinion here about whether a heading is part of the navigation at all; that is the consumer's
 structure to decide.
 
 ```html
 <li>
-  <a class="nav-link" href="/guides/">Guides</a>
+  <a class="neuwo-nav-link" href="/guides/">Guides</a>
   <ul>
-    <li><a class="nav-link nav-link--sm" href="/guides/quickstart/">Quickstart</a></li>
+    <li><a class="neuwo-nav-link neuwo-nav-link--sm" href="/guides/quickstart/">Quickstart</a></li>
   </ul>
 </li>
 ```
 
-One interaction to know when the heading is a `<summary>`: `.nav-link` sets `display: block`,
+One interaction to know when the heading is a `<summary>`: `.neuwo-nav-link` sets `display: block`,
 which is the documented way to strip a summary's disclosure triangle. Restore it with
 `display: list-item` (and `list-style-position: inside`, so the underline still spans the
 label) if you want the marker rather than your own chevron.
@@ -222,7 +222,7 @@ underline's endpoints together, so they cannot drift apart; set it once for a de
 
 ```css
 @media (min-width: 64rem) {
-  .site-nav .nav-link {
+  .site-nav .neuwo-nav-link {
     --neuwo-nav-link-gutter: var(--neuwo-space-3);
   }
 }
@@ -233,41 +233,41 @@ pair of insets out from 50%. `left` and `right` are layout properties, so the ol
 layout on every frame of every hover, and two insets at 50% resolve independently at sub-pixel
 precision, which left a hair of width on a link of fractional width instead of none. If you were
 overriding `::after`'s `left`/`right` to hold a bar open, that no longer works: use
-`.nav-link--active`.
+`.neuwo-nav-link--active`.
 
-Nothing in the recipe is `!important`. `.nav-link` outranks `typography.css`'s bare `a`, and
-`.nav-link:hover` outranks its `a:hover`, on specificity alone, so a consumer can still
+Nothing in the recipe is `!important`. `.neuwo-nav-link` outranks `typography.css`'s bare `a`, and
+`.neuwo-nav-link:hover` outranks its `a:hover`, on specificity alone, so a consumer can still
 override any property from a document stylesheet.
 
 This replaces `<neuwo-dropdown>`, removed in the same change. That element bundled the styling
 with a disclosure toggle it could not turn off, which made it unusable for navigation that is
 permanently visible, and its shadow root forced items to be direct children and forced
-`!important` onto their colour. Migrating: drop the element, keep the links, put `.nav-link`
-(or `.nav-link--sm` inside a section) on each one, and wrap them in whatever structure the
+`!important` onto their colour. Migrating: drop the element, keep the links, put `.neuwo-nav-link`
+(or `.neuwo-nav-link--sm` inside a section) on each one, and wrap them in whatever structure the
 navigation actually needs.
 
 ### Markdown surface
 
 `foundation/markdown.css` is one sheet for everything a rendered document needs and no component
 covers: the elements a Markdown renderer emits that `typography.css` has no opinion about
-(lists, `strong`, `blockquote`, `hr`, images, `code`, `pre`, tables), plus the `.callout` an
-author drops in among them. Put `.markdown` on the container the renderer writes into.
+(lists, `strong`, `blockquote`, `hr`, images, `code`, `pre`, tables), plus the `.neuwo-callout` an
+author drops in among them. Put `.neuwo-markdown` on the container the renderer writes into.
 
 ```html
-<article class="markdown">{{ content }}</article>
+<article class="neuwo-markdown">{{ content }}</article>
 ```
 
 It is scoped rather than bare-tag on purpose. `typography.css` can style `h1`..`h6`, `p` and `a`
 globally because those are unambiguous, but a `<ul>` in a nav and a `<ul>` in an article want
 different treatment, so the element rules only apply inside a container that asked for them.
-`.callout` is a class, so it carries its own scope and works outside a rendered document too.
+`.neuwo-callout` is a class, so it carries its own scope and works outside a rendered document too.
 
 It also **never restates a heading or a paragraph**. The two sheets compose: link both, and a
 document gets its type from one and its lists, quotes and code panels from the other.
 Overriding the heading scale for long-form copy (a docs page usually wants a smaller `h1` than a
 landing page) stays a consumer decision, and needs no `!important`.
 
-`.markdown` owns no box. There is no measure, no `max-width` and no margin on the container, because
+`.neuwo-markdown` owns no box. There is no measure, no `max-width` and no margin on the container, because
 how wide the reading column is and where it sits are page decisions, exactly as in
 `background.css` and `navigation.css`. A table wider than its column needs a scroll wrapper,
 which is yours to emit:
@@ -287,17 +287,17 @@ and one knob, in the same sheet, because none of it is a component and splitting
 make you link two files and get their order right.
 
 ```html
-<div class="callout callout--tip">
-  <span class="callout__title">Tip</span>
+<div class="neuwo-callout neuwo-callout--tip">
+  <span class="neuwo-callout__title">Tip</span>
   <p>Cache the classification; the same URL returns the same topics.</p>
 </div>
 ```
 
-- **`.callout`** is the block: a tinted surface, an accent edge, and enough padding that a
+- **`.neuwo-callout`** is the block: a tinted surface, an accent edge, and enough padding that a
   leading title and a trailing paragraph both sit inside it.
-- **`.callout__title`** is the optional label line. A `<span>`, not a heading, so a callout never
+- **`.neuwo-callout__title`** is the optional label line. A `<span>`, not a heading, so a callout never
   enters the document outline; it is an aside, not a section.
-- **`.callout--info`**, **`.callout--tip`** and **`.callout--danger`** set the intent.
+- **`.neuwo-callout--info`**, **`.neuwo-callout--tip`** and **`.neuwo-callout--danger`** set the intent.
 
 Intent is one property. Each modifier declares `--neuwo-callout-accent` and nothing else, and the block
 reads that knob for both its edge and its tint. So a fourth intent needs no library change:
@@ -333,7 +333,7 @@ clipboard needs behaviour.
 ```
 
 The wrapped content **stays in the light DOM**, and that is the whole design. Only the control
-lives in the shadow root, so the panel keeps its `.markdown pre` styling and whatever syntax
+lives in the shadow root, so the panel keeps its `.neuwo-markdown pre` styling and whatever syntax
 colouring the page applies. An element that owned the panel inside its own shadow root could not
 colour the syntax tokens at all, because `::slotted` matches only top-level slotted nodes, never
 the spans nested inside the `<pre>`.
@@ -363,7 +363,7 @@ Three details worth knowing:
 - **The outcome goes to a live region**, not to the button's label. Relabelling a control the user
   has just activated is announced inconsistently; a `role="status"` region is announced reliably.
   `label`, `copied-label` and `failed-label` are all yours to translate.
-- **The corner overlay assumes a panel with room.** `.markdown neuwo-copy pre` widens the panel's
+- **The corner overlay assumes a panel with room.** `.neuwo-markdown neuwo-copy pre` widens the panel's
   right padding so a long first line scrolls rather than running underneath. Around something
   small, a chip say, give the wrapper its own clearance and pull the control in with
   `--neuwo-copy-inset`; the library owns no box:
@@ -645,7 +645,7 @@ A notice announces itself politely (`role="status"`) unless you declare somethin
 stronger; a consent banner is a question, so give it `role="dialog"` and a label.
 Links inside slotted content are styled by the host page, not from inside the
 component: a shadow root cannot reach an `<a>` nested in slotted markup, so link
-the published `typography.css` and mark them `.link` to get the brand treatment.
+the published `typography.css` and mark them `.neuwo-link` to get the brand treatment.
 
 ## Logo
 

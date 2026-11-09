@@ -11,7 +11,7 @@
       }
 
       /* The page surface, wired exactly as the main website wires it: the
-         library ships the visuals (`.body`, `.background__gradient`), the
+         library ships the visuals (`.neuwo-body`, `.neuwo-background__gradient`), the
          consumer owns where the wash sits and how it stacks. */
       .background {
         position: fixed;
@@ -23,7 +23,7 @@
         overflow: hidden;
       }
 
-      .background__gradient {
+      .neuwo-background__gradient {
         width: 100%;
         height: 100%;
       }
@@ -161,10 +161,10 @@
         margin-top: 1rem;
       }
 
-      /* .nav-link sets display: block, which is the documented way to strip a
+      /* .neuwo-nav-link sets display: block, which is the documented way to strip a
          summary's disclosure triangle. Put it back, inside the content box so the
          underline still spans the label. */
-      .nav-demo summary.nav-link {
+      .nav-demo summary.neuwo-nav-link {
         display: list-item;
         list-style-position: inside;
         cursor: pointer;
@@ -183,9 +183,9 @@
     <link rel="stylesheet" href="/dist/neuwo.css" />
     <script type="module" src="/dist/neuwo.js"></script>
   </head>
-  <body class="body">
+  <body class="neuwo-body">
     <div class="background">
-      <div class="background__gradient"></div>
+      <div class="neuwo-background__gradient"></div>
     </div>
 
     <h1>neuwo-button</h1>
@@ -193,15 +193,15 @@
     <p>
       This paragraph and the headings above use
       <code>foundation/typography.css</code>, applied to native tags and driven by tokens.
-      <a class="link" href="https://neuwo.ai">A prose link</a> sits inside it. The full specimen
+      <a class="neuwo-link" href="https://neuwo.ai">A prose link</a> sits inside it. The full specimen
       sheet, every role, scale step, weight and line height, is on
-      <a class="link" href="/demo/typography.html">the typography page</a>.
+      <a class="neuwo-link" href="/demo/typography.html">the typography page</a>.
     </p>
     <p>
       Links are the sheet's job, not a component's. The bare element already carries the
-      treatment; <code>.link</code> states it explicitly for an anchor whose surroundings strip
+      treatment; <code>.neuwo-link</code> states it explicitly for an anchor whose surroundings strip
       link styling, and
-      <a class="link link--hover-green" href="https://neuwo.ai">.link--hover-green</a>
+      <a class="neuwo-link neuwo-link--hover-green" href="https://neuwo.ai">.neuwo-link--hover-green</a>
       swaps the hover colour to the brand green. Both underline at rest and carry the underline
       into the hover colour with them.
     </p>
@@ -324,7 +324,7 @@
     </p>
     <div class="row">
       <neuwo-input name="rich-email" type="email" placeholder="you@company.com" required>
-        <span slot="label">Work email <a class="link" href="#why-we-ask">why we ask</a></span>
+        <span slot="label">Work email <a class="neuwo-link" href="#why-we-ask">why we ask</a></span>
       </neuwo-input>
       <neuwo-input name="rich-key" placeholder="nw_live_...">
         <span slot="label">API key <neuwo-badge size="s" variant="green">Beta</neuwo-badge></span>
@@ -427,23 +427,23 @@
     </p>
     <nav class="nav-demo" aria-label="Demo top level">
       <ul class="nav-demo__row">
-        <li><a class="nav-link" href="#publishers">Publishers</a></li>
-        <li><a class="nav-link" href="#advertisers">Advertisers</a></li>
-        <li><a class="nav-link" href="#resources">Resources</a></li>
-        <li><a class="nav-link" href="#company" aria-current="page">Company</a></li>
+        <li><a class="neuwo-nav-link" href="#publishers">Publishers</a></li>
+        <li><a class="neuwo-nav-link" href="#advertisers">Advertisers</a></li>
+        <li><a class="neuwo-nav-link" href="#resources">Resources</a></li>
+        <li><a class="neuwo-nav-link" href="#company" aria-current="page">Company</a></li>
       </ul>
     </nav>
 
     <nav class="nav-demo nav-demo__sidebar" aria-label="Demo sidebar">
       <ul>
         <li>
-          <a class="nav-link nav-link--active" href="#guides">Guides</a>
+          <a class="neuwo-nav-link neuwo-nav-link--active" href="#guides">Guides</a>
           <ul>
-            <li><a class="nav-link nav-link--sm" href="#overview">Overview</a></li>
-            <li><a class="nav-link nav-link--sm" href="#quickstart">Quickstart</a></li>
+            <li><a class="neuwo-nav-link neuwo-nav-link--sm" href="#overview">Overview</a></li>
+            <li><a class="neuwo-nav-link neuwo-nav-link--sm" href="#quickstart">Quickstart</a></li>
             <li>
               <a
-                class="nav-link nav-link--sm nav-link--active"
+                class="neuwo-nav-link neuwo-nav-link--sm neuwo-nav-link--active"
                 href="#auth"
                 aria-current="page"
                 >Authentication</a
@@ -453,17 +453,17 @@
         </li>
         <li>
           <details open>
-            <summary class="nav-link">API reference</summary>
+            <summary class="neuwo-nav-link">API reference</summary>
             <ul>
-              <li><a class="nav-link nav-link--sm" href="#tagging">Auto-Tagging</a></li>
-              <li><a class="nav-link nav-link--sm" href="#enrichment">Bid Enrichment</a></li>
+              <li><a class="neuwo-nav-link neuwo-nav-link--sm" href="#tagging">Auto-Tagging</a></li>
+              <li><a class="neuwo-nav-link neuwo-nav-link--sm" href="#enrichment">Bid Enrichment</a></li>
             </ul>
           </details>
         </li>
       </ul>
     </nav>
     <p>
-      A sidebar. The section headings are <code>.nav-link</code> too: a section is usually
+      A sidebar. The section headings are <code>.neuwo-nav-link</code> too: a section is usually
       a page of its own, and whether a heading is part of the navigation is the consumer's
       call, not the library's. The first section is a plain nested list; the second wraps
       the same markup in native <code>&lt;details&gt;</code>, which is where the keyboard
@@ -471,7 +471,7 @@
     </p>
     <p>
       Both &ldquo;Guides&rdquo; and &ldquo;Authentication&rdquo; carry
-      <code>.nav-link--active</code>, which holds the bar open. In the row above,
+      <code>.neuwo-nav-link--active</code>, which holds the bar open. In the row above,
       <code>aria-current</code> alone takes the lifted ink without a bar, because a
       horizontal entry that is the current page is marked rather than offered. A sidebar
       wants the opposite, and wants it on the section too, so the bar is an opt-in class
@@ -482,9 +482,9 @@
     <p>
       <code>foundation/markdown.css</code> styles exactly the elements
       <code>foundation/typography.css</code> leaves alone. Scoped to a
-      <code>.markdown</code> container, so a list in the nav above keeps its own treatment.
+      <code>.neuwo-markdown</code> container, so a list in the nav above keeps its own treatment.
     </p>
-    <div class="markdown">
+    <div class="neuwo-markdown">
       <p>
         A paragraph, styled by typography.css. This sheet never restates one, so the two
         compose. Inline <code>code</code> takes the mono token and its own chrome.
@@ -540,16 +540,16 @@
       because nothing here needs behaviour and body content is where an upgrade shift
       costs most.
     </p>
-    <div class="markdown">
-      <div class="callout callout--info">
-        <span class="callout__title">Note</span>
+    <div class="neuwo-markdown">
+      <div class="neuwo-callout neuwo-callout--info">
+        <span class="neuwo-callout__title">Note</span>
         <p>The default intent. The accent drives both the edge and the tint.</p>
       </div>
-      <div class="callout callout--tip">
-        <span class="callout__title">Tip</span>
+      <div class="neuwo-callout neuwo-callout--tip">
+        <span class="neuwo-callout__title">Tip</span>
         <p>A callout needs no title; this one has one to show the label line.</p>
       </div>
-      <div class="callout callout--danger">
+      <div class="neuwo-callout neuwo-callout--danger">
         <p>
           No title, and a list as the last child, to prove the block keeps its own bottom
           padding:
@@ -558,8 +558,8 @@
           <li>The list's margin would otherwise double the padding.</li>
         </ul>
       </div>
-      <div class="callout callout--warning-demo">
-        <span class="callout__title">Warning</span>
+      <div class="neuwo-callout callout--warning-demo">
+        <span class="neuwo-callout__title">Warning</span>
         <p>
           There is no <code>warning</code> intent: the brand has no amber, and inventing
           one is a brand decision. Until it exists a consumer sets
@@ -577,11 +577,11 @@
     </p>
     <p>
       The wrapped content stays in the light DOM, which is the point: the panel keeps the
-      <code>.markdown pre</code> styling and any syntax colouring the page applies. Only the
+      <code>.neuwo-markdown pre</code> styling and any syntax colouring the page applies. Only the
       control is encapsulated. It copies <code>textContent</code>, so nothing has to name the
       source.
     </p>
-    <div class="markdown">
+    <div class="neuwo-markdown">
       <neuwo-copy id="copy-demo">
         <pre><code>curl -X POST https://api.neuwo.ai/v1/classify \
   -H "Authorization: Bearer $NEUWO_TOKEN" \
@@ -605,7 +605,7 @@
       library owns no box, so the clearance is the consumer's, and
       <code>--neuwo-copy-inset</code> pulls the control in to match the smaller target:
     </p>
-    <div class="markdown">
+    <div class="neuwo-markdown">
       <pre><code>.copy-chip {
   display: inline-block;
   padding-right: 2rem;
@@ -943,11 +943,11 @@
     </p>
     <div style="display: grid; gap: 1.5rem; max-width: 48rem">
       <!-- Language hint: a headline with an inline link, and nothing else.
-           The link takes its colour from the page's typography.css via .link,
+           The link takes its colour from the page's typography.css via .neuwo-link,
            because a shadow root cannot reach an <a> nested inside slotted
            markup. -->
       <neuwo-notice position="static" dismissible dismiss-label="Close">
-        <span slot="title">Read this page in <a class="link" href="#">Polski</a>?</span>
+        <span slot="title">Read this page in <a class="neuwo-link" href="#">Polski</a>?</span>
       </neuwo-notice>
 
       <!-- Consent banner: a question, so no close button and role="dialog". -->
@@ -960,7 +960,7 @@
       >
         <span slot="title">We use cookies</span>
         We use analytics cookies to understand how the site is used.
-        <a class="link" href="#">Read the policy</a>.
+        <a class="neuwo-link" href="#">Read the policy</a>.
         <neuwo-button slot="actions" variant="glass" size="sm">Reject</neuwo-button>
         <neuwo-button slot="actions" variant="solid" size="sm">Accept</neuwo-button>
       </neuwo-notice>
@@ -1038,7 +1038,7 @@
       with <code>label=""</code> and the name is announced once:
     </p>
     <div class="row">
-      <a class="link" href="https://neuwo.ai" aria-label="Neuwo home">
+      <a class="neuwo-link" href="https://neuwo.ai" aria-label="Neuwo home">
         <neuwo-logo label=""></neuwo-logo>
       </a>
     </div>
@@ -1056,7 +1056,7 @@
     </p>
 
     <h2>Eyebrow utility (opt-in typography)</h2>
-    <p class="eyebrow">Kicker label</p>
+    <p class="neuwo-eyebrow">Kicker label</p>
 
     <!-- Transient field-error flash from the host page (supported escape hatch):
          neuwo-input[data-flash]::part(input) { border-color: var(--neuwo-color-red); } -->

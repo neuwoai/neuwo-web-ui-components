@@ -28,7 +28,7 @@
       }
 
       /* The page surface, wired exactly as the main website wires it: the
-         library ships the visuals (`.body`, `.background__gradient`), the
+         library ships the visuals (`.neuwo-body`, `.neuwo-background__gradient`), the
          consumer owns where the wash sits and how it stacks. */
       .background {
         position: fixed;
@@ -40,7 +40,7 @@
         overflow: hidden;
       }
 
-      .background__gradient {
+      .neuwo-background__gradient {
         width: 100%;
         height: 100%;
       }
@@ -122,17 +122,17 @@
     </style>
   </head>
 
-  <body class="body">
+  <body class="neuwo-body">
     <div class="background">
-      <div class="background__gradient"></div>
+      <div class="neuwo-background__gradient"></div>
     </div>
 
     <p class="demo-nav">
       Typography specimen. The component gallery is on
-      <a class="link" href="/demo/">the demo index</a>.
+      <a class="neuwo-link" href="/demo/">the demo index</a>.
     </p>
 
-    <p class="eyebrow">Foundation</p>
+    <p class="neuwo-eyebrow">Foundation</p>
     <h1>Neuwo typography</h1>
     <p>
       Every heading, paragraph and link on this page is styled by
@@ -216,14 +216,14 @@
       <div class="demo-row">
         <span class="demo-row__meta"><b>a Prose link</b>--neuwo-color-blue, underlined</span>
         <span class="demo-row__sample demo-row__sample--text"
-          ><a class="link" href="https://neuwo.ai">An inline prose link</a> (hover for the dark
+          ><a class="neuwo-link" href="https://neuwo.ai">An inline prose link</a> (hover for the dark
           shade)</span
         >
       </div>
       <div class="demo-row">
-        <span class="demo-row__meta"><b>.link--hover-green</b>green on hover</span>
+        <span class="demo-row__meta"><b>.neuwo-link--hover-green</b>green on hover</span>
         <span class="demo-row__sample demo-row__sample--text"
-          ><a class="link link--hover-green" href="https://neuwo.ai">The same link</a> (hover for
+          ><a class="neuwo-link neuwo-link--hover-green" href="https://neuwo.ai">The same link</a> (hover for
           the brand green)</span
         >
       </div>
@@ -406,16 +406,16 @@
     <section class="demo-section">
       <h2>Eyebrow utility</h2>
       <p>
-        One of three <em>classes</em> in the sheet, with <code>.link</code> and
-        <code>.link--hover-green</code> above; everything else styles bare elements. It is the
+        One of three <em>classes</em> in the sheet, with <code>.neuwo-link</code> and
+        <code>.neuwo-link--hover-green</code> above; everything else styles bare elements. It is the
         small uppercase kicker above a heading: Outfit, xs, semibold, 0.08em, uppercase. Type
         only, no colour, so it inherits from its context.
       </p>
 
       <div class="demo-row">
-        <span class="demo-row__meta"><b>.eyebrow</b>on any element</span>
+        <span class="demo-row__meta"><b>.neuwo-eyebrow</b>on any element</span>
         <span class="demo-row__sample demo-row__sample--block">
-          <p class="eyebrow" style="margin: 0">Contextual audiences</p>
+          <p class="neuwo-eyebrow" style="margin: 0">Contextual audiences</p>
           <h3 style="margin: 0">Reach the right page, not the wrong person</h3>
         </span>
       </div>
@@ -427,13 +427,13 @@
 
     <section class="demo-section">
       <h2>In context</h2>
-      <p class="eyebrow">Classification API</p>
+      <p class="neuwo-eyebrow">Classification API</p>
       <h2>Every page, understood in milliseconds</h2>
       <p>
         Neuwo reads a page the way a person would: the subject, the tone, and whether it is a safe
         place for a brand to appear. The result is a set of contextual signals a buyer can act on
         without a single identifier. Read
-        <a class="link" href="https://neuwo.ai">the documentation</a> to see the taxonomy.
+        <a class="neuwo-link" href="https://neuwo.ai">the documentation</a> to see the taxonomy.
       </p>
       <h3>What comes back</h3>
       <p>
@@ -453,7 +453,7 @@
       <p class="demo-note">
         It also styles nothing else: no lists, tables, blockquotes, <code>code</code> or
         <code>hr</code>. Those are <code>foundation/markdown.css</code>, a separate opt-in sheet
-        scoped to a <code>.markdown</code> container, because a list in a nav and a list in an
+        scoped to a <code>.neuwo-markdown</code> container, because a list in a nav and a list in an
         article want different treatment. Everything monospaced on this page is page chrome.
       </p>
     </section>

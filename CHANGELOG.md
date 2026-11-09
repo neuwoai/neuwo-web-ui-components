@@ -5,6 +5,9 @@
 - Breaking: every custom property is now prefixed `--neuwo-` (tokens such as `--neuwo-color-blue`
   and component properties such as `--neuwo-copy-inset`), so the library cannot collide with a
   host page. Rename any overrides in your own CSS.
+- Breaking: the foundation classes are now prefixed `neuwo-`: `.neuwo-body`, `.neuwo-background__gradient`,
+  `.neuwo-nav-link`, `.neuwo-markdown`, `.neuwo-callout`, `.neuwo-link` and `.neuwo-eyebrow`, with their
+  modifiers and elements. Update the class attributes in your markup.
 - React JSX types, generated from the manifest: `import type {} from
   "@neuwo/web-ui-library--demo/react"` types every element's attributes and custom events.
 - `copied` on `<neuwo-copy>` is typed `CustomEvent<{ text: string }>`.
