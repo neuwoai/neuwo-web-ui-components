@@ -19,6 +19,6 @@
 
 .logo {
   display: block;
-  height: var(--logo-height, 1.75rem);
+  height: var(--neuwo-logo-height, 1.75rem);
   width: auto;
 }

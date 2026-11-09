@@ -25,7 +25,7 @@ import buttonCss from "./button.css?raw";
  * @slot start - leading icon, sits before the label.
  * @slot end - trailing icon, sits after the label.
  * @csspart button - the rendered `<button>` or `<a>`.
- * @cssprop --color-blue - brand accent; re-theme by setting it on :root.
+ * @cssprop --neuwo-color-blue - brand accent; re-theme by setting it on :root.
  */
 export class NeuwoButton extends NeuwoElement {
   static formAssociated = true;

@@ -2,13 +2,13 @@ import { NeuwoElement } from "../../core/base-element.js";
 import { sheet } from "../../core/sheet.js";
 import ctaCss from "./cta.css?raw";
 
-// The spotlight border animates `--cta-angle` through a conic gradient. A
+// The spotlight border animates `--neuwo-cta-angle` through a conic gradient. A
 // `@property` rule inside an adopted (shadow) stylesheet does not register the
 // custom property in every engine, so register it document-globally here. Without
 // registration the angle cannot interpolate and the gradient never paints.
 if (typeof CSS !== "undefined" && CSS.registerProperty) {
   try {
-    CSS.registerProperty({ name: "--cta-angle", syntax: "<angle>", inherits: false, initialValue: "0deg" });
+    CSS.registerProperty({ name: "--neuwo-cta-angle", syntax: "<angle>", inherits: false, initialValue: "0deg" });
   } catch {
     // Already registered (e.g. the module evaluated twice); ignore.
   }
@@ -59,9 +59,9 @@ function slot(name) {
  * @csspart field - the wrapper around the slotted field.
  * @csspart status - the status message line.
  * @csspart actions - the actions row.
- * @cssprop --color-blue - brand accent (shimmer, pulse, gradient border); re-theme on :root.
- * @cssprop --color-green - brand accent (gradient border + text accent); re-theme on :root.
- * @cssprop --cta-field-width - cap on the slotted field's width (default 24rem).
+ * @cssprop --neuwo-color-blue - brand accent (shimmer, pulse, gradient border); re-theme on :root.
+ * @cssprop --neuwo-color-green - brand accent (gradient border + text accent); re-theme on :root.
+ * @cssprop --neuwo-cta-field-width - cap on the slotted field's width (default 24rem).
  */
 export class NeuwoCta extends NeuwoElement {
   static styles = sheet(ctaCss);

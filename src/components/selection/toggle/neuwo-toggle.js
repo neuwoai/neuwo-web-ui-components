@@ -17,8 +17,8 @@ import toggleCss from "./toggle.css?raw";
  * @csspart field - the track/label row.
  * @csspart track - the switch track (its ::after is the thumb).
  * @csspart label - the toggle label text.
- * @cssprop --toggle-pulse-spread - how far the pulse ring travels (default 12px). No effect without `pulse`.
- * @cssprop --toggle-pulse-alpha - opacity the pulse ring starts from (default 40%). No effect without `pulse`.
+ * @cssprop --neuwo-toggle-pulse-spread - how far the pulse ring travels (default 12px). No effect without `pulse`.
+ * @cssprop --neuwo-toggle-pulse-alpha - opacity the pulse ring starts from (default 40%). No effect without `pulse`.
  */
 export class NeuwoToggle extends NeuwoBooleanControl {
   static formAssociated = true;

@@ -41,7 +41,7 @@ let uid = 0;
  * @csspart input - the native control element.
  * @csspart label - the field's label element.
  * @csspart error - the reserved error message line.
- * @cssprop --color-blue - brand accent (focus ring); re-theme by setting it on :root.
+ * @cssprop --neuwo-color-blue - brand accent (focus ring); re-theme by setting it on :root.
  */
 export class NeuwoFieldElement extends NeuwoElement {
   static formAssociated = true;

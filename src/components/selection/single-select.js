@@ -32,7 +32,7 @@ let uid = 0;
  * @fires {Event} change - the selected value changed.
  * @csspart group - the role=radiogroup container.
  * @csspart error - the reserved error message line.
- * @cssprop --color-blue - brand accent (selected option); re-theme on :root.
+ * @cssprop --neuwo-color-blue - brand accent (selected option); re-theme on :root.
  */
 export class NeuwoSingleSelect extends NeuwoElement {
   static formAssociated = true;

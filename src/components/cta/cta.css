@@ -11,18 +11,18 @@
 
 /* --- Shared inner content --- */
 .cta__headline {
-  margin: 0 0 var(--space-2);
-  font-family: var(--font-heading);
-  font-weight: var(--font-weight-bold);
-  font-size: var(--font-size-2xl);
+  margin: 0 0 var(--neuwo-space-2);
+  font-family: var(--neuwo-font-heading);
+  font-weight: var(--neuwo-font-weight-bold);
+  font-size: var(--neuwo-font-size-2xl);
   line-height: 1.3;
-  color: var(--color-heading);
+  color: var(--neuwo-color-heading);
 }
 
 .cta__sub {
   margin: 0;
-  font-size: var(--font-size-sm);
-  color: var(--color-grey-400);
+  font-size: var(--neuwo-font-size-sm);
+  color: var(--neuwo-color-grey-400);
   line-height: 1.5;
 }
 
@@ -30,8 +30,8 @@
    is read with a fallback rather than declared, because a declaration here
    would beat the value a consumer inherits in from :root or the host. */
 .cta__field {
-  max-width: var(--cta-field-width, 24rem);
-  margin-top: var(--space-4);
+  max-width: var(--neuwo-cta-field-width, 24rem);
+  margin-top: var(--neuwo-space-4);
 }
 
 /* Nothing slotted: the wrapper leaves no box behind, so a band without a field
@@ -44,9 +44,9 @@
    paragraph is always present so its live region announces reliably; empty, it
    has no line boxes and drops its margin, so it costs no space until used. */
 .cta__status {
-  margin-top: var(--space-2);
-  font-size: var(--font-size-sm);
-  color: var(--color-grey-400);
+  margin-top: var(--neuwo-space-2);
+  font-size: var(--neuwo-font-size-sm);
+  color: var(--neuwo-color-grey-400);
 }
 
 .cta__status:empty {
@@ -54,24 +54,24 @@
 }
 
 .cta__status--success {
-  color: var(--color-green);
+  color: var(--neuwo-color-green);
 }
 
 .cta__status--error {
-  color: var(--color-red);
+  color: var(--neuwo-color-red);
 }
 
 .cta__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-3);
+  gap: var(--neuwo-space-3);
   align-items: center;
 }
 
 /* Mark headline fragments with `data-accent` to paint them with the brand
    gradient (the design system's text-gradient utility, applied across the slot). */
 ::slotted([data-accent]) {
-  background: var(--gradient-accent);
+  background: var(--neuwo-gradient-accent);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -84,8 +84,8 @@
    primary action is the one authored first, and an outline or glass primary
    pulses exactly like a solid one. */
 :host([pulse]) ::slotted(neuwo-button:first-of-type) {
-  --cta-pulse-spread: 12px;
-  --cta-pulse-alpha: 40%;
+  --neuwo-cta-pulse-spread: 12px;
+  --neuwo-cta-pulse-alpha: 40%;
   animation: cta-button-pulse 5.5s ease-in-out infinite;
 }
 
@@ -93,19 +93,19 @@
    restrained ring for a repeated in-page band, l a pronounced one for a hero.
    Custom properties only, because a modifier cannot reach inside @keyframes. */
 :host([pulse][intensity="s"]) ::slotted(neuwo-button:first-of-type) {
-  --cta-pulse-spread: 8px;
-  --cta-pulse-alpha: 28%;
+  --neuwo-cta-pulse-spread: 8px;
+  --neuwo-cta-pulse-alpha: 28%;
 }
 
 :host([pulse][intensity="l"]) ::slotted(neuwo-button:first-of-type) {
-  --cta-pulse-spread: 18px;
-  --cta-pulse-alpha: 55%;
+  --neuwo-cta-pulse-spread: 18px;
+  --neuwo-cta-pulse-alpha: 55%;
 }
 
 @keyframes cta-button-pulse {
-  0%        { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-blue) var(--cta-pulse-alpha), transparent); }
-  23%       { box-shadow: 0 0 0 var(--cta-pulse-spread) color-mix(in srgb, var(--color-blue) 0%, transparent); }
-  45%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-blue) var(--cta-pulse-alpha), transparent); }
+  0%        { box-shadow: 0 0 0 0 color-mix(in srgb, var(--neuwo-color-blue) var(--neuwo-cta-pulse-alpha), transparent); }
+  23%       { box-shadow: 0 0 0 var(--neuwo-cta-pulse-spread) color-mix(in srgb, var(--neuwo-color-blue) 0%, transparent); }
+  45%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--neuwo-color-blue) var(--neuwo-cta-pulse-alpha), transparent); }
 }
 
 /* On hover the idle pulse yields to the hover state. Guarded, because a tap on
@@ -123,12 +123,12 @@
   overflow: hidden;
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: var(--space-8);
+  gap: var(--neuwo-space-8);
   align-items: center;
-  padding: var(--space-8) var(--space-10);
-  background: var(--color-surface-solid);
-  border-radius: var(--radius-lg);
-  transition: box-shadow var(--transition-base);
+  padding: var(--neuwo-space-8) var(--neuwo-space-10);
+  background: var(--neuwo-color-surface-solid);
+  border-radius: var(--neuwo-radius-lg);
+  transition: box-shadow var(--neuwo-transition-base);
 }
 
 .cta--banner::after {
@@ -138,14 +138,14 @@
   left: -30%;
   width: 20%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, var(--tint-blue-15), transparent);
+  background: linear-gradient(90deg, transparent, var(--neuwo-tint-blue-15), transparent);
   transform: skewX(-15deg);
   animation: cta-scan 5.5s ease-in-out infinite;
   pointer-events: none;
 }
 
 .cta--banner:hover {
-  box-shadow: 0 0.25rem 1rem var(--tint-blue-20), 0 0 2rem var(--tint-blue-10);
+  box-shadow: 0 0.25rem 1rem var(--neuwo-tint-blue-20), 0 0 2rem var(--neuwo-tint-blue-10);
 }
 
 /* On hover the idle shimmer pauses, so the hover glow reads cleanly.
@@ -167,8 +167,8 @@
   .cta--banner {
     grid-template-columns: 1fr;
     text-align: center;
-    padding: var(--space-6);
-    gap: var(--space-5);
+    padding: var(--neuwo-space-6);
+    gap: var(--neuwo-space-5);
   }
   .cta--banner .cta__actions {
     justify-content: center;
@@ -185,27 +185,27 @@
 .cta--spotlight {
   position: relative;
   padding: 1px;
-  border-radius: var(--radius-2xl);
-  background: var(--glass-border);
-  transition: background var(--transition-base);
+  border-radius: var(--neuwo-radius-2xl);
+  background: var(--neuwo-glass-border);
+  transition: background var(--neuwo-transition-base);
 }
 
 /* Without the guard, one tap sets this spinning and nothing ever stops it. */
 @media (hover: hover) {
   .cta--spotlight:hover {
     background: conic-gradient(
-      from var(--cta-angle),
-      var(--color-blue) 0deg,
-      var(--color-green) 120deg,
-      var(--color-blue) 240deg,
-      var(--color-blue) 360deg
+      from var(--neuwo-cta-angle),
+      var(--neuwo-color-blue) 0deg,
+      var(--neuwo-color-green) 120deg,
+      var(--neuwo-color-blue) 240deg,
+      var(--neuwo-color-blue) 360deg
     );
     animation: cta-spin 3s linear infinite;
   }
 }
 
 @keyframes cta-spin {
-  to { --cta-angle: 360deg; }
+  to { --neuwo-cta-angle: 360deg; }
 }
 
 /* Blurred glow halo behind the card (cheaper than blurring the card itself). */
@@ -213,17 +213,17 @@
   position: absolute;
   inset: -4px;
   z-index: -1;
-  border-radius: calc(var(--radius-2xl) + 4px);
+  border-radius: calc(var(--neuwo-radius-2xl) + 4px);
   opacity: 0;
-  filter: blur(var(--blur-lg));
+  filter: blur(var(--neuwo-blur-lg));
   background: conic-gradient(
-    from var(--cta-angle),
-    var(--color-blue) 0deg,
-    var(--color-green) 120deg,
-    var(--color-blue) 240deg,
-    var(--color-blue) 360deg
+    from var(--neuwo-cta-angle),
+    var(--neuwo-color-blue) 0deg,
+    var(--neuwo-color-green) 120deg,
+    var(--neuwo-color-blue) 240deg,
+    var(--neuwo-color-blue) 360deg
   );
-  transition: opacity var(--transition-base);
+  transition: opacity var(--neuwo-transition-base);
 }
 
 /* The halo is the same case: revealed and spun by hover, so it needs the guard
@@ -238,10 +238,10 @@
 .cta__inner {
   position: relative;
   overflow: hidden;
-  padding: var(--space-20) var(--space-8) var(--space-16);
+  padding: var(--neuwo-space-20) var(--neuwo-space-8) var(--neuwo-space-16);
   text-align: center;
-  background: var(--color-surface-solid);
-  border-radius: calc(var(--radius-2xl) - 1px);
+  background: var(--neuwo-color-surface-solid);
+  border-radius: calc(var(--neuwo-radius-2xl) - 1px);
 }
 
 .cta__inner::before {
@@ -251,7 +251,7 @@
   left: -30%;
   width: 20%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, var(--tint-blue-8), transparent);
+  background: linear-gradient(90deg, transparent, var(--neuwo-tint-blue-8), transparent);
   transform: skewX(-15deg);
   animation: cta-scan 5.5s ease-in-out infinite;
   pointer-events: none;
@@ -265,12 +265,12 @@
 }
 
 .cta--spotlight .cta__headline {
-  font-size: var(--font-size-4xl);
-  margin-bottom: var(--space-4);
+  font-size: var(--neuwo-font-size-4xl);
+  margin-bottom: var(--neuwo-space-4);
 }
 
 .cta--spotlight .cta__sub {
-  margin-bottom: var(--space-8);
+  margin-bottom: var(--neuwo-space-8);
 }
 
 .cta--spotlight .cta__actions {
@@ -279,10 +279,10 @@
 
 @media (min-width: 48rem) {
   .cta__inner {
-    padding: var(--space-24) var(--space-12) var(--space-20);
+    padding: var(--neuwo-space-24) var(--neuwo-space-12) var(--neuwo-space-20);
   }
   .cta--spotlight .cta__headline {
-    font-size: var(--font-size-5xl);
+    font-size: var(--neuwo-font-size-5xl);
   }
 }
 

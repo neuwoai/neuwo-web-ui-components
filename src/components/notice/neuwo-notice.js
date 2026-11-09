@@ -63,8 +63,8 @@ function slot(name) {
  * @csspart message - the supporting message.
  * @csspart actions - the actions row.
  * @csspart dismiss - the close button.
- * @cssprop --notice-max-width - how wide the card may grow (default 24rem).
- * @cssprop --notice-gutter - air a fixed card keeps from the viewport edges (default var(--space-4)).
+ * @cssprop --neuwo-notice-max-width - how wide the card may grow (default 24rem).
+ * @cssprop --neuwo-notice-gutter - air a fixed card keeps from the viewport edges (default var(--neuwo-space-4)).
  */
 export class NeuwoNotice extends NeuwoElement {
   static styles = sheet(noticeCss);

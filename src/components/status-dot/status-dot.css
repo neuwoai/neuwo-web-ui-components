@@ -9,7 +9,7 @@
   border-radius: 50%;
   /* `color` drives both the core and the ring, so the colour axis is one line
      and the ring stays in step with any variant (currentColor == the dot hue). */
-  color: var(--color-green);
+  color: var(--neuwo-color-green);
   background: currentColor;
   box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 25%, transparent);
   flex-shrink: 0;
@@ -17,7 +17,7 @@
 
 /* Colour axis: green is the base; blue swaps the hue (core + ring follow). */
 .status-dot--blue {
-  color: var(--color-blue);
+  color: var(--neuwo-color-blue);
 }
 
 /* Motion axis: pulse expands the ring; blink fades the dot. Mutually exclusive. */

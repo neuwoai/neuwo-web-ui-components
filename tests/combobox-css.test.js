@@ -12,15 +12,15 @@ const css = readFileSync(
 describe("combobox.css recipe", () => {
   it("styles the popup and options from tokens", () => {
     expect(css).toContain(".combobox__popup");
-    expect(css).toContain("var(--color-surface-solid)");
-    expect(css).toContain("var(--shadow-xl)");
+    expect(css).toContain("var(--neuwo-color-surface-solid)");
+    expect(css).toContain("var(--neuwo-shadow-xl)");
     expect(css).toContain(".combobox__option");
-    expect(css).toContain("var(--tint-blue-10)"); // hover
-    expect(css).toContain("var(--tint-blue-15)"); // keyboard-active
+    expect(css).toContain("var(--neuwo-tint-blue-10)"); // hover
+    expect(css).toContain("var(--neuwo-tint-blue-15)"); // keyboard-active
   });
 
   it("paints the chevron colour from a token and guards reduced motion", () => {
-    expect(css).toContain("background-color: var(--color-text-muted)");
+    expect(css).toContain("background-color: var(--neuwo-color-text-muted)");
     expect(css).toContain("prefers-reduced-motion: reduce");
   });
 
@@ -31,13 +31,13 @@ describe("combobox.css recipe", () => {
 
   it("marks the selected option with blue text and no check-mark gutter", () => {
     expect(css).toMatch(
-      /\.combobox__option\[aria-selected="true"\]\s*\{[^}]*color:\s*var\(--color-blue\)/
+      /\.combobox__option\[aria-selected="true"\]\s*\{[^}]*color:\s*var\(--neuwo-color-blue\)/
     );
     expect(css).not.toContain(".combobox__option::before");
   });
 
   it("tightens the chevron gutter at the compact size", () => {
-    expect(css).toMatch(/\.field--sm \.combobox__trigger\s*\{[^}]*padding-right:\s*var\(--space-8\)/);
-    expect(css).toMatch(/\.field--sm \.combobox__chevron\s*\{[^}]*right:\s*var\(--space-3\)/);
+    expect(css).toMatch(/\.field--sm \.combobox__trigger\s*\{[^}]*padding-right:\s*var\(--neuwo-space-8\)/);
+    expect(css).toMatch(/\.field--sm \.combobox__chevron\s*\{[^}]*right:\s*var\(--neuwo-space-3\)/);
   });
 });

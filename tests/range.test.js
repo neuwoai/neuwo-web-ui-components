@@ -8,7 +8,7 @@ function make(html) {
   return host.firstElementChild;
 }
 
-const fillOf = (el) => el.shadowRoot.querySelector("input").style.getPropertyValue("--range-fill");
+const fillOf = (el) => el.shadowRoot.querySelector("input").style.getPropertyValue("--neuwo-range-fill");
 
 describe("<neuwo-range>", () => {
   it("registers and renders a range input on the portable class", () => {

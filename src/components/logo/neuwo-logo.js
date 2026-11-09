@@ -22,7 +22,7 @@ const DEFAULT_LABEL = "Neuwo";
 /**
  * The Neuwo wordmark. Draws one of the brand's four ink pairs, each named for
  * the background it belongs on, and inlines the SVG rather than fetching it, so
- * a logo costs no request. Size it with `--logo-height`; the width follows the
+ * a logo costs no request. Size it with `--neuwo-logo-height`; the width follows the
  * aspect ratio. Wrap it in an `<a>` to make it a link.
  *
  * The same four files are published to `dist/logos/` for consumers that need an
@@ -34,7 +34,7 @@ const DEFAULT_LABEL = "Neuwo";
  * @attr {bg-light|bg-dark|bg-dark-alt|bg-colour} variant - which brand ink pair to draw, named for the background it suits: `bg-light` blue on near-black, `bg-dark` white on blue, `bg-dark-alt` blue on white, `bg-colour` white on near-black for brand-coloured backgrounds where blue would vanish (default bg-dark). An unknown value falls back to bg-dark.
  * @attr {string} label - the accessible name (default Neuwo). An empty value marks the logo decorative instead (aria-hidden, no role), for a link or heading that already says Neuwo.
  * @csspart logo - the svg element.
- * @cssprop --logo-height - rendered height; the width follows the aspect ratio (default 1.75rem).
+ * @cssprop --neuwo-logo-height - rendered height; the width follows the aspect ratio (default 1.75rem).
  */
 export class NeuwoLogo extends NeuwoElement {
   static styles = sheet(logoCss);

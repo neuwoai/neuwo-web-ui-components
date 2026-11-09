@@ -11,17 +11,17 @@
   display: inline-flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--space-1);
+  gap: var(--neuwo-space-1);
 }
 
 .segmented {
   position: relative;
   display: inline-flex;
   gap: 0.125rem;
-  padding: var(--space-1);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-full);
-  background: var(--glass-bg-light);
+  padding: var(--neuwo-space-1);
+  border: 1px solid var(--neuwo-glass-border);
+  border-radius: var(--neuwo-radius-full);
+  background: var(--neuwo-glass-bg-light);
 }
 
 /* The moving blue pill behind the active option. Its width/height/transform
@@ -33,8 +33,8 @@
   z-index: 0;
   width: 0;
   height: 0;
-  background: var(--color-blue);
-  border-radius: var(--radius-full);
+  background: var(--neuwo-color-blue);
+  border-radius: var(--neuwo-radius-full);
   opacity: 0;
   pointer-events: none;
 }
@@ -46,46 +46,46 @@
 /* Armed only after the first placement (see neuwo-segmented.js), so the active
    pill appears in position on load and slides only on later changes. */
 .segmented__indicator--animated {
-  transition: transform var(--transition-base), width var(--transition-base),
-    opacity var(--transition-fast);
+  transition: transform var(--neuwo-transition-base), width var(--neuwo-transition-base),
+    opacity var(--neuwo-transition-fast);
 }
 
 .segmented__option {
   position: relative;
   z-index: 1;
-  padding: var(--space-1) var(--space-4);
+  padding: var(--neuwo-space-1) var(--neuwo-space-4);
   border: none;
   background: transparent;
-  border-radius: var(--radius-full);
-  font-family: var(--font-text);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-muted);
+  border-radius: var(--neuwo-radius-full);
+  font-family: var(--neuwo-font-text);
+  font-size: var(--neuwo-font-size-xs);
+  font-weight: var(--neuwo-font-weight-semibold);
+  color: var(--neuwo-color-text-muted);
   cursor: pointer;
-  transition: color var(--transition-fast);
+  transition: color var(--neuwo-transition-fast);
 }
 
 .segmented__option:not([aria-checked="true"]):not(:disabled):hover {
-  color: var(--color-heading);
+  color: var(--neuwo-color-heading);
 }
 
 .segmented__option:focus-visible {
   outline: none;
-  box-shadow: var(--shadow-focus);
+  box-shadow: var(--neuwo-shadow-focus);
 }
 
 .segmented__option[aria-checked="true"] {
-  color: var(--color-white);
+  color: var(--neuwo-color-white);
 }
 
 .segmented__option:disabled {
-  opacity: var(--opacity-disabled);
+  opacity: var(--neuwo-opacity-disabled);
   cursor: not-allowed;
 }
 
 .segmented--error {
-  border-color: var(--color-red);
-  box-shadow: var(--shadow-danger);
+  border-color: var(--neuwo-color-red);
+  box-shadow: var(--neuwo-shadow-danger);
 }
 
 @media (prefers-reduced-motion: reduce) {

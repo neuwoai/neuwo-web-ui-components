@@ -9,29 +9,29 @@
   /* Drives the horizontal padding and the underline's endpoints together, so
      the bar cannot drift from the text it sits under. Retune it in one place
      (for a denser desktop bar, say) and both follow. */
-  --nav-link-gutter: var(--space-4);
+  --neuwo-nav-link-gutter: var(--neuwo-space-4);
   display: block;
   position: relative;
   width: fit-content;
-  padding: 0 var(--nav-link-gutter);
+  padding: 0 var(--neuwo-nav-link-gutter);
   /* A 44px tap target. */
   min-height: 2.75rem;
   line-height: 2.75rem;
-  border-radius: var(--radius-md);
-  color: var(--color-text);
-  font-family: var(--font-text);
-  font-size: var(--font-size-base);
+  border-radius: var(--neuwo-radius-md);
+  color: var(--neuwo-color-text);
+  font-family: var(--neuwo-font-text);
+  font-size: var(--neuwo-font-size-base);
   text-decoration: none;
-  transition: color var(--transition-fast);
+  transition: color var(--neuwo-transition-fast);
 }
 
 /* A nested entry: compact, so it takes its height from the line rather than a
    tap target of its own. */
 .nav-link--sm {
   min-height: auto;
-  line-height: var(--line-height-body);
-  padding: var(--space-2) var(--nav-link-gutter);
-  font-size: var(--font-size-sm);
+  line-height: var(--neuwo-line-height-body);
+  padding: var(--neuwo-space-2) var(--neuwo-nav-link-gutter);
+  font-size: var(--neuwo-font-size-sm);
 }
 
 /* Centre-out underline. A pseudo-element rather than a gradient background,
@@ -47,15 +47,15 @@
 .nav-link::after {
   content: "";
   position: absolute;
-  left: var(--nav-link-gutter);
-  right: var(--nav-link-gutter);
+  left: var(--neuwo-nav-link-gutter);
+  right: var(--neuwo-nav-link-gutter);
   bottom: 0.375rem;
   height: 2px;
-  background: var(--color-blue);
+  background: var(--neuwo-color-blue);
   border-radius: 1px;
   transform: scaleX(0);
   transform-origin: center;
-  transition: transform var(--transition-fast);
+  transition: transform var(--neuwo-transition-fast);
 }
 
 /* The compact entry has no lifted baseline to clear. */
@@ -69,7 +69,7 @@
 .nav-link:focus-visible,
 .nav-link[aria-current],
 .nav-link--active {
-  color: var(--color-heading);
+  color: var(--neuwo-color-heading);
 }
 
 /* `aria-current` is absent here on purpose: in a horizontal bar the current page

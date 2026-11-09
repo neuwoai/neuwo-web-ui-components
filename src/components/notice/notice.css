@@ -21,26 +21,26 @@
   /* How far the card travels on entrance, flipped by the top modifier so it
      always arrives from the edge it is docked to. Internal, unlike the two
      knobs below, so it is declared rather than read with a fallback. */
-  --notice-rise: 0.5rem;
+  --neuwo-notice-rise: 0.5rem;
 
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--neuwo-space-4);
   /* The two knobs worth setting from outside: how wide the card may grow, and
      how much air a fixed card keeps from the viewport edges. Both are read with
      a fallback rather than declared here, because a declaration on this element
      would beat the value a consumer inherits in from `:root` or the host. */
-  max-width: var(--notice-max-width, 24rem);
-  padding: var(--space-5);
-  color: var(--color-text);
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-xl);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  box-shadow: var(--shadow-xl);
-  animation: notice-in var(--transition-base) both;
+  max-width: var(--neuwo-notice-max-width, 24rem);
+  padding: var(--neuwo-space-5);
+  color: var(--neuwo-color-text);
+  background: var(--neuwo-glass-bg);
+  border: 1px solid var(--neuwo-glass-border);
+  border-radius: var(--neuwo-radius-xl);
+  backdrop-filter: blur(var(--neuwo-glass-blur));
+  -webkit-backdrop-filter: blur(var(--neuwo-glass-blur));
+  box-shadow: var(--neuwo-shadow-xl);
+  animation: notice-in var(--neuwo-transition-base) both;
 }
 
 /* The entrance rides on `translate`, not on `transform`: the centred placement
@@ -48,7 +48,7 @@
 @keyframes notice-in {
   from {
     opacity: 0;
-    translate: 0 var(--notice-rise);
+    translate: 0 var(--neuwo-notice-rise);
   }
 }
 
@@ -56,26 +56,26 @@
 
 .notice--fixed {
   position: fixed;
-  z-index: var(--z-overlay);
+  z-index: var(--neuwo-z-overlay);
   /* Full width less an equal gutter each side until the card hits its cap. */
-  width: calc(100% - var(--notice-gutter, var(--space-4)) * 2);
+  width: calc(100% - var(--neuwo-notice-gutter, var(--neuwo-space-4)) * 2);
 }
 
 .notice--top {
-  top: var(--notice-gutter, var(--space-4));
-  --notice-rise: -0.5rem;
+  top: var(--neuwo-notice-gutter, var(--neuwo-space-4));
+  --neuwo-notice-rise: -0.5rem;
 }
 
 .notice--bottom {
-  bottom: var(--notice-gutter, var(--space-4));
+  bottom: var(--neuwo-notice-gutter, var(--neuwo-space-4));
 }
 
 .notice--start {
-  inset-inline-start: var(--notice-gutter, var(--space-4));
+  inset-inline-start: var(--neuwo-notice-gutter, var(--neuwo-space-4));
 }
 
 .notice--end {
-  inset-inline-end: var(--notice-gutter, var(--space-4));
+  inset-inline-end: var(--neuwo-notice-gutter, var(--neuwo-space-4));
 }
 
 .notice--center {
@@ -88,28 +88,28 @@
 .notice__content {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--neuwo-space-1);
   min-width: 0;
 }
 
 .notice__title {
-  font-family: var(--font-heading);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
+  font-family: var(--neuwo-font-heading);
+  font-size: var(--neuwo-font-size-base);
+  font-weight: var(--neuwo-font-weight-semibold);
   line-height: 1.4;
-  color: var(--color-heading);
+  color: var(--neuwo-color-heading);
 }
 
 .notice__message {
-  font-size: var(--font-size-sm);
+  font-size: var(--neuwo-font-size-sm);
   line-height: 1.55;
-  color: var(--color-text);
+  color: var(--neuwo-color-text);
 }
 
 .notice__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: var(--neuwo-space-2);
   justify-content: flex-end;
 }
 
@@ -127,7 +127,7 @@
   .notice--row {
     flex-direction: row;
     align-items: center;
-    gap: var(--space-6);
+    gap: var(--neuwo-space-6);
   }
 
   .notice--row .notice__content {
@@ -144,19 +144,19 @@
 .notice__dismiss {
   position: absolute;
   /* Inset so the glyph sits on the first line of the title. */
-  top: var(--space-3);
-  inset-inline-end: var(--space-3);
+  top: var(--neuwo-space-3);
+  inset-inline-end: var(--neuwo-space-3);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--space-8);
-  height: var(--space-8);
-  color: var(--color-text-muted);
+  width: var(--neuwo-space-8);
+  height: var(--neuwo-space-8);
+  color: var(--neuwo-color-text-muted);
   background: transparent;
   border: 0;
-  border-radius: var(--radius-sm);
+  border-radius: var(--neuwo-radius-sm);
   cursor: pointer;
-  transition: color var(--transition-fast);
+  transition: color var(--neuwo-transition-fast);
 }
 
 /* The cross is a mask over the button's own colour, so it follows the hover and
@@ -172,18 +172,18 @@
 
 .notice__dismiss:hover,
 .notice__dismiss:focus-visible {
-  color: var(--color-heading);
+  color: var(--neuwo-color-heading);
 }
 
 .notice__dismiss:focus-visible {
   outline: none;
-  box-shadow: var(--shadow-focus);
+  box-shadow: var(--neuwo-shadow-focus);
 }
 
 /* The button's corner is reserved on the card, not on the first line, so
    nothing can collide with it in either layout. */
 .notice--dismissible {
-  padding-inline-end: calc(var(--space-3) + var(--space-8));
+  padding-inline-end: calc(var(--neuwo-space-3) + var(--neuwo-space-8));
 }
 
 /* Reduced motion keeps the card still: it already announces itself by arriving,

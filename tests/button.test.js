@@ -165,7 +165,7 @@ describe("<neuwo-button>", () => {
 
   it("draws a keyboard focus ring on .btn from the shadow-focus token", () => {
     expect(buttonCss).toContain(".btn:focus-visible");
-    expect(buttonCss).toContain("var(--shadow-focus)");
+    expect(buttonCss).toContain("var(--neuwo-shadow-focus)");
   });
 
   it("maps hover intensity s/l to a modifier class; m/none add none", () => {
@@ -190,7 +190,7 @@ describe("<neuwo-button>", () => {
   it("defines the hover-emphasis presets from tokens", () => {
     expect(buttonCss).toContain(".btn--hover-s:hover");
     expect(buttonCss).toContain(".btn--hover-l:hover");
-    expect(buttonCss).toContain("var(--shadow-glow)");
+    expect(buttonCss).toContain("var(--neuwo-shadow-glow)");
     expect(buttonCss).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
   });
 
@@ -203,7 +203,7 @@ describe("<neuwo-button>", () => {
   });
 
   it("lays the control out with a gap token for icons", () => {
-    expect(buttonCss).toContain("gap: var(--space-2)");
+    expect(buttonCss).toContain("gap: var(--neuwo-space-2)");
   });
 
   it("enters a loading state: spinner, aria-busy, disabled control, class", () => {

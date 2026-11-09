@@ -8,7 +8,7 @@
   display: inline-flex;
   position: relative;
   vertical-align: middle;
-  border-radius: var(--radius-full);
+  border-radius: var(--neuwo-radius-full);
 }
 
 /* --- Base --- */
@@ -17,18 +17,18 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-6);
+  gap: var(--neuwo-space-2);
+  padding: var(--neuwo-space-3) var(--neuwo-space-6);
   border: 1px solid transparent;
-  border-radius: var(--radius-full);
-  font-family: var(--font-text);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
+  border-radius: var(--neuwo-radius-full);
+  font-family: var(--neuwo-font-text);
+  font-size: var(--neuwo-font-size-base);
+  font-weight: var(--neuwo-font-weight-semibold);
   white-space: nowrap;
   text-decoration: none;
   cursor: pointer;
   position: relative;
-  transition: background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+  transition: background var(--neuwo-transition-fast), color var(--neuwo-transition-fast), box-shadow var(--neuwo-transition-fast), transform var(--neuwo-transition-fast);
 }
 
 .btn:hover {
@@ -42,20 +42,20 @@
 }
 
 .btn:disabled {
-  opacity: var(--opacity-disabled);
+  opacity: var(--neuwo-opacity-disabled);
   pointer-events: none; /* also suppresses the hover lift on a disabled button */
 }
 
 /* --- Variant: solid (primary) --- */
 
 .btn--solid {
-  background: var(--color-blue);
-  color: var(--color-white);
+  background: var(--neuwo-color-blue);
+  color: var(--neuwo-color-white);
 }
 
 .btn--solid:hover {
-  background: var(--color-blue-dark);
-  box-shadow: var(--shadow-glow);
+  background: var(--neuwo-color-blue-dark);
+  box-shadow: var(--neuwo-shadow-glow);
   transform: translateY(-0.125rem);
 }
 
@@ -63,42 +63,42 @@
 
 .btn--outline {
   background: transparent;
-  color: var(--color-blue);
-  border-color: var(--color-blue);
+  color: var(--neuwo-color-blue);
+  border-color: var(--neuwo-color-blue);
 }
 
 .btn--outline:hover {
-  background: var(--tint-blue-10);
-  color: var(--color-blue-dark);
-  border-color: var(--color-blue-dark);
-  box-shadow: var(--shadow-glow);
+  background: var(--neuwo-tint-blue-10);
+  color: var(--neuwo-color-blue-dark);
+  border-color: var(--neuwo-color-blue-dark);
+  box-shadow: var(--neuwo-shadow-glow);
   transform: translateY(-0.125rem);
 }
 
 /* --- Variant: glass (secondary with heavy blur) --- */
 
 .btn--glass {
-  color: var(--color-blue);
-  border-color: var(--color-blue);
-  backdrop-filter: blur(var(--blur-sm));
+  color: var(--neuwo-color-blue);
+  border-color: var(--neuwo-color-blue);
+  backdrop-filter: blur(var(--neuwo-blur-sm));
 }
 
 .btn--glass:hover {
-  color: var(--color-blue-dark);
-  border-color: var(--color-blue-dark);
-  box-shadow: var(--shadow-glow);
+  color: var(--neuwo-color-blue-dark);
+  border-color: var(--neuwo-color-blue-dark);
+  box-shadow: var(--neuwo-shadow-glow);
   transform: translateY(-0.125rem);
 }
 
 /* --- Modifier: hover emphasis (intensity scale; m == base variant hover) --- */
 
 .btn--hover-s:hover {
-  box-shadow: 0 0 0.75rem var(--tint-blue-20);
+  box-shadow: 0 0 0.75rem var(--neuwo-tint-blue-20);
   transform: translateY(-0.0625rem);
 }
 
 .btn--hover-l:hover {
-  box-shadow: var(--shadow-glow), 0 0 2rem var(--tint-blue-15);
+  box-shadow: var(--neuwo-shadow-glow), 0 0 2rem var(--neuwo-tint-blue-15);
   transform: translateY(-0.1875rem);
 }
 
@@ -106,35 +106,35 @@
 
 .btn:focus-visible {
   outline: none;
-  box-shadow: var(--shadow-focus);
+  box-shadow: var(--neuwo-shadow-focus);
 }
 
 /* --- Size: small --- */
 
 .btn--sm {
-  padding: var(--space-3) var(--space-6);
-  font-size: var(--font-size-sm);
+  padding: var(--neuwo-space-3) var(--neuwo-space-6);
+  font-size: var(--neuwo-font-size-sm);
 }
 
 /* --- Size: large --- */
 
 .btn--lg {
-  padding: var(--space-4) var(--space-8);
-  font-size: var(--font-size-lg);
+  padding: var(--neuwo-space-4) var(--neuwo-space-8);
+  font-size: var(--neuwo-font-size-lg);
 }
 
 /* --- Modifier: wide --- */
 
 .btn--wide {
-  padding-left: var(--space-10);
-  padding-right: var(--space-10);
+  padding-left: var(--neuwo-space-10);
+  padding-right: var(--neuwo-space-10);
 }
 
 /* --- Modifier: extra wide --- */
 
 .btn--xwide {
-  padding-left: var(--space-16);
-  padding-right: var(--space-16);
+  padding-left: var(--neuwo-space-16);
+  padding-right: var(--neuwo-space-16);
 }
 
 /* --- Modifier: block (stretch to the container) --- */
@@ -163,7 +163,7 @@
   height: 1em;
   border: 2px solid color-mix(in srgb, currentColor 35%, transparent);
   border-top-color: currentColor;
-  border-radius: var(--radius-full);
+  border-radius: var(--neuwo-radius-full);
   animation: button-spin 0.6s linear infinite;
 }
 

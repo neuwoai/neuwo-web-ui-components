@@ -13,9 +13,9 @@ describe("status-dot.css recipe", () => {
   it("renders a colour-aware dot and ring from tokens", () => {
     expect(css).toContain(".status-dot");
     expect(css).toContain("border-radius: 50%");
-    expect(css).toContain("var(--color-green)");
+    expect(css).toContain("var(--neuwo-color-green)");
     expect(css).toContain(".status-dot--blue");
-    expect(css).toContain("var(--color-blue)");
+    expect(css).toContain("var(--neuwo-color-blue)");
     expect(css).toContain("currentColor");
   });
 

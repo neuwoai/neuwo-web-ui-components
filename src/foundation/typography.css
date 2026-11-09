@@ -9,69 +9,69 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(--font-heading);
-  color: var(--color-heading);
+  font-family: var(--neuwo-font-heading);
+  color: var(--neuwo-color-heading);
 }
 
 /* Display */
 h1 {
-  font-size: var(--font-size-6xl);
-  font-weight: var(--font-weight-extrabold);
-  line-height: var(--line-height-display);
-  margin-bottom: var(--space-8);
+  font-size: var(--neuwo-font-size-6xl);
+  font-weight: var(--neuwo-font-weight-extrabold);
+  line-height: var(--neuwo-line-height-display);
+  margin-bottom: var(--neuwo-space-8);
 }
 
 /* Section */
 h2 {
-  font-size: var(--font-size-4xl);
-  font-weight: var(--font-weight-bold);
-  line-height: var(--line-height-heading);
-  margin-bottom: var(--space-4);
+  font-size: var(--neuwo-font-size-4xl);
+  font-weight: var(--neuwo-font-weight-bold);
+  line-height: var(--neuwo-line-height-heading);
+  margin-bottom: var(--neuwo-space-4);
 }
 
 @media (min-width: 48rem) {
   h2 {
-    font-size: var(--font-size-5xl);
+    font-size: var(--neuwo-font-size-5xl);
   }
 }
 
 /* Subsection */
 h3 {
-  font-size: var(--font-size-2xl);
-  font-weight: var(--font-weight-bold);
-  line-height: var(--line-height-subheading);
-  margin-bottom: var(--space-2);
+  font-size: var(--neuwo-font-size-2xl);
+  font-weight: var(--neuwo-font-weight-bold);
+  line-height: var(--neuwo-line-height-subheading);
+  margin-bottom: var(--neuwo-space-2);
 }
 
 h4 {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  line-height: var(--line-height-subheading);
-  margin-bottom: var(--space-2);
+  font-size: var(--neuwo-font-size-xl);
+  font-weight: var(--neuwo-font-weight-bold);
+  line-height: var(--neuwo-line-height-subheading);
+  margin-bottom: var(--neuwo-space-2);
 }
 
 h5 {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-bold);
-  line-height: var(--line-height-subheading);
-  margin-bottom: var(--space-2);
+  font-size: var(--neuwo-font-size-lg);
+  font-weight: var(--neuwo-font-weight-bold);
+  line-height: var(--neuwo-line-height-subheading);
+  margin-bottom: var(--neuwo-space-2);
 }
 
 h6 {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-bold);
-  line-height: var(--line-height-subheading);
-  margin-bottom: var(--space-2);
+  font-size: var(--neuwo-font-size-base);
+  font-weight: var(--neuwo-font-weight-bold);
+  line-height: var(--neuwo-line-height-subheading);
+  margin-bottom: var(--neuwo-space-2);
 }
 
 /* Body */
 p {
-  font-family: var(--font-text);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-normal);
-  line-height: var(--line-height-body);
-  color: var(--color-text);
-  margin-bottom: var(--space-4);
+  font-family: var(--neuwo-font-text);
+  font-size: var(--neuwo-font-size-base);
+  font-weight: var(--neuwo-font-weight-normal);
+  line-height: var(--neuwo-line-height-body);
+  color: var(--neuwo-color-text);
+  margin-bottom: var(--neuwo-space-4);
 }
 
 /* Inline prose link. The bare element carries the treatment, and `.link` applies
@@ -80,32 +80,32 @@ p {
    cannot reach a nested `<a>` and the host page has to style it. */
 a,
 .link {
-  color: var(--color-blue);
+  color: var(--neuwo-color-blue);
   text-decoration: underline;
   text-underline-offset: 2px;
-  transition: color var(--transition-fast);
+  transition: color var(--neuwo-transition-fast);
 }
 
 /* Default hover: deepen the same blue. */
 a:hover,
 .link:hover {
-  color: var(--color-blue-dark);
+  color: var(--neuwo-color-blue-dark);
 }
 
 /* Opt-in hover, one class on top of `.link`: switch to the brand green instead.
    text-decoration-color follows currentColor, so the underline travels with the
    text. The class beats `a:hover` on specificity, so it needs no !important. */
 .link--hover-green:hover {
-  color: var(--color-green);
+  color: var(--neuwo-color-green);
 }
 
 /* Eyebrow / kicker: the small uppercase label above a heading. A utility class
    (not a bare element) so consumers opt in per element. Type only, no colour,
    matching the recipe inlined in the badge. */
 .eyebrow {
-  font-family: var(--font-heading);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
+  font-family: var(--neuwo-font-heading);
+  font-size: var(--neuwo-font-size-xs);
+  font-weight: var(--neuwo-font-weight-semibold);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }

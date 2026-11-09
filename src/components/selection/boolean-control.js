@@ -26,7 +26,7 @@ let uid = 0;
  * @slot - the control's label content.
  * @csspart input - the underlying native input.
  * @csspart error - the reserved error message line.
- * @cssprop --color-blue - brand accent (checked fill, focus ring); re-theme on :root.
+ * @cssprop --neuwo-color-blue - brand accent (checked fill, focus ring); re-theme on :root.
  */
 export class NeuwoBooleanControl extends NeuwoElement {
   static formAssociated = true;

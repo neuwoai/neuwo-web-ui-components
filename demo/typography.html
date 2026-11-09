@@ -23,7 +23,7 @@
          typography.css and the tokens, never from this block. */
       body {
         margin: 0 auto;
-        padding: var(--space-12) var(--space-6) var(--space-24);
+        padding: var(--neuwo-space-12) var(--neuwo-space-6) var(--neuwo-space-24);
         max-width: 64rem;
       }
 
@@ -36,7 +36,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        z-index: var(--z-background);
+        z-index: var(--neuwo-z-background);
         overflow: hidden;
       }
 
@@ -46,63 +46,63 @@
       }
 
       .demo-nav {
-        margin-bottom: var(--space-12);
-        font-family: var(--font-text);
-        font-size: var(--font-size-sm);
-        color: var(--color-text-muted);
+        margin-bottom: var(--neuwo-space-12);
+        font-family: var(--neuwo-font-text);
+        font-size: var(--neuwo-font-size-sm);
+        color: var(--neuwo-color-text-muted);
       }
 
       .demo-section {
-        margin-top: var(--space-16);
-        padding-top: var(--space-8);
-        border-top: 1px solid var(--glass-border);
+        margin-top: var(--neuwo-space-16);
+        padding-top: var(--neuwo-space-8);
+        border-top: 1px solid var(--neuwo-glass-border);
       }
 
       .demo-note {
-        color: var(--color-text-muted);
-        font-size: var(--font-size-sm);
+        color: var(--neuwo-color-text-muted);
+        font-size: var(--neuwo-font-size-sm);
       }
 
       code {
         font-family: ui-monospace, monospace;
         font-size: 0.9em;
-        color: var(--color-blue-light);
+        color: var(--neuwo-color-blue-light);
       }
 
       /* Specimen row: token name and value on the left, live sample on the right. */
       .demo-row {
         display: grid;
         grid-template-columns: minmax(0, 14rem) minmax(0, 1fr);
-        gap: var(--space-4);
+        gap: var(--neuwo-space-4);
         align-items: baseline;
-        padding-block: var(--space-3);
-        border-bottom: 1px solid var(--color-grid-line);
+        padding-block: var(--neuwo-space-3);
+        border-bottom: 1px solid var(--neuwo-color-grid-line);
       }
 
       .demo-row__meta {
         font-family: ui-monospace, monospace;
-        font-size: var(--font-size-xs);
-        line-height: var(--line-height-body);
-        color: var(--color-text-muted);
+        font-size: var(--neuwo-font-size-xs);
+        line-height: var(--neuwo-line-height-body);
+        color: var(--neuwo-color-text-muted);
       }
 
       .demo-row__meta b {
         display: block;
-        font-weight: var(--font-weight-normal);
-        color: var(--color-blue-light);
+        font-weight: var(--neuwo-font-weight-normal);
+        color: var(--neuwo-color-blue-light);
       }
 
       .demo-row__sample {
         min-width: 0;
         overflow-x: auto;
         white-space: nowrap;
-        font-family: var(--font-heading);
-        color: var(--color-heading);
+        font-family: var(--neuwo-font-heading);
+        color: var(--neuwo-color-heading);
       }
 
       .demo-row__sample--text {
-        font-family: var(--font-text);
-        color: var(--color-text);
+        font-family: var(--neuwo-font-text);
+        color: var(--neuwo-color-text);
       }
 
       /* Line-height samples need to wrap, unlike the single-line scale samples.
@@ -214,7 +214,7 @@
         >
       </div>
       <div class="demo-row">
-        <span class="demo-row__meta"><b>a Prose link</b>--color-blue, underlined</span>
+        <span class="demo-row__meta"><b>a Prose link</b>--neuwo-color-blue, underlined</span>
         <span class="demo-row__sample demo-row__sample--text"
           ><a class="link" href="https://neuwo.ai">An inline prose link</a> (hover for the dark
           shade)</span
@@ -241,56 +241,56 @@
       </p>
 
       <div class="demo-row">
-        <span class="demo-row__meta"><b>--font-size-2xs</b>0.625rem, badge s</span>
-        <span class="demo-row__sample" style="font-size: var(--font-size-2xs)">Neuwo</span>
+        <span class="demo-row__meta"><b>--neuwo-font-size-2xs</b>0.625rem, badge s</span>
+        <span class="demo-row__sample" style="font-size: var(--neuwo-font-size-2xs)">Neuwo</span>
       </div>
       <div class="demo-row">
-        <span class="demo-row__meta"><b>--font-size-xs</b>0.75rem, eyebrow, badge m</span>
-        <span class="demo-row__sample" style="font-size: var(--font-size-xs)">Neuwo</span>
+        <span class="demo-row__meta"><b>--neuwo-font-size-xs</b>0.75rem, eyebrow, badge m</span>
+        <span class="demo-row__sample" style="font-size: var(--neuwo-font-size-xs)">Neuwo</span>
       </div>
       <div class="demo-row">
-        <span class="demo-row__meta"><b>--font-size-sm</b>0.875rem</span>
-        <span class="demo-row__sample" style="font-size: var(--font-size-sm)">Neuwo</span>
+        <span class="demo-row__meta"><b>--neuwo-font-size-sm</b>0.875rem</span>
+        <span class="demo-row__sample" style="font-size: var(--neuwo-font-size-sm)">Neuwo</span>
       </div>
       <div class="demo-row">
-        <span class="demo-row__meta"><b>--font-size-base</b>1rem, body, h6</span>
-        <span class="demo-row__sample" style="font-size: var(--font-size-base)">Neuwo</span>
+        <span class="demo-row__meta"><b>--neuwo-font-size-base</b>1rem, body, h6</span>
+        <span class="demo-row__sample" style="font-size: var(--neuwo-font-size-base)">Neuwo</span>
       </div>
       <div class="demo-row">
-        <span class="demo-row__meta"><b>--font-size-lg</b>1.125rem, h5</span>
-        <span class="demo-row__sample" style="font-size: var(--font-size-lg)">Neuwo</span>
+        <span class="demo-row__meta"><b>--neuwo-font-size-lg</b>1.125rem, h5</span>
+        <span class="demo-row__sample" style="font-size: var(--neuwo-font-size-lg)">Neuwo</span>
       </div>
       <div class="demo-row">
-        <span class="demo-row__meta"><b>--font-size-xl</b>1.25rem, h4</span>
-        <span class="demo-row__sample" style="font-size: var(--font-size-xl)">Neuwo</span>
+        <span class="demo-row__meta"><b>--neuwo-font-size-xl</b>1.25rem, h4</span>
+        <span class="demo-row__sample" style="font-size: var(--neuwo-font-size-xl)">Neuwo</span>
       </div>
       <div class="demo-row">
-        <span class="demo-row__meta"><b>--font-size-2xl</b>1.5rem, h3</span>
-        <span class="demo-row__sample" style="font-size: var(--font-size-2xl)">Neuwo</span>
+        <span class="demo-row__meta"><b>--neuwo-font-size-2xl</b>1.5rem, h3</span>
+        <span class="demo-row__sample" style="font-size: var(--neuwo-font-size-2xl)">Neuwo</span>
       </div>
       <div class="demo-row">
-        <span class="demo-row__meta"><b>--font-size-3xl</b>1.875rem</span>
-        <span class="demo-row__sample" style="font-size: var(--font-size-3xl)">Neuwo</span>
+        <span class="demo-row__meta"><b>--neuwo-font-size-3xl</b>1.875rem</span>
+        <span class="demo-row__sample" style="font-size: var(--neuwo-font-size-3xl)">Neuwo</span>
       </div>
       <div class="demo-row">
-        <span class="demo-row__meta"><b>--font-size-4xl</b>2.25rem, h2</span>
-        <span class="demo-row__sample" style="font-size: var(--font-size-4xl)">Neuwo</span>
+        <span class="demo-row__meta"><b>--neuwo-font-size-4xl</b>2.25rem, h2</span>
+        <span class="demo-row__sample" style="font-size: var(--neuwo-font-size-4xl)">Neuwo</span>
       </div>
       <div class="demo-row">
-        <span class="demo-row__meta"><b>--font-size-5xl</b>3rem, h2 from 48rem</span>
-        <span class="demo-row__sample" style="font-size: var(--font-size-5xl)">Neuwo</span>
+        <span class="demo-row__meta"><b>--neuwo-font-size-5xl</b>3rem, h2 from 48rem</span>
+        <span class="demo-row__sample" style="font-size: var(--neuwo-font-size-5xl)">Neuwo</span>
       </div>
       <div class="demo-row">
-        <span class="demo-row__meta"><b>--font-size-6xl</b>3.75rem, h1</span>
-        <span class="demo-row__sample" style="font-size: var(--font-size-6xl)">Neuwo</span>
+        <span class="demo-row__meta"><b>--neuwo-font-size-6xl</b>3.75rem, h1</span>
+        <span class="demo-row__sample" style="font-size: var(--neuwo-font-size-6xl)">Neuwo</span>
       </div>
       <div class="demo-row">
-        <span class="demo-row__meta"><b>--font-size-7xl</b>4.5rem</span>
-        <span class="demo-row__sample" style="font-size: var(--font-size-7xl)">Neuwo</span>
+        <span class="demo-row__meta"><b>--neuwo-font-size-7xl</b>4.5rem</span>
+        <span class="demo-row__sample" style="font-size: var(--neuwo-font-size-7xl)">Neuwo</span>
       </div>
       <div class="demo-row">
-        <span class="demo-row__meta"><b>--font-size-8xl</b>5.5rem</span>
-        <span class="demo-row__sample" style="font-size: var(--font-size-8xl)">Neuwo</span>
+        <span class="demo-row__meta"><b>--neuwo-font-size-8xl</b>5.5rem</span>
+        <span class="demo-row__sample" style="font-size: var(--neuwo-font-size-8xl)">Neuwo</span>
       </div>
     </section>
 
@@ -302,22 +302,22 @@
       </p>
 
       <div class="demo-row">
-        <span class="demo-row__meta"><b>--font-heading</b>Outfit, headings and labels</span>
-        <span class="demo-row__sample" style="font-size: var(--font-size-2xl)"
+        <span class="demo-row__meta"><b>--neuwo-font-heading</b>Outfit, headings and labels</span>
+        <span class="demo-row__sample" style="font-size: var(--neuwo-font-size-2xl)"
           >Sphinx of black quartz, judge my vow</span
         >
       </div>
       <div class="demo-row">
-        <span class="demo-row__meta"><b>--font-text</b>Noto Sans, body copy</span>
-        <span class="demo-row__sample demo-row__sample--text" style="font-size: var(--font-size-2xl)"
+        <span class="demo-row__meta"><b>--neuwo-font-text</b>Noto Sans, body copy</span>
+        <span class="demo-row__sample demo-row__sample--text" style="font-size: var(--neuwo-font-size-2xl)"
           >Sphinx of black quartz, judge my vow</span
         >
       </div>
       <div class="demo-row">
         <span class="demo-row__meta"><b>Numerals</b>Outfit / Noto Sans</span>
-        <span class="demo-row__sample" style="font-size: var(--font-size-xl)"
+        <span class="demo-row__sample" style="font-size: var(--neuwo-font-size-xl)"
           >0123456789 &nbsp;
-          <span style="font-family: var(--font-text)">0123456789</span></span
+          <span style="font-family: var(--neuwo-font-text)">0123456789</span></span
         >
       </div>
     </section>
@@ -327,24 +327,24 @@
       <p>Five steps. Headings use bold and extrabold; the eyebrow and labels use semibold.</p>
 
       <div class="demo-row">
-        <span class="demo-row__meta"><b>--font-weight-normal</b>400, body</span>
-        <span class="demo-row__sample" style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-normal)">Contextual intelligence</span>
+        <span class="demo-row__meta"><b>--neuwo-font-weight-normal</b>400, body</span>
+        <span class="demo-row__sample" style="font-size: var(--neuwo-font-size-2xl); font-weight: var(--neuwo-font-weight-normal)">Contextual intelligence</span>
       </div>
       <div class="demo-row">
-        <span class="demo-row__meta"><b>--font-weight-medium</b>500</span>
-        <span class="demo-row__sample" style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-medium)">Contextual intelligence</span>
+        <span class="demo-row__meta"><b>--neuwo-font-weight-medium</b>500</span>
+        <span class="demo-row__sample" style="font-size: var(--neuwo-font-size-2xl); font-weight: var(--neuwo-font-weight-medium)">Contextual intelligence</span>
       </div>
       <div class="demo-row">
-        <span class="demo-row__meta"><b>--font-weight-semibold</b>600, eyebrow, badge</span>
-        <span class="demo-row__sample" style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-semibold)">Contextual intelligence</span>
+        <span class="demo-row__meta"><b>--neuwo-font-weight-semibold</b>600, eyebrow, badge</span>
+        <span class="demo-row__sample" style="font-size: var(--neuwo-font-size-2xl); font-weight: var(--neuwo-font-weight-semibold)">Contextual intelligence</span>
       </div>
       <div class="demo-row">
-        <span class="demo-row__meta"><b>--font-weight-bold</b>700, h2 to h6</span>
-        <span class="demo-row__sample" style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold)">Contextual intelligence</span>
+        <span class="demo-row__meta"><b>--neuwo-font-weight-bold</b>700, h2 to h6</span>
+        <span class="demo-row__sample" style="font-size: var(--neuwo-font-size-2xl); font-weight: var(--neuwo-font-weight-bold)">Contextual intelligence</span>
       </div>
       <div class="demo-row">
-        <span class="demo-row__meta"><b>--font-weight-extrabold</b>800, h1</span>
-        <span class="demo-row__sample" style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-extrabold)">Contextual intelligence</span>
+        <span class="demo-row__meta"><b>--neuwo-font-weight-extrabold</b>800, h1</span>
+        <span class="demo-row__sample" style="font-size: var(--neuwo-font-size-2xl); font-weight: var(--neuwo-font-weight-extrabold)">Contextual intelligence</span>
       </div>
     </section>
 
@@ -353,52 +353,52 @@
       <p>Four line-height roles. Only the Display role tightens its tracking.</p>
 
       <div class="demo-row">
-        <span class="demo-row__meta"><b>--line-height-display</b>1.05, h1</span>
+        <span class="demo-row__meta"><b>--neuwo-line-height-display</b>1.05, h1</span>
         <span
           class="demo-row__sample demo-row__sample--block"
-          style="font-size: var(--font-size-2xl); line-height: var(--line-height-display)"
+          style="font-size: var(--neuwo-font-size-2xl); line-height: var(--neuwo-line-height-display)"
           >Contextual intelligence for the open web, wrapped over several lines</span
         >
       </div>
       <div class="demo-row">
-        <span class="demo-row__meta"><b>--line-height-heading</b>1.2, h2</span>
+        <span class="demo-row__meta"><b>--neuwo-line-height-heading</b>1.2, h2</span>
         <span
           class="demo-row__sample demo-row__sample--block"
-          style="font-size: var(--font-size-2xl); line-height: var(--line-height-heading)"
+          style="font-size: var(--neuwo-font-size-2xl); line-height: var(--neuwo-line-height-heading)"
           >Contextual intelligence for the open web, wrapped over several lines</span
         >
       </div>
       <div class="demo-row">
-        <span class="demo-row__meta"><b>--line-height-subheading</b>1.3, h3 to h6</span>
+        <span class="demo-row__meta"><b>--neuwo-line-height-subheading</b>1.3, h3 to h6</span>
         <span
           class="demo-row__sample demo-row__sample--block"
-          style="font-size: var(--font-size-2xl); line-height: var(--line-height-subheading)"
+          style="font-size: var(--neuwo-font-size-2xl); line-height: var(--neuwo-line-height-subheading)"
           >Contextual intelligence for the open web, wrapped over several lines</span
         >
       </div>
       <div class="demo-row">
-        <span class="demo-row__meta"><b>--line-height-body</b>1.6, p</span>
+        <span class="demo-row__meta"><b>--neuwo-line-height-body</b>1.6, p</span>
         <span
           class="demo-row__sample demo-row__sample--text demo-row__sample--block"
-          style="line-height: var(--line-height-body)"
+          style="line-height: var(--neuwo-line-height-body)"
           >Contextual intelligence for the open web, wrapped over several lines so the rhythm of
           the body role is visible against the headings above it.</span
         >
       </div>
       <div class="demo-row">
-        <span class="demo-row__meta"><b>--letter-spacing-display</b>-0.04em, landing hero title (opt-in)</span>
-        <span class="demo-row__sample" style="font-size: var(--font-size-4xl)"
+        <span class="demo-row__meta"><b>--neuwo-letter-spacing-display</b>-0.04em, landing hero title (opt-in)</span>
+        <span class="demo-row__sample" style="font-size: var(--neuwo-font-size-4xl)"
           >Tight
-          <span style="letter-spacing: var(--letter-spacing-display)">Tight</span></span
+          <span style="letter-spacing: var(--neuwo-letter-spacing-display)">Tight</span></span
         >
       </div>
       <div class="demo-row">
         <span class="demo-row__meta"
-          ><b>--letter-spacing-display-secondary</b>-0.03em, secondary-page hero title (opt-in)</span
+          ><b>--neuwo-letter-spacing-display-secondary</b>-0.03em, secondary-page hero title (opt-in)</span
         >
-        <span class="demo-row__sample" style="font-size: var(--font-size-4xl)"
+        <span class="demo-row__sample" style="font-size: var(--neuwo-font-size-4xl)"
           >Tight
-          <span style="letter-spacing: var(--letter-spacing-display-secondary)">Tight</span></span
+          <span style="letter-spacing: var(--neuwo-letter-spacing-display-secondary)">Tight</span></span
         >
       </div>
     </section>

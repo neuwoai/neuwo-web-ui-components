@@ -3,17 +3,17 @@
    ========================================================================== */
 
 /* The filled portion of the track. WebKit has no progress pseudo-element, so the
-   component writes `--range-fill` (0% to 100%) onto the control on every value
+   component writes `--neuwo-range-fill` (0% to 100%) onto the control on every value
    change and the track sizes a gradient with it; Firefox fills
    `::-moz-range-progress` on its own. The track base stays neutral in both, so
    the unfilled side is never blue. */
 
 .range {
   /* Geometry, shared by both engines' pseudo-elements. */
-  --range-track-height: 0.375rem;
-  --range-thumb-size: 0.875rem;
-  --range-thumb-border: 2px;
-  --range-thumb-ring: 0.1875rem;
+  --neuwo-range-track-height: 0.375rem;
+  --neuwo-range-thumb-size: 0.875rem;
+  --neuwo-range-thumb-border: 2px;
+  --neuwo-range-thumb-ring: 0.1875rem;
 
   -webkit-appearance: none;
   appearance: none;
@@ -26,40 +26,40 @@
      keeps that ring clear of the thumb's halo at either end of the travel.
      Padding here shrinks the track, so it is unconditional rather than tied to
      the error state, otherwise showing an error would resize the slider. */
-  padding: 0 var(--space-2);
+  padding: 0 var(--neuwo-space-2);
   border: 0;
-  border-radius: var(--radius-full);
+  border-radius: var(--neuwo-radius-full);
   background: transparent;
 }
 
 .range:disabled {
-  opacity: var(--opacity-disabled);
+  opacity: var(--neuwo-opacity-disabled);
   cursor: not-allowed;
 }
 
 /* --- WebKit / Blink --- */
 
 .range::-webkit-slider-runnable-track {
-  height: var(--range-track-height);
-  border-radius: var(--radius-full);
-  background-color: var(--glass-bg);
-  background-image: linear-gradient(to right, var(--color-blue), var(--color-blue));
-  background-size: var(--range-fill, 0%) 100%;
+  height: var(--neuwo-range-track-height);
+  border-radius: var(--neuwo-radius-full);
+  background-color: var(--neuwo-glass-bg);
+  background-image: linear-gradient(to right, var(--neuwo-color-blue), var(--neuwo-color-blue));
+  background-size: var(--neuwo-range-fill, 0%) 100%;
   background-repeat: no-repeat;
 }
 
 .range::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: var(--range-thumb-size);
-  height: var(--range-thumb-size);
+  width: var(--neuwo-range-thumb-size);
+  height: var(--neuwo-range-thumb-size);
   /* Centre the thumb on the track: half the size difference, pulled upwards. */
-  margin-top: calc((var(--range-track-height) - var(--range-thumb-size)) / 2);
-  border: var(--range-thumb-border) solid var(--color-blue);
-  border-radius: var(--radius-full);
-  background: var(--color-white);
-  box-shadow: 0 0 0 var(--range-thumb-ring) var(--tint-blue-15), var(--shadow-sm);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  margin-top: calc((var(--neuwo-range-track-height) - var(--neuwo-range-thumb-size)) / 2);
+  border: var(--neuwo-range-thumb-border) solid var(--neuwo-color-blue);
+  border-radius: var(--neuwo-radius-full);
+  background: var(--neuwo-color-white);
+  box-shadow: 0 0 0 var(--neuwo-range-thumb-ring) var(--neuwo-tint-blue-15), var(--neuwo-shadow-sm);
+  transition: transform var(--neuwo-transition-fast), box-shadow var(--neuwo-transition-fast);
 }
 
 .range:hover::-webkit-slider-thumb,
@@ -70,24 +70,24 @@
 /* --- Firefox --- */
 
 .range::-moz-range-track {
-  height: var(--range-track-height);
-  border-radius: var(--radius-full);
-  background: var(--glass-bg);
+  height: var(--neuwo-range-track-height);
+  border-radius: var(--neuwo-radius-full);
+  background: var(--neuwo-glass-bg);
 }
 
 .range::-moz-range-progress {
-  height: var(--range-track-height);
-  border-radius: var(--radius-full);
-  background: var(--color-blue);
+  height: var(--neuwo-range-track-height);
+  border-radius: var(--neuwo-radius-full);
+  background: var(--neuwo-color-blue);
 }
 
 .range::-moz-range-thumb {
-  width: var(--range-thumb-size);
-  height: var(--range-thumb-size);
-  border: var(--range-thumb-border) solid var(--color-blue);
-  border-radius: var(--radius-full);
-  background: var(--color-white);
-  box-shadow: 0 0 0 var(--range-thumb-ring) var(--tint-blue-15);
+  width: var(--neuwo-range-thumb-size);
+  height: var(--neuwo-range-thumb-size);
+  border: var(--neuwo-range-thumb-border) solid var(--neuwo-color-blue);
+  border-radius: var(--neuwo-radius-full);
+  background: var(--neuwo-color-white);
+  box-shadow: 0 0 0 var(--neuwo-range-thumb-ring) var(--neuwo-tint-blue-15);
 }
 
 /* --- Focus: the ring belongs on the thumb, not on the input box --- */
@@ -99,11 +99,11 @@
 }
 
 .range:focus-visible::-webkit-slider-thumb {
-  box-shadow: var(--shadow-focus), var(--shadow-sm);
+  box-shadow: var(--neuwo-shadow-focus), var(--neuwo-shadow-sm);
 }
 
 .range:focus-visible::-moz-range-thumb {
-  box-shadow: var(--shadow-focus);
+  box-shadow: var(--neuwo-shadow-focus);
 }
 
 /* Reduced motion keeps a static thumb; the focus ring and the filled track

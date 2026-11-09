@@ -9,38 +9,38 @@
   position: absolute;
   /* Read with a fallback rather than declared, so a consumer can pull the
      control further in without fighting a declaration on this element. */
-  top: var(--copy-inset, var(--space-3));
-  inset-inline-end: var(--copy-inset, var(--space-3));
+  top: var(--neuwo-copy-inset, var(--neuwo-space-3));
+  inset-inline-end: var(--neuwo-copy-inset, var(--neuwo-space-3));
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--space-8);
-  height: var(--space-8);
+  width: var(--neuwo-space-8);
+  height: var(--neuwo-space-8);
   padding: 0;
-  color: var(--color-text-muted);
-  background: var(--color-surface-solid);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
+  color: var(--neuwo-color-text-muted);
+  background: var(--neuwo-color-surface-solid);
+  border: 1px solid var(--neuwo-glass-border);
+  border-radius: var(--neuwo-radius-md);
   cursor: pointer;
   /* Visible at rest, so the affordance is found without hunting for it, and
      solid on hover. Deliberately not a hover-only reveal: a tap leaves a touch
      screen in :hover with nothing to take it out, so a control that only exists
      on hover either never appears or never leaves. */
   opacity: 0.45;
-  transition: opacity var(--transition-fast), color var(--transition-fast),
-    border-color var(--transition-fast);
+  transition: opacity var(--neuwo-transition-fast), color var(--neuwo-transition-fast),
+    border-color var(--neuwo-transition-fast);
 }
 
 .copy:hover,
 .copy:focus-visible {
   opacity: 1;
-  color: var(--color-heading);
-  border-color: var(--glass-border-hover);
+  color: var(--neuwo-color-heading);
+  border-color: var(--neuwo-glass-border-hover);
 }
 
 .copy:focus-visible {
   outline: none;
-  box-shadow: var(--shadow-focus);
+  box-shadow: var(--neuwo-shadow-focus);
 }
 
 /* The glyph is a mask over the button's own colour, as on the notice's close
@@ -59,8 +59,8 @@
    green so the state reads without hovering. */
 .copy--done {
   opacity: 1;
-  color: var(--color-green);
-  border-color: var(--tint-green-25);
+  color: var(--neuwo-color-green);
+  border-color: var(--neuwo-tint-green-25);
 }
 
 .copy--done::before {

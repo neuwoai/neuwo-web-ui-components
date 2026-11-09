@@ -26,7 +26,7 @@ const RESET_DELAY = 1200;
  * @slot - the content to copy.
  * @csspart button - the copy control.
  * @csspart status - the live region carrying the outcome.
- * @cssprop --copy-inset - distance from the top and end edges (default `--space-3`).
+ * @cssprop --neuwo-copy-inset - distance from the top and end edges (default `--neuwo-space-3`).
  * @fires {CustomEvent<{ text: string }>} copied - after the text reaches the clipboard; `detail.text` is what was written.
  */
 export class NeuwoCopy extends NeuwoElement {

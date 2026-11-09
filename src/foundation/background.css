@@ -5,11 +5,11 @@
    one sits and how it is stacked. */
 
 .body {
-  font-family: var(--font-text);
-  font-size: var(--font-size-base);
-  line-height: var(--line-height-body);
-  color: var(--color-text);
-  background-color: var(--color-body-bg);
+  font-family: var(--neuwo-font-text);
+  font-size: var(--neuwo-font-size-base);
+  line-height: var(--neuwo-line-height-body);
+  color: var(--neuwo-color-text);
+  background-color: var(--neuwo-color-body-bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -20,8 +20,8 @@
    once, so they stay inline rather than growing the scale. */
 .background__gradient {
   background:
-    radial-gradient(ellipse 50% 40% at 20% 20%, var(--tint-blue-10) 0%, transparent 100%),
-    radial-gradient(ellipse 40% 50% at 75% 15%, color-mix(in srgb, var(--color-green) 7%, transparent) 0%, transparent 100%),
-    radial-gradient(ellipse 60% 35% at 50% 60%, color-mix(in srgb, var(--color-blue) 6%, transparent) 0%, transparent 100%),
-    radial-gradient(ellipse 45% 45% at 80% 70%, var(--tint-green-5) 0%, transparent 100%);
+    radial-gradient(ellipse 50% 40% at 20% 20%, var(--neuwo-tint-blue-10) 0%, transparent 100%),
+    radial-gradient(ellipse 40% 50% at 75% 15%, color-mix(in srgb, var(--neuwo-color-green) 7%, transparent) 0%, transparent 100%),
+    radial-gradient(ellipse 60% 35% at 50% 60%, color-mix(in srgb, var(--neuwo-color-blue) 6%, transparent) 0%, transparent 100%),
+    radial-gradient(ellipse 45% 45% at 80% 70%, var(--neuwo-tint-green-5) 0%, transparent 100%);
 }

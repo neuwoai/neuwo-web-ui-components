@@ -12,8 +12,8 @@ const css = readFileSync(
 describe("form-check.css recipe", () => {
   it("styles the box and indicators from tokens", () => {
     expect(css).toContain(".form-check__input");
-    expect(css).toContain("var(--color-blue)");
-    expect(css).toContain("var(--shadow-focus)");
+    expect(css).toContain("var(--neuwo-color-blue)");
+    expect(css).toContain("var(--neuwo-shadow-focus)");
     expect(css).toContain('.form-check__input[type="radio"]');
     expect(css).toContain('.form-check__input[type="checkbox"]:checked');
     expect(css).toContain('.form-check__input[type="checkbox"]:indeterminate');
@@ -21,10 +21,10 @@ describe("form-check.css recipe", () => {
   });
 
   it("uses the disabled token and a red error accent, with no hex colour literals", () => {
-    expect(css).toContain("var(--opacity-disabled)");
+    expect(css).toContain("var(--neuwo-opacity-disabled)");
     expect(css).toContain(".form-check--error");
-    expect(css).toContain("var(--color-red)");
-    expect(css).toContain("var(--shadow-danger)");
+    expect(css).toContain("var(--neuwo-color-red)");
+    expect(css).toContain("var(--neuwo-shadow-danger)");
     expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
   });
 });

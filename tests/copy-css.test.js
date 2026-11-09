@@ -29,12 +29,12 @@ describe("copy.css recipe", () => {
   it("pins the control to the top end corner through a knob it never declares", () => {
     const rule = css.match(/(?:^|\n)\.copy \{[^}]*\}/)[0];
     expect(rule).toMatch(/position:\s*absolute/);
-    expect(rule).toMatch(/top:\s*var\(--copy-inset, var\(--space-3\)\)/);
+    expect(rule).toMatch(/top:\s*var\(--neuwo-copy-inset, var\(--neuwo-space-3\)\)/);
     // Logical, so a right-to-left page puts the control on the other side.
-    expect(rule).toMatch(/inset-inline-end:\s*var\(--copy-inset, var\(--space-3\)\)/);
-    expect(rule).not.toMatch(/--copy-inset:/);
-    expect(rule).toMatch(/width:\s*var\(--space-8\)/);
-    expect(rule).toMatch(/height:\s*var\(--space-8\)/);
+    expect(rule).toMatch(/inset-inline-end:\s*var\(--neuwo-copy-inset, var\(--neuwo-space-3\)\)/);
+    expect(rule).not.toMatch(/--neuwo-copy-inset:/);
+    expect(rule).toMatch(/width:\s*var\(--neuwo-space-8\)/);
+    expect(rule).toMatch(/height:\s*var\(--neuwo-space-8\)/);
   });
 
   // A hover-only reveal would either never appear or never leave on a touch
@@ -43,7 +43,7 @@ describe("copy.css recipe", () => {
     expect(css).toMatch(/\.copy \{[^}]*opacity:\s*0\.45/);
     const strong = css.match(/\.copy:hover,\n\.copy:focus-visible \{[^}]*\}/)[0];
     expect(strong).toMatch(/opacity:\s*1/);
-    expect(strong).toMatch(/color:\s*var\(--color-heading\)/);
+    expect(strong).toMatch(/color:\s*var\(--neuwo-color-heading\)/);
     expect(declarations).not.toMatch(/opacity:\s*0;/);
     expect(declarations).not.toContain("hover: none");
   });
@@ -56,7 +56,7 @@ describe("copy.css recipe", () => {
       .map((block) => block.split("{"))
       .find(([selector]) => selector.trim() === ".copy:focus-visible");
     expect(body).toMatch(/outline:\s*none/);
-    expect(body).toMatch(/box-shadow:\s*var\(--shadow-focus\)/);
+    expect(body).toMatch(/box-shadow:\s*var\(--neuwo-shadow-focus\)/);
   });
 
   // A mask over currentColor, as on the notice's close control: the glyph follows
@@ -74,7 +74,7 @@ describe("copy.css recipe", () => {
   it("holds the confirmation solid and green so it reads without a hover", () => {
     const rule = css.match(/(?:^|\n)\.copy--done \{[^}]*\}/)[0];
     expect(rule).toMatch(/opacity:\s*1/);
-    expect(rule).toMatch(/color:\s*var\(--color-green\)/);
+    expect(rule).toMatch(/color:\s*var\(--neuwo-color-green\)/);
   });
 
   it("hides the status line visually while leaving it to a screen reader", () => {
@@ -99,18 +99,18 @@ describe("copy.css recipe", () => {
 
   it("only uses tokens that tokens.css defines", () => {
     for (const token of [
-      "--space-3",
-      "--space-8",
-      "--radius-md",
-      "--color-text-muted",
-      "--color-heading",
-      "--color-green",
-      "--color-surface-solid",
-      "--glass-border",
-      "--glass-border-hover",
-      "--tint-green-25",
-      "--shadow-focus",
-      "--transition-fast",
+      "--neuwo-space-3",
+      "--neuwo-space-8",
+      "--neuwo-radius-md",
+      "--neuwo-color-text-muted",
+      "--neuwo-color-heading",
+      "--neuwo-color-green",
+      "--neuwo-color-surface-solid",
+      "--neuwo-glass-border",
+      "--neuwo-glass-border-hover",
+      "--neuwo-tint-green-25",
+      "--neuwo-shadow-focus",
+      "--neuwo-transition-fast",
     ]) {
       expect(css).toContain(`var(${token})`);
       expect(tokensCss).toContain(`${token}:`);
@@ -124,7 +124,7 @@ describe("copy.css recipe", () => {
   it("leaves the panel gutter to markdown.css, which is the only sheet that can set it", () => {
     expect(declarations).not.toMatch(/::slotted/);
     expect(markdownCss).toMatch(
-      /\.markdown neuwo-copy pre \{[^}]*padding-right:\s*calc\(var\(--space-8\) \+ var\(--space-3\) \* 2\)/
+      /\.markdown neuwo-copy pre \{[^}]*padding-right:\s*calc\(var\(--neuwo-space-8\) \+ var\(--neuwo-space-3\) \* 2\)/
     );
   });
 });

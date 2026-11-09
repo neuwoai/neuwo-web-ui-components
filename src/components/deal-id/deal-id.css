@@ -5,19 +5,19 @@
 
 .deal-id {
   display: inline-block;
-  font-family: var(--font-heading);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
+  font-family: var(--neuwo-font-heading);
+  font-size: var(--neuwo-font-size-sm);
+  font-weight: var(--neuwo-font-weight-semibold);
   letter-spacing: 0.04em;
-  color: var(--color-heading);
-  padding: var(--space-1) var(--space-3);
-  background: var(--tint-green-5);
-  border: 1px solid var(--tint-green-15);
-  border-radius: var(--radius-md);
+  color: var(--neuwo-color-heading);
+  padding: var(--neuwo-space-1) var(--neuwo-space-3);
+  background: var(--neuwo-tint-green-5);
+  border: 1px solid var(--neuwo-tint-green-15);
+  border-radius: var(--neuwo-radius-md);
 }
 
 /* Size axis (density): a bounded scale. m (default, no class) is sm; s is the
    responsive xs drop, l grows to base. Font-size only, composes with nothing
    else here. */
-.deal-id--s { font-size: var(--font-size-xs); }
-.deal-id--l { font-size: var(--font-size-base); }
+.deal-id--s { font-size: var(--neuwo-font-size-xs); }
+.deal-id--l { font-size: var(--neuwo-font-size-base); }

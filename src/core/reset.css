@@ -1,6 +1,6 @@
 :host {
   box-sizing: border-box;
-  font-family: var(--font-text);
+  font-family: var(--neuwo-font-text);
 }
 
 *,

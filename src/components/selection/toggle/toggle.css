@@ -6,14 +6,14 @@
 :host {
   display: inline-flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--neuwo-space-1);
   align-items: flex-start;
 }
 
 .form-toggle {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--neuwo-space-3);
   cursor: pointer;
 }
 
@@ -35,12 +35,12 @@
   flex-shrink: 0;
   width: 3.25rem;
   height: 1.625rem;
-  background: var(--glass-bg-light);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-full);
+  background: var(--neuwo-glass-bg-light);
+  border: 1px solid var(--neuwo-glass-border);
+  border-radius: var(--neuwo-radius-full);
   cursor: pointer;
-  transition: background var(--transition-fast), border-color var(--transition-fast),
-    box-shadow var(--transition-fast);
+  transition: background var(--neuwo-transition-fast), border-color var(--neuwo-transition-fast),
+    box-shadow var(--neuwo-transition-fast);
 }
 
 .form-toggle__track::after {
@@ -50,17 +50,17 @@
   left: 0.25rem;
   width: 1.125rem;
   height: 1.125rem;
-  background: var(--color-heading);
-  border-radius: var(--radius-full);
+  background: var(--neuwo-color-heading);
+  border-radius: var(--neuwo-radius-full);
   transform: translateY(-50%);
-  transition: transform var(--transition-fast);
+  transition: transform var(--neuwo-transition-fast);
 }
 
-/* Checked: the track fills solid --color-blue and the thumb stays
-   --color-heading in both states, just sliding across (matches the
+/* Checked: the track fills solid --neuwo-color-blue and the thumb stays
+   --neuwo-color-heading in both states, just sliding across (matches the
    design-system reference recipe). */
 .form-toggle__input:checked + .form-toggle__track {
-  background: var(--color-blue);
+  background: var(--neuwo-color-blue);
 }
 
 .form-toggle__input:checked + .form-toggle__track::after {
@@ -69,31 +69,31 @@
 
 .form-toggle__input:focus-visible + .form-toggle__track {
   outline: none;
-  box-shadow: var(--shadow-focus);
+  box-shadow: var(--neuwo-shadow-focus);
 }
 
 .form-toggle__input:disabled + .form-toggle__track {
-  opacity: var(--opacity-disabled);
+  opacity: var(--neuwo-opacity-disabled);
   cursor: not-allowed;
 }
 
 .form-toggle__label {
-  font-family: var(--font-text);
-  font-size: var(--font-size-base);
-  color: var(--color-text);
+  font-family: var(--neuwo-font-text);
+  font-size: var(--neuwo-font-size-base);
+  color: var(--neuwo-color-text);
   cursor: pointer;
   user-select: none;
   line-height: 1.5;
 }
 
 .form-toggle:has(.form-toggle__input:disabled) .form-toggle__label {
-  opacity: var(--opacity-disabled);
+  opacity: var(--neuwo-opacity-disabled);
   cursor: not-allowed;
 }
 
 .form-toggle--error .form-toggle__track {
-  border-color: var(--color-red);
-  box-shadow: var(--shadow-danger);
+  border-color: var(--neuwo-color-red);
+  box-shadow: var(--neuwo-shadow-danger);
 }
 
 /* Attention pulse: a ring that invites the visitor to flip a switch they have
@@ -117,13 +117,13 @@
 
 @keyframes toggle-pulse {
   0% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-blue) var(--toggle-pulse-alpha, 40%), transparent);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--neuwo-color-blue) var(--neuwo-toggle-pulse-alpha, 40%), transparent);
   }
   23% {
-    box-shadow: 0 0 0 var(--toggle-pulse-spread, 12px) color-mix(in srgb, var(--color-blue) 0%, transparent);
+    box-shadow: 0 0 0 var(--neuwo-toggle-pulse-spread, 12px) color-mix(in srgb, var(--neuwo-color-blue) 0%, transparent);
   }
   45%, 100% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-blue) var(--toggle-pulse-alpha, 40%), transparent);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--neuwo-color-blue) var(--neuwo-toggle-pulse-alpha, 40%), transparent);
   }
 }
 

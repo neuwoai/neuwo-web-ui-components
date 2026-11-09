@@ -13,11 +13,11 @@ describe("radio-group.css recipe", () => {
   it("lays out the legend and options from tokens", () => {
     expect(css).toContain(".radio-group__legend");
     expect(css).toContain(".radio-group__options");
-    expect(css).toContain("var(--color-heading)");
+    expect(css).toContain("var(--neuwo-color-heading)");
     expect(css).toContain('[orientation="horizontal"]');
   });
   it("uses only tokens and does not redden the legend (the error ring is on each radio)", () => {
     expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
-    expect(css).not.toContain("var(--color-red)");
+    expect(css).not.toContain("var(--neuwo-color-red)");
   });
 });

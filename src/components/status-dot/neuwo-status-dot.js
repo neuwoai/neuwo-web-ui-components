@@ -15,8 +15,8 @@ import statusDotCss from "./status-dot.css?raw";
  * @attr {s|m|l} halo - ring intensity: s tighter, l a wide glow halo (default m = base ring).
  * @attr {none|s|m|l} glow - static saturated bloom keyed to the dot colour; s subtle, l strongest (default none). Composes with any variant, halo and motion.
  * @csspart dot - the dot element.
- * @cssprop --color-green - the default dot colour; re-theme on :root.
- * @cssprop --color-blue - the blue-variant dot colour; re-theme on :root.
+ * @cssprop --neuwo-color-green - the default dot colour; re-theme on :root.
+ * @cssprop --neuwo-color-blue - the blue-variant dot colour; re-theme on :root.
  */
 export class NeuwoStatusDot extends NeuwoElement {
   static styles = sheet(statusDotCss);

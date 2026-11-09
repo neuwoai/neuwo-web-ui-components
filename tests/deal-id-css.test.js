@@ -12,18 +12,18 @@ const css = readFileSync(
 describe("deal-id.css recipe", () => {
   it("renders a rounded value box from tokens", () => {
     expect(css).toContain(".deal-id");
-    expect(css).toContain("var(--font-size-sm)");
-    expect(css).toContain("var(--color-heading)");
-    expect(css).toContain("var(--tint-green-5)");
-    expect(css).toContain("var(--tint-green-15)");
-    expect(css).toContain("var(--radius-md)");
+    expect(css).toContain("var(--neuwo-font-size-sm)");
+    expect(css).toContain("var(--neuwo-color-heading)");
+    expect(css).toContain("var(--neuwo-tint-green-5)");
+    expect(css).toContain("var(--neuwo-tint-green-15)");
+    expect(css).toContain("var(--neuwo-radius-md)");
   });
 
   it("defines the size axis as font-size-only presets from tokens", () => {
     expect(css).toContain(".deal-id--s");
-    expect(css).toContain("var(--font-size-xs)");
+    expect(css).toContain("var(--neuwo-font-size-xs)");
     expect(css).toContain(".deal-id--l");
-    expect(css).toContain("var(--font-size-base)");
+    expect(css).toContain("var(--neuwo-font-size-base)");
     expect(css).not.toMatch(/\.deal-id--[sl][^}]*padding/);
   });
 

@@ -15,9 +15,9 @@ const declarations = css.replace(/\/\*[\s\S]*?\*\//g, "");
 describe("navigation stylesheet", () => {
   it("styles a top-level entry from tokens, at a 44px tap target", () => {
     const rule = css.match(/(?:^|\n)\.nav-link \{[^}]*\}/)[0];
-    expect(rule).toMatch(/color:\s*var\(--color-text\)/);
-    expect(rule).toMatch(/font-family:\s*var\(--font-text\)/);
-    expect(rule).toMatch(/font-size:\s*var\(--font-size-base\)/);
+    expect(rule).toMatch(/color:\s*var\(--neuwo-color-text\)/);
+    expect(rule).toMatch(/font-family:\s*var\(--neuwo-font-text\)/);
+    expect(rule).toMatch(/font-size:\s*var\(--neuwo-font-size-base\)/);
     expect(rule).toMatch(/text-decoration:\s*none/);
     expect(rule).toMatch(/min-height:\s*2\.75rem/);
     expect(rule).toMatch(/line-height:\s*2\.75rem/);
@@ -25,27 +25,27 @@ describe("navigation stylesheet", () => {
 
   it("steps the nested entry down a size and drops the tap target", () => {
     const rule = css.match(/(?:^|\n)\.nav-link--sm \{[^}]*\}/)[0];
-    expect(rule).toMatch(/font-size:\s*var\(--font-size-sm\)/);
+    expect(rule).toMatch(/font-size:\s*var\(--neuwo-font-size-sm\)/);
     expect(rule).toMatch(/min-height:\s*auto/);
-    expect(rule).toMatch(/line-height:\s*var\(--line-height-body\)/);
+    expect(rule).toMatch(/line-height:\s*var\(--neuwo-line-height-body\)/);
   });
 
   // The gutter drives the padding and the underline's span from one value, so
   // the bar cannot drift from the text above it.
   it("derives the padding and the underline endpoints from one gutter property", () => {
-    expect(css).toMatch(/--nav-link-gutter:\s*var\(--space-4\)/);
-    expect(css).toMatch(/padding:\s*0 var\(--nav-link-gutter\)/);
-    expect(css).toMatch(/padding:\s*var\(--space-2\) var\(--nav-link-gutter\)/);
+    expect(css).toMatch(/--neuwo-nav-link-gutter:\s*var\(--neuwo-space-4\)/);
+    expect(css).toMatch(/padding:\s*0 var\(--neuwo-nav-link-gutter\)/);
+    expect(css).toMatch(/padding:\s*var\(--neuwo-space-2\) var\(--neuwo-nav-link-gutter\)/);
     const rule = css.match(/(?:^|\n)\.nav-link::after \{[^}]*\}/)[0];
-    expect(rule).toMatch(/left:\s*var\(--nav-link-gutter\)/);
-    expect(rule).toMatch(/right:\s*var\(--nav-link-gutter\)/);
+    expect(rule).toMatch(/left:\s*var\(--neuwo-nav-link-gutter\)/);
+    expect(rule).toMatch(/right:\s*var\(--neuwo-nav-link-gutter\)/);
   });
 
   it("draws the underline as a centre-out bar in the brand blue", () => {
     const rule = css.match(/(?:^|\n)\.nav-link::after \{[^}]*\}/)[0];
     expect(rule).toMatch(/content:\s*""/);
     expect(rule).toMatch(/height:\s*2px/);
-    expect(rule).toMatch(/background:\s*var\(--color-blue\)/);
+    expect(rule).toMatch(/background:\s*var\(--neuwo-color-blue\)/);
     // The lifted baseline is the top-level entry's; the compact one sits flush.
     expect(rule).toMatch(/bottom:\s*0\.375rem/);
     expect(css).toMatch(/\.nav-link--sm::after \{[^}]*bottom:\s*0;/);
@@ -58,7 +58,7 @@ describe("navigation stylesheet", () => {
     const rule = css.match(/(?:^|\n)\.nav-link::after \{[^}]*\}/)[0];
     expect(rule).toMatch(/transform:\s*scaleX\(0\)/);
     expect(rule).toMatch(/transform-origin:\s*center/);
-    expect(rule).toMatch(/transition:\s*transform var\(--transition-fast\)/);
+    expect(rule).toMatch(/transition:\s*transform var\(--neuwo-transition-fast\)/);
     expect(rule).not.toMatch(/left:\s*50%/);
     expect(rule).not.toMatch(/right:\s*50%/);
     const shown = css.match(/\.nav-link:hover::after,[^{]*\{[^}]*\}/)[0];
@@ -70,7 +70,7 @@ describe("navigation stylesheet", () => {
     const rule = css.match(
       /\.nav-link:hover,\n\.nav-link:focus-visible,\n\.nav-link\[aria-current\],\n\.nav-link--active \{[^}]*\}/
     )[0];
-    expect(rule).toMatch(/color:\s*var\(--color-heading\)/);
+    expect(rule).toMatch(/color:\s*var\(--neuwo-color-heading\)/);
     // In a horizontal bar the current page is marked, not offered, so the bar
     // is withheld from `aria-current` alone.
     const shown = css.match(/\.nav-link:hover::after,[^{]*\{/)[0];
@@ -106,17 +106,17 @@ describe("navigation stylesheet", () => {
 
   it("only uses tokens that tokens.css defines", () => {
     for (const token of [
-      "--space-2",
-      "--space-4",
-      "--radius-md",
-      "--color-text",
-      "--color-heading",
-      "--color-blue",
-      "--font-text",
-      "--font-size-base",
-      "--font-size-sm",
-      "--line-height-body",
-      "--transition-fast",
+      "--neuwo-space-2",
+      "--neuwo-space-4",
+      "--neuwo-radius-md",
+      "--neuwo-color-text",
+      "--neuwo-color-heading",
+      "--neuwo-color-blue",
+      "--neuwo-font-text",
+      "--neuwo-font-size-base",
+      "--neuwo-font-size-sm",
+      "--neuwo-line-height-body",
+      "--neuwo-transition-fast",
     ]) {
       expect(css).toContain(`var(${token})`);
       expect(tokensCss).toContain(`${token}:`);

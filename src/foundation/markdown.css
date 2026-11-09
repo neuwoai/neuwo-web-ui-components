@@ -24,21 +24,21 @@
 
 .markdown ul,
 .markdown ol {
-  color: var(--color-text);
-  line-height: var(--line-height-body);
-  margin-bottom: var(--space-4);
-  padding-left: var(--space-6);
+  color: var(--neuwo-color-text);
+  line-height: var(--neuwo-line-height-body);
+  margin-bottom: var(--neuwo-space-4);
+  padding-left: var(--neuwo-space-6);
 }
 
 .markdown li {
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--neuwo-space-2);
 }
 
 /* A nested list belongs to its parent item, so it closes flush and the gap
    above it matches the gap between siblings. */
 .markdown li > ul,
 .markdown li > ol {
-  margin-top: var(--space-2);
+  margin-top: var(--neuwo-space-2);
   margin-bottom: 0;
 }
 
@@ -48,24 +48,24 @@
    heading ink. Semibold rather than bold: the body face at 700 next to 400 is
    a wider jump than long-form copy wants. */
 .markdown strong {
-  color: var(--color-heading);
-  font-weight: var(--font-weight-semibold);
+  color: var(--neuwo-color-heading);
+  font-weight: var(--neuwo-font-weight-semibold);
 }
 
 /* --- Quotes and rules --- */
 
 .markdown blockquote {
-  margin: var(--space-6) 0;
-  padding-left: var(--space-4);
-  border-left: 3px solid var(--color-blue);
-  color: var(--color-text-muted);
+  margin: var(--neuwo-space-6) 0;
+  padding-left: var(--neuwo-space-4);
+  border-left: 3px solid var(--neuwo-color-blue);
+  color: var(--neuwo-color-text-muted);
   font-style: italic;
 }
 
 .markdown hr {
-  margin: var(--space-8) 0;
+  margin: var(--neuwo-space-8) 0;
   border: none;
-  border-top: 1px solid var(--glass-border);
+  border-top: 1px solid var(--neuwo-glass-border);
 }
 
 /* --- Images --- */
@@ -80,15 +80,15 @@
    badge or icon sharing a paragraph with text does not. */
 .markdown p > img:only-child {
   display: block;
-  margin: var(--space-6) 0;
-  border-radius: var(--radius-lg);
+  margin: var(--neuwo-space-6) 0;
+  border-radius: var(--neuwo-radius-lg);
 }
 
 /* --- Code --- */
 
 .markdown code {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-sm);
+  font-family: var(--neuwo-font-mono);
+  font-size: var(--neuwo-font-size-sm);
 }
 
 /* Inline only. A sample inside `pre` already sits on the panel, and the chrome
@@ -96,27 +96,27 @@
    `break-word`, so a long identifier in a table cell or a list item lets its box
    fit the column instead of forcing the page sideways. */
 .markdown :not(pre) > code {
-  padding: var(--space-1) var(--space-2);
-  background: var(--color-grey-100);
-  border-radius: var(--radius-sm);
+  padding: var(--neuwo-space-1) var(--neuwo-space-2);
+  background: var(--neuwo-color-grey-100);
+  border-radius: var(--neuwo-radius-sm);
   overflow-wrap: anywhere;
 }
 
 /* Scrolls rather than wraps: wrapping mid-token would misrepresent the code. */
 .markdown pre {
-  margin: 0 0 var(--space-6);
-  padding: var(--space-4);
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg);
-  line-height: var(--line-height-body);
+  margin: 0 0 var(--neuwo-space-6);
+  padding: var(--neuwo-space-4);
+  background: var(--neuwo-glass-bg);
+  border: 1px solid var(--neuwo-glass-border);
+  border-radius: var(--neuwo-radius-lg);
+  line-height: var(--neuwo-line-height-body);
   overflow-x: auto;
   tab-size: 2;
 }
 
 /* A scrollable panel is reachable by keyboard, so it shows where focus landed. */
 .markdown pre:focus-visible {
-  border-color: var(--color-blue);
+  border-color: var(--neuwo-color-blue);
 }
 
 /* A panel wrapped for copying keeps its top-right corner clear, so a long first
@@ -129,7 +129,7 @@
    tree for slotted content. So the only place that can widen this padding is the
    document, which is this sheet. */
 .markdown neuwo-copy pre {
-  padding-right: calc(var(--space-8) + var(--space-3) * 2);
+  padding-right: calc(var(--neuwo-space-8) + var(--neuwo-space-3) * 2);
 }
 
 /* --- Tables --- */
@@ -140,21 +140,21 @@
 .markdown table {
   width: 100%;
   border-collapse: collapse;
-  font-size: var(--font-size-sm);
+  font-size: var(--neuwo-font-size-sm);
 }
 
 .markdown th,
 .markdown td {
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--glass-border);
+  padding: var(--neuwo-space-2) var(--neuwo-space-3);
+  border-bottom: 1px solid var(--neuwo-glass-border);
   text-align: left;
   vertical-align: top;
 }
 
 .markdown th {
-  color: var(--color-heading);
-  font-family: var(--font-heading);
-  font-weight: var(--font-weight-semibold);
+  color: var(--neuwo-color-heading);
+  font-family: var(--neuwo-font-heading);
+  font-weight: var(--neuwo-font-weight-semibold);
 }
 
 /* --- Callout ---
@@ -176,15 +176,15 @@
   /* Contains the children's margins, so the padding is not collapsed through
      by a leading heading or a trailing paragraph. */
   display: flow-root;
-  margin: var(--space-6) 0;
-  padding: var(--space-4) var(--space-5);
-  color: var(--color-text);
+  margin: var(--neuwo-space-6) 0;
+  padding: var(--neuwo-space-4) var(--neuwo-space-5);
+  color: var(--neuwo-color-text);
   /* The one knob, read with a fallback rather than declared: a declaration here
      would beat the value a consumer inherits in from `:root` or a wrapper. The
      modifiers below declare it, so they still win on specificity. */
-  background: color-mix(in srgb, var(--callout-accent, var(--color-blue)) 8%, transparent);
-  border-left: 3px solid var(--callout-accent, var(--color-blue));
-  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--neuwo-callout-accent, var(--neuwo-color-blue)) 8%, transparent);
+  border-left: 3px solid var(--neuwo-callout-accent, var(--neuwo-color-blue));
+  border-radius: var(--neuwo-radius-md);
 }
 
 /* The block's own padding is the bottom gap; the last child's margin would
@@ -197,27 +197,27 @@
    document outline: a callout is an aside, not a section. */
 .callout__title {
   display: block;
-  margin-bottom: var(--space-2);
-  color: var(--callout-accent, var(--color-blue));
-  font-family: var(--font-heading);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--neuwo-space-2);
+  color: var(--neuwo-callout-accent, var(--neuwo-color-blue));
+  font-family: var(--neuwo-font-heading);
+  font-size: var(--neuwo-font-size-base);
+  font-weight: var(--neuwo-font-weight-semibold);
 }
 
 /* Three intents, because the brand has three semantic hues. There is
    deliberately no `warning`: no amber exists in the tokens, the frozen reference
    or the design system, and inventing one is a brand decision rather than a
-   recipe decision. Until it exists, a consumer sets `--callout-accent` on its
+   recipe decision. Until it exists, a consumer sets `--neuwo-callout-accent` on its
    own class. */
 
 .callout--info {
-  --callout-accent: var(--color-blue);
+  --neuwo-callout-accent: var(--neuwo-color-blue);
 }
 
 .callout--tip {
-  --callout-accent: var(--color-green);
+  --neuwo-callout-accent: var(--neuwo-color-green);
 }
 
 .callout--danger {
-  --callout-accent: var(--color-red);
+  --neuwo-callout-accent: var(--neuwo-color-red);
 }

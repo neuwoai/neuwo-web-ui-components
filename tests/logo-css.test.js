@@ -22,7 +22,7 @@ describe("logo.css recipe", () => {
   });
 
   it("sizes the portable class by height alone, so the aspect ratio holds", () => {
-    expect(css).toMatch(/\.logo \{[^}]*height:\s*var\(--logo-height, 1\.75rem\)/);
+    expect(css).toMatch(/\.logo \{[^}]*height:\s*var\(--neuwo-logo-height, 1\.75rem\)/);
     expect(css).toMatch(/\.logo \{[^}]*width:\s*auto/);
     expect(css).toMatch(/\.logo \{[^}]*display:\s*block/);
   });

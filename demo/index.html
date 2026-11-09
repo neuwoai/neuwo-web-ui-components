@@ -19,7 +19,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        z-index: var(--z-background);
+        z-index: var(--neuwo-z-background);
         overflow: hidden;
       }
 
@@ -116,7 +116,7 @@
       .copy-chip {
         display: inline-block;
         padding-right: 2rem;
-        --copy-inset: 0.125rem;
+        --neuwo-copy-inset: 0.125rem;
       }
       /* Hostile rule: if Shadow DOM leaked, the copy controls would turn hot pink
          and square off. They must NOT. */
@@ -130,7 +130,7 @@
          is a consumer supplying one through the recipe's own knob: a raw colour
          here on purpose, since the point is that the value comes from outside. */
       .callout--warning-demo {
-        --callout-accent: #d99a2b;
+        --neuwo-callout-accent: #d99a2b;
       }
 
       /* Consumer-owned nav structure: foundation/navigation.css ships the two link
@@ -171,7 +171,7 @@
       }
       /* Re-theme via a token that inherits through the shadow boundary. */
       .reskin {
-        --color-blue: darkslateblue;
+        --neuwo-color-blue: darkslateblue;
       }
       h2 {
         margin-top: 2.5rem;
@@ -334,7 +334,7 @@
     <h2>Range slider (the component fills the track, the page formats the value)</h2>
     <p>
       The filled portion left of the thumb is the component's job: it writes
-      <code>--range-fill</code> on every value change, which is the only way WebKit
+      <code>--neuwo-range-fill</code> on every value change, which is the only way WebKit
       can paint it. The page keeps what only the page knows, the formatting of the
       readout, and no longer carries any slider plumbing.
     </p>
@@ -400,7 +400,7 @@
         <output id="combobox-out"></output>
       </div>
     </form>
-    <div style="overflow: hidden; max-width: 22rem; padding: var(--space-2); border: 1px dashed var(--glass-border); border-radius: 0.5rem; margin-top: 1.5rem">
+    <div style="overflow: hidden; max-width: 22rem; padding: var(--neuwo-space-2); border: 1px dashed var(--neuwo-glass-border); border-radius: 0.5rem; margin-top: 1.5rem">
       <p style="margin: 0 0 0.5rem">This box has <code>overflow: hidden</code>; the dropdown still escapes it via the top layer.</p>
       <neuwo-combobox label="Clipped container" placeholder="Open me" style="width: 14rem">
         <option value="1">Option one</option>
@@ -563,7 +563,7 @@
         <p>
           There is no <code>warning</code> intent: the brand has no amber, and inventing
           one is a brand decision. Until it exists a consumer sets
-          <code>--callout-accent</code> on its own class, which is what this block does.
+          <code>--neuwo-callout-accent</code> on its own class, which is what this block does.
         </p>
       </div>
     </div>
@@ -603,13 +603,13 @@
       This one shows the honest limit of a corner overlay: the control assumes a panel with
       room to spare, and a chip has none, so it would sit on top of the identifier. The
       library owns no box, so the clearance is the consumer's, and
-      <code>--copy-inset</code> pulls the control in to match the smaller target:
+      <code>--neuwo-copy-inset</code> pulls the control in to match the smaller target:
     </p>
     <div class="markdown">
       <pre><code>.copy-chip {
   display: inline-block;
   padding-right: 2rem;
-  --copy-inset: 0.125rem;
+  --neuwo-copy-inset: 0.125rem;
 }</code></pre>
     </div>
     <script>
@@ -649,7 +649,7 @@
       <neuwo-toggle pulse checked>Already on, so no ring</neuwo-toggle>
       <neuwo-toggle pulse disabled>Disabled</neuwo-toggle>
       <!-- The ring's two knobs inherit through the shadow boundary. -->
-      <neuwo-toggle pulse style="--toggle-pulse-spread: 20px; --toggle-pulse-alpha: 60%">Louder ring</neuwo-toggle>
+      <neuwo-toggle pulse style="--neuwo-toggle-pulse-spread: 20px; --neuwo-toggle-pulse-alpha: 60%">Louder ring</neuwo-toggle>
     </div>
 
     <h2>Selection: radio group</h2>
@@ -956,7 +956,7 @@
         layout="row"
         role="dialog"
         aria-label="Cookies"
-        style="--notice-max-width: 48rem"
+        style="--neuwo-notice-max-width: 48rem"
       >
         <span slot="title">We use cookies</span>
         We use analytics cookies to understand how the site is used.
@@ -968,7 +968,7 @@
       <!-- Token re-theming reaches the card like every other component. -->
       <neuwo-notice class="reskin" position="static" dismissible>
         <span slot="title">Re-themed notice</span>
-        Same recipe, a different <code>--color-blue</code> on the wrapper.
+        Same recipe, a different <code>--neuwo-color-blue</code> on the wrapper.
         <neuwo-button slot="actions" variant="outline" size="sm">Undo</neuwo-button>
       </neuwo-notice>
     </div>
@@ -1028,12 +1028,12 @@
 
     <h2>Logo sizing and linking</h2>
     <div class="row">
-      <neuwo-logo style="--logo-height: 1rem"></neuwo-logo>
+      <neuwo-logo style="--neuwo-logo-height: 1rem"></neuwo-logo>
       <neuwo-logo></neuwo-logo>
-      <neuwo-logo style="--logo-height: 3rem"></neuwo-logo>
+      <neuwo-logo style="--neuwo-logo-height: 3rem"></neuwo-logo>
     </div>
     <p>
-      Height only, via <code>--logo-height</code>; the width follows the aspect ratio.
+      Height only, via <code>--neuwo-logo-height</code>; the width follows the aspect ratio.
       Below, a link that already says Neuwo, so the logo inside it is marked decorative
       with <code>label=""</code> and the name is announced once:
     </p>
@@ -1059,6 +1059,6 @@
     <p class="eyebrow">Kicker label</p>
 
     <!-- Transient field-error flash from the host page (supported escape hatch):
-         neuwo-input[data-flash]::part(input) { border-color: var(--color-red); } -->
+         neuwo-input[data-flash]::part(input) { border-color: var(--neuwo-color-red); } -->
   </body>
 </html>

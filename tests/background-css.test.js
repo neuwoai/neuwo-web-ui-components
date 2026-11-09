@@ -11,11 +11,11 @@ const tokensCss = readFileSync(join(__dirname, "../src/foundation/tokens.css"), 
 
 describe("page surface stylesheet", () => {
   it("styles the page body from tokens", () => {
-    expect(css).toMatch(/\.body \{[^}]*font-family:\s*var\(--font-text\)/);
-    expect(css).toMatch(/\.body \{[^}]*font-size:\s*var\(--font-size-base\)/);
-    expect(css).toMatch(/\.body \{[^}]*line-height:\s*var\(--line-height-body\)/);
-    expect(css).toMatch(/\.body \{[^}]*color:\s*var\(--color-text\)/);
-    expect(css).toMatch(/\.body \{[^}]*background-color:\s*var\(--color-body-bg\)/);
+    expect(css).toMatch(/\.body \{[^}]*font-family:\s*var\(--neuwo-font-text\)/);
+    expect(css).toMatch(/\.body \{[^}]*font-size:\s*var\(--neuwo-font-size-base\)/);
+    expect(css).toMatch(/\.body \{[^}]*line-height:\s*var\(--neuwo-line-height-body\)/);
+    expect(css).toMatch(/\.body \{[^}]*color:\s*var\(--neuwo-color-text\)/);
+    expect(css).toMatch(/\.body \{[^}]*background-color:\s*var\(--neuwo-color-body-bg\)/);
     expect(css).toMatch(/\.body \{[^}]*-webkit-font-smoothing:\s*antialiased/);
     expect(css).toMatch(/\.body \{[^}]*-moz-osx-font-smoothing:\s*grayscale/);
   });
@@ -34,10 +34,10 @@ describe("page surface stylesheet", () => {
 
   it("tints each blob at the opacity the brand uses, blue then green alternating", () => {
     const gradient = css.slice(css.indexOf(".background__gradient"));
-    expect(gradient).toContain("var(--tint-blue-10)");
-    expect(gradient).toContain("color-mix(in srgb, var(--color-green) 7%, transparent)");
-    expect(gradient).toContain("color-mix(in srgb, var(--color-blue) 6%, transparent)");
-    expect(gradient).toContain("var(--tint-green-5)");
+    expect(gradient).toContain("var(--neuwo-tint-blue-10)");
+    expect(gradient).toContain("color-mix(in srgb, var(--neuwo-color-green) 7%, transparent)");
+    expect(gradient).toContain("color-mix(in srgb, var(--neuwo-color-blue) 6%, transparent)");
+    expect(gradient).toContain("var(--neuwo-tint-green-5)");
   });
 
   it("carries no raw colour literal", () => {
@@ -56,15 +56,15 @@ describe("page surface stylesheet", () => {
 
   it("only uses tokens that tokens.css defines", () => {
     for (const token of [
-      "--font-text",
-      "--font-size-base",
-      "--line-height-body",
-      "--color-text",
-      "--color-body-bg",
-      "--tint-blue-10",
-      "--tint-green-5",
-      "--color-blue",
-      "--color-green",
+      "--neuwo-font-text",
+      "--neuwo-font-size-base",
+      "--neuwo-line-height-body",
+      "--neuwo-color-text",
+      "--neuwo-color-body-bg",
+      "--neuwo-tint-blue-10",
+      "--neuwo-tint-green-5",
+      "--neuwo-color-blue",
+      "--neuwo-color-green",
     ]) {
       expect(css).toContain(`var(${token})`);
       expect(tokensCss).toContain(`${token}:`);

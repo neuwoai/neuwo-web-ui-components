@@ -49,31 +49,31 @@ describe("markdown stylesheet", () => {
 
   it("sets lists on the body rhythm and closes a nested list flush", () => {
     const lists = css.match(/\.markdown ul,\n\.markdown ol \{[^}]*\}/)[0];
-    expect(lists).toMatch(/color:\s*var\(--color-text\)/);
-    expect(lists).toMatch(/line-height:\s*var\(--line-height-body\)/);
-    expect(lists).toMatch(/padding-left:\s*var\(--space-6\)/);
+    expect(lists).toMatch(/color:\s*var\(--neuwo-color-text\)/);
+    expect(lists).toMatch(/line-height:\s*var\(--neuwo-line-height-body\)/);
+    expect(lists).toMatch(/padding-left:\s*var\(--neuwo-space-6\)/);
     const nested = css.match(/\.markdown li > ul,\n\.markdown li > ol \{[^}]*\}/)[0];
-    expect(nested).toMatch(/margin-top:\s*var\(--space-2\)/);
+    expect(nested).toMatch(/margin-top:\s*var\(--neuwo-space-2\)/);
     expect(nested).toMatch(/margin-bottom:\s*0/);
   });
 
   it("lifts bold text to the heading ink at semibold", () => {
     const rule = css.match(/\.markdown strong \{[^}]*\}/)[0];
-    expect(rule).toMatch(/color:\s*var\(--color-heading\)/);
-    expect(rule).toMatch(/font-weight:\s*var\(--font-weight-semibold\)/);
+    expect(rule).toMatch(/color:\s*var\(--neuwo-color-heading\)/);
+    expect(rule).toMatch(/font-weight:\s*var\(--neuwo-font-weight-semibold\)/);
   });
 
   it("marks a quote with the brand blue edge and muted italic ink", () => {
     const rule = css.match(/\.markdown blockquote \{[^}]*\}/)[0];
-    expect(rule).toMatch(/border-left:\s*3px solid var\(--color-blue\)/);
-    expect(rule).toMatch(/color:\s*var\(--color-text-muted\)/);
+    expect(rule).toMatch(/border-left:\s*3px solid var\(--neuwo-color-blue\)/);
+    expect(rule).toMatch(/color:\s*var\(--neuwo-color-text-muted\)/);
     expect(rule).toMatch(/font-style:\s*italic/);
   });
 
   it("draws the rule on the glass border", () => {
     const rule = css.match(/\.markdown hr \{[^}]*\}/)[0];
     expect(rule).toMatch(/border:\s*none/);
-    expect(rule).toMatch(/border-top:\s*1px solid var\(--glass-border\)/);
+    expect(rule).toMatch(/border-top:\s*1px solid var\(--neuwo-glass-border\)/);
   });
 
   it("blocks a standalone image but leaves an inline one alone", () => {
@@ -82,28 +82,28 @@ describe("markdown stylesheet", () => {
     expect(img).toMatch(/height:\s*auto/);
     const standalone = css.match(/\.markdown p > img:only-child \{[^}]*\}/)[0];
     expect(standalone).toMatch(/display:\s*block/);
-    expect(standalone).toMatch(/border-radius:\s*var\(--radius-lg\)/);
+    expect(standalone).toMatch(/border-radius:\s*var\(--neuwo-radius-lg\)/);
   });
 
   it("sets code in the mono token and confines the inline chrome to inline code", () => {
     const code = css.match(/\.markdown code \{[^}]*\}/)[0];
-    expect(code).toMatch(/font-family:\s*var\(--font-mono\)/);
-    expect(code).toMatch(/font-size:\s*var\(--font-size-sm\)/);
+    expect(code).toMatch(/font-family:\s*var\(--neuwo-font-mono\)/);
+    expect(code).toMatch(/font-size:\s*var\(--neuwo-font-size-sm\)/);
     // The chrome must not double up on a sample already sitting on the panel.
     const inline = css.match(/\.markdown :not\(pre\) > code \{[^}]*\}/)[0];
-    expect(inline).toMatch(/background:\s*var\(--color-grey-100\)/);
-    expect(inline).toMatch(/border-radius:\s*var\(--radius-sm\)/);
+    expect(inline).toMatch(/background:\s*var\(--neuwo-color-grey-100\)/);
+    expect(inline).toMatch(/border-radius:\s*var\(--neuwo-radius-sm\)/);
     // `anywhere` counts towards min-content width, so the box fits its column.
     expect(inline).toMatch(/overflow-wrap:\s*anywhere/);
   });
 
   it("scrolls a code panel rather than wrapping it, and shows its focus", () => {
     const pre = css.match(/\.markdown pre \{[^}]*\}/)[0];
-    expect(pre).toMatch(/background:\s*var\(--glass-bg\)/);
+    expect(pre).toMatch(/background:\s*var\(--neuwo-glass-bg\)/);
     expect(pre).toMatch(/overflow-x:\s*auto/);
     expect(pre).toMatch(/tab-size:\s*2/);
     expect(pre).not.toMatch(/overflow-wrap/);
-    expect(css).toMatch(/\.markdown pre:focus-visible \{[^}]*border-color:\s*var\(--color-blue\)/);
+    expect(css).toMatch(/\.markdown pre:focus-visible \{[^}]*border-color:\s*var\(--neuwo-color-blue\)/);
   });
 
   it("rules the table on the glass border and sets its head in the heading face", () => {
@@ -111,11 +111,11 @@ describe("markdown stylesheet", () => {
     expect(table).toMatch(/width:\s*100%/);
     expect(table).toMatch(/border-collapse:\s*collapse/);
     const cells = css.match(/\.markdown th,\n\.markdown td \{[^}]*\}/)[0];
-    expect(cells).toMatch(/border-bottom:\s*1px solid var\(--glass-border\)/);
+    expect(cells).toMatch(/border-bottom:\s*1px solid var\(--neuwo-glass-border\)/);
     expect(cells).toMatch(/vertical-align:\s*top/);
     const head = css.match(/\.markdown th \{[^}]*\}/)[0];
-    expect(head).toMatch(/font-family:\s*var\(--font-heading\)/);
-    expect(head).toMatch(/color:\s*var\(--color-heading\)/);
+    expect(head).toMatch(/font-family:\s*var\(--neuwo-font-heading\)/);
+    expect(head).toMatch(/color:\s*var\(--neuwo-color-heading\)/);
   });
 
   it("carries no !important, so a consumer can override any rule", () => {
@@ -129,31 +129,31 @@ describe("markdown stylesheet", () => {
 
   it("only uses tokens that tokens.css defines", () => {
     for (const token of [
-      "--space-1",
-      "--space-2",
-      "--space-3",
-      "--space-4",
-      "--space-5",
-      "--space-6",
-      "--space-8",
-      "--radius-sm",
-      "--radius-md",
-      "--radius-lg",
-      "--color-text",
-      "--color-text-muted",
-      "--color-heading",
-      "--color-blue",
-      "--color-green",
-      "--color-red",
-      "--color-grey-100",
-      "--glass-bg",
-      "--glass-border",
-      "--font-mono",
-      "--font-heading",
-      "--font-size-sm",
-      "--font-size-base",
-      "--font-weight-semibold",
-      "--line-height-body",
+      "--neuwo-space-1",
+      "--neuwo-space-2",
+      "--neuwo-space-3",
+      "--neuwo-space-4",
+      "--neuwo-space-5",
+      "--neuwo-space-6",
+      "--neuwo-space-8",
+      "--neuwo-radius-sm",
+      "--neuwo-radius-md",
+      "--neuwo-radius-lg",
+      "--neuwo-color-text",
+      "--neuwo-color-text-muted",
+      "--neuwo-color-heading",
+      "--neuwo-color-blue",
+      "--neuwo-color-green",
+      "--neuwo-color-red",
+      "--neuwo-color-grey-100",
+      "--neuwo-glass-bg",
+      "--neuwo-glass-border",
+      "--neuwo-font-mono",
+      "--neuwo-font-heading",
+      "--neuwo-font-size-sm",
+      "--neuwo-font-size-base",
+      "--neuwo-font-weight-semibold",
+      "--neuwo-line-height-body",
     ]) {
       expect(css).toContain(`var(${token})`);
       expect(tokensCss).toContain(`${token}:`);
@@ -167,7 +167,7 @@ describe("callout recipe", () => {
   it("contains its children's margins so the padding holds", () => {
     const rule = css.match(/(?:^|\n)\.callout \{[^}]*\}/)[0];
     expect(rule).toMatch(/display:\s*flow-root/);
-    expect(rule).toMatch(/padding:\s*var\(--space-4\) var\(--space-5\)/);
+    expect(rule).toMatch(/padding:\s*var\(--neuwo-space-4\) var\(--neuwo-space-5\)/);
     // The block's own padding is the bottom gap; the last child's would double it.
     expect(css).toMatch(/\.callout > :last-child \{[^}]*margin-bottom:\s*0/);
   });
@@ -182,25 +182,25 @@ describe("callout recipe", () => {
   // here would beat the value a consumer inherits in from :root or a wrapper.
   it("reads the accent as a knob rather than declaring it on the block", () => {
     const rule = css.match(/(?:^|\n)\.callout \{[^}]*\}/)[0];
-    expect(rule).not.toMatch(/--callout-accent:/);
-    expect(rule).toMatch(/border-left:\s*3px solid var\(--callout-accent, var\(--color-blue\)\)/);
+    expect(rule).not.toMatch(/--neuwo-callout-accent:/);
+    expect(rule).toMatch(/border-left:\s*3px solid var\(--neuwo-callout-accent, var\(--neuwo-color-blue\)\)/);
     expect(rule).toMatch(
-      /background:\s*color-mix\(in srgb, var\(--callout-accent, var\(--color-blue\)\) 8%, transparent\)/
+      /background:\s*color-mix\(in srgb, var\(--neuwo-callout-accent, var\(--neuwo-color-blue\)\) 8%, transparent\)/
     );
   });
 
   it("labels the block with a span-level title in the heading face", () => {
     const rule = css.match(/\.callout__title \{[^}]*\}/)[0];
     expect(rule).toMatch(/display:\s*block/);
-    expect(rule).toMatch(/color:\s*var\(--callout-accent, var\(--color-blue\)\)/);
-    expect(rule).toMatch(/font-family:\s*var\(--font-heading\)/);
-    expect(rule).toMatch(/font-weight:\s*var\(--font-weight-semibold\)/);
+    expect(rule).toMatch(/color:\s*var\(--neuwo-callout-accent, var\(--neuwo-color-blue\)\)/);
+    expect(rule).toMatch(/font-family:\s*var\(--neuwo-font-heading\)/);
+    expect(rule).toMatch(/font-weight:\s*var\(--neuwo-font-weight-semibold\)/);
   });
 
   it("drives all three intents through the one knob", () => {
-    expect(css).toMatch(/\.callout--info \{\s*--callout-accent:\s*var\(--color-blue\);/);
-    expect(css).toMatch(/\.callout--tip \{\s*--callout-accent:\s*var\(--color-green\);/);
-    expect(css).toMatch(/\.callout--danger \{\s*--callout-accent:\s*var\(--color-red\);/);
+    expect(css).toMatch(/\.callout--info \{\s*--neuwo-callout-accent:\s*var\(--neuwo-color-blue\);/);
+    expect(css).toMatch(/\.callout--tip \{\s*--neuwo-callout-accent:\s*var\(--neuwo-color-green\);/);
+    expect(css).toMatch(/\.callout--danger \{\s*--neuwo-callout-accent:\s*var\(--neuwo-color-red\);/);
     // Each modifier sets the knob and nothing else, so intent stays one axis.
     for (const intent of ["info", "tip", "danger"]) {
       const body = css.match(new RegExp(`\\.callout--${intent} \\{([^}]*)\\}`))[1];
@@ -210,9 +210,9 @@ describe("callout recipe", () => {
   });
 
   // The brand has no amber, so a warning modifier would have to invent one.
-  // A consumer needing it sets --callout-accent on its own class instead.
+  // A consumer needing it sets --neuwo-callout-accent on its own class instead.
   it("ships no warning intent, because no warning colour exists", () => {
     expect(declarations).not.toContain(".callout--warning");
-    expect(tokensCss).not.toMatch(/--color-(amber|orange|yellow|warning)\s*:/);
+    expect(tokensCss).not.toMatch(/--neuwo-color-(amber|orange|yellow|warning)\s*:/);
   });
 });

@@ -4,7 +4,7 @@ import rangeCss from "./range.css?raw";
 
 /**
  * Slider over a numeric range. Owns the filled-track sync that WebKit cannot do
- * on its own: every value change writes `--range-fill` onto the control, so the
+ * on its own: every value change writes `--neuwo-range-fill` onto the control, so the
  * portion left of the thumb reads as filled in both engines and a consumer never
  * writes that plumbing again.
  *
@@ -18,9 +18,9 @@ import rangeCss from "./range.css?raw";
  * @attr step - step granularity (default 1).
  * @attr aria-valuetext - human reading of the current value ("2.4M page views"); forwarded to the control, and observed so a consumer can rewrite it as the slider moves.
  * @csspart input - the native range control.
- * @cssprop --range-track-height - thickness of the track (default 0.375rem).
- * @cssprop --range-thumb-size - diameter of the thumb (default 0.875rem).
- * @cssprop --range-fill - filled portion of the track; written by the component on every value change, not a consumer knob.
+ * @cssprop --neuwo-range-track-height - thickness of the track (default 0.375rem).
+ * @cssprop --neuwo-range-thumb-size - diameter of the thumb (default 0.875rem).
+ * @cssprop --neuwo-range-fill - filled portion of the track; written by the component on every value change, not a consumer knob.
  */
 export class NeuwoRange extends NeuwoFieldElement {
   static formAssociated = true;
@@ -84,7 +84,7 @@ export class NeuwoRange extends NeuwoFieldElement {
       // A browser clamps the value to the bounds, other environments may not.
       percent = Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
     }
-    control.style.setProperty("--range-fill", `${percent}%`);
+    control.style.setProperty("--neuwo-range-fill", `${percent}%`);
   }
 }
 

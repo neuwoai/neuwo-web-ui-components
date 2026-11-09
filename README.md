@@ -66,7 +66,7 @@ Design tokens are adopted onto the document and inherit through every shadow bou
 re-theme by setting tokens on `:root`:
 
 ```css
-:root { --color-blue: oklch(77% 0.18 132); }
+:root { --neuwo-color-blue: oklch(77% 0.18 132); }
 ```
 
 Opt into Neuwo typography for native headings and text by linking the stylesheet:
@@ -87,7 +87,7 @@ Markdown surface, in that order.
 
 ### Links
 
-The sheet styles bare `<a>` in prose: brand blue, underlined, deepening to `--color-blue-dark`
+The sheet styles bare `<a>` in prose: brand blue, underlined, deepening to `--neuwo-color-blue-dark`
 on hover. Two classes ride along with it.
 
 ```html
@@ -112,8 +112,8 @@ would have prevented.
 `foundation/background.css` carries the two visuals a Neuwo page sits on, as two independent
 classes:
 
-- **`.body`** is the base ink and paper: the text font, size and line height, `--color-text`,
-  `--color-body-bg`, and the two font-smoothing hints. Put it on `<body>`.
+- **`.body`** is the base ink and paper: the text font, size and line height, `--neuwo-color-text`,
+  `--neuwo-color-body-bg`, and the two font-smoothing hints. Put it on `<body>`.
 - **`.background__gradient`** is the brand's ambient wash: four translucent blue and green
   blobs. It reads correctly only over a dark surface, so pair it with `.body`.
 
@@ -135,7 +135,7 @@ main website uses, the consumer supplies the frame:
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: var(--z-background);
+  z-index: var(--neuwo-z-background);
   overflow: hidden;
 }
 
@@ -145,7 +145,7 @@ main website uses, the consumer supplies the frame:
 }
 ```
 
-`--z-background` is a library token, so the stacking stays consistent with the rest of the
+`--neuwo-z-background` is a library token, so the stacking stays consistent with the rest of the
 system. Both demo pages are wired exactly this way. The same gradient class also works on an
 ordinary sized element, for a single washed panel rather than a whole page.
 
@@ -217,13 +217,13 @@ which is the documented way to strip a summary's disclosure triangle. Restore it
 `display: list-item` (and `list-style-position: inside`, so the underline still spans the
 label) if you want the marker rather than your own chevron.
 
-One value is tunable per instance. `--nav-link-gutter` drives the horizontal padding and the
+One value is tunable per instance. `--neuwo-nav-link-gutter` drives the horizontal padding and the
 underline's endpoints together, so they cannot drift apart; set it once for a denser bar:
 
 ```css
 @media (min-width: 64rem) {
   .site-nav .nav-link {
-    --nav-link-gutter: var(--space-3);
+    --neuwo-nav-link-gutter: var(--neuwo-space-3);
   }
 }
 ```
@@ -276,7 +276,7 @@ which is yours to emit:
 .table-scroll { overflow-x: auto; }
 ```
 
-Code is set in `--font-mono`, a system stack (`ui-monospace`, then the developer faces most
+Code is set in `--neuwo-font-mono`, a system stack (`ui-monospace`, then the developer faces most
 likely installed). The brand ships no monospace face, so this is the one family token that is
 not a Neuwo font.
 
@@ -299,17 +299,17 @@ make you link two files and get their order right.
   enters the document outline; it is an aside, not a section.
 - **`.callout--info`**, **`.callout--tip`** and **`.callout--danger`** set the intent.
 
-Intent is one property. Each modifier declares `--callout-accent` and nothing else, and the block
+Intent is one property. Each modifier declares `--neuwo-callout-accent` and nothing else, and the block
 reads that knob for both its edge and its tint. So a fourth intent needs no library change:
 
 ```css
 .callout--warning {
-  --callout-accent: #d99a2b;
+  --neuwo-callout-accent: #d99a2b;
 }
 ```
 
 That example is also the honest gap. **There is no `warning` intent**, because the brand has no
-amber: `--color-blue`, `--color-green` and `--color-red` are the only semantic hues in the system,
+amber: `--neuwo-color-blue`, `--neuwo-color-green` and `--neuwo-color-red` are the only semantic hues in the system,
 and adding a fourth is a brand decision rather than a recipe one. Until one exists, the knob above
 is the supported workaround.
 
@@ -366,13 +366,13 @@ Three details worth knowing:
 - **The corner overlay assumes a panel with room.** `.markdown neuwo-copy pre` widens the panel's
   right padding so a long first line scrolls rather than running underneath. Around something
   small, a chip say, give the wrapper its own clearance and pull the control in with
-  `--copy-inset`; the library owns no box:
+  `--neuwo-copy-inset`; the library owns no box:
 
 ```css
 .deal-id-copy {
   display: inline-block;
   padding-right: 2rem;
-  --copy-inset: 0.125rem;
+  --neuwo-copy-inset: 0.125rem;
 }
 ```
 
@@ -523,8 +523,8 @@ component:
 
   ```css
   .api-field[data-flash]::part(input) {
-    border-color: var(--color-red);
-    box-shadow: var(--shadow-danger);
+    border-color: var(--neuwo-color-red);
+    box-shadow: var(--neuwo-shadow-danger);
   }
   ```
 
@@ -665,12 +665,12 @@ the background it belongs on. It inlines the SVG, so a logo costs no request.
 | `bg-light` | blue | near-black | light backgrounds |
 | `bg-colour` | white | near-black | brand-coloured backgrounds, where blue would vanish |
 
-Size it with `--logo-height` (default `1.75rem`); the width follows the aspect ratio. The
+Size it with `--neuwo-logo-height` (default `1.75rem`); the width follows the aspect ratio. The
 accessible name defaults to `Neuwo`, and `label=""` marks the logo decorative instead, for a
 link or heading that already names the brand:
 
 ```html
-<a href="/" aria-label="Neuwo home" style="--logo-height: 2.5rem">
+<a href="/" aria-label="Neuwo home" style="--neuwo-logo-height: 2.5rem">
   <neuwo-logo label=""></neuwo-logo>
 </a>
 ```

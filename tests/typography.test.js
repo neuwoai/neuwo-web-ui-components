@@ -13,33 +13,33 @@ const tokensCss = readFileSync(join(__dirname, "../src/foundation/tokens.css"), 
 describe("typography stylesheet", () => {
   it("styles headings and body text from tokens", () => {
     expect(typographyCss).toContain("h1");
-    expect(typographyCss).toContain("var(--font-heading)");
-    expect(typographyCss).toContain("var(--font-size-6xl)");
-    expect(typographyCss).toContain("var(--font-weight-extrabold)");
-    expect(typographyCss).toContain("var(--line-height-display)");
-    expect(typographyCss).toContain("var(--color-text)");
+    expect(typographyCss).toContain("var(--neuwo-font-heading)");
+    expect(typographyCss).toContain("var(--neuwo-font-size-6xl)");
+    expect(typographyCss).toContain("var(--neuwo-font-weight-extrabold)");
+    expect(typographyCss).toContain("var(--neuwo-line-height-display)");
+    expect(typographyCss).toContain("var(--neuwo-color-text)");
   });
 
   it("leaves h1 at normal tracking, since the display value is hero-only", () => {
-    // --letter-spacing-display is tuned for a hero title, not for whatever h1
+    // --neuwo-letter-spacing-display is tuned for a hero title, not for whatever h1
     // a page happens to have, so the sheet must not apply it automatically.
     const [h1Rule] = typographyCss.match(/(?:^|\n)h1 \{[^}]*\}/);
-    expect(h1Rule).toContain("var(--font-size-6xl)");
+    expect(h1Rule).toContain("var(--neuwo-font-size-6xl)");
     expect(h1Rule).not.toContain("letter-spacing");
-    expect(typographyCss).not.toContain("var(--letter-spacing-display)");
+    expect(typographyCss).not.toContain("var(--neuwo-letter-spacing-display)");
   });
 
   it("only uses typography tokens that tokens.css defines", () => {
     for (const token of [
-      "--font-weight-normal",
-      "--font-weight-bold",
-      "--font-weight-extrabold",
-      "--line-height-display",
-      "--line-height-heading",
-      "--line-height-subheading",
-      "--line-height-body",
-      "--letter-spacing-display",
-      "--letter-spacing-display-secondary",
+      "--neuwo-font-weight-normal",
+      "--neuwo-font-weight-bold",
+      "--neuwo-font-weight-extrabold",
+      "--neuwo-line-height-display",
+      "--neuwo-line-height-heading",
+      "--neuwo-line-height-subheading",
+      "--neuwo-line-height-body",
+      "--neuwo-letter-spacing-display",
+      "--neuwo-letter-spacing-display-secondary",
     ]) {
       expect(tokensCss).toContain(`${token}:`);
     }
@@ -51,10 +51,10 @@ describe("typography stylesheet", () => {
     expect(typographyCss).toMatch(/^a,\n\.link \{$/m);
     expect(typographyCss).toMatch(/^a:hover,\n\.link:hover \{$/m);
     expect(typographyCss).toMatch(
-      /\.link:hover \{[^}]*color:\s*var\(--color-blue-dark\)/
+      /\.link:hover \{[^}]*color:\s*var\(--neuwo-color-blue-dark\)/
     );
     expect(typographyCss).toMatch(
-      /\.link--hover-green:hover \{[^}]*color:\s*var\(--color-green\)/
+      /\.link--hover-green:hover \{[^}]*color:\s*var\(--neuwo-color-green\)/
     );
     // The green modifier outranks a:hover on specificity, so it must not need
     // !important, which a consumer could then not override at all.
@@ -63,7 +63,7 @@ describe("typography stylesheet", () => {
 
   it("ships the eyebrow utility class with the kicker type recipe", () => {
     expect(typographyCss).toContain(".eyebrow");
-    expect(typographyCss).toContain("var(--font-heading)");
+    expect(typographyCss).toContain("var(--neuwo-font-heading)");
     expect(typographyCss).toMatch(/letter-spacing:\s*0\.08em/);
     expect(typographyCss).toContain("text-transform: uppercase");
   });

@@ -24,8 +24,8 @@ import badgeCss from "./badge.css?raw";
  * @attr {boolean} glow - neon bloom keyed to the variant colour; composes with any variant and motion.
  * @slot - the label content.
  * @csspart badge - the pill element.
- * @cssprop --color-blue - brand accent for the blue variant; re-theme on :root.
- * @cssprop --color-green - brand accent for the green variant; re-theme on :root.
+ * @cssprop --neuwo-color-blue - brand accent for the blue variant; re-theme on :root.
+ * @cssprop --neuwo-color-green - brand accent for the green variant; re-theme on :root.
  */
 export class NeuwoBadge extends NeuwoElement {
   static styles = sheet(badgeCss);

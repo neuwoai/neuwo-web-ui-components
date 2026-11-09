@@ -13,21 +13,21 @@ describe("cta.css recipe", () => {
   it("styles both variants from tokens on the branded surface", () => {
     expect(css).toContain(".cta--banner");
     expect(css).toContain(".cta--spotlight");
-    expect(css).toContain("var(--color-surface-solid)");
-    expect(css).toContain("var(--radius-lg)");
-    expect(css).toContain("var(--radius-2xl)");
+    expect(css).toContain("var(--neuwo-color-surface-solid)");
+    expect(css).toContain("var(--neuwo-radius-lg)");
+    expect(css).toContain("var(--neuwo-radius-2xl)");
   });
 
   it("paints the headline accent with the brand gradient", () => {
     expect(css).toContain("::slotted([data-accent])");
-    expect(css).toContain("var(--gradient-accent)");
+    expect(css).toContain("var(--neuwo-gradient-accent)");
     expect(css).toContain("background-clip: text");
   });
 
   it("inlines the shimmer and the conic-border spin, reduced-motion-gated", () => {
     expect(css).toContain("@keyframes cta-scan");
     expect(css).toContain("@keyframes cta-spin");
-    expect(css).toContain("var(--cta-angle)");
+    expect(css).toContain("var(--neuwo-cta-angle)");
     expect(css).toContain("conic-gradient");
     expect(css).toContain("prefers-reduced-motion: reduce");
   });
@@ -70,8 +70,8 @@ describe("cta.css recipe", () => {
   it("scales the ring from the intensity axis without a second keyframe block", () => {
     expect(css).toContain(':host([pulse][intensity="s"])');
     expect(css).toContain(':host([pulse][intensity="l"])');
-    expect(css).toContain("var(--cta-pulse-spread)");
-    expect(css).toContain("var(--cta-pulse-alpha)");
+    expect(css).toContain("var(--neuwo-cta-pulse-spread)");
+    expect(css).toContain("var(--neuwo-cta-pulse-alpha)");
     expect(css.match(/@keyframes cta-button-pulse/g)).toHaveLength(1);
   });
 
@@ -84,16 +84,16 @@ describe("cta.css recipe", () => {
   it("caps the slotted field with a knob it never declares", () => {
     // Declaring the default on the element would beat the value a consumer
     // inherits in from :root or the host, which is the only way it gets set.
-    expect(css).toContain("max-width: var(--cta-field-width, 24rem)");
-    expect(css).not.toMatch(/--cta-field-width:/);
+    expect(css).toContain("max-width: var(--neuwo-cta-field-width, 24rem)");
+    expect(css).not.toMatch(/--neuwo-cta-field-width:/);
     expect(css).toMatch(/\.cta__field--empty\s*\{\s*display:\s*none/);
     expect(css).toMatch(/@media \(max-width: 40rem\)[\s\S]*\.cta__field[^}]*margin-inline: auto/);
   });
 
   it("tokenises the three status states and costs no space when empty", () => {
-    expect(css).toMatch(/\.cta__status\s*\{[^}]*color:\s*var\(--color-grey-400\)/);
-    expect(css).toMatch(/\.cta__status--success\s*\{[^}]*color:\s*var\(--color-green\)/);
-    expect(css).toMatch(/\.cta__status--error\s*\{[^}]*color:\s*var\(--color-red\)/);
+    expect(css).toMatch(/\.cta__status\s*\{[^}]*color:\s*var\(--neuwo-color-grey-400\)/);
+    expect(css).toMatch(/\.cta__status--success\s*\{[^}]*color:\s*var\(--neuwo-color-green\)/);
+    expect(css).toMatch(/\.cta__status--error\s*\{[^}]*color:\s*var\(--neuwo-color-red\)/);
     expect(css).toMatch(/\.cta__status:empty\s*\{[^}]*margin-top:\s*0/);
   });
 
