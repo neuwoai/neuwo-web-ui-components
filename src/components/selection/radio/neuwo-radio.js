@@ -1,4 +1,4 @@
-import { NeuwoElement } from "../../../core/base-element.js";
+import { NeuwoShadowElement } from "../../../core/shadow-element.js";
 import { formCheckSheet } from "../form-check.js";
 
 let uid = 0;
@@ -19,7 +19,7 @@ let uid = 0;
  */
 // tabbable / group-disabled are stored as fields so they apply even if the group
 // sets them before this element has rendered.
-export class NeuwoRadio extends NeuwoElement {
+export class NeuwoRadio extends NeuwoShadowElement {
   static styles = formCheckSheet;
   static observedAttributes = ["value", "disabled", "checked"];
 

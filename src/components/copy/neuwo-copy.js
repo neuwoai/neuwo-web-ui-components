@@ -1,4 +1,4 @@
-import { NeuwoElement } from "../../core/base-element.js";
+import { NeuwoShadowElement } from "../../core/shadow-element.js";
 import { sheet } from "../../core/sheet.js";
 import copyCss from "./copy.css?raw";
 
@@ -29,7 +29,7 @@ const RESET_DELAY = 1200;
  * @cssprop --neuwo-copy-inset - distance from the top and end edges (default `--neuwo-space-3`).
  * @fires {CustomEvent<{ text: string }>} copied - after the text reaches the clipboard; `detail.text` is what was written.
  */
-export class NeuwoCopy extends NeuwoElement {
+export class NeuwoCopy extends NeuwoShadowElement {
   static styles = sheet(copyCss);
   static observedAttributes = ["label", "copied-label", "failed-label"];
 

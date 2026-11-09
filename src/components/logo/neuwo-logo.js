@@ -1,4 +1,4 @@
-import { NeuwoElement } from "../../core/base-element.js";
+import { NeuwoShadowElement } from "../../core/shadow-element.js";
 import { sheet } from "../../core/sheet.js";
 import logoCss from "./logo.css?raw";
 import bgLight from "../../foundation/logos/neuwo-logo--bg-light.svg?raw";
@@ -36,7 +36,7 @@ const DEFAULT_LABEL = "Neuwo";
  * @csspart logo - the svg element.
  * @cssprop --neuwo-logo-height - rendered height; the width follows the aspect ratio (default 1.75rem).
  */
-export class NeuwoLogo extends NeuwoElement {
+export class NeuwoLogo extends NeuwoShadowElement {
   static styles = sheet(logoCss);
   static observedAttributes = ["variant", "label"];
 

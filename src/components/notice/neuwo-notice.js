@@ -1,4 +1,4 @@
-import { NeuwoElement } from "../../core/base-element.js";
+import { NeuwoShadowElement } from "../../core/shadow-element.js";
 import { sheet } from "../../core/sheet.js";
 import noticeCss from "./notice.css?raw";
 
@@ -66,7 +66,7 @@ function slot(name) {
  * @cssprop --neuwo-notice-max-width - how wide the card may grow (default 24rem).
  * @cssprop --neuwo-notice-gutter - air a fixed card keeps from the viewport edges (default var(--neuwo-space-4)).
  */
-export class NeuwoNotice extends NeuwoElement {
+export class NeuwoNotice extends NeuwoShadowElement {
   static styles = sheet(noticeCss);
   static observedAttributes = ["position", "layout", "dismissible", "dismiss-label"];
 

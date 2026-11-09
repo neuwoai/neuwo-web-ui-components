@@ -1,4 +1,4 @@
-import { NeuwoElement } from "../../core/base-element.js";
+import { NeuwoShadowElement } from "../../core/shadow-element.js";
 import { sheet } from "../../core/sheet.js";
 import dealIdCss from "./deal-id.css?raw";
 
@@ -14,7 +14,7 @@ import dealIdCss from "./deal-id.css?raw";
  * @slot - the identifier / value text.
  * @csspart value - the value box.
  */
-export class NeuwoDealId extends NeuwoElement {
+export class NeuwoDealId extends NeuwoShadowElement {
   static styles = sheet(dealIdCss);
   static observedAttributes = ["size"];
 

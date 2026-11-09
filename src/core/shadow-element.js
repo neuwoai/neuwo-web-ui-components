@@ -19,7 +19,7 @@ if (typeof document !== "undefined" && !document.adoptedStyleSheets.includes(tok
  *
  * @summary Base class for Neuwo custom elements.
  */
-export class NeuwoElement extends HTMLElement {
+export class NeuwoShadowElement extends HTMLElement {
   constructor() {
     super();
     const ctor = /** @type {any} */ (this.constructor);

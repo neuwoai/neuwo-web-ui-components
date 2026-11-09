@@ -1,4 +1,4 @@
-import { NeuwoElement } from "../../core/base-element.js";
+import { NeuwoShadowElement } from "../../core/shadow-element.js";
 import { sheet } from "../../core/sheet.js";
 import badgeCss from "./badge.css?raw";
 
@@ -27,7 +27,7 @@ import badgeCss from "./badge.css?raw";
  * @cssprop --neuwo-color-blue - brand accent for the blue variant; re-theme on :root.
  * @cssprop --neuwo-color-green - brand accent for the green variant; re-theme on :root.
  */
-export class NeuwoBadge extends NeuwoElement {
+export class NeuwoBadge extends NeuwoShadowElement {
   static styles = sheet(badgeCss);
   static observedAttributes = ["variant", "size", "borderless", "motion", "intensity", "glow"];
 

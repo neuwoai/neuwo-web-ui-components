@@ -1,4 +1,4 @@
-import { NeuwoElement } from "../../core/base-element.js";
+import { NeuwoShadowElement } from "../../core/shadow-element.js";
 import { sheet } from "../../core/sheet.js";
 import { syncError } from "../../core/control-error.js";
 import fieldCss from "./field.css?raw";
@@ -43,7 +43,7 @@ let uid = 0;
  * @csspart error - the reserved error message line.
  * @cssprop --neuwo-color-blue - brand accent (focus ring); re-theme by setting it on :root.
  */
-export class NeuwoFieldElement extends NeuwoElement {
+export class NeuwoFieldElement extends NeuwoShadowElement {
   static formAssociated = true;
   static delegatesFocus = true;
   /** @type {CSSStyleSheet | CSSStyleSheet[]} */

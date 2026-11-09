@@ -1,4 +1,4 @@
-import { NeuwoElement } from "../../core/base-element.js";
+import { NeuwoShadowElement } from "../../core/shadow-element.js";
 import { sheet } from "../../core/sheet.js";
 import buttonCss from "./button.css?raw";
 
@@ -27,7 +27,7 @@ import buttonCss from "./button.css?raw";
  * @csspart button - the rendered `<button>` or `<a>`.
  * @cssprop --neuwo-color-blue - brand accent; re-theme by setting it on :root.
  */
-export class NeuwoButton extends NeuwoElement {
+export class NeuwoButton extends NeuwoShadowElement {
   static formAssociated = true;
   static styles = sheet(buttonCss);
   static observedAttributes = [

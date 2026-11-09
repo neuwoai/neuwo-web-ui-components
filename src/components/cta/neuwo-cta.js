@@ -1,4 +1,4 @@
-import { NeuwoElement } from "../../core/base-element.js";
+import { NeuwoShadowElement } from "../../core/shadow-element.js";
 import { sheet } from "../../core/sheet.js";
 import ctaCss from "./cta.css?raw";
 
@@ -63,7 +63,7 @@ function slot(name) {
  * @cssprop --neuwo-color-green - brand accent (gradient border + text accent); re-theme on :root.
  * @cssprop --neuwo-cta-field-width - cap on the slotted field's width (default 24rem).
  */
-export class NeuwoCta extends NeuwoElement {
+export class NeuwoCta extends NeuwoShadowElement {
   static styles = sheet(ctaCss);
   static observedAttributes = ["variant", "heading-level", "status", "status-state"];
 

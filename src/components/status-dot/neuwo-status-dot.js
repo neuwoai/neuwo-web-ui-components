@@ -1,4 +1,4 @@
-import { NeuwoElement } from "../../core/base-element.js";
+import { NeuwoShadowElement } from "../../core/shadow-element.js";
 import { sheet } from "../../core/sheet.js";
 import statusDotCss from "./status-dot.css?raw";
 
@@ -18,7 +18,7 @@ import statusDotCss from "./status-dot.css?raw";
  * @cssprop --neuwo-color-green - the default dot colour; re-theme on :root.
  * @cssprop --neuwo-color-blue - the blue-variant dot colour; re-theme on :root.
  */
-export class NeuwoStatusDot extends NeuwoElement {
+export class NeuwoStatusDot extends NeuwoShadowElement {
   static styles = sheet(statusDotCss);
   static observedAttributes = ["variant", "motion", "halo", "glow"];
 

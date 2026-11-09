@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { NeuwoElement } from "../src/core/base-element.js";
+import { NeuwoShadowElement } from "../src/core/shadow-element.js";
 import { NeuwoFieldElement } from "../src/components/fields/field-element.js";
 
 describe("shadow focus delegation", () => {
@@ -8,6 +8,6 @@ describe("shadow focus delegation", () => {
   });
 
   it("leaves focus delegation off on the base by default", () => {
-    expect(NeuwoElement.delegatesFocus ?? false).toBe(false);
+    expect(NeuwoShadowElement.delegatesFocus ?? false).toBe(false);
   });
 });

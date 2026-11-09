@@ -1,4 +1,4 @@
-import { NeuwoElement } from "../../core/base-element.js";
+import { NeuwoShadowElement } from "../../core/shadow-element.js";
 import { syncError } from "../../core/control-error.js";
 
 let uid = 0;
@@ -34,7 +34,7 @@ let uid = 0;
  * @csspart error - the reserved error message line.
  * @cssprop --neuwo-color-blue - brand accent (selected option); re-theme on :root.
  */
-export class NeuwoSingleSelect extends NeuwoElement {
+export class NeuwoSingleSelect extends NeuwoShadowElement {
   static formAssociated = true;
   static observedAttributes = ["name", "value", "disabled", "required", "label", "orientation", "error", "error-muted", "no-error-line"];
 

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { NeuwoElement } from "../src/core/base-element.js";
+import { NeuwoShadowElement } from "../src/core/shadow-element.js";
 import { sheet } from "../src/core/sheet.js";
 
-class TestEl extends NeuwoElement {
+class TestEl extends NeuwoShadowElement {
   render() {
     this.shadowRoot.innerHTML = `<span>x</span>`;
   }
@@ -12,7 +12,7 @@ customElements.define("test-el", TestEl);
 const sheetA = sheet(".a { color: red }");
 const sheetB = sheet(".b { color: blue }");
 
-class MultiSheetEl extends NeuwoElement {
+class MultiSheetEl extends NeuwoShadowElement {
   static styles = [sheetA, sheetB];
   render() {
     this.shadowRoot.innerHTML = `<span>multi</span>`;
@@ -20,7 +20,7 @@ class MultiSheetEl extends NeuwoElement {
 }
 customElements.define("multi-sheet-el", MultiSheetEl);
 
-describe("NeuwoElement", () => {
+describe("NeuwoShadowElement", () => {
   it("attaches an open shadow root and renders on connect", () => {
     const el = document.createElement("test-el");
     document.body.appendChild(el);
