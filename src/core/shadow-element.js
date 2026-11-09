@@ -1,15 +1,8 @@
 import { sheet } from "./sheet.js";
-import tokensCss from "../foundation/tokens.css?raw";
 import resetCss from "./reset.css?raw";
 
 // Built once at module load, adopted by reference.
-const tokensSheet = sheet(tokensCss);
 const resetSheet = sheet(resetCss);
-
-// Tokens live on the document (their :root only matches there) and inherit into every shadow root.
-if (typeof document !== "undefined" && !document.adoptedStyleSheets.includes(tokensSheet)) {
-  document.adoptedStyleSheets = [...document.adoptedStyleSheets, tokensSheet];
-}
 
 /**
  * Shared base for every Neuwo custom element: attaches an open shadow root,

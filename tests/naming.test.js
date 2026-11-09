@@ -5,6 +5,7 @@ import { dirname, join } from "node:path";
 
 const src = join(dirname(fileURLToPath(import.meta.url)), "../src");
 const allCss = readdirSync(src, { recursive: true }).filter((file) => file.endsWith(".css"));
+const LIGHT_CSS = [];
 const read = (file) => readFileSync(join(src, file), "utf8");
 
 describe("custom property naming", () => {
@@ -24,6 +25,21 @@ describe("custom property naming", () => {
       const code = read(file).replace(/\/\*[\s\S]*?\*\//g, "").replace(/url\([^)]*\)/g, "");
       for (const [, name] of code.matchAll(/\.([a-zA-Z_][\w-]*)/g)) {
         expect(name, `${file}: .${name}`).toMatch(/^neuwo-(?!neuwo-)/);
+      }
+    }
+  });
+});
+
+describe("light DOM recipes", () => {
+  it("avoid shadow-only selectors and prefix every class and keyframe", () => {
+    for (const file of LIGHT_CSS) {
+      const code = read(file).replace(/\/\*[\s\S]*?\*\//g, "");
+      expect(code, file).not.toMatch(/:host|::part|::slotted/);
+      for (const [, name] of code.matchAll(/\.([a-zA-Z_][\w-]*)/g)) {
+        expect(name, `${file}: .${name}`).toMatch(/^neuwo-(?!neuwo-)/);
+      }
+      for (const [, name] of code.matchAll(/@keyframes\s+([\w-]+)/g)) {
+        expect(name, `${file}: @keyframes ${name}`).toMatch(/^neuwo-(?!neuwo-)/);
       }
     }
   });

@@ -34,15 +34,10 @@ describe("NeuwoShadowElement", () => {
     expect(el.shadowRoot.adoptedStyleSheets.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("adopts the design tokens onto the document, not the shadow root", () => {
-    // Guards the adoption LOCATION; token value resolution is verified on the demo
-    // (happy-dom does not parse the full tokens.css).
-    const el = document.createElement("test-el");
-    document.body.appendChild(el);
-    expect(document.adoptedStyleSheets.length).toBeGreaterThanOrEqual(1);
-    expect(el.shadowRoot.adoptedStyleSheets).not.toContain(
-      document.adoptedStyleSheets[0]
-    );
+  it("leaves the document's adopted sheets alone", () => {
+    const before = document.adoptedStyleSheets.length;
+    document.body.appendChild(document.createElement("test-el"));
+    expect(document.adoptedStyleSheets.length).toBe(before);
   });
 
   it("adopts every sheet when static styles is an array", () => {

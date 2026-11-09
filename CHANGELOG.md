@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- `neuwo-components.css` and `foundation/fonts.css` are now published, and `neuwo.css` carries the font faces.
 - Breaking: every custom property is now prefixed `--neuwo-` (tokens such as `--neuwo-color-blue`
   and component properties such as `--neuwo-copy-inset`), so the library cannot collide with a
   host page. Rename any overrides in your own CSS.

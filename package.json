@@ -25,6 +25,7 @@
     ".": { "types": "./dist/types/elements.d.ts", "default": "./dist/neuwo.js" },
     "./react": { "types": "./dist/types/react.d.ts" },
     "./neuwo.css": "./dist/neuwo.css",
+    "./neuwo-components.css": "./dist/neuwo-components.css",
     "./foundation/*": "./dist/foundation/*",
     "./components/*": "./dist/components/*",
     "./fonts/*": "./dist/fonts/*",

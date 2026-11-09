@@ -51,19 +51,29 @@ await cp("src/foundation/background.css", "dist/foundation/background.css");
 await cp("src/foundation/navigation.css", "dist/foundation/navigation.css");
 await cp("src/foundation/markdown.css", "dist/foundation/markdown.css");
 
-// One combined foundation stylesheet so a consumer can link a single file:
-// tokens first, then the sheets that depend on them.
-const combinedCss = [
-  await readFile("src/foundation/tokens.css", "utf8"),
-  await readFile("src/foundation/typography.css", "utf8"),
-  await readFile("src/foundation/background.css", "utf8"),
-  await readFile("src/foundation/navigation.css", "utf8"),
-  await readFile("src/foundation/markdown.css", "utf8"),
+const read = (file) => readFile(file, "utf8");
+
+const fontsCss = await read("src/foundation/fonts.css");
+await writeFile("dist/foundation/fonts.css", fontsCss.replaceAll("url('fonts/", "url('../fonts/"));
+
+const LIGHT_COMPONENT_CSS = [];
+
+const componentsCss = [
+  ":root { --neuwo-components: 1; }",
+  fontsCss,
+  await read("src/foundation/tokens.css"),
+  ...(await Promise.all(LIGHT_COMPONENT_CSS.map(read))),
 ].join("\n");
-await writeFile(
-  "dist/neuwo.css",
-  `/* Neuwo Web UI Library (@neuwo/web-ui-library--demo) foundation: design tokens, typography, page surface, navigation, Markdown. */\n${combinedCss}`
-);
+await writeFile("dist/neuwo-components.css", componentsCss);
+
+const combinedCss = [
+  componentsCss,
+  await read("src/foundation/typography.css"),
+  await read("src/foundation/background.css"),
+  await read("src/foundation/navigation.css"),
+  await read("src/foundation/markdown.css"),
+].join("\n");
+await writeFile("dist/neuwo.css", combinedCss);
 
 // Component recipes only (the .js stays bundled into neuwo.js).
 await cp("src/components", "dist/components", {
