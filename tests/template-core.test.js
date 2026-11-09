@@ -73,10 +73,16 @@ describe("distribute()", () => {
     { id: 3, slot: "nope" },
   ];
 
-  it("sends each item to its slot's region, and unknown slots to the default region", () => {
-    const groups = distribute(h("span", null, region("start"), region()), items, (item) => item.slot);
+  it("sends each item to its slot's region, and a missing or empty slot to the default region", () => {
+    const loose = [...items, { id: 4, slot: "" }, { id: 5, slot: undefined }];
+    const groups = distribute(h("span", null, region("start"), region()), loose, (item) => item.slot);
     expect(groups.start.map((item) => item.id)).toEqual([1]);
-    expect(groups[DEFAULT_REGION].map((item) => item.id)).toEqual([2, 3]);
+    expect(groups[DEFAULT_REGION].map((item) => item.id)).toEqual([2, 4, 5]);
+  });
+
+  it("drops an item whose slot names a region the template lacks", () => {
+    const groups = distribute(h("span", null, region("start"), region()), items, (item) => item.slot);
+    expect(Object.values(groups).flat().map((item) => item.id)).not.toContain(3);
   });
 
   it("drops items whose region the template lacks", () => {

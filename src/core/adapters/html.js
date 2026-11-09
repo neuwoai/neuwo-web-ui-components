@@ -3,6 +3,12 @@ import { distribute } from "../template.js";
 /** @typedef {import("../template.js").TemplateNode} TemplateNode */
 /** @typedef {import("../template.js").ChildInfo} ChildInfo */
 /** @typedef {import("../template.js").Template} Template */
+/**
+ * An author child of the element being rendered, with its original markup as `html`. Pass a comment as
+ * `{ tag: null, attrs: {}, text: "", slot: "default", html: "<!-- ... -->" }`: comments and whitespace-only
+ * text go to the default region but are not described to the template in `ctx.children`.
+ * @typedef {ChildInfo & { html: string }} RenderChild
+ */
 
 const VOID = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"]);
 
@@ -37,14 +43,15 @@ export function toHTML(node, regions = {}) {
 /**
  * @param {string} tag
  * @param {Record<string, string>} attrs
- * @param {Array<ChildInfo & { html: string }>} children
+ * @param {RenderChild[]} children
  * @param {Template} template
  * @param {() => (suffix: string) => string} newIds
  * @returns {string}
  */
 export function renderElement(tag, attrs, children, template, newIds) {
-  // A comment keeps its place in the output but is not a child a template can read.
-  const described = children.filter((child) => !child.html.startsWith("<!--")).map(({ html, ...info }) => info);
+  const described = children
+    .filter((child) => !child.html.startsWith("<!--") && (child.tag !== null || child.text.trim() !== ""))
+    .map(({ html, ...info }) => info);
   const node = template(attrs, { id: newIds(), children: described });
   /** @type {Record<string, string>} */
   const regions = {};

@@ -46,9 +46,15 @@ describe("renderElement()", () => {
     expect(html).toBe('<neuwo-t title="a&quot;b" hidden=""><span class="neuwo-t neuwo-t--a"></span></neuwo-t>');
   });
 
-  it("falls back to the default region for an unknown slot", () => {
+  it("does not render a child whose slot names a missing region", () => {
     const html = renderElement("neuwo-t", {}, [el("b", "nope", '<b slot="nope">n</b>'), text("x")], testTemplate, idScope("neuwo-s"));
-    expect(html).toBe('<neuwo-t><span class="neuwo-t neuwo-t--a"><b slot="nope">n</b>x</span></neuwo-t>');
+    expect(html).toBe('<neuwo-t><span class="neuwo-t neuwo-t--a">x</span></neuwo-t>');
+  });
+
+  it("sends a child with an empty slot to the default region", () => {
+    const blank = { tag: "b", attrs: { slot: "" }, text: "", slot: "", html: '<b slot=""></b>' };
+    const html = renderElement("neuwo-t", {}, [blank], testTemplate, idScope("neuwo-s"));
+    expect(html).toBe('<neuwo-t><span class="neuwo-t neuwo-t--a"><b slot=""></b></span></neuwo-t>');
   });
 
   it("drops children whose region the template lacks", () => {
@@ -59,15 +65,15 @@ describe("renderElement()", () => {
     );
   });
 
-  it("keeps comments in the default region without describing them", () => {
+  it("keeps comments and whitespace-only text in the default region without describing them", () => {
     let seen;
     const template = (a, ctx) => {
       seen = ctx.children;
       return testTemplate(a);
     };
-    const comment = { tag: null, attrs: {}, text: "", slot: "default", html: "<!-- note -->" };
-    const html = renderElement("neuwo-t", {}, [comment, text("x")], template, idScope("neuwo-s"));
-    expect(html).toBe('<neuwo-t><span class="neuwo-t neuwo-t--a"><!-- note -->x</span></neuwo-t>');
+    const comment = { tag: null, attrs: {}, text: " note ", slot: "default", html: "<!-- note -->" };
+    const html = renderElement("neuwo-t", {}, [comment, text("\n  "), text("x")], template, idScope("neuwo-s"));
+    expect(html).toBe('<neuwo-t><span class="neuwo-t neuwo-t--a"><!-- note -->\n  x</span></neuwo-t>');
     expect(seen).toEqual([{ tag: null, attrs: {}, text: "x", slot: "default" }]);
   });
 

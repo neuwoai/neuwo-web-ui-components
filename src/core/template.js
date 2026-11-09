@@ -112,8 +112,7 @@ export function distribute(node, items, slotOf) {
   const regions = {};
   for (const name of names) regions[name] = [];
   for (const item of items) {
-    const slot = slotOf(item);
-    const name = names.has(slot) ? slot : DEFAULT_REGION;
+    const name = slotOf(item) || DEFAULT_REGION;
     if (names.has(name)) regions[name].push(item);
   }
   return regions;
