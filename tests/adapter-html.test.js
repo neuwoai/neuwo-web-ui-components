@@ -3,7 +3,15 @@ import { h, raw, region } from "../src/core/template.js";
 import { idScope } from "../src/core/ids.js";
 import { renderElement, toHTML } from "../src/core/adapters/html.js";
 
-const testTemplate = (a) => h("span", { class: `neuwo-t neuwo-t--${a.tone ?? "a"}` }, region("start"), region());
+const testTemplate = (a) =>
+  h(
+    "span",
+    { class: `neuwo-t neuwo-t--${a.tone ?? "a"}` },
+    h("span", { class: "neuwo-t__start" }, region("start")),
+    h("span", { class: "neuwo-t__label" }, region()),
+  );
+const shell = (tone, start, label) =>
+  `<span class="neuwo-t neuwo-t--${tone}"><span class="neuwo-t__start">${start}</span><span class="neuwo-t__label">${label}</span></span>`;
 
 const text = (value) => ({ tag: null, attrs: {}, text: value, slot: "default", html: value });
 const el = (tag, slot, html) => ({ tag, attrs: slot ? { slot } : {}, text: "", slot: slot ?? "default", html });
@@ -24,8 +32,8 @@ describe("toHTML()", () => {
   });
 
   it("inserts region markup verbatim and leaves missing regions empty", () => {
-    const node = h("span", null, region("start"), h("b", null, region()), region("end"));
-    expect(toHTML(node, { start: "<i>s</i>", default: "x &amp; y" })).toBe("<span><i>s</i><b>x &amp; y</b></span>");
+    const node = h("span", null, h("i", null, region("start")), h("b", null, region()), h("u", null, region("end")));
+    expect(toHTML(node, { start: "<i>s</i>", default: "x &amp; y" })).toBe("<span><i><i>s</i></i><b>x &amp; y</b><u></u></span>");
   });
 
   it("inserts raw markup verbatim", () => {
@@ -38,30 +46,30 @@ describe("toHTML()", () => {
 describe("renderElement()", () => {
   it("wraps the template in the host and places children by their slot", () => {
     const html = renderElement("neuwo-t", { tone: "b" }, [text("x"), el("i", "start", '<i slot="start"></i>')], testTemplate, idScope("neuwo-s"));
-    expect(html).toBe('<neuwo-t tone="b"><span class="neuwo-t neuwo-t--b"><i slot="start"></i>x</span></neuwo-t>');
+    expect(html).toBe(`<neuwo-t tone="b">${shell("b", '<i slot="start"></i>', "x")}</neuwo-t>`);
   });
 
   it("escapes host attributes and writes empty ones as empty values", () => {
     const html = renderElement("neuwo-t", { title: 'a"b', hidden: "" }, [], testTemplate, idScope("neuwo-s"));
-    expect(html).toBe('<neuwo-t title="a&quot;b" hidden=""><span class="neuwo-t neuwo-t--a"></span></neuwo-t>');
+    expect(html).toBe(`<neuwo-t title="a&quot;b" hidden="">${shell("a", "", "")}</neuwo-t>`);
   });
 
   it("does not render a child whose slot names a missing region", () => {
     const html = renderElement("neuwo-t", {}, [el("b", "nope", '<b slot="nope">n</b>'), text("x")], testTemplate, idScope("neuwo-s"));
-    expect(html).toBe('<neuwo-t><span class="neuwo-t neuwo-t--a">x</span></neuwo-t>');
+    expect(html).toBe(`<neuwo-t>${shell("a", "", "x")}</neuwo-t>`);
   });
 
   it("sends a child with an empty slot to the default region", () => {
     const blank = { tag: "b", attrs: { slot: "" }, text: "", slot: "", html: '<b slot=""></b>' };
     const html = renderElement("neuwo-t", {}, [blank], testTemplate, idScope("neuwo-s"));
-    expect(html).toBe('<neuwo-t><span class="neuwo-t neuwo-t--a"><b slot=""></b></span></neuwo-t>');
+    expect(html).toBe(`<neuwo-t>${shell("a", "", '<b slot=""></b>')}</neuwo-t>`);
   });
 
   it("drops children whose region the template lacks", () => {
-    const startOnly = () => h("span", { class: "neuwo-u" }, region("start"));
+    const startOnly = () => h("span", { class: "neuwo-u" }, h("span", { class: "neuwo-u__start" }, region("start")));
     const children = [text("x"), el("i", "start", '<i slot="start"></i>'), el("b", "nope", '<b slot="nope"></b>')];
     expect(renderElement("neuwo-u", {}, children, startOnly, idScope("neuwo-s"))).toBe(
-      '<neuwo-u><span class="neuwo-u"><i slot="start"></i></span></neuwo-u>',
+      '<neuwo-u><span class="neuwo-u"><span class="neuwo-u__start"><i slot="start"></i></span></span></neuwo-u>',
     );
   });
 
@@ -73,7 +81,7 @@ describe("renderElement()", () => {
     };
     const comment = { tag: null, attrs: {}, text: " note ", slot: "default", html: "<!-- note -->" };
     const html = renderElement("neuwo-t", {}, [comment, text("\n  "), text("x")], template, idScope("neuwo-s"));
-    expect(html).toBe('<neuwo-t><span class="neuwo-t neuwo-t--a"><!-- note -->\n  x</span></neuwo-t>');
+    expect(html).toBe(`<neuwo-t>${shell("a", "", "<!-- note -->\n  x")}</neuwo-t>`);
     expect(seen).toEqual([{ tag: null, attrs: {}, text: "x", slot: "default" }]);
   });
 

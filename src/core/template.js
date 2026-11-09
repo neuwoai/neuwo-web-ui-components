@@ -3,9 +3,12 @@
 /** @typedef {{ tag: string | null, attrs: Record<string, string>, text: string, slot: string }} ChildInfo */
 /** @typedef {{ id: (suffix: string) => string, children: ChildInfo[] }} TemplateContext */
 /**
- * Every element a template renders carries the root's block class (its first class) or a `<block>__*` class,
- * and the template never places its own text directly beside a region: adapters tell template markup from
- * author content by those classes alone.
+ * Every element a template renders carries the root's block class (its first class) or a `<block>__*` class.
+ * A region is the only child of its element, its wrapper. Every wrapper is rendered for every attribute
+ * combination and carries a class unique within the template (`<block>__<name>`, or the block class when the
+ * root is the wrapper). Template text and elements appear only in elements that hold no region. The adapters
+ * rely on this to tell template markup from author content: a wrapper's children are the author's, every other
+ * node under the root is the template's.
  * @typedef {(attrs: Record<string, string>, ctx: TemplateContext) => TemplateNode} Template
  */
 
@@ -45,8 +48,8 @@ export function h(tag, props, ...children) {
     else if (value !== false && value != null) kept[name] = String(value);
   }
   const flat = flatten(children, []);
-  if (flat.length > 1 && flat.some((child) => typeof child === "object" && "raw" in child)) {
-    throw new Error(`raw() must be the only child of <${tag}>`);
+  if (flat.length > 1 && flat.some((child) => typeof child === "object" && ("raw" in child || "region" in child))) {
+    throw new Error(`region() and raw() must be the only child of <${tag}>`);
   }
   return { tag, props: kept, children: flat };
 }

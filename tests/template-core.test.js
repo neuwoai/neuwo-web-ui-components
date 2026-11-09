@@ -35,6 +35,13 @@ describe("h()", () => {
     expect(h("svg", null, raw("<path/>")).children).toEqual([{ raw: "<path/>" }]);
     expect(() => h("svg", null, raw("<path/>"), "x")).toThrow();
   });
+
+  it("allows a region only as the sole child of its wrapper", () => {
+    expect(h("span", null, region()).children).toEqual([{ region: DEFAULT_REGION }]);
+    expect(() => h("span", null, region(), "x")).toThrow(/only child of <span>/);
+    expect(() => h("span", null, region("start"), region())).toThrow(/only child of <span>/);
+    expect(() => h("span", null, h("b", null), region())).toThrow(/only child of <span>/);
+  });
 });
 
 describe("has()", () => {
@@ -75,13 +82,13 @@ describe("distribute()", () => {
 
   it("sends each item to its slot's region, and a missing or empty slot to the default region", () => {
     const loose = [...items, { id: 4, slot: "" }, { id: 5, slot: undefined }];
-    const groups = distribute(h("span", null, region("start"), region()), loose, (item) => item.slot);
+    const groups = distribute(h("span", null, h("i", null, region("start")), h("b", null, region())), loose, (item) => item.slot);
     expect(groups.start.map((item) => item.id)).toEqual([1]);
     expect(groups[DEFAULT_REGION].map((item) => item.id)).toEqual([2, 4, 5]);
   });
 
   it("drops an item whose slot names a region the template lacks", () => {
-    const groups = distribute(h("span", null, region("start"), region()), items, (item) => item.slot);
+    const groups = distribute(h("span", null, h("i", null, region("start")), h("b", null, region())), items, (item) => item.slot);
     expect(Object.values(groups).flat().map((item) => item.id)).not.toContain(3);
   });
 
