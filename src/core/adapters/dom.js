@@ -2,12 +2,32 @@ import { DEFAULT_REGION, distribute } from "../template.js";
 import { idScope } from "../ids.js";
 
 /** @typedef {import("../template.js").TemplateNode} TemplateNode */
-/** @typedef {import("../template.js").TemplateChild} TemplateChild */
 /** @typedef {import("../template.js").ChildInfo} ChildInfo */
 /** @typedef {import("../template.js").Template} Template */
-/** @typedef {{ el: Element, raw: boolean, kids: Array<Mirror | Text | null> }} Mirror */
-/** @typedef {{ id: (suffix: string) => string, last: TemplateNode | null, root: Element | null, mirror: Mirror | null, dropped: Node[] }} HostState */
-/** @typedef {Map<Node, boolean>} Owned */
+/** @typedef {"raw" | "regions" | "plain"} Kind */
+/**
+ * @typedef {{
+ *   id: (suffix: string) => string,
+ *   issued: Set<string>,
+ *   ids: Map<string, string>,
+ *   block: string,
+ *   kinds: Map<string, Kind>,
+ *   root: Element | null,
+ *   dropped: Node[],
+ * }} HostState
+ */
+/** @typedef {{ attrs: Record<string, string>, raw: string | null }} Seen */
+/** @typedef {Node | string | TemplateNode} Wanted */
+/**
+ * @typedef {{
+ *   state: HostState,
+ *   groups: Record<string, Node[]>,
+ *   writes: Array<() => void>,
+ *   arranges: Array<[Element, Wanted[]]>,
+ *   records: Array<() => void>,
+ *   replace: boolean,
+ * }} Run
+ */
 
 const SVG = "http://www.w3.org/2000/svg";
 const ELEMENT = 1;
@@ -16,6 +36,8 @@ const TEXT = 3;
 const newIds = idScope("neuwo-c");
 /** @type {WeakMap<Element, HostState>} */
 const states = new WeakMap();
+/** @type {WeakMap<Element, Seen>} */
+const seen = new WeakMap();
 
 /**
  * @param {Element} host
@@ -23,7 +45,19 @@ const states = new WeakMap();
  */
 function stateFor(host) {
   let state = states.get(host);
-  if (!state) states.set(host, (state = { id: newIds(), last: null, root: null, mirror: null, dropped: [] }));
+  if (!state) {
+    const scope = newIds();
+    /** @type {Set<string>} */
+    const issued = new Set();
+    /** @param {string} suffix */
+    const id = (suffix) => {
+      const value = scope(suffix);
+      issued.add(value);
+      return value;
+    };
+    state = { id, issued, ids: new Map(), block: "", kinds: new Map(), root: null, dropped: [] };
+    states.set(host, state);
+  }
   return state;
 }
 
@@ -47,11 +81,69 @@ const slotOf = (node) => (node.nodeType === ELEMENT && /** @type {Element} */ (n
 /** @param {TemplateNode} node */
 const firstClass = (node) => (typeof node.props.class === "string" ? node.props.class.trim().split(/\s+/)[0] : "");
 
-/** @param {string | true} value */
-const attrValue = (value) => (value === true ? "" : value);
+/** @param {import("../template.js").TemplateChild} child */
+const isElement = (child) => typeof child === "object" && "tag" in child;
 
-/** @param {TemplateNode} node */
-const holdsRaw = (node) => node.children.some((child) => typeof child === "object" && "raw" in child);
+/**
+ * @param {TemplateNode} node
+ * @returns {Kind}
+ */
+function kindOf(node) {
+  if (node.children.some((child) => typeof child === "object" && "raw" in child)) return "raw";
+  return node.children.some((child) => typeof child === "object" && "region" in child) ? "regions" : "plain";
+}
+
+/**
+ * @param {Element} el
+ * @param {TemplateNode} node
+ */
+const matches = (el, node) => el.localName === node.tag && (!firstClass(node) || el.classList.contains(firstClass(node)));
+
+/**
+ * @param {Node} node
+ * @param {string} block
+ * @returns {string}
+ */
+function ownClass(node, block) {
+  if (node.nodeType !== ELEMENT || !block) return "";
+  return Array.from(/** @type {Element} */ (node).classList).find((name) => name === block || name.startsWith(`${block}__`)) ?? "";
+}
+
+/**
+ * @param {HostState} state
+ * @param {Element} el
+ * @returns {Kind}
+ */
+const kindAt = (state, el) => state.kinds.get(ownClass(el, state.block)) ?? "regions";
+
+/**
+ * @param {HostState} state
+ * @param {TemplateNode} node
+ */
+function learn(state, node) {
+  state.block = firstClass(node);
+  state.kinds = new Map();
+  /** @param {TemplateNode} part */
+  const visit = (part) => {
+    if (firstClass(part)) state.kinds.set(firstClass(part), kindOf(part));
+    for (const child of part.children) if (isElement(child)) visit(/** @type {TemplateNode} */ (child));
+  };
+  visit(node);
+}
+
+/**
+ * @param {HostState} state
+ * @param {TemplateNode} node
+ * @returns {Record<string, string>}
+ */
+function propsOf(state, node) {
+  /** @type {Record<string, string>} */
+  const props = {};
+  for (const [name, value] of Object.entries(node.props)) {
+    props[name] = value === true ? "" : value.replace(/\S+/g, (token) => state.ids.get(token) ?? token);
+  }
+  return props;
+}
 
 /**
  * @param {Node[]} nodes
@@ -85,70 +177,17 @@ function locate(host, node) {
 }
 
 /**
- * @param {Mirror} mirror
- * @param {Owned} owned
- * @returns {Owned}
- */
-function ownedBy(mirror, owned = new Map()) {
-  owned.set(mirror.el, mirror.raw);
-  for (const kid of mirror.kids) {
-    if (!kid) continue;
-    if ("el" in kid) ownedBy(kid, owned);
-    else owned.set(kid, true);
-  }
-  return owned;
-}
-
-/** @param {TemplateNode} node */
-const hasRegion = (node) => node.children.some((child) => typeof child === "object" && ("region" in child || ("tag" in child && hasRegion(child))));
-
-/**
- * @param {TemplateNode} node
- * @param {Map<string, TemplateNode>} byClass
- * @returns {Map<string, TemplateNode>}
- */
-function classes(node, byClass = new Map()) {
-  if (firstClass(node)) byClass.set(firstClass(node), node);
-  for (const child of node.children) if (typeof child === "object" && "tag" in child) classes(child, byClass);
-  return byClass;
-}
-
-/**
- * @param {Element} root
- * @param {TemplateNode} node
- * @returns {Owned}
- */
-function ownedLoosely(root, node) {
-  const byClass = classes(node);
-  const block = firstClass(node);
-  /** @type {Owned} */
-  const owned = new Map();
-  /** @type {(el: Element, known: TemplateNode | null) => void} */
-  const claim = (el, known) => {
-    owned.set(el, known !== null && !hasRegion(known));
-    if (owned.get(el)) return;
-    for (const child of Array.from(el.children)) {
-      const names = Array.from(child.classList);
-      const name = names.find((candidate) => byClass.has(candidate));
-      if (name || (block && names.some((candidate) => candidate === block || candidate.startsWith(`${block}__`)))) {
-        claim(child, name ? byClass.get(name) : null);
-      }
-    }
-  };
-  claim(root, node);
-  return owned;
-}
-
-/**
- * @param {Node} parent
- * @param {Owned} owned
+ * @param {HostState} state
+ * @param {Element} el
  * @param {Node[]} out
  * @returns {Node[]}
  */
-function collect(parent, owned, out = []) {
-  for (const node of Array.from(parent.childNodes)) {
-    if (!owned.has(node)) out.push(node);
-    else if (!owned.get(node)) collect(node, owned, out);
+function collect(state, el, out) {
+  const kind = kindAt(state, el);
+  if (kind === "raw") return out;
+  for (const node of Array.from(el.childNodes)) {
+    if (ownClass(node, state.block)) collect(state, /** @type {Element} */ (node), out);
+    else if (kind === "regions") out.push(node);
   }
   return out;
 }
@@ -156,133 +195,200 @@ function collect(parent, owned, out = []) {
 /**
  * @param {Element} host
  * @param {HostState} state
- * @returns {Node[]}
+ * @returns {{ nodes: Node[], loose: Set<Node> }}
  */
 function authorNodes(host, state) {
-  // Adopted markup that did not match the template (an older build, say) is claimed by its classes instead.
-  const owned = state.mirror ? ownedBy(state.mirror) : ownedLoosely(state.root, state.last);
-  const nodes = collect(host, owned);
+  /** @type {Node[]} */
+  const nodes = [];
+  /** @type {Set<Node>} */
+  const loose = new Set();
+  for (const node of Array.from(host.childNodes)) {
+    if (node === state.root) collect(state, state.root, nodes);
+    else {
+      nodes.push(node);
+      loose.add(node);
+    }
+  }
   for (const node of state.dropped) if (!node.parentNode) nodes.push(node);
-  return nodes;
+  return { nodes, loose };
 }
 
 /**
- * @param {TemplateChild} child
- * @param {Node | undefined} node
- * @returns {Mirror | Text | null}
- */
-function matchChild(child, node) {
-  if (typeof child === "string") return node?.nodeType === TEXT && /** @type {Text} */ (node).data === child ? /** @type {Text} */ (node) : null;
-  return "tag" in child && node?.nodeType === ELEMENT ? align(child, /** @type {Element} */ (node)) : null;
-}
-
-/**
- * @param {TemplateNode} node
- * @param {Element} el
- * @returns {Mirror | null}
- */
-function align(node, el) {
-  const block = firstClass(node);
-  if (el.localName !== node.tag || (block && !el.classList.contains(block))) return null;
-  /** @type {Mirror} */
-  const mirror = { el, raw: holdsRaw(node), kids: node.children.map(() => null) };
-  if (mirror.raw) return mirror;
-  const nodes = Array.from(el.childNodes);
-  const count = node.children.length;
-  /** @type {(from: number, to: number, at: number) => boolean} */
-  const fits = (from, to, at) => {
-    if (at < 0 || at + to - from > nodes.length) return false;
-    const hits = [];
-    for (let index = from; index < to; index++) {
-      const hit = matchChild(node.children[index], nodes[at + index - from]);
-      if (!hit) return false;
-      hits.push(hit);
-    }
-    hits.forEach((hit, offset) => (mirror.kids[from + offset] = hit));
-    return true;
-  };
-  const marks = [];
-  node.children.forEach((child, index) => typeof child === "object" && "region" in child && marks.push(index));
-  if (!marks.length) return nodes.length === count && fits(0, count, 0) ? mirror : null;
-  const first = marks[0];
-  const last = marks[marks.length - 1];
-  let at = first;
-  const end = nodes.length - (count - last - 1);
-  if (end < at || !fits(0, first, 0) || !fits(last + 1, count, end)) return null;
-  for (let mark = 0; mark + 1 < marks.length; mark++) {
-    const from = marks[mark] + 1;
-    const to = marks[mark + 1];
-    if (from === to) continue;
-    while (at + to - from <= end && !fits(from, to, at)) at++;
-    if (at + to - from > end) return null;
-    at += to - from;
-  }
-  return mirror;
-}
-
-/**
- * @param {Element} host
- * @param {Template} template
- * @returns {{ node: TemplateNode, root: Element, mirror: Mirror | null } | null}
- */
-function inspect(host, template) {
-  const attrs = attrsOf(host);
-  const { id } = stateFor(host);
-  const probe = template(attrs, { id, children: describe(Array.from(host.childNodes)) });
-  const root = locate(host, probe);
-  if (!root) return null;
-  const guess = align(probe, root);
-  const authored = collect(host, guess ? ownedBy(guess) : ownedLoosely(root, probe));
-  const node = template(attrs, { id, children: describe(authored) });
-  return { node, root, mirror: align(node, root) };
-}
-
-/**
- * @param {TemplateNode} node
- * @param {Record<string, Node[]>} regions
- * @param {boolean} [svg]
- * @returns {Mirror}
- */
-function build(node, regions, svg = node.tag === "svg") {
-  const el = svg ? document.createElementNS(SVG, node.tag) : document.createElement(node.tag);
-  /** @type {Mirror} */
-  const mirror = { el, raw: false, kids: [] };
-  for (const [name, value] of Object.entries(node.props)) el.setAttribute(name, attrValue(value));
-  for (const child of node.children) {
-    if (typeof child === "string") {
-      const text = document.createTextNode(child);
-      el.append(text);
-      mirror.kids.push(text);
-    } else if ("region" in child) {
-      el.append(...(regions[child.region] ?? []));
-      mirror.kids.push(null);
-    } else if ("raw" in child) {
-      el.innerHTML = child.raw;
-      mirror.raw = true;
-      mirror.kids.push(null);
-    } else {
-      const kid = build(child, regions, svg || child.tag === "svg");
-      el.append(kid.el);
-      mirror.kids.push(kid);
-    }
-  }
-  return mirror;
-}
-
-/**
- * @param {Element} host
  * @param {HostState} state
+ * @param {Element} el
  * @param {TemplateNode} node
- * @param {Node[]} authored
+ * @returns {Array<Element | null>}
  */
-function place(host, state, node, authored) {
-  const regions = distribute(node, authored, slotOf);
-  const placed = new Set(Object.values(regions).flat());
-  const mirror = build(node, regions);
-  host.replaceChildren(mirror.el);
-  const dropped = authored.filter((child) => !placed.has(child));
-  for (const child of dropped) /** @type {ChildNode} */ (child).remove();
-  Object.assign(state, { last: node, root: mirror.el, mirror, dropped });
+function pairs(state, el, node) {
+  const candidates = Array.from(el.children).filter((child) => ownClass(child, state.block));
+  let from = 0;
+  return node.children.map((child) => {
+    if (!isElement(child)) return null;
+    const at = candidates.findIndex((candidate, index) => index >= from && matches(candidate, /** @type {TemplateNode} */ (child)));
+    if (at < 0) return null;
+    from = at + 1;
+    return candidates[at];
+  });
+}
+
+/**
+ * @param {HostState} state
+ * @param {Element} el
+ */
+function snapshot(state, el) {
+  seen.set(el, { attrs: attrsOf(el), raw: null });
+  if (kindAt(state, el) === "raw") return;
+  for (const child of Array.from(el.children)) if (ownClass(child, state.block)) snapshot(state, child);
+}
+
+/**
+ * @param {HostState} state
+ * @param {Element} el
+ * @param {TemplateNode} node
+ */
+function mapIds(state, el, node) {
+  for (const [name, value] of Object.entries(node.props)) {
+    const found = el.getAttribute(name);
+    if (value === true || found === null) continue;
+    const tokens = value.split(/\s+/);
+    const actual = found.split(/\s+/);
+    if (tokens.length !== actual.length) continue;
+    tokens.forEach((token, index) => {
+      if (state.issued.has(token) && !state.ids.has(token)) state.ids.set(token, actual[index]);
+    });
+  }
+  if (kindOf(node) === "raw") return;
+  pairs(state, el, node).forEach((match, index) => match && mapIds(state, match, /** @type {TemplateNode} */ (node.children[index])));
+}
+
+/**
+ * @param {TemplateNode} node
+ * @param {Run} run
+ * @param {boolean} [svg]
+ * @returns {Element}
+ */
+function build(node, run, svg = node.tag === "svg") {
+  const el = svg ? document.createElementNS(SVG, node.tag) : document.createElement(node.tag);
+  const props = propsOf(run.state, node);
+  for (const [name, value] of Object.entries(props)) el.setAttribute(name, value);
+  /** @type {Seen} */
+  const record = { attrs: props, raw: null };
+  seen.set(el, record);
+  for (const child of node.children) {
+    if (typeof child === "string") el.append(child);
+    else if ("region" in child) el.append(...(run.groups[child.region] ?? []));
+    else if ("raw" in child) el.innerHTML = record.raw = child.raw;
+    else el.append(build(child, run, svg || child.tag === "svg"));
+  }
+  return el;
+}
+
+/**
+ * @param {Element} el
+ * @param {Node[]} wanted
+ */
+function arrange(el, wanted) {
+  const keep = new Set(wanted);
+  for (const node of Array.from(el.childNodes)) if (!keep.has(node)) el.removeChild(node);
+  let cursor = el.firstChild;
+  for (const node of wanted) {
+    if (node === cursor) cursor = cursor.nextSibling;
+    else el.insertBefore(node, cursor);
+  }
+}
+
+/**
+ * @param {Element} el
+ * @param {TemplateNode} node
+ * @param {Run} run
+ */
+function plan(el, node, run) {
+  const record = seen.get(el) ?? { attrs: attrsOf(el), raw: null };
+  const props = propsOf(run.state, node);
+  for (const name of new Set([...Object.keys(record.attrs), ...Object.keys(props)])) {
+    const was = Object.hasOwn(record.attrs, name) ? record.attrs[name] : null;
+    const wanted = Object.hasOwn(props, name) ? props[name] : null;
+    if (was === wanted || el.getAttribute(name) === wanted) continue;
+    run.writes.push(() => (wanted === null ? el.removeAttribute(name) : el.setAttribute(name, wanted)));
+  }
+  run.records.push(() => seen.set(el, Object.assign(record, { attrs: props })));
+  const kind = kindOf(node);
+  if (kind === "raw") {
+    const { raw } = /** @type {{ raw: string }} */ (node.children.find((child) => typeof child === "object" && "raw" in child));
+    if (record.raw !== raw) {
+      const parsed = /** @type {Element} */ (el.cloneNode(false));
+      parsed.innerHTML = raw;
+      if (parsed.innerHTML !== el.innerHTML) run.writes.push(() => (el.innerHTML = raw));
+      run.records.push(() => (record.raw = raw));
+    }
+    return;
+  }
+  const matched = pairs(run.state, el, node);
+  const texts = kind === "plain" ? /** @type {Text[]} */ (Array.from(el.childNodes).filter((child) => child.nodeType === TEXT)) : [];
+  /** @type {Wanted[]} */
+  const wanted = [];
+  node.children.forEach((child, index) => {
+    if (typeof child === "string") {
+      const text = texts.shift();
+      if (text && text.data !== child) run.writes.push(() => (text.data = child));
+      wanted.push(text ?? child);
+    } else if ("region" in child) wanted.push(...(run.groups[child.region] ?? []));
+    else if ("raw" in child) return;
+    else if (matched[index]) {
+      plan(matched[index], child, run);
+      wanted.push(matched[index]);
+    } else wanted.push(child);
+  });
+  const current = Array.from(el.childNodes);
+  if (wanted.length !== current.length || wanted.some((item, index) => item !== current[index])) run.arranges.push([el, wanted]);
+}
+
+/**
+ * @param {HostState} state
+ * @param {TemplateNode} next
+ * @param {Node[]} placeable
+ * @returns {Run}
+ */
+function prepare(state, next, placeable) {
+  /** @type {Run} */
+  const run = { state, groups: distribute(next, placeable, slotOf), writes: [], arranges: [], records: [], replace: !matches(state.root, next) };
+  if (!run.replace) plan(state.root, next, run);
+  return run;
+}
+
+/**
+ * @param {HostState} state
+ * @param {TemplateNode} next
+ * @param {Node[]} placeable
+ * @param {Run} run
+ */
+function commit(state, next, placeable, run) {
+  if (run.replace) {
+    const root = build(next, run);
+    state.root.replaceWith(root);
+    state.root = root;
+  } else {
+    for (const write of run.writes) write();
+    for (const [el, wanted] of run.arranges) {
+      const svg = el.namespaceURI === SVG;
+      arrange(el, wanted.map((item) => (typeof item === "string" ? document.createTextNode(item) : "tag" in item ? build(item, run, svg || item.tag === "svg") : item)));
+    }
+    for (const record of run.records) record();
+  }
+  settle(state, next, placeable, run.groups);
+}
+
+/**
+ * @param {HostState} state
+ * @param {TemplateNode} next
+ * @param {Node[]} placeable
+ * @param {Record<string, Node[]>} groups
+ */
+function settle(state, next, placeable, groups) {
+  const placed = new Set(Object.values(groups).flat());
+  state.dropped = placeable.filter((node) => !placed.has(node));
+  for (const node of state.dropped) /** @type {ChildNode} */ (node).remove();
+  learn(state, next);
 }
 
 /**
@@ -290,7 +396,7 @@ function place(host, state, node, authored) {
  * @returns {ChildInfo[]}
  */
 export function childInfo(host) {
-  return describe(live(host) ? authorNodes(host, states.get(host)) : Array.from(host.childNodes));
+  return describe(live(host) ? authorNodes(host, states.get(host)).nodes : Array.from(host.childNodes));
 }
 
 /**
@@ -300,7 +406,12 @@ export function childInfo(host) {
 export function render(host, template) {
   const state = stateFor(host);
   const nodes = Array.from(host.childNodes);
-  place(host, state, template(attrsOf(host), { id: state.id, children: describe(nodes) }), nodes);
+  const next = template(attrsOf(host), { id: state.id, children: describe(nodes) });
+  /** @type {Run} */
+  const run = { state, groups: distribute(next, nodes, slotOf), writes: [], arranges: [], records: [], replace: true };
+  state.root = build(next, run);
+  host.replaceChildren(state.root);
+  settle(state, next, nodes, run.groups);
 }
 
 /**
@@ -309,7 +420,9 @@ export function render(host, template) {
  * @returns {boolean}
  */
 export function isRendered(host, template) {
-  return live(host) || inspect(host, template) !== null;
+  if (live(host)) return true;
+  const state = stateFor(host);
+  return locate(host, template(attrsOf(host), { id: state.id, children: [] })) !== null;
 }
 
 /**
@@ -318,45 +431,16 @@ export function isRendered(host, template) {
  */
 export function adopt(host, template) {
   if (live(host)) return patch(host, template);
-  const found = inspect(host, template);
-  if (found) Object.assign(stateFor(host), { last: found.node, root: found.root, mirror: found.mirror, dropped: [] });
-}
-
-/**
- * @param {TemplateNode} prev
- * @param {TemplateNode} next
- * @param {Mirror} mirror
- * @param {Array<() => void>} writes
- * @returns {boolean}
- */
-function update(prev, next, mirror, writes) {
-  if (prev.tag !== next.tag || prev.children.length !== next.children.length) return false;
-  const el = mirror.el;
-  for (const name of new Set([...Object.keys(prev.props), ...Object.keys(next.props)])) {
-    const was = Object.hasOwn(prev.props, name) ? attrValue(prev.props[name]) : null;
-    const wanted = Object.hasOwn(next.props, name) ? attrValue(next.props[name]) : null;
-    if (was === wanted || el.getAttribute(name) === wanted) continue;
-    writes.push(() => (wanted === null ? el.removeAttribute(name) : el.setAttribute(name, wanted)));
-  }
-  for (let index = 0; index < next.children.length; index++) {
-    const before = prev.children[index];
-    const after = next.children[index];
-    const kid = mirror.kids[index];
-    if (typeof before === "string" || typeof after === "string") {
-      const text = /** @type {Text} */ (kid);
-      if (typeof before !== "string" || typeof after !== "string" || text.parentNode !== el) return false;
-      if (before !== after && text.data !== after) writes.push(() => (text.data = after));
-    } else if ("region" in before || "region" in after) {
-      if (!("region" in before && "region" in after && before.region === after.region)) return false;
-    } else if ("raw" in before || "raw" in after) {
-      if (!("raw" in before && "raw" in after)) return false;
-      if (before.raw !== after.raw) writes.push(() => (el.innerHTML = after.raw));
-    } else {
-      const child = /** @type {Mirror} */ (kid);
-      if (child.el.parentNode !== el || !update(before, after, child, writes)) return false;
-    }
-  }
-  return true;
+  const state = stateFor(host);
+  const attrs = attrsOf(host);
+  const probe = template(attrs, { id: state.id, children: [] });
+  const root = locate(host, probe);
+  if (!root) return;
+  learn(state, probe);
+  Object.assign(state, { root, dropped: [] });
+  snapshot(state, root);
+  const next = template(attrs, { id: state.id, children: describe(authorNodes(host, state).nodes) });
+  mapIds(state, root, next);
 }
 
 /**
@@ -365,17 +449,14 @@ function update(prev, next, mirror, writes) {
  */
 export function patch(host, template) {
   if (!live(host)) {
-    if (isRendered(host, template)) adopt(host, template);
-    else render(host, template);
-    return;
+    if (!isRendered(host, template)) return render(host, template);
+    adopt(host, template);
   }
   const state = states.get(host);
-  const authored = authorNodes(host, state);
-  const next = template(attrsOf(host), { id: state.id, children: describe(authored) });
-  /** @type {Array<() => void>} */
-  const writes = [];
-  if (state.mirror && update(state.last, next, state.mirror, writes)) {
-    for (const write of writes) write();
-    state.last = next;
-  } else place(host, state, next, authored);
+  const { nodes, loose } = authorNodes(host, state);
+  const next = template(attrsOf(host), { id: state.id, children: describe(nodes) });
+  const settled = nodes.filter((node) => !loose.has(node));
+  const run = prepare(state, next, settled);
+  if (run.replace || run.arranges.length) commit(state, next, nodes, prepare(state, next, nodes));
+  else commit(state, next, settled, run);
 }

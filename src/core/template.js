@@ -2,7 +2,12 @@
 /** @typedef {TemplateNode | string | { region: string } | { raw: string }} TemplateChild */
 /** @typedef {{ tag: string | null, attrs: Record<string, string>, text: string, slot: string }} ChildInfo */
 /** @typedef {{ id: (suffix: string) => string, children: ChildInfo[] }} TemplateContext */
-/** @typedef {(attrs: Record<string, string>, ctx: TemplateContext) => TemplateNode} Template */
+/**
+ * Every element a template renders carries the root's block class (its first class) or a `<block>__*` class,
+ * and the template never places its own text directly beside a region: adapters tell template markup from
+ * author content by those classes alone.
+ * @typedef {(attrs: Record<string, string>, ctx: TemplateContext) => TemplateNode} Template
+ */
 
 export const DEFAULT_REGION = "default";
 

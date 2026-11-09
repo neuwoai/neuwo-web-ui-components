@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { h, has, raw, region } from "../src/core/template.js";
 import { adopt, childInfo, isRendered, patch, render } from "../src/core/adapters/dom.js";
+import { renderElement } from "../src/core/adapters/html.js";
+import { idScope } from "../src/core/ids.js";
 
 const SVG = "http://www.w3.org/2000/svg";
 const testTemplate = (a) => h("span", { class: `neuwo-t neuwo-t--${a.tone ?? "a"}` }, region("start"), region());
@@ -74,7 +76,7 @@ describe("render()", () => {
 
   it("creates template svg nodes and raw content in the SVG namespace", () => {
     const host = make(`<neuwo-t></neuwo-t>`);
-    render(host, () => h("svg", { class: "neuwo-s" }, h("g", null, raw('<path d="M0 0"/>'))));
+    render(host, () => h("svg", { class: "neuwo-s" }, h("g", { class: "neuwo-s__g" }, raw('<path d="M0 0"/>'))));
     const svg = host.firstElementChild;
     expect(svg.namespaceURI).toBe(SVG);
     expect(svg.firstElementChild.namespaceURI).toBe(SVG);
@@ -131,7 +133,7 @@ describe("isRendered()", () => {
     expect(isRendered(host, testTemplate)).toBe(true);
   });
 
-  it("gives the template the author children, as patch does", () => {
+  it("never gives the template the rendered markup as children", () => {
     const { calls, wrapped } = spy(testTemplate);
     const host = make(`<neuwo-t><span class="neuwo-t neuwo-t--a"><i slot="start"></i>x</span></neuwo-t>`);
     isRendered(host, wrapped);
@@ -139,11 +141,23 @@ describe("isRendered()", () => {
       { tag: "i", attrs: { slot: "start" }, text: "", slot: "start" },
       { tag: null, attrs: {}, text: "x", slot: "default" },
     ];
-    expect(calls.at(-1)).toEqual(author);
     adopt(host, wrapped);
+    expect(calls.at(-1)).toEqual(author);
     host.setAttribute("tone", "b");
     patch(host, wrapped);
     expect(calls.at(-1)).toEqual(author);
+    expect(calls.flat().some((child) => child.attrs.class?.startsWith("neuwo-t"))).toBe(false);
+  });
+
+  it("keeps an empty-state placeholder that the template renders without children", () => {
+    const template = (a, ctx) =>
+      h("div", { class: "neuwo-l", title: a.title }, ctx.children.length ? null : h("p", { class: "neuwo-l__empty" }, "Nothing here"), h("ul", { class: "neuwo-l__list" }, region()));
+    const host = make(`<neuwo-l><div class="neuwo-l"><p class="neuwo-l__empty">Nothing here</p><ul class="neuwo-l__list"></ul></div></neuwo-l>`);
+    expect(isRendered(host, template)).toBe(true);
+    adopt(host, template);
+    host.setAttribute("title", "x");
+    patch(host, template);
+    expect(host.innerHTML).toBe('<div class="neuwo-l" title="x"><p class="neuwo-l__empty">Nothing here</p><ul class="neuwo-l__list"></ul></div>');
   });
 });
 
@@ -166,13 +180,79 @@ describe("adopt()", () => {
     expect(host.firstElementChild.getAttribute("aria-describedby")).toBe("neuwo-s1-hint");
   });
 
-  it("tells an unclassed template element from an author element of the same tag", () => {
-    const template = (a) => h("span", { class: "neuwo-t", title: a.title }, region(), h("b", null));
-    const host = make(`<neuwo-t><span class="neuwo-t"><b>bold</b><b></b></span></neuwo-t>`);
+  it("tells a template element from an author element of the same tag", () => {
+    const template = (a) => h("span", { class: "neuwo-t", title: a.title }, region(), h("b", { class: "neuwo-t__mark" }));
+    const host = make(`<neuwo-t><span class="neuwo-t"><b>bold</b><b class="neuwo-t__mark"></b></span></neuwo-t>`);
     adopt(host, template);
     host.setAttribute("title", "x");
     patch(host, template);
-    expect(host.innerHTML).toBe('<span class="neuwo-t" title="x"><b>bold</b><b></b></span>');
+    expect(host.innerHTML).toBe('<span class="neuwo-t" title="x"><b>bold</b><b class="neuwo-t__mark"></b></span>');
+  });
+
+  it("corrects stale server values on the first patch", () => {
+    const host = make(`<neuwo-t tone="a"><span class="neuwo-t neuwo-t--a">x</span></neuwo-t>`);
+    host.setAttribute("tone", "b");
+    patch(host, testTemplate);
+    expect(host.innerHTML).toBe('<span class="neuwo-t neuwo-t--b">x</span>');
+    const again = make(`<neuwo-t tone="a"><span class="neuwo-t neuwo-t--a">x</span></neuwo-t>`);
+    again.setAttribute("tone", "b");
+    adopt(again, testTemplate);
+    expect(again.innerHTML).toBe('<span class="neuwo-t neuwo-t--a">x</span>');
+    patch(again, testTemplate);
+    expect(again.innerHTML).toBe('<span class="neuwo-t neuwo-t--b">x</span>');
+  });
+
+  it("removes a stale server spinner instead of keeping it as author content", () => {
+    const button = (a) =>
+      h(
+        "button",
+        { class: "neuwo-btn", "aria-busy": has(a, "loading") && "true" },
+        has(a, "loading") && h("span", { class: "neuwo-btn__spinner" }),
+        region("start"),
+        region(),
+      );
+    const save = { tag: null, attrs: {}, text: "Save", slot: "default", html: "Save" };
+    const host = make(renderElement("neuwo-button", { loading: "" }, [save], button, idScope("neuwo-s")));
+    host.removeAttribute("loading");
+    patch(host, button);
+    expect(host.innerHTML).toBe('<button class="neuwo-btn">Save</button>');
+    expect(childInfo(host)).toEqual([{ tag: null, attrs: {}, text: "Save", slot: "default" }]);
+    host.setAttribute("loading", "");
+    patch(host, button);
+    expect(host.innerHTML).toBe('<button class="neuwo-btn" aria-busy="true"><span class="neuwo-btn__spinner"></span>Save</button>');
+  });
+
+  it("rewrites no adopted id, even when an attribute carrying one returns", () => {
+    const template = (a, ctx) =>
+      h(
+        "span",
+        { class: "neuwo-t", "aria-describedby": has(a, "hint") && ctx.id("hint"), "data-tone": a.tone },
+        h("i", { class: "neuwo-t__hint", id: ctx.id("hint") }),
+      );
+    const host = make(
+      `<neuwo-t hint tone="a"><span class="neuwo-t" aria-describedby="neuwo-s1-hint" data-tone="a"><i class="neuwo-t__hint" id="neuwo-s1-hint"></i></span></neuwo-t>`,
+    );
+    adopt(host, template);
+    host.setAttribute("tone", "b");
+    const observer = watch(host);
+    patch(host, template);
+    expect(observer.takeRecords().map((record) => record.attributeName)).toEqual(["data-tone"]);
+    host.removeAttribute("hint");
+    patch(host, template);
+    host.setAttribute("hint", "");
+    patch(host, template);
+    expect(host.firstElementChild.getAttribute("aria-describedby")).toBe("neuwo-s1-hint");
+    expect(host.querySelector("i").id).toBe("neuwo-s1-hint");
+  });
+
+  it("does not duplicate template elements in markup with stale text", () => {
+    const template = (a) =>
+      h("span", { class: "neuwo-t", title: a.title }, region(), h("b", { class: "neuwo-t__mark" }), h("i", { class: "neuwo-t__label" }, a.label ?? ""));
+    const host = make(`<neuwo-t label="New"><span class="neuwo-t"><b>bold</b><b class="neuwo-t__mark"></b><i class="neuwo-t__label">Old</i></span></neuwo-t>`);
+    adopt(host, template);
+    host.setAttribute("title", "x");
+    patch(host, template);
+    expect(host.innerHTML).toBe('<span class="neuwo-t" title="x"><b>bold</b><b class="neuwo-t__mark"></b><i class="neuwo-t__label">New</i></span>');
   });
 
   it("rebuilds markup that does not match the template, keeping only the author's children", () => {
@@ -321,27 +401,58 @@ describe("patch()", () => {
     expect(host.querySelector("button")).toBe(button);
   });
 
-  it("keeps an author element that shares the tag of an unclassed template element", () => {
-    const template = (a) => h("span", { class: "neuwo-t", title: a.title }, region(), h("b", null));
+  it("keeps an author element that shares the tag of a template element", () => {
+    const template = (a) => h("span", { class: "neuwo-t", title: a.title }, region(), h("b", { class: "neuwo-t__mark" }));
     const host = make(`<neuwo-t><b>bold</b></neuwo-t>`);
     render(host, template);
     host.setAttribute("title", "x");
     patch(host, template);
-    expect(host.innerHTML).toBe('<span class="neuwo-t" title="x"><b>bold</b><b></b></span>');
+    expect(host.innerHTML).toBe('<span class="neuwo-t" title="x"><b>bold</b><b class="neuwo-t__mark"></b></span>');
   });
 
   it("adds and removes a template element beside the regions", () => {
     const template = (a) =>
-      h("button", { class: "neuwo-t" }, has(a, "busy") && h("span", { class: "neuwo-spinner" }), region("start"), region());
+      h("button", { class: "neuwo-t" }, has(a, "busy") && h("span", { class: "neuwo-t__spin" }), region("start"), region());
     const host = make(`<neuwo-t busy><i slot="start"></i>x</neuwo-t>`);
     render(host, template);
-    expect(host.innerHTML).toBe('<button class="neuwo-t"><span class="neuwo-spinner"></span><i slot="start"></i>x</button>');
+    expect(host.innerHTML).toBe('<button class="neuwo-t"><span class="neuwo-t__spin"></span><i slot="start"></i>x</button>');
     host.removeAttribute("busy");
     patch(host, template);
     expect(host.innerHTML).toBe('<button class="neuwo-t"><i slot="start"></i>x</button>');
     host.setAttribute("busy", "");
     patch(host, template);
-    expect(host.innerHTML).toBe('<button class="neuwo-t"><span class="neuwo-spinner"></span><i slot="start"></i>x</button>');
+    expect(host.innerHTML).toBe('<button class="neuwo-t"><span class="neuwo-t__spin"></span><i slot="start"></i>x</button>');
+  });
+
+  it("keeps a matched element, its focus and its runtime attributes across a change inside it", () => {
+    const template = (a) => h("button", { class: "neuwo-t" }, has(a, "busy") && h("span", { class: "neuwo-t__spin" }), region());
+    const host = make(`<neuwo-t>Save</neuwo-t>`);
+    render(host, template);
+    const button = host.firstElementChild;
+    button.setAttribute("aria-expanded", "true");
+    button.focus();
+    expect(document.activeElement).toBe(button);
+    host.setAttribute("busy", "");
+    patch(host, template);
+    expect(host.firstElementChild).toBe(button);
+    expect(document.activeElement).toBe(button);
+    expect(button.getAttribute("aria-expanded")).toBe("true");
+    expect(host.innerHTML).toBe('<button class="neuwo-t" aria-expanded="true"><span class="neuwo-t__spin"></span>Save</button>');
+  });
+
+  it("keeps a wrapper and an author input's focus when a sibling is rebuilt", () => {
+    const template = (a) =>
+      h("div", { class: "neuwo-t" }, h(a.level ?? "h2", { class: "neuwo-t__head" }), h("div", { class: "neuwo-t__body" }, region()));
+    const host = make(`<neuwo-t><input></neuwo-t>`);
+    render(host, template);
+    const body = host.querySelector(".neuwo-t__body");
+    const input = host.querySelector("input");
+    input.focus();
+    host.setAttribute("level", "h3");
+    patch(host, template);
+    expect(host.querySelector(".neuwo-t__body")).toBe(body);
+    expect(host.querySelector("h3")).not.toBeNull();
+    expect(document.activeElement).toBe(input);
   });
 
   it("does not render twice when an author element precedes the root", () => {
