@@ -71,7 +71,7 @@ describe("NeuwoElement (light DOM)", () => {
     expect(host.firstElementChild.connected).toBe(1);
   });
 
-  it("adopts server markup with attributes through the upgrade path without mutations", () => {
+  it("adopts markup for an element defined after it was inserted, without mutations", () => {
     const tag = "test-late";
     const host = document.createElement("div");
     host.innerHTML = `<${tag} tone="b"><span class="neuwo-t neuwo-t--b"><span class="neuwo-t__start"></span><span class="neuwo-t__body">hi</span></span></${tag}>`;
@@ -79,11 +79,82 @@ describe("NeuwoElement (light DOM)", () => {
     cleanup.push(host);
     const observer = new MutationObserver(() => {});
     observer.observe(host, { subtree: true, childList: true, attributes: true, characterData: true });
-    class Late extends TestLight {}
-    define(tag, Late);
+    define(tag, class extends TestLight {});
     expect(observer.takeRecords().length).toBe(0);
     expect(host.firstElementChild.connected).toBe(1);
     expect(host.querySelectorAll(".neuwo-t").length).toBe(1);
+  });
+
+  it("adopts when attributeChangedCallback runs before connect logic, as the browser upgrade does", () => {
+    const tag = "test-order";
+    class Order extends TestLight {
+      connectedCallback() {}
+      run() {
+        super.connectedCallback();
+      }
+    }
+    define(tag, Order);
+    const host = document.createElement("div");
+    host.innerHTML = `<${tag} tone="b"><span class="neuwo-t neuwo-t--b"><span class="neuwo-t__start"></span><span class="neuwo-t__body">hi</span></span></${tag}>`;
+    document.body.appendChild(host);
+    cleanup.push(host);
+    const el = host.firstElementChild;
+    const observer = new MutationObserver(() => {});
+    observer.observe(host, { subtree: true, childList: true, attributes: true, characterData: true });
+    el.attributeChangedCallback("tone", null, "b");
+    el.run();
+    expect(observer.takeRecords().length).toBe(0);
+    expect(el.connected).toBe(1);
+    expect(host.querySelectorAll(".neuwo-t").length).toBe(1);
+  });
+
+  describe("while the document is still parsing", () => {
+    const loading = () => Object.defineProperty(document, "readyState", { configurable: true, get: () => "loading" });
+    afterEach(() => delete document.readyState);
+
+    const parse = () => {
+      loading();
+      const host = mount("");
+      const el = document.createElement("test-light");
+      host.appendChild(el);
+      const observer = new MutationObserver(() => {});
+      observer.observe(host, { subtree: true, childList: true, attributes: true, characterData: true });
+      return { host, el, observer };
+    };
+
+    it("adopts server markup appended after connect, exactly once", () => {
+      const { host, el, observer } = parse();
+      expect(el.querySelectorAll(".neuwo-t").length).toBe(0);
+      const detached = document.createElement("div");
+      detached.innerHTML = server().replace(/^<test-light>|<\/test-light>$/g, "");
+      el.append(...detached.childNodes);
+      observer.takeRecords();
+      delete document.readyState;
+      document.dispatchEvent(new Event("DOMContentLoaded"));
+      expect(observer.takeRecords().length).toBe(0);
+      expect(host.querySelectorAll(".neuwo-t").length).toBe(1);
+      expect(el.connected).toBe(1);
+    });
+
+    it("renders an unexpanded element at DOMContentLoaded", () => {
+      const { el } = parse();
+      el.append("plain");
+      delete document.readyState;
+      document.dispatchEvent(new Event("DOMContentLoaded"));
+      expect(el.querySelectorAll(".neuwo-t").length).toBe(1);
+      expect(el.querySelector(".neuwo-t__body").textContent).toBe("plain");
+      expect(el.connected).toBe(1);
+    });
+
+    it("does nothing when disconnected before DOMContentLoaded", () => {
+      const { el } = parse();
+      el.remove();
+      delete document.readyState;
+      document.dispatchEvent(new Event("DOMContentLoaded"));
+      expect(el.querySelector(".neuwo-t")).toBeNull();
+      expect(el.connected).toBe(0);
+      expect(el.disconnected).toBe(0);
+    });
   });
 
   it("does not render again when moved", () => {

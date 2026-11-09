@@ -11,7 +11,27 @@ export class NeuwoElement extends (globalThis.HTMLElement ?? class {}) {
   /** @type {import("./template.js").Template} */
   static template;
 
+  /** @type {(() => void) | null} */
+  #waiting = null;
+
   connectedCallback() {
+    const { template } = /** @type {typeof NeuwoElement} */ (this.constructor);
+    const host = /** @type {HTMLElement} */ (/** @type {unknown} */ (this));
+    const { ownerDocument: doc } = host;
+    if (!isRendered(host, template) && doc.readyState === "loading") {
+      // The parser runs this before the children exist, so rendering now would duplicate server markup.
+      if (this.#waiting) return;
+      this.#waiting = () => {
+        this.#waiting = null;
+        this.#start();
+      };
+      doc.addEventListener("DOMContentLoaded", this.#waiting, { once: true });
+      return;
+    }
+    this.#start();
+  }
+
+  #start() {
     const { template } = /** @type {typeof NeuwoElement} */ (this.constructor);
     const host = /** @type {HTMLElement} */ (/** @type {unknown} */ (this));
     if (isRendered(host, template)) adopt(host, template);
@@ -26,6 +46,12 @@ export class NeuwoElement extends (globalThis.HTMLElement ?? class {}) {
   }
 
   disconnectedCallback() {
+    if (this.#waiting) {
+      const host = /** @type {HTMLElement} */ (/** @type {unknown} */ (this));
+      host.ownerDocument.removeEventListener("DOMContentLoaded", this.#waiting);
+      this.#waiting = null;
+      return;
+    }
     this.disconnect();
   }
 
