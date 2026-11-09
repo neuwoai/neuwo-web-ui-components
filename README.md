@@ -40,14 +40,18 @@ eleventyConfig.addPassthroughCopy({
 Next.js and Vite serve `public/` verbatim, so a `prebuild` script copying the same directory
 into `public/vendor/neuwo` achieves the same thing.
 
-### Keep `fonts/` beside `neuwo.js`
+### Fonts and bundlers
 
-`injectFonts()` resolves the woff2 URLs against `import.meta.url`, so the bundle expects `fonts/`
-to be its own sibling. Serving `dist/` as a directory satisfies that everywhere. Bundling
-`neuwo.js` into an application chunk does not: `import.meta.url` then points at the emitted
-chunk, nothing puts the fonts next to it, and the brand faces silently 404 into a system
-fallback. If you must bundle, pre-inject your own `@font-face` rules inside a
-`<style data-neuwo-fonts>` element; the library detects that attribute and leaves fonts alone.
+The bundle names each woff2 file as `new URL("./fonts/<file>", import.meta.url)`. Served as a
+directory (jsDelivr or self-hosted), that resolves to the `fonts/` folder beside `neuwo.js`.
+Imported through a bundler, it is the pattern Vite, webpack and Turbopack recognise: they copy
+the three files into the app's output and rewrite the URLs, with no configuration. This is
+verified with Vite 8 (dev server and build) and Next.js 16 (Turbopack and webpack).
+
+A bundler that does not recognise the pattern leaves the URLs pointing beside its own output
+chunk, where nothing put the fonts, and the brand faces silently fall back to a system font. In
+that case, or to serve the fonts from somewhere else, declare your own `@font-face` rules inside
+a `<style data-neuwo-fonts>` element; the library detects that attribute and leaves fonts alone.
 
 ## Consume
 
