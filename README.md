@@ -391,6 +391,72 @@ bundle under `fonts/`, so to preload them point at that directory:
       href="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.1/dist/fonts/outfit-variable.woff2" />
 ```
 
+## React
+
+Use React 19. Import the library once, at the entry, before the first render:
+
+```tsx
+// src/main.tsx
+import "@neuwo/web-ui-library--demo";
+import type {} from "@neuwo/web-ui-library--demo/react";
+import { createRoot } from "react-dom/client";
+import App from "./App";
+
+createRoot(document.getElementById("root")!).render(<App />);
+```
+
+The first import registers every element, so each `<neuwo-*>` React creates renders in the same
+pass, before the browser paints. Registering later, from an effect or a script that runs after
+the app, shows the bare tags first and the components a moment after.
+
+The second import is types only. It adds every element to React's JSX, with each attribute's
+allowed values and each custom event's `detail`, so a misspelt variant fails the type check. It
+works from any file the TypeScript program includes.
+
+React 19 sets a property where the element has one and binds events, so the elements behave like
+native controls:
+
+```tsx
+<neuwo-button disabled={saving}>Save</neuwo-button>
+<neuwo-checkbox checked={agreed} onChange={(e) => setAgreed(e.currentTarget.checked)} />
+<neuwo-copy oncopied={(e) => toast(e.detail.text)}><pre>npm install</pre></neuwo-copy>
+<neuwo-notice dismissible ondismiss={() => setOpen(false)}>...</neuwo-notice>
+```
+
+- `onChange`, and `onInput` on `<neuwo-combobox>`, fire as they do on native fields.
+- A custom event binds by its exact name, so it is lower case: `oncopied`, `ondismiss`.
+  `onCopied` listens for an event called `Copied`, which never fires; the types reject it.
+
+React 18 passes every prop to a custom element as a text attribute. `disabled={false}` becomes
+`disabled="false"`, which the element reads as disabled. `onClick` and `onInput` still work, but
+`onChange` and custom event handlers never run. If you are stuck on 18, pass a boolean as
+`disabled={saving || undefined}` and attach those listeners through a `ref` with
+`addEventListener`.
+
+### Next.js and server rendering
+
+The library needs a browser to load. Importing it on the server fails with
+`CSSStyleSheet is not defined`, and that includes `"use client"` files, which Next.js also
+renders on the server. Load it from an effect instead:
+
+```tsx
+"use client";
+import { useEffect } from "react";
+
+export function NeuwoLoader() {
+  useEffect(() => {
+    import("@neuwo/web-ui-library--demo");
+  }, []);
+  return null;
+}
+```
+
+Render `<NeuwoLoader />` once in the root layout and put the type import in a declaration file,
+such as `app/neuwo.d.ts`. The server-rendered HTML carries the bare tags, so components appear
+once the bundle has run. Import `@neuwo/web-ui-library--demo/neuwo.css` in the root layout too:
+the tokens, typography and page surface then arrive with the HTML, so the page is on-brand from
+the first paint and only the components fill in.
+
 ## Components
 
 | Component | Tag | Status |
@@ -630,7 +696,7 @@ why `variant` picks a drawing rather than recolouring one, and why the four file
 ```bash
 npm install
 npm start     # build + watch + serve the demo at http://localhost:8000/demo/
-npm run build # produce dist/ (neuwo.js, neuwo.css, fonts/, logos/, foundation/*.css, components/**/*.css)
+npm run build # produce dist/ (neuwo.js, neuwo.css, fonts/, logos/, foundation/*.css, components/**/*.css, types/)
 npm test      # Vitest + happy-dom
 ```
 

@@ -23,6 +23,7 @@
   ],
   "exports": {
     ".": { "types": "./dist/types/elements.d.ts", "default": "./dist/neuwo.js" },
+    "./react": { "types": "./dist/types/react.d.ts" },
     "./neuwo.css": "./dist/neuwo.css",
     "./foundation/*": "./dist/foundation/*",
     "./components/*": "./dist/components/*",
@@ -35,16 +36,18 @@
   },
   "scripts": {
     "start": "node scripts/build.js --serve",
-    "build": "node scripts/build.js && npm run analyze && npm run types",
+    "build": "node scripts/build.js && npm run analyze && npm run types && npm run types:react",
     "analyze": "cem analyze",
     "pretest": "npm run analyze",
     "test": "vitest run",
     "test:watch": "vitest",
     "types": "tsc -p tsconfig.json",
+    "types:react": "node scripts/react-types.js && tsc -p tests/react/tsconfig.json",
     "prepack": "npm run build"
   },
   "devDependencies": {
     "@custom-elements-manifest/analyzer": "^0.10.10",
+    "@types/react": "^19.3.0",
     "esbuild": "^0.28.1",
     "happy-dom": "^20.10.3",
     "typescript": "^5.9.3",

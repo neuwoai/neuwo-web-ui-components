@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- React JSX types, generated from the manifest: `import type {} from
+  "@neuwo/web-ui-library--demo/react"` types every element's attributes and custom events.
+- `copied` on `<neuwo-copy>` is typed `CustomEvent<{ text: string }>`.
+- README: a React section covering setup, props and events in React 19, React 18's limits, and
+  loading in Next.js.
 - Brand fonts now load when `neuwo.js` is imported through a bundler. Vite, webpack and
   Turbopack copy the woff2 files into the app's output and rewrite their URLs; previously the
   faces 404'd into a system fallback unless `fonts/` was served beside the bundle.

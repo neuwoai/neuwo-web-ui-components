@@ -27,7 +27,7 @@ const RESET_DELAY = 1200;
  * @csspart button - the copy control.
  * @csspart status - the live region carrying the outcome.
  * @cssprop --copy-inset - distance from the top and end edges (default `--space-3`).
- * @fires copied - after the text reaches the clipboard; `detail.text` is what was written.
+ * @fires {CustomEvent<{ text: string }>} copied - after the text reaches the clipboard; `detail.text` is what was written.
  */
 export class NeuwoCopy extends NeuwoElement {
   static styles = sheet(copyCss);
