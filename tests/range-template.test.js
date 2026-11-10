@@ -65,7 +65,19 @@ describe("rangeValue", () => {
     expect(rangeValue({ value: "150", max: "200", step: "50" })).toBe(150);
     expect(rangeValue({ value: "500", min: "0", max: "10", step: "3" })).toBe(9);
     expect(rangeValue({ value: "-5", min: "0", max: "10", step: "3" })).toBe(0);
-    expect(rangeValue({ value: "0.3", step: "0.1" })).toBe(0.3);
+    expect(rangeValue({ min: "0", value: "0.3", step: "0.1" })).toBe(0.3);
+  });
+
+  it("rounds decimal ties up despite binary floats", () => {
+    expect(rangeValue({ min: "0", value: "0.35", step: "0.1" })).toBe(0.4);
+    expect(rangeValue({ min: "0", value: "0.15", step: "0.1" })).toBe(0.2);
+  });
+
+  it("treats an empty or non-numeric min or max as absent", () => {
+    expect(rangeValue({ min: "", value: "7", step: "3" })).toBe(7);
+    expect(rangeValue({ min: "abc", value: "7", step: "3" })).toBe(7);
+    expect(rangeValue({ max: "", value: "500" })).toBe(100);
+    expect(rangeValue({ min: "", max: "" })).toBe(50);
   });
 
   it("treats a maximum below the minimum as the minimum", () => {

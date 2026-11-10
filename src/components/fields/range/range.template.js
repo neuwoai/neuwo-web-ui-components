@@ -14,6 +14,9 @@ function numberOr(value, fallback) {
   return Number.isFinite(number) ? number : fallback;
 }
 
+/** @param {unknown} value */
+const isNumber = (value) => value != null && value !== "" && Number.isFinite(Number(value));
+
 /**
  * The value a browser gives a range input with these attributes: the default (the midpoint) for a missing or
  * invalid value, clamped into the bounds, then rounded to the nearest step, a tie going up. The step base is `min`,
@@ -29,8 +32,8 @@ export function rangeValue(attrs) {
   const step = attrs.step === "any" ? 0 : numberOr(attrs.step, 1);
   if (!(step > 0)) return value;
   const authored = Number(attrs.value);
-  const base = has(attrs, "min") && Number.isFinite(Number(attrs.min)) ? min : has(attrs, "value") && attrs.value !== "" && Number.isFinite(authored) ? authored : 0;
-  let count = Math.floor((value - base) / step + 0.5);
+  const base = isNumber(attrs.min) ? min : isNumber(attrs.value) ? authored : 0;
+  let count = Math.floor(Number(((value - base) / step).toPrecision(12)) + 0.5);
   if (base + count * step > max) count -= 1;
   else if (base + count * step < min) count += 1;
   return Number((base + count * step).toPrecision(12));

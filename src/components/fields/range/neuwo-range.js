@@ -3,6 +3,10 @@ import { NeuwoFieldElement } from "../field-element.js";
 import { fillPercent, rangeTemplate } from "./range.template.js";
 
 const CONTROLLED = Symbol.for("neuwo.controlled");
+const REACT = Symbol.for("neuwo.react");
+
+/** @param {Element} el */
+const ownedByReact = (el) => REACT in el || Object.keys(el).some((key) => key.startsWith("__reactFiber$"));
 
 /**
  * Slider over a numeric range. The template writes `--neuwo-range-fill` onto the native range input, so the
@@ -30,8 +34,11 @@ export class NeuwoRange extends NeuwoFieldElement {
   /** @type {HTMLFormElement | null} */
   #form = null;
 
+  /** @type {MutationObserver | null} */
+  #styleObserver = null;
+
   #onInput = (/** @type {Event} */ event) => {
-    if (event.target === this.control && Reflect.get(this, CONTROLLED) !== true) this.#syncFill();
+    if (event.target === this.control) this.#syncFill();
   };
 
   #onReset = () => {
@@ -51,9 +58,16 @@ export class NeuwoRange extends NeuwoFieldElement {
     super.connect();
     this.addEventListener("input", this.#onInput);
     this.#bindForm();
+    const control = this.control;
+    if (control && ownedByReact(this) && Reflect.get(this, CONTROLLED) !== true) {
+      this.#styleObserver = new MutationObserver(() => this.#syncFill());
+      this.#styleObserver.observe(control, { attributes: true, attributeFilter: ["style"] });
+    }
   }
 
   disconnect() {
+    this.#styleObserver?.disconnect();
+    this.#styleObserver = null;
     this.removeEventListener("input", this.#onInput);
     this.#form?.removeEventListener("reset", this.#onReset);
     this.#form = null;
@@ -74,7 +88,7 @@ export class NeuwoRange extends NeuwoFieldElement {
 
   #syncFill() {
     const control = this.control;
-    if (!control) return;
+    if (!control || Reflect.get(this, CONTROLLED) === true) return;
     const fill = `${fillPercent(control.value, control.getAttribute("min"), control.getAttribute("max"))}%`;
     if (control.style.getPropertyValue("--neuwo-range-fill") !== fill) control.style.setProperty("--neuwo-range-fill", fill);
   }

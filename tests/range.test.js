@@ -220,6 +220,56 @@ describe("<neuwo-range> under React", () => {
     expect(errors).not.toHaveBeenCalled();
   });
 
+  it("keeps the live fill after a bound change", async () => {
+    const errors = vi.spyOn(console, "error");
+    const tree = (max) => jsx("neuwo-range", { min: 0, max, defaultValue: 20 });
+    const { container, rerender } = await render(tree(100));
+    const host = container.querySelector("neuwo-range");
+    await act(async () => drag(rangeOf(host), "70"));
+    expect(fillOf(host)).toBe("70%");
+    await rerender(tree(200));
+    await nextTask();
+    expect(rangeOf(host).value).toBe("70");
+    expect(fillOf(host)).toBe("35%");
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it("keeps the live fill after a defaultValue change", async () => {
+    const errors = vi.spyOn(console, "error");
+    const tree = (defaultValue) => jsx("neuwo-range", { min: 0, max: 100, defaultValue });
+    const { container, rerender } = await render(tree(20));
+    const host = container.querySelector("neuwo-range");
+    await act(async () => drag(rangeOf(host), "70"));
+    await rerender(tree(30));
+    await nextTask();
+    expect(rangeOf(host).value).toBe("70");
+    expect(fillOf(host)).toBe("70%");
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it("keeps the live fill across an unrelated parent re-render", async () => {
+    const errors = vi.spyOn(console, "error");
+    const tree = (name) => jsx("neuwo-range", { min: 0, max: 100, defaultValue: 20, name });
+    const { container, rerender } = await render(tree("a"));
+    const host = container.querySelector("neuwo-range");
+    await act(async () => drag(rangeOf(host), "70"));
+    await rerender(tree("b"));
+    await nextTask();
+    expect(fillOf(host)).toBe("70%");
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it("never writes the fill on a controlled host, from the setter or updated()", async () => {
+    const { container } = await render(jsx("neuwo-range", { min: 0, max: 100, value: 20, onChange() {} }));
+    const host = container.querySelector("neuwo-range");
+    const set = vi.spyOn(rangeOf(host).style, "setProperty");
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(rangeOf(host), "80");
+    host.value = "80";
+    host.updated();
+    expect(set).not.toHaveBeenCalled();
+    expect(fillOf(host)).toBe("20%");
+  });
+
   it("renders the fill in the server string", () => {
     expect(renderToString(jsx("neuwo-range", { min: 0, max: 200, value: 50, onChange() {} }))).toContain("--neuwo-range-fill:25%");
   });
