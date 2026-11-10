@@ -12,7 +12,8 @@
   classes, with the element name in front for weight: `neuwo-copy .neuwo-copy__button { border-radius: 0; }`.
 - Breaking: `<neuwo-copy>` always renders its control, since the markup cannot know whether the
   clipboard is reachable. Where it is not, as in an insecure context, a click announces
-  `failed-label` instead of the control being absent.
+  `failed-label` instead of the control being absent. A copy with no text to write also announces
+  `failed-label`, and fires no `copied`, instead of writing an empty string.
 - Breaking: `<neuwo-logo>` renders its `<svg>` into its own light DOM from one template, so a
   server-rendered logo is drawn from the first paint. Its classes are prefixed: `.logo` is now
   `.neuwo-logo`, with `.neuwo-logo--{bg-light|bg-dark|bg-dark-alt|bg-colour}`.

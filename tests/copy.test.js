@@ -125,6 +125,30 @@ describe("<neuwo-copy>", () => {
     expect(el.hasAttribute("data-neuwo-state")).toBe(false);
   });
 
+  it("shows exactly one announcement through rapid copies inside the window, whatever their outcome", async () => {
+    const el = make(CODE);
+    await el.copy();
+    writeText.mockRejectedValueOnce(new Error("denied"));
+    await el.copy();
+    await el.copy();
+    const status = part(el, "status");
+    expect(status.childNodes).toHaveLength(1);
+    expect(status.firstChild.nodeType).toBe(Node.TEXT_NODE);
+    expect(status.textContent).toBe("Copied");
+  });
+
+  it("leaves author content in the status region alone through a copy and the reset", async () => {
+    const el = make('<neuwo-copy><pre>x</pre><span slot="status">AUTHOR</span></neuwo-copy>');
+    const author = el.querySelector('[slot="status"]');
+    expect(author.parentElement).toBe(part(el, "status"));
+    await el.copy();
+    expect(author.parentElement).toBe(part(el, "status"));
+    expect(part(el, "status").textContent).toBe("AUTHORCopied");
+    vi.advanceTimersByTime(1200);
+    expect(author.parentElement).toBe(part(el, "status"));
+    expect(part(el, "status").textContent).toBe("AUTHOR");
+  });
+
   it("reports a refused clipboard without claiming success", async () => {
     writeText.mockRejectedValue(new Error("denied"));
     const el = make(CODE);
@@ -207,8 +231,8 @@ describe("<neuwo-copy>", () => {
 
     attach(el);
     part(el, "button").click();
-    await vi.waitFor(() => expect(writeText).toHaveBeenCalledTimes(2));
-    expect(el.getAttribute("data-neuwo-state")).toBe("copied");
+    await vi.waitFor(() => expect(el.getAttribute("data-neuwo-state")).toBe("copied"));
+    expect(writeText).toHaveBeenCalledTimes(2);
   });
 
   it("copies from server markup it adopted without a mutation, through the delegated click", async () => {
@@ -228,8 +252,8 @@ describe("<neuwo-copy>", () => {
     const el = holder.firstElementChild;
     expect(el).toBeInstanceOf(NeuwoCopy);
     part(el, "button").click();
-    await vi.waitFor(() => expect(writeText).toHaveBeenCalledWith(SAMPLE));
-    expect(part(el, "status").textContent).toBe("Copied");
+    await vi.waitFor(() => expect(part(el, "status").textContent).toBe("Copied"));
+    expect(writeText).toHaveBeenCalledWith(SAMPLE);
   });
 
   it("copies the text a script set after render", async () => {
@@ -241,13 +265,47 @@ describe("<neuwo-copy>", () => {
     await vi.waitFor(() => expect(writeText).toHaveBeenCalledWith("npm test"));
   });
 
+  it("copies its own text before it has rendered", async () => {
+    const el = document.createElement("neuwo-copy");
+    el.innerHTML = "\n  <pre>never connected</pre>\n";
+    const onCopied = vi.fn();
+    el.addEventListener("copied", onCopied);
+    expect(await el.copy()).toBe(true);
+    expect(writeText).toHaveBeenCalledWith("never connected");
+    expect(onCopied.mock.calls[0][0].detail.text).toBe("never connected");
+  });
+
+  it.each([
+    ["rendered", () => make("<neuwo-copy>\n  \n</neuwo-copy>")],
+    ["never rendered", () => document.createElement("neuwo-copy")],
+  ])("reports failure when there is no text to copy, %s, and writes and fires nothing", async (_, create) => {
+    const el = create();
+    const onCopied = vi.fn();
+    el.addEventListener("copied", onCopied);
+    expect(await el.copy()).toBe(false);
+    expect(writeText).not.toHaveBeenCalled();
+    expect(onCopied).not.toHaveBeenCalled();
+    expect(el.getAttribute("data-neuwo-state")).toBe("failed");
+    if (el.isConnected) expect(part(el, "status").textContent).toBe("Copying failed");
+  });
+
+  it("leaves a nested wrapper's announcement out of the outer wrapper's text", async () => {
+    const outer = make("<neuwo-copy><p>Outer</p><neuwo-copy><pre>inner</pre></neuwo-copy></neuwo-copy>");
+    const inner = outer.querySelector("neuwo-copy");
+    await inner.copy();
+    expect(part(inner, "status").textContent).toBe("Copied");
+    expect(outer.text).toBe("Outerinner");
+    await outer.copy();
+    expect(writeText).toHaveBeenLastCalledWith("Outerinner");
+  });
+
   it("drives only its own wrapper when copy wrappers nest", async () => {
     const outer = make(`<neuwo-copy><p>Outer</p><neuwo-copy><pre>inner</pre></neuwo-copy></neuwo-copy>`);
     const inner = outer.querySelector("neuwo-copy");
     part(inner, "button").click();
-    await vi.waitFor(() => expect(writeText).toHaveBeenCalledOnce());
+    await vi.waitFor(() => expect(inner.getAttribute("data-neuwo-state")).toBe("copied"));
+    expect(writeText).toHaveBeenCalledOnce();
     expect(writeText).toHaveBeenCalledWith("inner");
-    expect(inner.getAttribute("data-neuwo-state")).toBe("copied");
     expect(part(inner, "status").textContent).toBe("Copied");
     expect(outer.hasAttribute("data-neuwo-state")).toBe(false);
     expect(part(outer, "status").textContent).toBe("");
@@ -313,6 +371,32 @@ describe("<neuwo-copy> under React", () => {
     expect(part(el, "status").textContent).toBe("");
     show({});
     expect(part(el, "button").getAttribute("aria-label")).toBe("Copy");
+    expect(error).not.toHaveBeenCalled();
+  });
+
+  it("lets React change and remove a status child while the announcement shows, with no error", async () => {
+    const error = vi.spyOn(console, "error");
+    const container = attach(document.createElement("div"));
+    const root = createRoot(container);
+    cleanup.push(() => root.unmount());
+    const show = (message) =>
+      flushSync(() =>
+        root.render(jsx("neuwo-copy", { children: [jsx("pre", { children: "x" }, "code"), message && jsx("span", { slot: "status", children: message }, "note")] })),
+      );
+
+    show("hi");
+    const el = container.firstElementChild;
+    part(el, "button").click();
+    await vi.waitFor(() => expect(el.getAttribute("data-neuwo-state")).toBe("copied"));
+    expect(part(el, "status").textContent).toBe("hiCopied");
+    expect(() => show("bye")).not.toThrow();
+    expect(part(el, "status").textContent).toBe("byeCopied");
+    expect(() => show(null)).not.toThrow();
+    expect(part(el, "status").textContent).toBe("Copied");
+    vi.advanceTimersByTime(1200);
+    expect(part(el, "status").childNodes).toHaveLength(0);
+    expect(() => show("again")).not.toThrow();
+    expect(part(el, "status").textContent).toBe("again");
     expect(error).not.toHaveBeenCalled();
   });
 });

@@ -2,6 +2,30 @@ import { NeuwoElement, define } from "../../core/element.js";
 import { copyTemplate } from "./copy.template.js";
 
 const RESET_DELAY = 1200;
+const TEXT = 3;
+
+/**
+ * @param {Node} node
+ * @returns {string}
+ */
+function readable(node) {
+  if (node.nodeType === TEXT) return /** @type {Text} */ (node).data;
+  if (node instanceof Element && node.matches(".neuwo-copy__status")) return "";
+  return Array.from(node.childNodes, readable).join("");
+}
+
+/**
+ * @param {string} text
+ * @returns {Promise<boolean>}
+ */
+async function written(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Wraps copyable content and puts a copy control in its top-right corner. The
@@ -18,7 +42,7 @@ const RESET_DELAY = 1200;
  * @customElement neuwo-copy
  * @attr label - accessible name for the control (default "Copy"); set it to the visitor's language.
  * @attr copied-label - what a screen reader hears after a successful copy (default "Copied").
- * @attr failed-label - what a screen reader hears when the clipboard refuses or is unavailable (default "Copying failed").
+ * @attr failed-label - what a screen reader hears when the clipboard refuses or is unavailable, or there is no text to copy (default "Copying failed").
  * @prop {string} text - read-only; the text the control writes, trimmed.
  * @slot - the content to copy.
  * @cssprop --neuwo-copy-inset - distance from the top and end edges (default `--neuwo-space-3`).
@@ -30,6 +54,9 @@ export class NeuwoCopy extends NeuwoElement {
 
   /** @type {ReturnType<typeof setTimeout> | undefined} */
   #timer;
+
+  /** @type {Text | null} */
+  #announcement = null;
 
   get label() { return this.getAttribute("label") || "Copy"; }
   set label(value) {
@@ -49,7 +76,7 @@ export class NeuwoCopy extends NeuwoElement {
     else this.setAttribute("failed-label", String(value));
   }
 
-  get text() { return (this.#own("content")?.textContent ?? "").trim(); }
+  get text() { return readable(this.#own("content") ?? this).trim(); }
 
   /**
    * Copy the wrapped text the way the control does, then announce the outcome.
@@ -58,9 +85,7 @@ export class NeuwoCopy extends NeuwoElement {
    */
   async copy() {
     const text = this.text;
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch {
+    if (!text || !(await written(text))) {
       this.#show("failed");
       return false;
     }
@@ -93,14 +118,17 @@ export class NeuwoCopy extends NeuwoElement {
   #show(state) {
     clearTimeout(this.#timer);
     this.setAttribute("data-neuwo-state", state);
-    this.#own("status")?.replaceChildren(state === "copied" ? this.copiedLabel : this.failedLabel);
+    const announcement = (this.#announcement ??= this.ownerDocument.createTextNode(""));
+    announcement.remove();
+    announcement.data = state === "copied" ? this.copiedLabel : this.failedLabel;
+    this.#own("status")?.append(announcement);
     this.#timer = setTimeout(() => this.#reset(), RESET_DELAY);
   }
 
   #reset() {
     clearTimeout(this.#timer);
     this.removeAttribute("data-neuwo-state");
-    this.#own("status")?.replaceChildren();
+    this.#announcement?.remove();
   }
 }
 
