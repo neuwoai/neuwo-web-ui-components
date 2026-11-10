@@ -2,20 +2,11 @@
 
 ## Unreleased
 
-- Under React, toggling `loading` on `<neuwo-button>` no longer remounts the children passed into it, so
-  their state and DOM nodes survive: the JSX runtime now keys every element it renders from a template.
-- Breaking: the `<neuwo-badge>` shimmer sweeps with `transform` instead of `left`, so it no longer shifts
-  layout, and `--neuwo-badge-shimmer-width` is now unitless, a percentage of the badge (`35`, not `35%`).
-  An override with a unit, such as `40%`, now removes the sweep.
-- The metric-adjusted fallback faces also use Liberation Sans or Arimo where Arial is missing, as on most
-  Linux systems, so text shifts less when the brand fonts arrive.
-
 - Breaking: `<neuwo-logo>` renders its `<svg>` into its own light DOM from one template, so a
   server-rendered logo is drawn from the first paint. Its classes are prefixed: `.logo` is now
   `.neuwo-logo`, with `.neuwo-logo--{bg-light|bg-dark|bg-dark-alt|bg-colour}`.
 - Breaking: `::part(logo)` on `<neuwo-logo>` is gone. Restyle through the classes, with the element
   name in front for weight: `neuwo-logo .neuwo-logo { opacity: 0.8; }`.
-
 - Breaking: `<neuwo-badge>`, `<neuwo-deal-id>` and `<neuwo-status-dot>` render into their own light DOM
   from one template, like the button, so server-rendered ones are styled from the first paint.
   Their classes are prefixed: `.badge` is now `.neuwo-badge` (with `.neuwo-badge--{green|s|l|borderless|glow|pulse|shimmer|intensity-s|intensity-l}`),
@@ -24,11 +15,13 @@
 - The keyframes are renamed to match: `badge-pulse` and `badge-shimmer` are now `neuwo-badge-pulse` and
   `neuwo-badge-shimmer`, and `status-dot-pulse` and `status-dot-blink` are now `neuwo-status-dot-pulse`
   and `neuwo-status-dot-blink`.
+- Breaking: the `<neuwo-badge>` shimmer sweeps with `transform` instead of `left`, so it no longer shifts
+  layout, and `--neuwo-badge-shimmer-width` is now unitless, a percentage of the badge (`35`, not `35%`).
+  An override with a unit, such as `40%`, now removes the sweep.
 - Breaking: `::part(badge)`, `::part(value)` and `::part(dot)` are gone. Restyle through the classes, with
   the element name in front for weight: `neuwo-badge .neuwo-badge { font-weight: 500; }`.
 - The label of `<neuwo-badge>` and the value of `<neuwo-deal-id>` are now plain children of their
   `.neuwo-badge` and `.neuwo-deal-id` span instead of a slot.
-
 - Breaking: `<neuwo-button>` renders into its own light DOM from one template, the same markup the
   server and the JSX runtime produce, so server-rendered buttons are styled from the first paint.
   Its classes are prefixed: `.btn` is now `.neuwo-btn`, with `.neuwo-btn--{solid|outline|glass|sm|lg}`,
@@ -54,8 +47,12 @@
   it only when the page has not linked it, and loads the fonts from beside itself.
 - New entries: `./server` exports `expand(html)`, `renderElement` and the Eleventy plugin, with its HTML
   parser bundled; `./jsx-runtime` and `./jsx-dev-runtime` wrap React's runtime for `jsxImportSource`.
+  Under React the markup is React's: children passed in keep their state and DOM nodes across
+  re-renders, and the element never moves or rewrites what React rendered.
 - `neuwo.js` can be imported on a server, where it registers nothing, and loading it twice no longer throws.
 - `neuwo-components.css` and `foundation/fonts.css` are now published, and `neuwo.css` carries the font faces.
+- The metric-adjusted fallback faces also use Liberation Sans or Arimo where Arial is missing, as on most
+  Linux systems, so text shifts less when the brand fonts arrive.
 - Breaking: every custom property is now prefixed `--neuwo-` (tokens such as `--neuwo-color-blue`
   and component properties such as `--neuwo-copy-inset`), so the library cannot collide with a
   host page. Rename any overrides in your own CSS.
