@@ -23,7 +23,6 @@
   ],
   "exports": {
     ".": { "types": "./dist/types/elements.d.ts", "default": "./dist/neuwo.js" },
-    "./react": { "types": "./dist/types/react.d.ts" },
     "./server": { "types": "./dist/server/index.d.ts", "default": "./dist/server.js" },
     "./jsx-runtime": { "types": "./dist/types/jsx-runtime.d.ts", "default": "./dist/jsx-runtime.js" },
     "./jsx-dev-runtime": { "types": "./dist/types/jsx-dev-runtime.d.ts", "default": "./dist/jsx-dev-runtime.js" },
@@ -40,13 +39,13 @@
   },
   "scripts": {
     "start": "node scripts/build.js --serve",
-    "build": "node scripts/build.js && npm run analyze && npm run types && npm run types:react",
+    "build": "node scripts/build.js && npm run analyze && npm run types && npm run types:jsx",
     "analyze": "cem analyze",
     "pretest": "npm run analyze",
     "test": "vitest run",
     "test:watch": "vitest",
     "types": "tsc -p tsconfig.json",
-    "types:react": "node scripts/react-types.js && tsc -p tests/react/tsconfig.json",
+    "types:jsx": "node scripts/jsx-types.js && tsc -p tests/react/tsconfig.json",
     "prepack": "npm run build"
   },
   "devDependencies": {

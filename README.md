@@ -17,11 +17,9 @@ npm install @neuwo/web-ui-library--demo
 npm tarball, with permissive CORS headers, so the fonts load without any configuration:
 
 ```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.1/dist/neuwo-components.css" />
 <script type="module" src="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.1/dist/neuwo.js"></script>
 ```
-
-Pin as tightly as you can bear: `@0.1` follows the latest 0.1.x and is cached at the edge for
-about half a day, while `@0.1.0` is immutable and cached for a year.
 
 **Self-hosted**, to keep every runtime request on your own origin and take the registry out of
 the runtime path entirely. Copy the published `dist/` into your own static output at build time:
@@ -34,56 +32,134 @@ eleventyConfig.addPassthroughCopy({
 ```
 
 ```html
+<link rel="stylesheet" href="/vendor/neuwo/neuwo-components.css" />
 <script type="module" src="/vendor/neuwo/neuwo.js"></script>
 ```
 
 Next.js and Vite serve `public/` verbatim, so a `prebuild` script copying the same directory
 into `public/vendor/neuwo` achieves the same thing.
 
-### Fonts and bundlers
+### Versions
 
-The bundle names each woff2 file as `new URL("./fonts/<file>", import.meta.url)`. Served as a
-directory (jsDelivr or self-hosted), that resolves to the `fonts/` folder beside `neuwo.js`.
-Imported through a bundler, it is the pattern Vite, webpack and Turbopack recognise: they copy
-the three files into the app's output and rewrite the URLs, with no configuration. This is
-verified with Vite 8 (dev server and build) and Next.js 16 (Turbopack and webpack).
+A page that server-renders the components fixes their markup at build time, so the markup is
+part of the public API. Before 1.0, class names and markup structure change only in minor
+releases; patch releases change CSS and behaviour only. Two ways to take that:
 
-A bundler that does not recognise the pattern leaves the URLs pointing beside its own output
-chunk, where nothing put the fonts, and the brand faces silently fall back to a system font. In
-that case, or to serve the fonts from somewhere else, declare your own `@font-face` rules inside
-a `<style data-neuwo-fonts>` element; the library detects that attribute and leaves fonts alone.
+- **Float on patches**, for example `@0.2` in a jsDelivr URL. Styling and behaviour fixes reach
+  every site centrally. A markup change reaches you only when you upgrade and rebuild.
+- **Pin**, for example `@0.2.1`, or the version your lockfile resolves. Nothing changes until
+  you decide it should. A pinned URL is immutable and cached for a year, while a floating one is
+  cached at the edge for about half a day.
+
+Either way, serve the stylesheet and the script from the same version you built with.
+
+### Fonts
+
+The brand fonts are `@font-face` rules inside the stylesheet, so there is nothing to inject.
+Served from jsDelivr or your own origin, the `url()`s resolve to the `fonts/` folder beside the
+stylesheet. A bundler treats them as ordinary CSS `url()`s: Vite, webpack and Turbopack copy the
+woff2 files into the app's output and rewrite the URLs with no configuration. This is verified
+with Vite 8 (dev server and build) and Next.js 16 (Turbopack and webpack).
+
+To serve the fonts from somewhere else, override the faces by declaring your own `@font-face`
+rules after the stylesheet. To avoid a swap on first paint, preload a file:
+
+```html
+<link rel="preload" as="font" type="font/woff2" crossorigin
+      href="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.1/dist/fonts/outfit-variable.woff2" />
+```
 
 ## Consume
 
-Load one script; components self-register.
+Components need the stylesheet and the script. Link `neuwo-components.css`, which holds the
+design tokens, the font faces and every component's styles, then load the script; components
+self-register.
 
 ```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.1/dist/neuwo-components.css" />
 <script type="module" src="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.1/dist/neuwo.js"></script>
 <neuwo-button variant="solid">Get started</neuwo-button>
 ```
 
-Design tokens are adopted onto the document and inherit through every shadow boundary, so you
-re-theme by setting tokens on `:root`:
+In a bundler, import the stylesheet where you import the library:
+
+```js
+import "@neuwo/web-ui-library--demo/neuwo-components.css";
+import "@neuwo/web-ui-library--demo";
+```
+
+The script is safe to import on a server, where it registers nothing.
+
+Tokens are custom properties on `:root` and inherit through every component, so you re-theme by
+setting them after the stylesheet:
 
 ```css
 :root { --neuwo-color-blue: oklch(77% 0.18 132); }
 ```
 
-Opt into Neuwo typography for native headings and text by linking the stylesheet:
-
-```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.1/dist/foundation/typography.css" />
-```
-
-or, in a bundler, `import "@neuwo/web-ui-library--demo/foundation/typography.css"`.
-
-To link every foundation sheet as one file (handy for CSS-only or no-bundler consumers), use the
-combined stylesheet instead: tokens, typography, the page surface, navigation links and the
-Markdown surface, in that order.
+For Neuwo typography on native headings and text as well, link `neuwo.css` instead. It is
+`neuwo-components.css` plus typography, the page surface, navigation links and the Markdown
+surface.
 
 ```html
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.1/dist/neuwo.css" />
 ```
+
+Typography alone is also published as `foundation/typography.css`, and tokens alone as
+`foundation/tokens.css`, for a consumer that keeps its own element styling.
+
+### Setup per kind of site
+
+| Site | One-time setup |
+|---|---|
+| Next.js, server-rendered React (React Router, Remix) | `"jsxImportSource": "@neuwo/web-ui-library--demo"` in `tsconfig`; import the stylesheet in the root layout; import the library once from a client component |
+| Client-only React (Vite) | the same `jsxImportSource` line; import the stylesheet and the library at the entry |
+| Eleventy | `eleventyConfig.addPlugin(neuwo)`; link the stylesheet; script tag for `neuwo.js` |
+| Astro and other Node builds | call `expand(html)` from `@neuwo/web-ui-library--demo/server` on the output; link the stylesheet; load `neuwo.js` |
+| Plain HTML, non-JavaScript servers | link the stylesheet and load `neuwo.js`; components render when the script runs |
+| A page that can only add one script | `neuwo-standalone.js` alone; components render when the script runs |
+
+"The stylesheet" is `neuwo-components.css`, or `neuwo.css` for Neuwo typography too. React and
+Next.js are covered in [React](#react), Eleventy and other builds in [Server rendering](#server-rendering).
+
+### A page that can only add a script
+
+Where you cannot link a stylesheet, load the standalone build on its own:
+
+```html
+<script type="module" src="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.1/dist/neuwo-standalone.js"></script>
+<neuwo-button variant="solid">Get started</neuwo-button>
+```
+
+It embeds `neuwo-components.css`, applies it only if the page has not already linked it, and
+loads the fonts from beside itself. Nothing renders until the script has run, so prefer the
+linked stylesheet wherever you can add one.
+
+### Server rendering
+
+Import from `@neuwo/web-ui-library--demo/server`. `expand(html)` returns the HTML with every
+registered `<neuwo-*>` tag written out as its full markup, so the page paints before any script
+runs and still works with the script blocked.
+
+```js
+import { expand } from "@neuwo/web-ui-library--demo/server";
+
+const output = expand('<neuwo-button variant="solid">Get started</neuwo-button>');
+```
+
+For Eleventy, add the plugin; it runs `expand` on every `.html` output:
+
+```js
+// eleventy.config.js
+import { eleventyPlugin as neuwo } from "@neuwo/web-ui-library--demo/server";
+
+export default function (eleventyConfig) {
+  eleventyConfig.addPlugin(neuwo);
+}
+```
+
+Then link the stylesheet and load `neuwo.js` in your layout as above. For Astro and other Node
+builds, call `expand` on each page's output before it is written.
 
 ### Links
 
@@ -379,39 +455,37 @@ Three details worth knowing:
 A `copied` event fires after a successful write, with the text in `detail.text`. It bubbles and is
 composed, so it is reachable from the document.
 
-### Fonts
-
-`@font-face` is ignored inside shadow roots, so the script injects the brand
-font rules into `document.head` once and resolves the `woff2` files relative to
-its own URL (you do not link a font stylesheet). The font files ship next to the
-bundle under `fonts/`, so to preload them point at that directory:
-
-```html
-<link rel="preload" as="font" type="font/woff2" crossorigin
-      href="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.1/dist/fonts/outfit-variable.woff2" />
-```
-
 ## React
 
-Use React 19. Import the library once, at the entry, before the first render:
+Use React 19. Set the JSX import source in `tsconfig.json` (or the equivalent Babel, SWC or
+esbuild option):
+
+```json
+{ "compilerOptions": { "jsx": "react-jsx", "jsxImportSource": "@neuwo/web-ui-library--demo" } }
+```
+
+Import the stylesheet and the library once, at the entry:
 
 ```tsx
 // src/main.tsx
+import "@neuwo/web-ui-library--demo/neuwo-components.css";
 import "@neuwo/web-ui-library--demo";
-import type {} from "@neuwo/web-ui-library--demo/react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 
 createRoot(document.getElementById("root")!).render(<App />);
 ```
 
+`jsxImportSource` points JSX at the library's runtime, which wraps React's own and expands every
+registered `<neuwo-*>` tag into its markup. Without it React would render a bare tag and the
+element would move React's children into its own markup, which breaks React's later updates. The
+same setting adds every element to JSX with each attribute's allowed values and each custom
+event's `detail`, so a misspelt variant fails the type check. React stays an optional peer
+dependency.
+
 The first import registers every element, so each `<neuwo-*>` React creates renders in the same
 pass, before the browser paints. Registering later, from an effect or a script that runs after
 the app, shows the bare tags first and the components a moment after.
-
-The second import is types only. It adds every element to React's JSX, with each attribute's
-allowed values and each custom event's `detail`, so a misspelt variant fails the type check. It
-works from any file the TypeScript program includes.
 
 React 19 sets a property where the element has one and binds events, so the elements behave like
 native controls:
@@ -435,27 +509,29 @@ React 18 passes every prop to a custom element as a text attribute. `disabled={f
 
 ### Next.js and server rendering
 
-The library needs a browser to load. Importing it on the server fails with
-`CSSStyleSheet is not defined`, and that includes `"use client"` files, which Next.js also
-renders on the server. Load it from an effect instead:
+The library imports safely on a server, so no loader component is needed. Set `jsxImportSource`
+in `tsconfig.json`, as above, and import the stylesheet in the root layout:
+
+```tsx
+// app/layout.tsx
+import "@neuwo/web-ui-library--demo/neuwo-components.css";
+```
+
+Import the library once from a client component, so the elements register in the browser:
 
 ```tsx
 "use client";
-import { useEffect } from "react";
+import "@neuwo/web-ui-library--demo";
 
-export function NeuwoLoader() {
-  useEffect(() => {
-    import("@neuwo/web-ui-library--demo");
-  }, []);
+export function Neuwo() {
   return null;
 }
 ```
 
-Render `<NeuwoLoader />` once in the root layout and put the type import in a declaration file,
-such as `app/neuwo.d.ts`. The server-rendered HTML carries the bare tags, so components appear
-once the bundle has run. Import `@neuwo/web-ui-library--demo/neuwo.css` in the root layout too:
-the tokens, typography and page surface then arrive with the HTML, so the page is on-brand from
-the first paint and only the components fill in.
+Render `<Neuwo />` once in the root layout. Because the JSX runtime expands `<neuwo-*>` tags, the
+server-rendered HTML carries their full markup and the page is on-brand from the first paint,
+before the bundle has run. Import `neuwo.css` instead of `neuwo-components.css` to add the
+typography and page surface.
 
 ## Components
 

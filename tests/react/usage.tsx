@@ -1,4 +1,3 @@
-import type {} from "@neuwo/web-ui-library--demo/react";
 import type { NeuwoButton } from "@neuwo/web-ui-library--demo";
 import { useRef } from "react";
 

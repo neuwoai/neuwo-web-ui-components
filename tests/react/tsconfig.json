@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "jsx": "react-jsx",
+    "jsxImportSource": "@neuwo/web-ui-library--demo",
     "module": "esnext",
     "moduleResolution": "bundler",
     "target": "es2022",

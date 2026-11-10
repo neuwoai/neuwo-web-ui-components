@@ -16,11 +16,12 @@
 - Breaking: the foundation classes are now prefixed `neuwo-`: `.neuwo-body`, `.neuwo-background__gradient`,
   `.neuwo-nav-link`, `.neuwo-markdown`, `.neuwo-callout`, `.neuwo-link` and `.neuwo-eyebrow`, with their
   modifiers and elements. Update the class attributes in your markup.
-- React JSX types, generated from the manifest: `import type {} from
-  "@neuwo/web-ui-library--demo/react"` types every element's attributes and custom events.
+- React JSX types, generated from the manifest, now come through `jsxImportSource`
+  (`"jsxImportSource": "@neuwo/web-ui-library--demo"`) and type every element's attributes and custom
+  events. Breaking: the types-only `./react` entry is removed.
 - `copied` on `<neuwo-copy>` is typed `CustomEvent<{ text: string }>`.
-- README: a React section covering setup, props and events in React 19, React 18's limits, and
-  loading in Next.js.
+- README: setup per kind of site (React, Next.js, Eleventy, other Node builds, plain HTML and
+  script-only pages), versioning advice, and React 19 props and events with React 18's limits.
 - Brand fonts now load when the stylesheet is imported through a bundler, which copies the woff2 files
   its `url()`s name into the app's output; previously the faces 404'd into a system fallback unless
   `fonts/` was served beside the bundle.

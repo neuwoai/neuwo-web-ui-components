@@ -2,11 +2,11 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { reactTypes } from "../scripts/react-types.js";
+import { jsxElementsTypes, jsxRuntimeTypes } from "../scripts/jsx-types.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const manifest = JSON.parse(readFileSync(join(__dirname, "../custom-elements.json"), "utf8"));
-const types = reactTypes(manifest);
+const types = jsxElementsTypes(manifest);
 
 function block(tag) {
   const start = types.indexOf(`"${tag}": NeuwoElementProps<`);
@@ -14,7 +14,7 @@ function block(tag) {
   return types.slice(start, types.indexOf("}>;", start));
 }
 
-describe("React JSX types", () => {
+describe("JSX types", () => {
   it("augments React's own JSX namespace", () => {
     expect(types).toContain('declare module "react"');
     expect(types).toContain("interface IntrinsicElements");
@@ -56,5 +56,18 @@ describe("React JSX types", () => {
     expect(types).not.toMatch(/\bonchange\?/);
     expect(types).not.toMatch(/\boninput\?/);
     expect(types).not.toContain("onundefined");
+  });
+
+  it("re-exports the production runtime with the element types attached", () => {
+    const runtime = jsxRuntimeTypes("jsx-runtime");
+    expect(runtime).toContain('import "./jsx-elements.js";');
+    expect(runtime).toContain('export { Fragment, jsx, jsxs } from "react/jsx-runtime";');
+    expect(runtime).toContain('export type { JSX } from "react/jsx-runtime";');
+  });
+
+  it("re-exports the development runtime with jsxDEV", () => {
+    const runtime = jsxRuntimeTypes("jsx-dev-runtime");
+    expect(runtime).toContain('export { Fragment, jsxDEV } from "react/jsx-dev-runtime";');
+    expect(runtime).toContain('export type { JSX } from "react/jsx-dev-runtime";');
   });
 });

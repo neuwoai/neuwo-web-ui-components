@@ -33,7 +33,7 @@ function elementProps(declaration) {
   return lines;
 }
 
-export function reactTypes(manifest) {
+export function jsxElementsTypes(manifest) {
   const elements = manifest.modules
     .flatMap((module) => module.declarations ?? [])
     .filter((declaration) => declaration.tagName)
@@ -59,8 +59,18 @@ ${entries.join("\n")}
 `;
 }
 
+export function jsxRuntimeTypes(runtime) {
+  const entry = runtime === "jsx-dev-runtime" ? "jsxDEV" : "jsx, jsxs";
+  return `import "./jsx-elements.js";
+export { Fragment, ${entry} } from "react/${runtime}";
+export type { JSX } from "react/${runtime}";
+`;
+}
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const manifest = JSON.parse(await readFile("custom-elements.json", "utf8"));
-  await writeFile("dist/types/react.d.ts", reactTypes(manifest));
-  console.log("Wrote dist/types/react.d.ts");
+  await writeFile("dist/types/jsx-elements.d.ts", jsxElementsTypes(manifest));
+  await writeFile("dist/types/jsx-runtime.d.ts", jsxRuntimeTypes("jsx-runtime"));
+  await writeFile("dist/types/jsx-dev-runtime.d.ts", jsxRuntimeTypes("jsx-dev-runtime"));
+  console.log("Wrote dist/types/jsx-elements.d.ts, jsx-runtime.d.ts and jsx-dev-runtime.d.ts");
 }

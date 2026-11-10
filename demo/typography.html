@@ -5,16 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Neuwo Web UI Library: Typography</title>
 
-    <!--
-      One link, both foundation layers: dist/neuwo.css is tokens.css followed by
-      typography.css. Tokens are therefore present at first paint for this page's
-      own chrome, not only after the module loads.
-
-      The module is still needed: it injects the @font-face rules into
-      <head> (a shadow root ignores @font-face, so the library does it in JS) and
-      resolves the woff2 URLs against its own location. Without it the page falls
-      back to system fonts, so every specimen below would be a lie.
-    -->
     <link rel="stylesheet" href="/dist/neuwo.css" />
     <script type="module" src="/dist/neuwo.js"></script>
 
@@ -142,9 +132,9 @@
       markup inherits the Neuwo type language.
     </p>
     <p class="demo-note">
-      Tokens auto-adopt onto the document when <code>neuwo.js</code> loads, so components are
-      themed without any link tag. Typography is never injected: global element rules are
-      intrusive, so adopting them is the consumer's decision.
+      Tokens and fonts come from a linked stylesheet, or from <code>neuwo-standalone.js</code> on a
+      page that can only add a script. Typography is only in <code>neuwo.css</code>: global
+      element rules are intrusive, so linking them is the consumer's decision.
     </p>
 
     <section class="demo-section">
@@ -165,11 +155,11 @@
       <div class="demo-row">
         <span class="demo-row__meta"><b>foundation/typography.css</b>type only</span>
         <span class="demo-row__sample demo-row__sample--text"
-          >Needs the tokens present, from the link above or from the module.</span
+          >Needs the tokens present, from <b>neuwo.css</b> or <b>foundation/tokens.css</b>.</span
         >
       </div>
       <p class="demo-note">
-        The fonts arrive from the module, not from any stylesheet. Preload them from
+        The <code>@font-face</code> rules are in the stylesheet. Preload the files from
         <code>/neuwo/fonts/</code> to avoid a swap on first paint.
       </p>
     </section>
