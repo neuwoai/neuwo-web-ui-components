@@ -8,7 +8,7 @@
    `::-moz-range-progress` on its own. The track base stays neutral in both, so
    the unfilled side is never blue. */
 
-.range {
+.neuwo-range {
   /* Geometry, shared by both engines' pseudo-elements. */
   --neuwo-range-track-height: 0.375rem;
   --neuwo-range-thumb-size: 0.875rem;
@@ -32,14 +32,14 @@
   background: transparent;
 }
 
-.range:disabled {
+.neuwo-range:disabled {
   opacity: var(--neuwo-opacity-disabled);
   cursor: not-allowed;
 }
 
 /* --- WebKit / Blink --- */
 
-.range::-webkit-slider-runnable-track {
+.neuwo-range::-webkit-slider-runnable-track {
   height: var(--neuwo-range-track-height);
   border-radius: var(--neuwo-radius-full);
   background-color: var(--neuwo-glass-bg);
@@ -48,7 +48,7 @@
   background-repeat: no-repeat;
 }
 
-.range::-webkit-slider-thumb {
+.neuwo-range::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: var(--neuwo-range-thumb-size);
@@ -62,26 +62,26 @@
   transition: transform var(--neuwo-transition-fast), box-shadow var(--neuwo-transition-fast);
 }
 
-.range:hover::-webkit-slider-thumb,
-.range:active::-webkit-slider-thumb {
+.neuwo-range:hover::-webkit-slider-thumb,
+.neuwo-range:active::-webkit-slider-thumb {
   transform: scale(1.12);
 }
 
 /* --- Firefox --- */
 
-.range::-moz-range-track {
+.neuwo-range::-moz-range-track {
   height: var(--neuwo-range-track-height);
   border-radius: var(--neuwo-radius-full);
   background: var(--neuwo-glass-bg);
 }
 
-.range::-moz-range-progress {
+.neuwo-range::-moz-range-progress {
   height: var(--neuwo-range-track-height);
   border-radius: var(--neuwo-radius-full);
   background: var(--neuwo-color-blue);
 }
 
-.range::-moz-range-thumb {
+.neuwo-range::-moz-range-thumb {
   width: var(--neuwo-range-thumb-size);
   height: var(--neuwo-range-thumb-size);
   border: var(--neuwo-range-thumb-border) solid var(--neuwo-color-blue);
@@ -92,29 +92,29 @@
 
 /* --- Focus: the ring belongs on the thumb, not on the input box --- */
 
-.range:focus-visible {
+.neuwo-range:focus-visible {
   outline: none;
   /* The shared field chrome rings the whole box; a slider rings its thumb. */
   box-shadow: none;
 }
 
-.range:focus-visible::-webkit-slider-thumb {
+.neuwo-range:focus-visible::-webkit-slider-thumb {
   box-shadow: var(--neuwo-shadow-focus), var(--neuwo-shadow-sm);
 }
 
-.range:focus-visible::-moz-range-thumb {
+.neuwo-range:focus-visible::-moz-range-thumb {
   box-shadow: var(--neuwo-shadow-focus);
 }
 
 /* Reduced motion keeps a static thumb; the focus ring and the filled track
    already signal state without any movement. */
 @media (prefers-reduced-motion: reduce) {
-  .range::-webkit-slider-thumb {
+  .neuwo-range::-webkit-slider-thumb {
     transition: none;
   }
 
-  .range:hover::-webkit-slider-thumb,
-  .range:active::-webkit-slider-thumb {
+  .neuwo-range:hover::-webkit-slider-thumb,
+  .neuwo-range:active::-webkit-slider-thumb {
     transform: none;
   }
 }

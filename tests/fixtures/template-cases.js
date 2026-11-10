@@ -177,6 +177,13 @@ export const cases = {
     { name: "value with markup characters", attrs: { value: "x & y < z </textarea>" }, children: [] },
     { name: "small, disabled, readonly and no error line", attrs: { size: "sm", disabled: "", readonly: "", "no-error-line": "", "aria-label": "Notes" }, children: [] },
   ],
+  "neuwo-range": [
+    { name: "default", attrs: {}, children: [] },
+    { name: "bounds and value", attrs: { name: "views", label: "Page views", min: "0", max: "200", step: "5", value: "50", "aria-valuetext": "50 views" }, children: [] },
+    { name: "no value takes the midpoint", attrs: { min: "0", max: "10" }, children: [] },
+    { name: "value outside the bounds and inverted bounds", attrs: { min: "10", max: "0", value: "500", error: "Too high" }, children: [] },
+    { name: "small, disabled and no error line", attrs: { size: "sm", disabled: "", "no-error-line": "", "aria-label": "Volume", value: "30" }, children: [] },
+  ],
   "neuwo-notice": [
     { name: "default message", attrs: {}, children: ["Read this page in Polish?"] },
     {

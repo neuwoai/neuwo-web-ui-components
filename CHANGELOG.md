@@ -43,6 +43,17 @@
   form-associated: the native `<textarea>` submits, resets and validates with its form, the `value`
   attribute is its starting text, and the `change` and `input` events, `event.target`, `onChange` in React
   and `data-*` follow `<neuwo-input>` above. A value that starts with a newline survives server rendering.
+- Breaking: `<neuwo-range>` renders into its own light DOM from the same shell as `<neuwo-input>`, with
+  its recipe, `components/fields/range/range.css`, in `neuwo-components.css`. The native range input
+  carries `.neuwo-input` and `.neuwo-range`; the unprefixed `.range`, `.field`, `.input` and their parts are
+  gone, and `::part(field)`, `::part(label)`, `::part(input)` and `::part(error)` no longer match. It is no
+  longer form-associated: the native input submits, resets and validates with its form, the `value`
+  attribute is its starting value, and the `change` and `input` events, `event.target`, `onChange` in
+  React and `data-*` follow `<neuwo-input>` above. The custom properties keep their `--neuwo-range-*` names.
+- The filled part of a range track is in the first paint. The template writes `--neuwo-range-fill` onto
+  the input from `min`, `max` and `value`, so server-rendered markup shows it in WebKit and Blink before the
+  script loads; it used to be written by script and the track was unfilled until then. The element keeps it
+  current when the thumb moves, the value is set, a bound changes and the form resets.
 - Breaking: `<neuwo-cta>` renders into its own light DOM from one template, so a server-rendered band
   is styled from the first paint. Its classes are prefixed: `.cta` is now `.neuwo-cta` (with
   `.neuwo-cta--{banner|spotlight}`), and `.cta__body`, `.cta__glow`, `.cta__inner`, `.cta__headline`,

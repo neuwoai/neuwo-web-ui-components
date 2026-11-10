@@ -1,99 +1,226 @@
-import { describe, expect, it } from "vitest";
-import "../src/components/fields/range/neuwo-range.js";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { Window } from "happy-dom";
+import { act } from "react";
+import { createRoot } from "react-dom/client";
+import { renderToString } from "react-dom/server";
+import "../src/index.js";
+import { NeuwoRange } from "../src/components/fields/range/neuwo-range.js";
+import { NeuwoFieldElement } from "../src/components/fields/field-element.js";
+import { expand } from "../src/server/index.js";
+import { jsx } from "../src/react/jsx-runtime.js";
 
-function make(html) {
-  const host = document.createElement("div");
-  host.innerHTML = html;
-  document.body.appendChild(host);
-  return host.firstElementChild;
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
+const CONTROLLED = Symbol.for("neuwo.controlled");
+
+const cleanup = [];
+afterEach(() => {
+  while (cleanup.length) cleanup.pop()();
+  vi.restoreAllMocks();
+});
+
+function attach(node) {
+  document.body.appendChild(node);
+  cleanup.push(() => node.remove());
+  return node;
 }
 
-const fillOf = (el) => el.shadowRoot.querySelector("input").style.getPropertyValue("--neuwo-range-fill");
+function make(html) {
+  const holder = document.createElement("div");
+  holder.innerHTML = html;
+  return attach(holder).firstElementChild;
+}
+
+const rangeOf = (el) => el.querySelector(":scope > .neuwo-field > .neuwo-input");
+const fillOf = (el) => rangeOf(el).style.getPropertyValue("--neuwo-range-fill");
+
+/** @param {HTMLInputElement} control @param {string} value */
+function drag(control, value) {
+  Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(control, value);
+  control.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
+const nextTask = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 describe("<neuwo-range>", () => {
-  it("registers and renders a range input on the portable class", () => {
+  it("registers a light DOM field element with a native range input on the prefixed classes", () => {
+    expect(customElements.get("neuwo-range")).toBe(NeuwoRange);
+    expect(Object.getPrototypeOf(NeuwoRange)).toBe(NeuwoFieldElement);
     const el = make(`<neuwo-range></neuwo-range>`);
-    expect(customElements.get("neuwo-range")).toBeTruthy();
-    const control = el.shadowRoot.querySelector("input");
+    expect(el.shadowRoot).toBeNull();
+    const control = rangeOf(el);
     expect(control.type).toBe("range");
-    expect(control.classList.contains("range")).toBe(true);
-    expect(control.getAttribute("part")).toBe("input");
+    expect(control.classList.contains("neuwo-input")).toBe(true);
+    expect(control.classList.contains("neuwo-range")).toBe(true);
+    expect(el.querySelector("[part]")).toBeNull();
   });
 
   it("forwards the bounds to the control", () => {
-    const el = make(`<neuwo-range min="10" max="90" step="5"></neuwo-range>`);
-    const control = el.shadowRoot.querySelector("input");
+    const control = rangeOf(make(`<neuwo-range min="10" max="90" step="5"></neuwo-range>`));
     expect(control.getAttribute("min")).toBe("10");
     expect(control.getAttribute("max")).toBe("90");
     expect(control.getAttribute("step")).toBe("5");
   });
 
   it("does not forward the text-field attributes that a slider has no use for", () => {
-    const el = make(`<neuwo-range placeholder="nope" autocomplete="off" readonly></neuwo-range>`);
-    const control = el.shadowRoot.querySelector("input");
-    for (const name of ["placeholder", "autocomplete", "readonly"])
-      expect(control.hasAttribute(name)).toBe(false);
+    const control = rangeOf(make(`<neuwo-range placeholder="nope" autocomplete="off" readonly required></neuwo-range>`));
+    for (const name of ["placeholder", "autocomplete", "readonly", "required"]) expect(control.hasAttribute(name)).toBe(false);
+  });
+
+  it("forwards aria-valuetext, and a rewrite of it, without another trigger", () => {
+    const el = make(`<neuwo-range min="0" max="100" value="40" aria-valuetext="40 views"></neuwo-range>`);
+    expect(rangeOf(el).getAttribute("aria-valuetext")).toBe("40 views");
+    el.setAttribute("aria-valuetext", "40 per cent");
+    expect(rangeOf(el).getAttribute("aria-valuetext")).toBe("40 per cent");
   });
 
   it("seeds a value outside the default 0-100 window", () => {
-    // The bounds have to reach the control before the value, or the native clamp
-    // squeezes the seed into 0-100 and it is lost.
     const el = make(`<neuwo-range min="1000" max="100000" value="50000"></neuwo-range>`);
     expect(el.value).toBe("50000");
   });
 
-  it("writes the filled portion of the track as a percentage", () => {
-    const el = make(`<neuwo-range min="0" max="200" value="50"></neuwo-range>`);
-    expect(fillOf(el)).toBe("25%");
+  it("fills the track in the first render, against the bounds", () => {
+    expect(fillOf(make(`<neuwo-range min="0" max="200" value="50"></neuwo-range>`))).toBe("25%");
+    expect(fillOf(make(`<neuwo-range min="100" max="300" value="150"></neuwo-range>`))).toBe("25%");
+    expect(fillOf(make(`<neuwo-range min="0" max="10"></neuwo-range>`))).toBe("50%");
+    expect(fillOf(make(`<neuwo-range min="0" max="100" value="500"></neuwo-range>`))).toBe("100%");
   });
 
-  it("re-computes the fill against the bounds, not the raw value", () => {
-    const el = make(`<neuwo-range min="100" max="300" value="150"></neuwo-range>`);
-    expect(fillOf(el)).toBe("25%");
+  it("follows the thumb as it is dragged", () => {
+    const el = make(`<neuwo-range min="0" max="100" value="10"></neuwo-range>`);
+    drag(rangeOf(el), "80");
+    expect(fillOf(el)).toBe("80%");
+    expect(el.value).toBe("80");
   });
 
   it("updates the fill when the value property is set", () => {
     const el = make(`<neuwo-range min="0" max="100" value="10"></neuwo-range>`);
-    expect(fillOf(el)).toBe("10%");
     el.value = "80";
     expect(fillOf(el)).toBe("80%");
   });
 
-  it("updates the fill when the bounds change", () => {
-    const el = make(`<neuwo-range min="0" max="100" value="50"></neuwo-range>`);
-    expect(fillOf(el)).toBe("50%");
+  it("keeps the live fill when a bound changes after the user moved the thumb", () => {
+    const el = make(`<neuwo-range min="0" max="100" value="10"></neuwo-range>`);
+    drag(rangeOf(el), "50");
     el.setAttribute("max", "200");
+    expect(el.value).toBe("50");
     expect(fillOf(el)).toBe("25%");
+    el.setAttribute("min", "40");
+    expect(fillOf(el)).toBe(`${Math.round(((50 - 40) / 160) * 10000) / 100}%`);
   });
 
-  it("clamps the fill to the track when the value sits outside the bounds", () => {
-    const el = make(`<neuwo-range min="0" max="100" value="500"></neuwo-range>`);
-    expect(fillOf(el)).toBe("100%");
+  it("writes the style only when the fill differs", () => {
+    const el = make(`<neuwo-range min="0" max="100" value="10"></neuwo-range>`);
+    const style = rangeOf(el).style;
+    const set = vi.spyOn(style, "setProperty");
+    drag(rangeOf(el), "10");
+    el.setAttribute("label", "Views");
+    expect(set).not.toHaveBeenCalled();
   });
 
-  it("restores the seeded value and its fill on form reset", () => {
-    const el = make(`<neuwo-range min="0" max="100" value="20"></neuwo-range>`);
-    el.value = "90";
-    el.formResetCallback();
+  it("returns to the value attribute and its fill when its form resets", async () => {
+    const form = make(`<form><neuwo-range name="r" min="0" max="100" value="20"></neuwo-range></form>`);
+    const el = form.querySelector("neuwo-range");
+    drag(rangeOf(el), "90");
+    expect(fillOf(el)).toBe("90%");
+    form.reset();
+    await nextTask();
     expect(el.value).toBe("20");
     expect(fillOf(el)).toBe("20%");
   });
 
-  it("forwards a re-written aria-valuetext without waiting for another render", () => {
-    const el = make(`<neuwo-range min="0" max="100" value="40"></neuwo-range>`);
-    el.setAttribute("aria-valuetext", "40 per cent");
-    expect(el.shadowRoot.querySelector("input").getAttribute("aria-valuetext")).toBe("40 per cent");
+  it("starts an unvalued range at the native midpoint, which a bound set after the default would otherwise clamp", () => {
+    const el = make(`<neuwo-range min="0" max="10"></neuwo-range>`);
+    expect(rangeOf(el).getAttribute("value")).toBe("5");
+    expect(el.value).toBe("5");
+    expect(el.defaultValue).toBe("");
+    el.setAttribute("label", "Views");
+    expect(fillOf(el)).toBe("50%");
   });
 
-  it("carries the shared field label and disabled behaviour", () => {
+  it("stops listening for the reset once disconnected, and listens again on reconnect", async () => {
+    const form = make(`<form><neuwo-range min="0" max="100" value="20"></neuwo-range></form>`);
+    const el = form.querySelector("neuwo-range");
+    el.remove();
+    drag(rangeOf(el), "90");
+    form.append(el);
+    drag(rangeOf(el), "70");
+    form.reset();
+    await nextTask();
+    expect(el.value).toBe("20");
+    expect(fillOf(el)).toBe("20%");
+  });
+
+  it("submits through FormData, with and without a value attribute", () => {
+    const form = make(`<form><neuwo-range name="a" min="0" max="10" value="3"></neuwo-range><neuwo-range name="b" min="0" max="10"></neuwo-range></form>`);
+    const entries = [...new FormData(form)];
+    expect(entries[0]).toEqual(["a", "3"]);
+    expect(entries[1][0]).toBe("b");
+    expect(entries[1][1]).toBe("5");
+  });
+
+  it("submits through the native input before the script loads", () => {
+    const page = new Window();
+    cleanup.push(() => page.happyDOM.close());
+    page.document.body.innerHTML = expand(
+      `<form><neuwo-range name="a" min="0" max="10" value="3"></neuwo-range><neuwo-range name="b" min="0" max="10"></neuwo-range></form>`,
+    );
+    expect(page.customElements.get("neuwo-range")).toBeUndefined();
+    const entries = [...new page.FormData(page.document.querySelector("form"))];
+    expect(entries[0]).toEqual(["a", "3"]);
+    expect(entries[1][0]).toBe("b");
+    expect(entries[1][1]).toBe("5");
+  });
+
+  it("carries the shared label and disabled behaviour", () => {
     const el = make(`<neuwo-range label="Page views" value="1"></neuwo-range>`);
-    expect(el.shadowRoot.querySelector("label.field__label").textContent).toBe("Page views");
+    expect(el.querySelector("label.neuwo-field__label").textContent).toBe("Page views");
     el.disabled = true;
-    expect(el.shadowRoot.querySelector("input").disabled).toBe(true);
+    expect(rangeOf(el).disabled).toBe(true);
   });
 
   it("drops the reserved error line on request", () => {
-    const el = make(`<neuwo-range no-error-line></neuwo-range>`);
-    expect(el.shadowRoot.querySelector(".field__error")).toBeNull();
+    expect(make(`<neuwo-range no-error-line></neuwo-range>`).querySelector(".neuwo-field__error")).toBeNull();
+  });
+});
+
+describe("<neuwo-range> under React", () => {
+  async function render(element) {
+    const container = attach(document.createElement("div"));
+    const root = createRoot(container);
+    cleanup.push(() => act(() => root.unmount()));
+    await act(async () => root.render(element));
+    return { container, rerender: (next) => act(async () => root.render(next)) };
+  }
+
+  it("shows the consumer's fill after a re-render, and writes none itself", async () => {
+    const errors = vi.spyOn(console, "error");
+    const { container, rerender } = await render(jsx("neuwo-range", { min: 0, max: 100, value: 20, onChange() {} }));
+    const host = container.querySelector("neuwo-range");
+    const control = rangeOf(host);
+    expect(host[CONTROLLED]).toBe(true);
+    expect(fillOf(host)).toBe("20%");
+    await act(async () => drag(control, "70"));
+    expect(control.value).toBe("20");
+    expect(fillOf(host)).toBe("20%");
+    await rerender(jsx("neuwo-range", { min: 0, max: 100, value: 60, onChange() {} }));
+    expect(control.value).toBe("60");
+    expect(fillOf(host)).toBe("60%");
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it("follows the thumb when uncontrolled", async () => {
+    const errors = vi.spyOn(console, "error");
+    const { container } = await render(jsx("neuwo-range", { min: 0, max: 100, defaultValue: 20 }));
+    const host = container.querySelector("neuwo-range");
+    expect(host[CONTROLLED]).toBe(false);
+    expect(fillOf(host)).toBe("20%");
+    await act(async () => drag(rangeOf(host), "70"));
+    expect(fillOf(host)).toBe("70%");
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it("renders the fill in the server string", () => {
+    expect(renderToString(jsx("neuwo-range", { min: 0, max: 200, value: 50, onChange() {} }))).toContain("--neuwo-range-fill:25%");
   });
 });

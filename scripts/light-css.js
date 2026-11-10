@@ -6,6 +6,7 @@ export const LIGHT_COMPONENT_CSS = [
   "src/components/cta/cta.css",
   "src/components/deal-id/deal-id.css",
   "src/components/fields/field.css",
+  "src/components/fields/range/range.css",
   "src/components/fields/textarea/textarea.css",
   "src/components/logo/logo.css",
   "src/components/notice/notice.css",

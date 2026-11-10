@@ -109,10 +109,10 @@ describe("custom-elements.json", () => {
     expect(partsFor(manifest, "neuwo-input").size).toBe(0);
   });
 
-  it("documents the range's bounds and its input part", () => {
+  it("documents the range's bounds and exposes no parts", () => {
     const attrs = attributesFor(manifest, "neuwo-range");
     for (const a of ["min", "max", "step", "value", "label", "disabled"]) expect(attrs).toContain(a);
-    expect(partsFor(manifest, "neuwo-range").has("input")).toBe(true);
+    expect(partsFor(manifest, "neuwo-range").size).toBe(0);
   });
 
   it("documents the combobox's searchable attribute and parts", () => {

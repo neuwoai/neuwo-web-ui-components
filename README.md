@@ -741,8 +741,8 @@ selection controls (`<neuwo-checkbox>`, `<neuwo-toggle>`,
 `no-error-line` behaviour below. The generated `.d.ts` shows these on the base
 class each control `extends`.
 
-`<neuwo-input>` and `<neuwo-textarea>` render a native `<input>` or `<textarea>`
-into their own light DOM, and that control is the form control. The element carries `name`, `value`, `required`,
+`<neuwo-input>`, `<neuwo-textarea>` and `<neuwo-range>` render a native `<input>`
+or `<textarea>` into their own light DOM, and that control is the form control. The element carries `name`, `value`, `required`,
 `disabled`, `readonly`, `placeholder`, `autocomplete`, `form` and the
 constraint attributes onto it, so a form of inputs submits and validates
 natively, in server-rendered markup before the script has loaded too. The
@@ -766,11 +766,14 @@ element itself is not form-associated, so each value is submitted once.
   element only, so a query such as `[data-testid="email"]` matches one node.
 
 On `<neuwo-textarea>` the `value` attribute is the textarea's starting text, and
-`rows`, `minlength` and `maxlength` are carried onto it. The combobox and range
-still render into a shadow root, are form-associated, and share the parts
-`field`, `input`, `label` and `error`. On `<neuwo-input>` and `<neuwo-textarea>`
-those parts are the classes `.neuwo-field`, `.neuwo-input` (with
-`.neuwo-textarea` added on the textarea), `.neuwo-field__label` and
+`rows`, `minlength` and `maxlength` are carried onto it. On `<neuwo-range>` the
+bounds and `step` are carried onto the range input, and the filled part of its
+track (`--neuwo-range-fill`) is written into the markup from `min`, `max` and
+`value`, so it shows in the first paint. The combobox still renders into a
+shadow root, is form-associated, and shares the parts `field`, `input`, `label`
+and `error`. On the light DOM fields those parts are the classes
+`.neuwo-field`, `.neuwo-input` (with `.neuwo-textarea` or `.neuwo-range` added
+on the textarea and the range), `.neuwo-field__label` and
 `.neuwo-field__error`, listed under restyling above.
 
 ## Form errors
