@@ -17,6 +17,14 @@ const blocks = (query) => [...declarations.matchAll(new RegExp(`@media \\(${quer
 const PULSE = "neuwo-cta[pulse] .neuwo-cta__actions > neuwo-button:first-of-type";
 
 describe("cta.css recipe", () => {
+  it("sweeps the scan line with transform, keeping its skew, and moves no layout property", () => {
+    const [, scan] = css.match(/@keyframes neuwo-cta-scan\s*{([\s\S]*?)\n}/);
+    expect(scan).toMatch(/transform:\s*translateX\([^)]*\)\s*skewX\(-15deg\)/);
+    for (const [, frames] of css.matchAll(/@keyframes [\w-]+\s*{([\s\S]*?)\n}/g)) {
+      expect(frames).not.toMatch(/(?<![\w-])(left|right|top|width|margin(-[a-z]+)?)\s*:/);
+    }
+  });
+
   it("keeps the element-name rules to the outer box and the pulse condition, with no shadow-only selectors", () => {
     expect(declarations).not.toMatch(/:host|::part|::slotted/);
     expect(ruleFor("neuwo-cta").trim()).toBe("display: block;");

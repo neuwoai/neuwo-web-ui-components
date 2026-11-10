@@ -5,8 +5,8 @@ neuwo-cta {
 /* Shared scan-line shimmer, inlined and prefixed from the design system's global
    `scan-line` keyframe, which a consuming page does not have. */
 @keyframes neuwo-cta-scan {
-  0%, 45% { left: -30%; }
-  100%    { left: 130%; }
+  0%, 45% { transform: translateX(0) skewX(-15deg); }
+  100%    { transform: translateX(800%) skewX(-15deg); }
 }
 
 /* --- Shared inner content --- */
