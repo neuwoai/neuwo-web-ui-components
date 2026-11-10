@@ -23,7 +23,7 @@
 - `<neuwo-cta>` now observes `pulse` and `intensity`, which it already documented. They still change
   no markup, only the ring's styles.
 - The `<neuwo-cta>` scan line sweeps with `transform` instead of `left`, so a visible CTA no longer
-  shifts layout.
+  shifts layout, and the spotlight's gradient frame now paints on hover before the script runs.
 - The spotlight `<neuwo-cta>` isolates its stacking context, so the hover glow stays behind the card
   instead of disappearing behind a page section's background.
 - Breaking: `<neuwo-notice>` renders into its own light DOM from one template, so a server-rendered

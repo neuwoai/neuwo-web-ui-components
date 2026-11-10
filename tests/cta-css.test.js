@@ -25,6 +25,13 @@ describe("cta.css recipe", () => {
     }
   });
 
+  it("registers the spotlight angle in the stylesheet so the hover frame paints before the script runs", () => {
+    const [, body] = declarations.match(/@property --neuwo-cta-angle\s*{([^}]*)}/);
+    expect(body).toMatch(/syntax:\s*"<angle>"/);
+    expect(body).toMatch(/inherits:\s*false/);
+    expect(body).toMatch(/initial-value:\s*0deg/);
+  });
+
   it("keeps the element-name rules to the outer box and the pulse condition, with no shadow-only selectors", () => {
     expect(declarations).not.toMatch(/:host|::part|::slotted/);
     expect(ruleFor("neuwo-cta").trim()).toBe("display: block;");

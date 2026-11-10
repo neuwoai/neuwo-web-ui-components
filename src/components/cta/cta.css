@@ -9,6 +9,12 @@ neuwo-cta {
   100%    { transform: translateX(800%) skewX(-15deg); }
 }
 
+@property --neuwo-cta-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
 /* --- Shared inner content --- */
 .neuwo-cta__headline {
   margin: 0 0 var(--neuwo-space-2);
