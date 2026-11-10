@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { LIGHT_COMPONENT_CSS } from "../scripts/light-css.js";
+import { templates } from "../src/templates.js";
 
-const dist = join(dirname(fileURLToPath(import.meta.url)), "../dist");
+const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+const dist = join(root, "dist");
 const components = join(dist, "neuwo-components.css");
 
 describe("combined stylesheets", () => {
@@ -30,5 +33,15 @@ describe("combined stylesheets", () => {
     const full = readFileSync(join(dist, "neuwo.css"), "utf8");
     expect(full).toMatch(/(^|[},\s])h1\b[^{]*\{/);
     expect(full.startsWith(readFileSync(components, "utf8"))).toBe(true);
+  });
+
+  it("composes the reset first, then the recipe of every registered template and nothing else", () => {
+    const recipes = Object.keys(templates).map((tag) => {
+      const name = tag.replace(/^neuwo-/, "");
+      return `src/components/${name}/${name}.css`;
+    });
+    expect(LIGHT_COMPONENT_CSS[0]).toBe("src/components/reset.css");
+    expect(LIGHT_COMPONENT_CSS.slice(1).sort()).toEqual(recipes.sort());
+    for (const file of LIGHT_COMPONENT_CSS) expect(existsSync(join(root, file)), file).toBe(true);
   });
 });

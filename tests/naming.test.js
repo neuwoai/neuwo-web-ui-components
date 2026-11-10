@@ -1,21 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
+import { dirname, join, relative } from "node:path";
+import { LIGHT_COMPONENT_CSS } from "../scripts/light-css.js";
 
 const src = join(dirname(fileURLToPath(import.meta.url)), "../src");
 const allCss = readdirSync(src, { recursive: true }).filter((file) => file.endsWith(".css"));
-const LIGHT_CSS = [
-  "components/reset.css",
-  "components/badge/badge.css",
-  "components/button/button.css",
-  "components/copy/copy.css",
-  "components/cta/cta.css",
-  "components/deal-id/deal-id.css",
-  "components/logo/logo.css",
-  "components/notice/notice.css",
-  "components/status-dot/status-dot.css",
-];
+const LIGHT_CSS = LIGHT_COMPONENT_CSS.map((file) => relative("src", file));
 const read = (file) => readFileSync(join(src, file), "utf8");
 
 describe("custom property naming", () => {

@@ -2,6 +2,7 @@ import esbuild from "esbuild";
 import { cp, mkdir, rm, readFile, writeFile } from "node:fs/promises";
 import { watch } from "node:fs";
 import path from "node:path";
+import { LIGHT_COMPONENT_CSS } from "./light-css.js";
 
 const serve = process.argv.includes("--serve");
 
@@ -36,18 +37,6 @@ const read = (file) => readFile(file, "utf8");
 
 const FOUNDATION_CSS = ["typography", "background", "navigation", "markdown"].map((name) => `src/foundation/${name}.css`);
 const PUBLISHED_FOUNDATION_CSS = ["src/foundation/tokens.css", ...FOUNDATION_CSS];
-
-const LIGHT_COMPONENT_CSS = [
-  "src/components/reset.css",
-  "src/components/badge/badge.css",
-  "src/components/button/button.css",
-  "src/components/copy/copy.css",
-  "src/components/cta/cta.css",
-  "src/components/deal-id/deal-id.css",
-  "src/components/logo/logo.css",
-  "src/components/notice/notice.css",
-  "src/components/status-dot/status-dot.css",
-];
 
 const COMPONENTS_CSS_SOURCES = ["src/foundation/fonts.css", "src/foundation/tokens.css", ...LIGHT_COMPONENT_CSS];
 

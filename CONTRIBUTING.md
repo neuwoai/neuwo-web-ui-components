@@ -34,7 +34,7 @@ extend `NeuwoShadowElement` until they are converted.
    `neuwo-<name>-*`. What a Shadow DOM recipe put on `:host` becomes an element-name rule
    (`neuwo-<name> { display: inline-block; }`) for the outer box only.
 4. Add the tag to every `:where(...)` list in `src/components/reset.css`, and the recipe to
-   `LIGHT_COMPONENT_CSS` in `scripts/build.js` and `LIGHT_CSS` in `tests/naming.test.js`.
+   `LIGHT_COMPONENT_CSS` in `scripts/light-css.js`, which the build and the tests read.
 5. Register the element in `src/index.js` (the side-effect import and the export) and in the
    `HTMLElementTagNameMap` in `src/types/elements.d.ts`.
 6. Add representative attribute combinations to `tests/fixtures/template-cases.js`, which the
