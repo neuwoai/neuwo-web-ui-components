@@ -1,3 +1,5 @@
+export const LEGACY_PSEUDO_ELEMENTS = new Set(["before", "after", "first-line", "first-letter"]);
+
 /**
  * @param {string} list
  * @returns {string[]}
@@ -74,7 +76,7 @@ export function weight(selector) {
         args = selector.slice(i + 1, end);
         i = end + 1;
       }
-      if (element || name === "where") continue;
+      if (element || LEGACY_PSEUDO_ELEMENTS.has(name) || name === "where") continue;
       if (["is", "not", "has"].includes(name) && args !== null) {
         add(
           splitTopLevel(args)

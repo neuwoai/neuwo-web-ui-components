@@ -842,6 +842,29 @@ describe("a region wrapper owned by a nested block", () => {
     expect(host.querySelector(".neuwo-x__value").textContent).toBe("3");
   });
 
+  it("keeps an input and the region's select, focus and typed value included, when an element modifier listed first toggles", () => {
+    const host = make(`<neuwo-f><option value="a">A</option><option value="b">B</option></neuwo-f>`);
+    render(host, nestedBlocks);
+    const input = host.querySelector("input");
+    const select = host.querySelector("select");
+    const options = Array.from(select.children);
+    input.focus();
+    input.value = "typed";
+    for (const toggle of [() => host.setAttribute("invalid", ""), () => host.removeAttribute("invalid")]) {
+      toggle();
+      reconcile(host, nestedBlocks);
+      expect(host.querySelector("input")).toBe(input);
+      expect(host.querySelector("select")).toBe(select);
+      sameNodes(Array.from(select.children), options);
+      expect(input.value).toBe("typed");
+      expect(document.activeElement).toBe(input);
+    }
+    host.setAttribute("invalid", "");
+    reconcile(host, nestedBlocks);
+    expect(input.className).toBe("neuwo-f__control--invalid neuwo-f__control");
+    expect(select.className).toBe("neuwo-x__options--invalid neuwo-x__options");
+  });
+
   it("keeps its author children when adopted from server markup and reconciled", () => {
     const option = (value) => ({ tag: "option", attrs: { value }, text: value, slot: "default", html: `<option value="${value}">${value}</option>` });
     const html = renderElement("neuwo-f", {}, [option("a"), option("b")], nestedBlocks, idScope("neuwo-s"));

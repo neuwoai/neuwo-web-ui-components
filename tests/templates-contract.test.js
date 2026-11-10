@@ -18,8 +18,8 @@ function output(tag, testCase) {
   const [block] = classesOf(root);
   const all = elements(root);
   const blocks = [...new Set(all.flatMap(classesOf).filter((name) => !name.includes("__") && !name.includes("--")))];
-  const keyed = (name) => blocks.some((each) => name === each || name.startsWith(`${each}__`));
-  const ownedByABlock = (name) => keyed(name) || blocks.some((each) => name.startsWith(`${each}--`));
+  const keyed = (name) => !name.includes("--") && blocks.some((each) => name === each || name.startsWith(`${each}__`));
+  const ownedByABlock = (name) => blocks.some((each) => name === each || name.startsWith(`${each}__`) || name.startsWith(`${each}--`));
   const wrappers = all.filter((node) => node.children.some(isRegion)).map((node) => classesOf(node).find(keyed));
   return { block, blocks, ownedByABlock, all, wrappers };
 }
@@ -39,8 +39,10 @@ describe("template contract", () => {
 
       for (const testCase of list) {
         describe(testCase.name, () => {
-          it("gives the root a prefixed block class", () => {
-            expect(output(tag, testCase).block).toMatch(/^neuwo-(?!neuwo-)/);
+          it("gives the root a prefixed block class first", () => {
+            const { block } = output(tag, testCase);
+            expect(block).toMatch(/^neuwo-(?!neuwo-)/);
+            expect(block).not.toMatch(/__|--/);
           });
 
           it("prefixes every block it renders", () => {

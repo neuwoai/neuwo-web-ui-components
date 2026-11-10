@@ -3,10 +3,10 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { LIGHT_COMPONENT_CSS } from "../scripts/light-css.js";
-import { closing, splitTopLevel, weight } from "./fixtures/specificity.js";
+import { LEGACY_PSEUDO_ELEMENTS, closing, splitTopLevel, weight } from "./fixtures/specificity.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const GROUPING = /^@(media|supports|container|layer)\b/;
+const GROUPING = /^@(media|supports|container|layer|starting-style|scope)\b/;
 
 function selectorsIn(code, out = []) {
   let start = 0;
@@ -25,13 +25,15 @@ function selectorsIn(code, out = []) {
 }
 
 function isOuterBox(selector) {
-  const name = /^neuwo-[\w-]+/.exec(selector);
-  if (!name) return false;
-  let i = name[0].length;
+  const tag = /^neuwo-[\w-]+/.exec(selector);
+  if (!tag) return false;
+  let i = tag[0].length;
   while (i < selector.length) {
     if (selector[i] === "[") i = closing(selector, i, "[", "]") + 1;
     else if (selector[i] === ":" && selector[i + 1] !== ":") {
-      i += /^:[\w-]+/.exec(selector.slice(i))[0].length;
+      const [part, name] = /^:([\w-]+)/.exec(selector.slice(i));
+      if (LEGACY_PSEUDO_ELEMENTS.has(name)) return false;
+      i += part.length;
       if (selector[i] === "(") i = closing(selector, i, "(", ")") + 1;
     } else return false;
   }
@@ -41,14 +43,25 @@ function isOuterBox(selector) {
 const outweighs = (selector) => weight(selector)[0] > 0 || weight(selector)[1] > 0;
 
 describe("light recipes", () => {
-  it("reads selectors inside @media and skips keyframe and at-rule preludes", () => {
+  it("reads selectors inside grouping at-rules, nested ones included, and skips keyframe and at-rule preludes", () => {
     const css = "@property --neuwo-x { syntax: '<angle>'; } @keyframes neuwo-k { from { opacity: 0; } 50% { opacity: 1; } } .a, b { color: red; } @media (hover: hover) { .c:hover { color: blue; } }";
     expect(selectorsIn(css)).toEqual([".a", "b", ".c:hover"]);
+    expect(selectorsIn("@media (hover: hover) { @supports (display: grid) { .d { color: red; } } }")).toEqual([".d"]);
+    expect(selectorsIn("@starting-style { .e { opacity: 0; } } @scope (.f) { .g { color: red; } }")).toEqual([".e", ".g"]);
+  });
+
+  it("weighs the legacy single-colon pseudo-elements as pseudo-elements, not classes", () => {
+    for (const name of ["before", "after", "first-line", "first-letter"]) {
+      expect(outweighs(`span:${name}`), `span:${name}`).toBe(false);
+      expect(outweighs(`.a:${name}`), `.a:${name}`).toBe(true);
+    }
   });
 
   it("allows only a bare neuwo- tag, with attribute or pseudo-class parts, as an outer-box rule", () => {
     for (const selector of ["neuwo-cta", "neuwo-cta:not([hidden])", "neuwo-button[block]:not([hidden])"]) expect(isOuterBox(selector), selector).toBe(true);
-    for (const selector of ["neuwo-cta span", "neuwo-cta > a", "neuwo-cta::before", "span", ":where(.neuwo-x)"]) expect(isOuterBox(selector), selector).toBe(false);
+    for (const selector of ["neuwo-cta span", "neuwo-cta > a", "neuwo-cta::before", "neuwo-cta:before", "neuwo-cta:first-letter", "span", ":where(.neuwo-x)"]) {
+      expect(isOuterBox(selector), selector).toBe(false);
+    }
   });
 
   for (const file of LIGHT_COMPONENT_CSS.filter((path) => path !== "src/components/reset.css")) {

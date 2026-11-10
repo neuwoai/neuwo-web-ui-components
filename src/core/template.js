@@ -104,14 +104,14 @@ export function blocksOf(node, blocks = new Set()) {
 }
 
 /**
- * The node's first class that is one of the blocks or a `<block>__*` element class, never a `--` modifier,
- * which changes with the attributes.
+ * The node's first class that is one of the blocks or a `<block>__*` element class, never a block or element
+ * modifier, which changes with the attributes.
  * @param {TemplateNode} node
  * @param {Set<string>} blocks
  * @returns {string | undefined}
  */
 export function keyClassOf(node, blocks) {
-  return classesOf(node).find((name) => blocks.has(name) || blocks.has(name.split("__")[0]));
+  return classesOf(node).find((name) => !name.includes("--") && (blocks.has(name) || blocks.has(name.split("__")[0])));
 }
 
 /**

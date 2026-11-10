@@ -159,6 +159,32 @@ describe("createRuntime()", () => {
     expect(errors).not.toHaveBeenCalled();
   });
 
+  it("keeps an input and the region's select when an element modifier listed first toggles", async () => {
+    const errors = vi.spyOn(console, "error");
+    const { jsx: create, jsxs: createStatic } = createRuntime({ "neuwo-f": nestedBlocks });
+    const container = mount();
+    const root = createRoot(container);
+    cleanups.unshift(() => act(() => root.unmount()));
+    const view = (invalid) =>
+      createStatic("neuwo-f", { invalid, children: [create("option", { value: "a", children: "A" }), create("option", { value: "b", children: "B" })] });
+    await act(async () => root.render(view(false)));
+    const input = container.querySelector("input");
+    const select = container.querySelector("select");
+    const options = Array.from(select.children);
+    input.value = "typed";
+    for (const invalid of [true, false]) {
+      await act(async () => root.render(view(invalid)));
+      expect(container.querySelector("input")).toBe(input);
+      expect(container.querySelector("select")).toBe(select);
+      expect(select.children).toHaveLength(2);
+      Array.from(select.children).forEach((option, index) => expect(option).toBe(options[index]));
+      expect(input.value).toBe("typed");
+    }
+    await act(async () => root.render(view(true)));
+    expect(input.className).toBe("neuwo-f__control--invalid neuwo-f__control");
+    expect(errors).not.toHaveBeenCalled();
+  });
+
   it("places nested elements and fragment children by slot and drops unknown slots", () => {
     const html = renderToStaticMarkup(
       jsxs("neuwo-t", {

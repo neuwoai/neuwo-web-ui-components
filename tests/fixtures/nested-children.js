@@ -17,19 +17,23 @@ export const NESTED = {
 };
 
 /**
- * A `.neuwo-x` block inside the `.neuwo-f` root, its modifier listed first, holding the default region.
+ * A `.neuwo-x` block inside the `.neuwo-f` root, holding the default region. Modifiers come first on purpose:
+ * a block modifier on the box, and element modifiers, toggled by `invalid`, on the input and the region's select.
  * @param {Record<string, string>} attrs
  * @param {import("../../src/core/template.js").TemplateContext} ctx
  */
-export const nestedBlocks = (attrs, ctx) =>
-  h(
+export const nestedBlocks = (attrs, ctx) => {
+  const invalid = Object.hasOwn(attrs, "invalid");
+  return h(
     "div",
     { class: "neuwo-f" },
     h("label", { class: "neuwo-f__label" }, "L"),
+    h("input", { class: `${invalid ? "neuwo-f__control--invalid " : ""}neuwo-f__control` }),
     h(
       "div",
       { class: `neuwo-x--${attrs.tone ?? "a"} neuwo-x` },
       h("span", { class: "neuwo-x__value" }, String(ctx.children.length)),
-      h("select", { class: "neuwo-x__options", hidden: true }, region()),
+      h("select", { class: `${invalid ? "neuwo-x__options--invalid " : ""}neuwo-x__options`, hidden: true }, region()),
     ),
   );
+};
