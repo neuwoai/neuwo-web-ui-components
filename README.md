@@ -1,6 +1,8 @@
 # Neuwo Web UI Library
 
-Neuwo design-language web components: vanilla custom elements, Shadow DOM, zero runtime deps.
+Neuwo design-language web components: vanilla custom elements, zero runtime deps. The button,
+badge, deal-ID chip, status dot and logo render into light DOM and can be server-rendered; the
+rest still use Shadow DOM while they migrate.
 The single source for reusable Neuwo UI and its styling (tokens, component recipes, typography).
 
 ## Install
@@ -560,11 +562,14 @@ Published styling files, for direct linking or non-web use:
 
 | Artifact | Import path |
 | --- | --- |
+| Font faces | `@neuwo/web-ui-library--demo/foundation/fonts.css` |
 | Tokens | `@neuwo/web-ui-library--demo/foundation/tokens.css` |
 | Typography | `@neuwo/web-ui-library--demo/foundation/typography.css` |
 | Page surface | `@neuwo/web-ui-library--demo/foundation/background.css` |
 | Navigation links | `@neuwo/web-ui-library--demo/foundation/navigation.css` |
-| All four foundation layers (one file) | `@neuwo/web-ui-library--demo/neuwo.css` |
+| Markdown surface | `@neuwo/web-ui-library--demo/foundation/markdown.css` |
+| Font faces, tokens, reset and light DOM component recipes (one file) | `@neuwo/web-ui-library--demo/neuwo-components.css` |
+| `neuwo-components.css` plus typography, page surface, navigation links and Markdown surface (one file) | `@neuwo/web-ui-library--demo/neuwo.css` |
 | Component reset (before any recipe) | `@neuwo/web-ui-library--demo/components/reset.css` |
 | Button recipe | `@neuwo/web-ui-library--demo/components/button/button.css` |
 | Field chrome | `@neuwo/web-ui-library--demo/components/fields/field.css` |
@@ -572,8 +577,8 @@ Published styling files, for direct linking or non-web use:
 
 ## Restyling from the host
 
-`<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>` and `<neuwo-status-dot>` render
-their markup into their own light DOM, so they have no parts. Their prefixed
+`<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuwo-status-dot>` and `<neuwo-logo>`
+render their markup into their own light DOM, so they have no parts. Their prefixed
 classes are the public hooks instead. Put the element name in front for weight,
 so a rule wins without `!important`:
 
@@ -614,6 +619,8 @@ properties, or target the children you passed in.
 | `.neuwo-status-dot--pulse`, `.neuwo-status-dot--blink` | the dot, by `motion` |
 | `.neuwo-status-dot--halo-s`, `.neuwo-status-dot--halo-l` | the dot, by `halo` |
 | `.neuwo-status-dot--glow-s`, `.neuwo-status-dot--glow-m`, `.neuwo-status-dot--glow-l` | the dot, by `glow` |
+| `.neuwo-logo` | the logo `<svg>` |
+| `.neuwo-logo--bg-light`, `.neuwo-logo--bg-dark`, `.neuwo-logo--bg-dark-alt`, `.neuwo-logo--bg-colour` | the logo, by `variant` |
 
 The badge and deal-id render their text as authored, so casing is yours:
 
@@ -797,9 +804,10 @@ link or heading that already names the brand:
 </a>
 ```
 
-The same four files are published under `logos/`, and an `<img>` is the better choice wherever
-the logo is the page's largest paint: an element cannot draw until the bundle executes, so a
-site header logo should stay a preloaded image.
+The same four files are published under `logos/` for an `<img>`. A server-rendered or expanded
+logo draws with the first paint; only one rendered by script waits for the bundle to run. So on
+a page without server rendering, a header logo that is the page's largest paint should stay a
+preloaded image.
 
 ```html
 <link rel="preload" as="image" fetchpriority="high"

@@ -8,8 +8,9 @@ import { logoTemplate } from "./logo.template.js";
  * aspect ratio. Wrap it in an `<a>` to make it a link.
  *
  * The same four files are published to `dist/logos/` for consumers that need an
- * `<img>`: a page whose logo is the LCP element should prefer that, since an
- * element cannot paint until the bundle executes.
+ * `<img>`. A server-rendered or expanded logo draws with the first paint; only one
+ * rendered by script waits for the bundle, so a page without server rendering whose
+ * logo is the LCP element should prefer the `<img>`.
  *
  * @summary Neuwo logo (brand wordmark). Public classes: `.neuwo-logo` on the `<svg>`, with `.neuwo-logo--bg-light`, `--bg-dark`, `--bg-dark-alt` and `--bg-colour`.
  * @customElement neuwo-logo
