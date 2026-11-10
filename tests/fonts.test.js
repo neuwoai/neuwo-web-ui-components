@@ -35,7 +35,7 @@ describe("font URLs", () => {
 describe("fallback faces", () => {
   it.each(["Outfit Fallback", "Noto Sans Fallback"])("%s lists Arial and its metric-compatible equivalents in order", (family) => {
     const face = fontsCss.match(new RegExp(`@font-face\\s*{[^}]*font-family: '${family}';[^}]*}`))?.[0] ?? "";
-    expect(face).toMatch(/src: local\('Arial'\), local\('Liberation Sans'\), local\('Arimo'\);/);
+    expect(face).toMatch(/src: local\('Arial'\), local\('Liberation Sans'\), local\('Arimo'\), local\('Arimo Regular'\);/);
   });
 });
 
