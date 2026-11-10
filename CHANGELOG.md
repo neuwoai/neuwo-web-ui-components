@@ -44,6 +44,11 @@
   microtask, so read the markup back after an `await`. Hosts React owns are left to React.
 - `components/reset.css`, the reset for the light DOM components, is published and leads the component
   styles in `neuwo-components.css`.
+- Page element rules such as `button { text-transform: uppercase }`, `span { line-height: 3 }` or
+  `a { text-decoration: underline }` no longer reach the markup a light DOM component renders. Its text
+  properties come from the host, so casing set on `neuwo-badge` still applies, and its margins, padding,
+  sizes, shadows and transforms start from their defaults. Your own content inside a component, including
+  foundation classes such as `.neuwo-callout`, is left alone.
 - Breaking: `neuwo.js` no longer carries fonts or tokens. Link `neuwo-components.css` (or `neuwo.css`) on
   the page, or import it where you import the library; `<style data-neuwo-fonts>` is no longer read.
 - `neuwo-standalone.js` is for pages that can only add a script: it embeds `neuwo-components.css`, applies
