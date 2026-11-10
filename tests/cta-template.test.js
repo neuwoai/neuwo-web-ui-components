@@ -121,7 +121,6 @@ describe("ctaTemplate()", () => {
     expect(field([child("field", "input")])).toBe("neuwo-cta__field");
   });
 
-  // The React adapter describes a component child it cannot see into with no tag and no text.
   it("counts a child with no tag and no text as a field, as the React adapter describes a component", () => {
     expect(find(render({}, [{ tag: null, attrs: {}, text: "", slot: "field" }]), "neuwo-cta__field").props.class).toBe("neuwo-cta__field");
   });

@@ -293,6 +293,24 @@ describe("<neuwo-cta>", () => {
     expect(el.querySelectorAll("p:not([slot])")).toHaveLength(1);
   });
 
+  it("validates nothing on a React-owned host that has no card to check, and leaves its children alone", () => {
+    const warn = quiet();
+    const queued = [];
+    const queue = vi.spyOn(globalThis, "queueMicrotask").mockImplementation((callback) => queued.push(callback));
+    const holder = document.createElement("div");
+    holder.innerHTML = `<neuwo-cta>Ready?<neuwo-button slot="actions">Go</neuwo-button></neuwo-cta>`;
+    const el = holder.firstElementChild;
+    el[Symbol.for("neuwo.react")] = true;
+    const before = [...el.childNodes];
+    attach(holder);
+    queue.mockRestore();
+    expect(queued.length).toBeGreaterThan(0);
+    for (const callback of queued) expect(callback).not.toThrow();
+    expect(card(el)).toBeNull();
+    same([...el.childNodes], before);
+    expect(warn).not.toHaveBeenCalled();
+  });
+
   it("warns once each about a missing headline or a missing action, after the children have arrived", async () => {
     const warn = quiet();
     make(`<neuwo-cta>Ready?</neuwo-cta>`);
