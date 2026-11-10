@@ -94,13 +94,20 @@ describe("Server Component output reconciled in the browser", () => {
     await act(async () => app.render(jsx("neuwo-button", { children: "Save" })));
     expect(fiberKeyOf(rendered.querySelector("neuwo-button")), message).toBeDefined();
 
+    const badge = () => jsx("neuwo-badge", { children: "New" });
+    const parsed = document.createElement("div");
+    parsed.innerHTML = renderToString(badge());
     const hydrated = mount();
-    hydrated.innerHTML = renderToString(jsx("neuwo-badge", { children: "New" }));
+    hydrated.append(...parsed.childNodes);
+    const host = hydrated.querySelector("neuwo-badge");
+    const recoverable = [];
     let hydratedApp;
     await act(async () => {
-      hydratedApp = hydrateRoot(hydrated, jsx("neuwo-badge", { children: "New" }));
+      hydratedApp = hydrateRoot(hydrated, badge(), { onRecoverableError: (thrown) => void recoverable.push(String(thrown?.message ?? thrown)) });
     });
     cleanups.unshift(() => act(() => hydratedApp.unmount()));
-    expect(fiberKeyOf(hydrated.querySelector("neuwo-badge")), message).toBeDefined();
+    expect(recoverable).toEqual([]);
+    expect(hydrated.querySelector("neuwo-badge")).toBe(host);
+    expect(fiberKeyOf(host), message).toBeDefined();
   });
 });

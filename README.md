@@ -478,16 +478,20 @@ import App from "./App";
 createRoot(document.getElementById("root")!).render(<App />);
 ```
 
-`jsxImportSource` points JSX at the library's runtime, which wraps React's own and expands every
-registered `<neuwo-*>` tag into its markup. Elements recognise markup React rendered, from Client
-or Server Components, and leave it to React, so without the setting a tag React renders stays
-bare. The same setting adds every element to JSX with each attribute's allowed values and each
-custom event's `detail`, so a misspelt variant fails the type check. React stays an optional peer
-dependency.
+`jsxImportSource` points JSX at the library's runtime, which wraps React's own and expands the
+light DOM elements (`<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuwo-status-dot>` and
+`<neuwo-logo>`) into their markup; MDX reads its own `jsxImportSource` option, not tsconfig's, so
+set it there too (in `@mdx-js/*` or Next's MDX config). Elements recognise markup React rendered,
+from Client or Server Components, and leave it to React, so without the setting a light DOM tag
+React renders stays bare. The same setting adds every element to JSX with each attribute's allowed
+values and each custom event's `detail`, so a misspelt variant fails the type check. React stays
+an optional peer dependency.
 
-The first import registers every element, so each `<neuwo-*>` React creates renders in the same
-pass, before the browser paints. Registering later, from an effect or a script that runs after
-the app, shows the bare tags first and the components a moment after.
+React renders the markup of the five light DOM elements itself, so they show from the first paint.
+The Shadow DOM components (fields, selection controls, copy, CTA and notice) render when they
+register, which the first import does in the same pass, before the browser paints. Registering
+later, from an effect or a script that runs after the app, shows those as bare tags first and the
+components a moment after.
 
 React 19 sets a property where the element has one and binds events, so the elements behave like
 native controls:
@@ -530,9 +534,10 @@ export function Neuwo() {
 }
 ```
 
-Render `<Neuwo />` once in the root layout. Because the JSX runtime expands `<neuwo-*>` tags, the
-server-rendered HTML carries their full markup and the page is on-brand from the first paint,
-before the bundle has run. Import `neuwo.css` instead of `neuwo-components.css` to add the
+Render `<Neuwo />` once in the root layout. Because the JSX runtime expands the five light DOM
+elements, the server-rendered HTML carries their full markup and they are on-brand from the first
+paint, before the bundle has run. The Shadow DOM components arrive as bare tags and render when
+the bundle registers them. Import `neuwo.css` instead of `neuwo-components.css` to add the
 typography and page surface.
 
 ## Components
