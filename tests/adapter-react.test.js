@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { Fragment, act } from "react";
+import { Fragment, act, createRef } from "react";
 import { createRoot, hydrateRoot } from "react-dom/client";
 import { renderToStaticMarkup, renderToString } from "react-dom/server";
 import { h, has, raw, region } from "../src/core/template.js";
@@ -8,6 +8,8 @@ import { renderElement } from "../src/core/adapters/html.js";
 import { createRuntime } from "../src/core/adapters/react.js";
 import * as runtime from "../src/react/jsx-runtime.js";
 import * as devRuntime from "../src/react/jsx-dev-runtime.js";
+import * as serverRuntime from "../src/react/jsx-runtime.react-server.js";
+import * as serverDevRuntime from "../src/react/jsx-dev-runtime.react-server.js";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -221,6 +223,27 @@ describe("createRuntime()", () => {
     expect(errors).not.toHaveBeenCalled();
   });
 
+  it("adds no ref of its own with markHost false, passes the author's ref through unchanged and renders the same markup", () => {
+    const unmarked = createRuntime({ "neuwo-t": testTemplate }, { markHost: false });
+    const hostProps = (create, props) => {
+      const Host = create("neuwo-t", {}).type;
+      let host;
+      const Probe = (probe) => (host = Host(probe));
+      renderToStaticMarkup(jsx(Probe, props));
+      return host.props;
+    };
+    const objectRef = createRef();
+    const callbackRef = () => {};
+    expect("ref" in hostProps(unmarked.jsx, { children: "x" })).toBe(false);
+    expect(hostProps(unmarked.jsx, { ref: objectRef, children: "x" }).ref).toBe(objectRef);
+    expect(hostProps(unmarked.jsx, { ref: callbackRef, children: "x" }).ref).toBe(callbackRef);
+    expect(hostProps(jsx, { children: "x" }).ref).toEqual(expect.any(Function));
+    expect(hostProps(jsx, { ref: callbackRef, children: "x" }).ref).not.toBe(callbackRef);
+
+    const view = (rt) => rt.jsxs("neuwo-t", { tone: "b", children: [rt.jsx("i", { slot: "start" }, "i"), "x", rt.jsx("neuwo-t", { children: "n" }, "n")] }, "k");
+    expect(renderToStaticMarkup(view(unmarked))).toBe(renderToStaticMarkup(view({ jsx, jsxs })));
+  });
+
   it("writes template attributes as the HTML adapter does", () => {
     const field = () =>
       h(
@@ -244,5 +267,12 @@ describe("JSX runtime entries", () => {
     expect(runtime.jsx("div", { id: "a" }).type).toBe("div");
     expect(runtime.jsxs("div", { children: ["a", "b"] }).type).toBe("div");
     expect(devRuntime.jsxDEV("div", {}, undefined, false).type).toBe("div");
+  });
+
+  it("export the same names from the react-server builds", () => {
+    expect(Object.keys(serverRuntime).sort()).toEqual(Object.keys(runtime).sort());
+    expect(Object.keys(serverDevRuntime).sort()).toEqual(Object.keys(devRuntime).sort());
+    expect(serverRuntime.Fragment).toBe(Fragment);
+    expect(serverDevRuntime.Fragment).toBe(Fragment);
   });
 });

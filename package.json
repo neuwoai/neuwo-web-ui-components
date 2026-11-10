@@ -24,8 +24,8 @@
   "exports": {
     ".": { "types": "./dist/types/elements.d.ts", "default": "./dist/neuwo.js" },
     "./server": { "types": "./dist/server/index.d.ts", "default": "./dist/server.js" },
-    "./jsx-runtime": { "types": "./dist/types/jsx-runtime.d.ts", "default": "./dist/jsx-runtime.js" },
-    "./jsx-dev-runtime": { "types": "./dist/types/jsx-dev-runtime.d.ts", "default": "./dist/jsx-dev-runtime.js" },
+    "./jsx-runtime": { "types": "./dist/types/jsx-runtime.d.ts", "react-server": "./dist/jsx-runtime.react-server.js", "default": "./dist/jsx-runtime.js" },
+    "./jsx-dev-runtime": { "types": "./dist/types/jsx-dev-runtime.d.ts", "react-server": "./dist/jsx-dev-runtime.react-server.js", "default": "./dist/jsx-dev-runtime.js" },
     "./neuwo.css": "./dist/neuwo.css",
     "./neuwo-components.css": "./dist/neuwo-components.css",
     "./foundation/*": "./dist/foundation/*",
@@ -56,6 +56,7 @@
     "htmlparser2": "^12.0.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "react-server-dom-webpack": "^19.3.1",
     "typescript": "^5.9.3",
     "vitest": "^4.1.9"
   },

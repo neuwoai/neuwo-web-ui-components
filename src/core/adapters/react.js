@@ -152,26 +152,34 @@ function pass(ref, el) {
 }
 
 /**
+ * @param {unknown} authorRef
+ */
+function useMark(authorRef) {
+  return useCallback(
+    /** @param {Element | null} el */
+    (el) => {
+      if (el) Reflect.set(el, REACT, true);
+      return pass(authorRef, el);
+    },
+    [authorRef],
+  );
+}
+
+/**
  * @param {string} tag
  * @param {Template} template
+ * @param {boolean} markHost
  */
-function hostFor(tag, template) {
+function hostFor(tag, template, markHost) {
   /** @param {Record<string, unknown>} props */
   function NeuwoHost(props) {
     const scope = `neuwo${useId().replace(/[^\w-]/g, "")}-`;
-    const ref = useCallback(
-      /** @param {Element | null} el */
-      (el) => {
-        if (el) Reflect.set(el, REACT, true);
-        return pass(props.ref, el);
-      },
-      [props.ref],
-    );
+    const mark = markHost && { ref: useMark(props.ref) };
     const items = flatten(/** @type {ReactNode} */ (props.children));
     const node = template(normalizeProps(props), { id: (suffix) => scope + suffix, children: describe(items) });
     const [block = ""] = classesOf(node);
     const root = toReact(node, distribute(node, items, slotOf), block, keyOf(node, block, 0));
-    return reactJsx(/** @type {ElementType} */ (tag), { ...props, ref, children: root });
+    return reactJsx(/** @type {ElementType} */ (tag), { ...props, ...mark, children: root });
   }
   hostTags.set(NeuwoHost, tag);
   return NeuwoHost;
@@ -179,16 +187,17 @@ function hostFor(tag, template) {
 
 /**
  * @param {Record<string, Template>} registry
+ * @param {{ markHost?: boolean }} [options]
  * @returns {{ jsx: typeof reactJsx, jsxs: typeof reactJsxs, jsxDEV: typeof reactJsxDEV }}
  */
-export function createRuntime(registry) {
+export function createRuntime(registry, { markHost = true } = {}) {
   /** @type {Map<string, ReturnType<typeof hostFor>>} */
   const hosts = new Map();
   /** @param {ElementType} type */
   const resolve = (type) => {
     if (typeof type !== "string" || !Object.hasOwn(registry, type)) return type;
     let host = hosts.get(type);
-    if (!host) hosts.set(type, (host = hostFor(type, registry[type])));
+    if (!host) hosts.set(type, (host = hostFor(type, registry[type], markHost)));
     return host;
   };
   return {

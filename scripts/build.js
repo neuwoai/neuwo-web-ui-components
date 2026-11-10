@@ -112,6 +112,8 @@ const builds = [
   { ...shared, entryPoints: ["src/server/index.js"], outfile: "dist/server.js", platform: "node" },
   { ...shared, entryPoints: ["src/react/jsx-runtime.js"], outfile: "dist/jsx-runtime.js", external: ["react"] },
   { ...shared, entryPoints: ["src/react/jsx-dev-runtime.js"], outfile: "dist/jsx-dev-runtime.js", external: ["react"] },
+  { ...shared, entryPoints: ["src/react/jsx-runtime.react-server.js"], outfile: "dist/jsx-runtime.react-server.js", external: ["react"] },
+  { ...shared, entryPoints: ["src/react/jsx-dev-runtime.react-server.js"], outfile: "dist/jsx-dev-runtime.react-server.js", external: ["react"] },
 ];
 
 if (serve) {
