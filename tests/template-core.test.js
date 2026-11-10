@@ -122,7 +122,7 @@ describe("light DOM sources", () => {
   it("type their JSDoc without any", () => {
     const src = join(dirname(fileURLToPath(import.meta.url)), "../src");
     const files = readdirSync(src, { recursive: true }).filter((file) =>
-      /^(core\/(template|element|ids)\.js|core\/adapters\/.+\.js|react\/.+\.js|server\/.+\.js|templates\.js|components\/(badge|button|copy|deal-id|logo|status-dot)\/.+\.js)$/.test(file),
+      /^(core\/(template|element|ids)\.js|core\/adapters\/.+\.js|react\/.+\.js|server\/.+\.js|templates\.js|components\/(badge|button|copy|deal-id|logo|notice|status-dot)\/.+\.js)$/.test(file),
     );
     expect(files).toContain("core/adapters/react.js");
     for (const file of files) {

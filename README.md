@@ -1,8 +1,8 @@
 # Neuwo Web UI Library
 
 Neuwo design-language web components: vanilla custom elements, zero runtime deps. The button,
-badge, deal-ID chip, status dot, logo and copy wrapper render into light DOM and can be
-server-rendered; the rest still use Shadow DOM while they migrate.
+badge, deal-ID chip, status dot, logo, copy wrapper and notice card render into light DOM and can
+be server-rendered; the rest still use Shadow DOM while they migrate.
 The single source for reusable Neuwo UI and its styling (tokens, component recipes, typography).
 
 ## Install
@@ -487,15 +487,15 @@ createRoot(document.getElementById("root")!).render(<App />);
 
 `jsxImportSource` points JSX at the library's runtime, which wraps React's own and expands the
 light DOM elements (`<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuwo-status-dot>`,
-`<neuwo-logo>` and `<neuwo-copy>`) into their markup; MDX reads its own `jsxImportSource` option,
-not tsconfig's, so set it there too (in `@mdx-js/*` or Next's MDX config). Elements recognise
-markup React rendered, from Client or Server Components, and leave it to React, so without the
-setting a light DOM tag React renders stays bare. The same setting adds every element to JSX with
-each attribute's allowed values and each custom event's `detail`, so a misspelt variant fails the
-type check. React stays an optional peer dependency.
+`<neuwo-logo>`, `<neuwo-copy>` and `<neuwo-notice>`) into their markup; MDX reads its own
+`jsxImportSource` option, not tsconfig's, so set it there too (in `@mdx-js/*` or Next's MDX
+config). Elements recognise markup React rendered, from Client or Server Components, and leave it
+to React, so without the setting a light DOM tag React renders stays bare. The same setting adds
+every element to JSX with each attribute's allowed values and each custom event's `detail`, so a
+misspelt variant fails the type check. React stays an optional peer dependency.
 
-React renders the markup of the six light DOM elements itself, so they show from the first paint.
-The Shadow DOM components (fields, selection controls, CTA and notice) render when they
+React renders the markup of the seven light DOM elements itself, so they show from the first paint.
+The Shadow DOM components (fields, selection controls and CTA) render when they
 register, which the first import does in the same pass, before the browser paints. Registering
 later, from an effect or a script that runs after the app, shows those as bare tags first and the
 components a moment after.
@@ -507,12 +507,14 @@ native controls:
 <neuwo-button disabled={saving}>Save</neuwo-button>
 <neuwo-checkbox checked={agreed} onChange={(e) => setAgreed(e.currentTarget.checked)} />
 <neuwo-copy oncopied={(e) => toast(e.detail.text)}><pre>npm install</pre></neuwo-copy>
-<neuwo-notice dismissible ondismiss={() => setOpen(false)}>...</neuwo-notice>
+<neuwo-notice dismissible hidden={!open} ondismiss={(e) => { e.preventDefault(); setOpen(false); }}>...</neuwo-notice>
 ```
 
 - `onChange`, and `onInput` on `<neuwo-combobox>`, fire as they do on native fields.
 - A custom event binds by its exact name, so it is lower case: `oncopied`, `ondismiss`.
   `onCopied` listens for an event called `Copied`, which never fires; the types reject it.
+- Cancel the notice's `dismiss` and drive `hidden` from state. Left alone, the element hides
+  itself by setting `hidden` on a host React renders, which React does not know about.
 
 React 18 passes every prop to a custom element as a text attribute. `disabled={false}` becomes
 `disabled="false"`, which the element reads as disabled. `onClick` and `onInput` still work, but
@@ -541,7 +543,7 @@ export function Neuwo() {
 }
 ```
 
-Render `<Neuwo />` once in the root layout. Because the JSX runtime expands the six light DOM
+Render `<Neuwo />` once in the root layout. Because the JSX runtime expands the seven light DOM
 elements, the server-rendered HTML carries their full markup and they are on-brand from the first
 paint, before the bundle has run. The Shadow DOM components arrive as bare tags and render when
 the bundle registers them. Import `neuwo.css` instead of `neuwo-components.css` to add the
@@ -589,10 +591,10 @@ Published styling files, for direct linking or non-web use:
 
 ## Restyling from the host
 
-`<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuwo-status-dot>`, `<neuwo-logo>` and
-`<neuwo-copy>` render their markup into their own light DOM, so they have no parts. Their prefixed
-classes are the public hooks instead. Put the element name in front for weight,
-so a rule wins without `!important`:
+`<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuwo-status-dot>`, `<neuwo-logo>`,
+`<neuwo-copy>` and `<neuwo-notice>` render their markup into their own light DOM, so they have no
+parts. Their prefixed classes are the public hooks instead. Put the element name in front for
+weight, so a rule wins without `!important`:
 
 ```css
 neuwo-button .neuwo-btn { border-radius: 0; }
@@ -637,6 +639,13 @@ properties, or target the children you passed in.
 | `.neuwo-copy__content` | the wrapper around the content to copy |
 | `.neuwo-copy__button` | the copy control, positioned against the host |
 | `.neuwo-copy__status` | the visually hidden live region that announces the outcome |
+| `.neuwo-notice` | the notice card `<div>`, which carries `role="status"` unless the element has a `role` |
+| `.neuwo-notice--fixed`, `.neuwo-notice--top`, `.neuwo-notice--bottom`, `.neuwo-notice--start`, `.neuwo-notice--end`, `.neuwo-notice--center` | the card, by `position`; `static` adds none |
+| `.neuwo-notice--row`, `.neuwo-notice--dismissible` | the card, by `layout="row"` and `dismissible` |
+| `.neuwo-notice__content` | the text column, around the title and the message |
+| `.neuwo-notice__title`, `.neuwo-notice__message`, `.neuwo-notice__actions` | the wrappers around the `slot="title"` children, the message and the `slot="actions"` children |
+| `.neuwo-notice__title--empty`, `.neuwo-notice__message--empty`, `.neuwo-notice__actions--empty` | a wrapper nothing fills, taken out of the flow |
+| `.neuwo-notice__dismiss` | the close button, while `dismissible` |
 
 The badge and deal-id render their text as authored, so casing is yours:
 
@@ -784,11 +793,15 @@ hint.addEventListener("dismiss", () => localStorage.setItem("lang-hint", "1"));
 if (!localStorage.getItem("lang-hint")) hint.hidden = false;
 ```
 
-A notice announces itself politely (`role="status"`) unless you declare something
-stronger; a consent banner is a question, so give it `role="dialog"` and a label.
-Links inside slotted content are styled by the host page, not from inside the
-component: a shadow root cannot reach an `<a>` nested in slotted markup, so link
-the published `typography.css` and mark them `.neuwo-link` to get the brand treatment.
+The element renders into its own light DOM, so a server-rendered notice is styled from the first
+paint. The `slot="title"` children go into `.neuwo-notice__title`, the `slot="actions"` children
+into `.neuwo-notice__actions` and the rest into `.neuwo-notice__message`; a wrapper nothing fills
+carries its `--empty` modifier and leaves no gap. Links in the title or message share a tree with
+the card, so a rule such as `neuwo-notice .neuwo-notice__message a` reaches them.
+
+A notice announces itself politely, with `role="status"` on the `.neuwo-notice` card, unless you
+declare something stronger on the element; a consent banner is a question, so give it
+`role="dialog"` and a label, and the card then carries no role of its own.
 
 ## Logo
 

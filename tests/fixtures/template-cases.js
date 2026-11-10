@@ -74,6 +74,35 @@ export const cases = {
     { name: "custom label", attrs: { label: "Neuwo home" }, children: [] },
     { name: "decorative", attrs: { label: "" }, children: [] },
   ],
+  "neuwo-notice": [
+    { name: "default message", attrs: {}, children: ["Read this page in Polish?"] },
+    {
+      name: "language hint",
+      attrs: { position: "static", dismissible: "", "dismiss-label": "Close" },
+      children: [{ tag: "span", attrs: { slot: "title" }, children: ["Read this page in ", { tag: "a", attrs: { href: "/pl/" }, text: "Polski" }, "?"] }],
+    },
+    {
+      name: "indented consent banner",
+      attrs: { position: "bottom-center", layout: "row", role: "dialog", "aria-label": "Cookies" },
+      children: [
+        "\n  ",
+        { tag: "span", attrs: { slot: "title" }, text: "We use cookies" },
+        "\n  We use analytics cookies.\n  ",
+        { tag: "neuwo-button", attrs: { slot: "actions", variant: "glass", size: "sm" }, text: "Reject" },
+        "\n  ",
+        { tag: "neuwo-button", attrs: { slot: "actions", size: "sm" }, text: "Accept" },
+        "\n",
+      ],
+    },
+    { name: "top-start toast", attrs: { position: "top-start", dismissible: "" }, children: [{ tag: "span", attrs: { slot: "title" }, text: "Saved" }] },
+    { name: "unknown values", attrs: { position: "toString", layout: "grid" }, children: ["Hint"] },
+    {
+      name: "indented title only",
+      attrs: { position: "top-end" },
+      children: ["\n  ", { tag: "span", attrs: { slot: "title" }, text: "Only a headline" }, "\n"],
+    },
+    { name: "empty", attrs: {}, children: [] },
+  ],
   "neuwo-status-dot": [
     { name: "default", attrs: {}, children: [] },
     { name: "blue blink", attrs: { variant: "blue", motion: "blink" }, children: [] },

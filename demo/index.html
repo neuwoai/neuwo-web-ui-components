@@ -68,7 +68,7 @@
       .cta {
         background: hotpink !important;
       }
-      /* Hostile rule: if Shadow DOM leaked, the notice cards would square off. */
+      /* Hostile rule: the old unprefixed class no longer reaches the notice cards. */
       .notice {
         background: hotpink !important;
         border-radius: 0 !important;
@@ -942,15 +942,14 @@
 
     <h2>Notice card (one element: consent banner, language hint, toast)</h2>
     <p>
-      The page defines a hostile <code>.notice</code> rule. Shadow DOM keeps it out.
+      The page defines a hostile <code>.notice</code> rule. The classes are prefixed
+      (<code>.neuwo-notice</code>), so it does not reach the cards.
       These first three use <code>position="static"</code> so they sit in the page;
       the buttons below dock live ones to the viewport.
     </p>
     <div style="display: grid; gap: 1.5rem; max-width: 48rem">
       <!-- Language hint: a headline with an inline link, and nothing else.
-           The link takes its colour from the page's typography.css via .neuwo-link,
-           because a shadow root cannot reach an <a> nested inside slotted
-           markup. -->
+           The link is page markup, so typography.css styles it. -->
       <neuwo-notice position="static" dismissible dismiss-label="Close">
         <span slot="title">Read this page in <a class="neuwo-link" href="#">Polski</a>?</span>
       </neuwo-notice>

@@ -10,14 +10,14 @@
    Placement is composed from independent edge modifiers (`--fixed --bottom
    --end`) rather than one class per corner, so a class-only consumer can write
    the same list by hand and a new corner costs no new rule. Visibility is the
-   native `hidden` attribute, which the shared reset already honours on the
-   host, so the component adds no second way to hide a card. */
+   native `hidden` attribute, which the components reset already honours on the
+   element, so the component adds no second way to hide a card. */
 
-:host {
+neuwo-notice {
   display: block;
 }
 
-.notice {
+.neuwo-notice {
   /* How far the card travels on entrance, flipped by the top modifier so it
      always arrives from the edge it is docked to. Internal, unlike the two
      knobs below, so it is declared rather than read with a fallback. */
@@ -40,12 +40,12 @@
   backdrop-filter: blur(var(--neuwo-glass-blur));
   -webkit-backdrop-filter: blur(var(--neuwo-glass-blur));
   box-shadow: var(--neuwo-shadow-xl);
-  animation: notice-in var(--neuwo-transition-base) both;
+  animation: neuwo-notice-in var(--neuwo-transition-base) both;
 }
 
 /* The entrance rides on `translate`, not on `transform`: the centred placement
    owns `transform`, and the two properties compose instead of overwriting. */
-@keyframes notice-in {
+@keyframes neuwo-notice-in {
   from {
     opacity: 0;
     translate: 0 var(--neuwo-notice-rise);
@@ -54,45 +54,45 @@
 
 /* --- Placement --- */
 
-.notice--fixed {
+.neuwo-notice--fixed {
   position: fixed;
   z-index: var(--neuwo-z-overlay);
   /* Full width less an equal gutter each side until the card hits its cap. */
   width: calc(100% - var(--neuwo-notice-gutter, var(--neuwo-space-4)) * 2);
 }
 
-.notice--top {
+.neuwo-notice--top {
   top: var(--neuwo-notice-gutter, var(--neuwo-space-4));
   --neuwo-notice-rise: -0.5rem;
 }
 
-.notice--bottom {
+.neuwo-notice--bottom {
   bottom: var(--neuwo-notice-gutter, var(--neuwo-space-4));
 }
 
-.notice--start {
+.neuwo-notice--start {
   inset-inline-start: var(--neuwo-notice-gutter, var(--neuwo-space-4));
 }
 
-.notice--end {
+.neuwo-notice--end {
   inset-inline-end: var(--neuwo-notice-gutter, var(--neuwo-space-4));
 }
 
-.notice--center {
+.neuwo-notice--center {
   left: 50%;
   transform: translateX(-50%);
 }
 
 /* --- Content --- */
 
-.notice__content {
+.neuwo-notice__content {
   display: flex;
   flex-direction: column;
   gap: var(--neuwo-space-1);
   min-width: 0;
 }
 
-.notice__title {
+.neuwo-notice__title {
   font-family: var(--neuwo-font-heading);
   font-size: var(--neuwo-font-size-base);
   font-weight: var(--neuwo-font-weight-semibold);
@@ -100,48 +100,48 @@
   color: var(--neuwo-color-heading);
 }
 
-.notice__message {
+.neuwo-notice__message {
   font-size: var(--neuwo-font-size-sm);
   line-height: 1.55;
   color: var(--neuwo-color-text);
 }
 
-.notice__actions {
+.neuwo-notice__actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--neuwo-space-2);
   justify-content: flex-end;
 }
 
-/* A slot nobody filled leaves no box behind, so the card's gaps never open
+/* A wrapper nothing fills leaves no box behind, so the card's gaps never open
    around content that is not there. */
-.notice__title--empty,
-.notice__message--empty,
-.notice__actions--empty {
+.neuwo-notice__title--empty,
+.neuwo-notice__message--empty,
+.neuwo-notice__actions--empty {
   display: none;
 }
 
 /* Actions beside the text once there is room for both. A narrow viewport always
    stacks, whatever the layout asks for. */
 @media (min-width: 48rem) {
-  .notice--row {
+  .neuwo-notice--row {
     flex-direction: row;
     align-items: center;
     gap: var(--neuwo-space-6);
   }
 
-  .notice--row .notice__content {
+  .neuwo-notice--row .neuwo-notice__content {
     flex: 1;
   }
 
-  .notice--row .notice__actions {
+  .neuwo-notice--row .neuwo-notice__actions {
     flex-shrink: 0;
   }
 }
 
 /* --- Dismiss --- */
 
-.notice__dismiss {
+.neuwo-notice__dismiss {
   position: absolute;
   /* Inset so the glyph sits on the first line of the title. */
   top: var(--neuwo-space-3);
@@ -161,7 +161,7 @@
 
 /* The cross is a mask over the button's own colour, so it follows the hover and
    any consumer re-colour without a second asset. */
-.notice__dismiss::before {
+.neuwo-notice__dismiss::before {
   content: "";
   width: 0.875rem;
   height: 0.875rem;
@@ -170,30 +170,30 @@
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round'%3E%3Cpath d='M3.5 3.5l7 7m0-7l-7 7'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
-.notice__dismiss:hover,
-.notice__dismiss:focus-visible {
+.neuwo-notice__dismiss:hover,
+.neuwo-notice__dismiss:focus-visible {
   color: var(--neuwo-color-heading);
 }
 
-.notice__dismiss:focus-visible {
+.neuwo-notice__dismiss:focus-visible {
   outline: none;
   box-shadow: var(--neuwo-shadow-focus);
 }
 
 /* The button's corner is reserved on the card, not on the first line, so
    nothing can collide with it in either layout. */
-.notice--dismissible {
+.neuwo-notice--dismissible {
   padding-inline-end: calc(var(--neuwo-space-3) + var(--neuwo-space-8));
 }
 
 /* Reduced motion keeps the card still: it already announces itself by arriving,
    and the hover colour change is what marks the close button. */
 @media (prefers-reduced-motion: reduce) {
-  .notice {
+  .neuwo-notice {
     animation: none;
   }
 
-  .notice__dismiss {
+  .neuwo-notice__dismiss {
     transition: none;
   }
 }

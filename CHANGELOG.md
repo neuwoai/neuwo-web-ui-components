@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+- Breaking: `<neuwo-notice>` renders into its own light DOM from one template, so a server-rendered
+  notice is styled from the first paint. Its classes are prefixed: `.notice` is now `.neuwo-notice`
+  (with `.neuwo-notice--{fixed|top|bottom|start|end|center|row|dismissible}`), and `.notice__content`,
+  `.notice__title`, `.notice__message`, `.notice__actions` and `.notice__dismiss` are now
+  `.neuwo-notice__content`, `.neuwo-notice__title`, `.neuwo-notice__message`, `.neuwo-notice__actions`
+  and `.neuwo-notice__dismiss`, with `.neuwo-notice__{title|message|actions}--empty` on a wrapper
+  nothing fills. The `notice-in` keyframes are now `neuwo-notice-in`.
+- Breaking: `::part(notice)`, `::part(content)`, `::part(title)`, `::part(message)`, `::part(actions)`
+  and `::part(dismiss)` on `<neuwo-notice>` are gone. Restyle through the classes, with the element
+  name in front for weight: `neuwo-notice .neuwo-notice { border-radius: 0; }`.
+- Breaking: `role="status"` moves from the `<neuwo-notice>` element to its inner `.neuwo-notice` card,
+  and the element no longer writes `role` onto itself. A `role` you set on the element, such as
+  `role="dialog"` on a consent banner, still takes its place: the card then carries no role.
 - Breaking: `<neuwo-copy>` renders into its own light DOM from one template, so a server-rendered
   copy wrapper shows its control from the first paint. Your content moves into a new
   `.neuwo-copy__content` wrapper inside a `display: contents` root, `.neuwo-copy`. The classes are

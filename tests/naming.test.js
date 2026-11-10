@@ -12,6 +12,7 @@ const LIGHT_CSS = [
   "components/copy/copy.css",
   "components/deal-id/deal-id.css",
   "components/logo/logo.css",
+  "components/notice/notice.css",
   "components/status-dot/status-dot.css",
 ];
 const read = (file) => readFileSync(join(src, file), "utf8");

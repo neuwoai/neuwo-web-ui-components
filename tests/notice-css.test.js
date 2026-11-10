@@ -4,74 +4,90 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const css = readFileSync(
-  join(__dirname, "../src/components/notice/notice.css"),
-  "utf8"
-);
+const css = readFileSync(join(__dirname, "../src/components/notice/notice.css"), "utf8");
+const tokensCss = readFileSync(join(__dirname, "../src/foundation/tokens.css"), "utf8");
+const declarations = css.replace(/\/\*[\s\S]*?\*\//g, "");
+const ruleFor = (selector) => {
+  const found = declarations
+    .split("}")
+    .map((block) => block.split("{"))
+    .find(([head]) => head.trim() === selector);
+  return found ? found[1] : undefined;
+};
 
 describe("notice.css recipe", () => {
-  it("paints the shared glass surface from tokens on the portable class", () => {
-    expect(css).toContain(".notice");
-    expect(css).toContain("var(--neuwo-glass-bg)");
-    expect(css).toContain("var(--neuwo-glass-border)");
-    expect(css).toContain("blur(var(--neuwo-glass-blur))");
-    expect(css).toContain("-webkit-backdrop-filter");
-    expect(css).toContain("var(--neuwo-shadow-xl)");
-    expect(css).toContain("var(--neuwo-radius-xl)");
-    expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+  it("keeps the element-name rule to the outer box, with no shadow-only selectors", () => {
+    expect(declarations).not.toMatch(/:host|::part|::slotted/);
+    expect(ruleFor("neuwo-notice").trim()).toBe("display: block;");
+    expect(declarations.match(/(^|[},\s])neuwo-notice[\s,{[:]/g)).toHaveLength(1);
+  });
+
+  it("paints the shared glass surface from tokens on the prefixed card class", () => {
+    const card = ruleFor(".neuwo-notice");
+    for (const value of [
+      "var(--neuwo-glass-bg)",
+      "var(--neuwo-glass-border)",
+      "blur(var(--neuwo-glass-blur))",
+      "var(--neuwo-shadow-xl)",
+      "var(--neuwo-radius-xl)",
+    ]) {
+      expect(card).toContain(value);
+    }
+    expect(card).toContain("-webkit-backdrop-filter");
   });
 
   it("reads its width and gutter knobs with a fallback, never declaring them", () => {
-    // A declaration on the card would beat the value a consumer inherits in from
-    // `:root` or the host, which is the only way either knob gets set.
-    expect(css).not.toMatch(/--neuwo-notice-max-width:/);
-    expect(css).not.toMatch(/--neuwo-notice-gutter:/);
-    expect(css).toContain("max-width: var(--neuwo-notice-max-width, 24rem)");
-    // Full width less an equal gutter each side, until the cap takes over.
-    expect(css).toContain("width: calc(100% - var(--neuwo-notice-gutter, var(--neuwo-space-4)) * 2)");
+    expect(declarations).not.toMatch(/--neuwo-notice-max-width:/);
+    expect(declarations).not.toMatch(/--neuwo-notice-gutter:/);
+    expect(ruleFor(".neuwo-notice")).toContain("max-width: var(--neuwo-notice-max-width, 24rem)");
+    expect(ruleFor(".neuwo-notice--fixed")).toContain("width: calc(100% - var(--neuwo-notice-gutter, var(--neuwo-space-4)) * 2)");
   });
 
-  it("composes a placement from independent edge modifiers", () => {
-    for (const modifier of [".notice--fixed", ".notice--top", ".notice--bottom", ".notice--start", ".notice--end", ".notice--center"])
-      expect(css).toContain(modifier);
-    // Logical insets, so a right-to-left page docks the card on the other side.
-    expect(css).toContain("inset-inline-start: var(--neuwo-notice-gutter");
-    expect(css).toContain("inset-inline-end: var(--neuwo-notice-gutter");
-    expect(css).toContain("var(--neuwo-z-overlay)");
+  it("composes a placement from independent edge modifiers with logical insets", () => {
+    for (const modifier of ["fixed", "top", "bottom", "start", "end", "center"]) expect(ruleFor(`.neuwo-notice--${modifier}`), modifier).toBeDefined();
+    expect(ruleFor(".neuwo-notice--fixed")).toContain("var(--neuwo-z-overlay)");
+    expect(ruleFor(".neuwo-notice--start")).toContain("inset-inline-start: var(--neuwo-notice-gutter");
+    expect(ruleFor(".neuwo-notice--end")).toContain("inset-inline-end: var(--neuwo-notice-gutter");
   });
 
-  it("keeps the entrance off `transform`, which the centred placement owns", () => {
-    expect(css).toContain("@keyframes notice-in");
-    expect(css).toMatch(/@keyframes notice-in\s*\{[^}]*\{[^}]*translate: 0 var\(--neuwo-notice-rise\)/);
-    expect(css).toMatch(/\.notice--center\s*\{[^}]*transform: translateX\(-50%\)/);
+  it("keeps the entrance off `transform`, which the centred placement owns, under a prefixed keyframes name", () => {
+    expect(ruleFor(".neuwo-notice")).toMatch(/animation: neuwo-notice-in var\(--neuwo-transition-base\) both/);
+    expect(css).toMatch(/@keyframes neuwo-notice-in\s*\{[^}]*\{[^}]*translate: 0 var\(--neuwo-notice-rise\)/);
+    expect(declarations).not.toMatch(/@keyframes notice-in/);
+    expect(ruleFor(".neuwo-notice--center")).toMatch(/transform: translateX\(-50%\)/);
   });
 
-  it("reserves the close button's corner on the card, not on the first line", () => {
-    expect(css).toMatch(/\.notice--dismissible\s*\{[^}]*padding-inline-end:\s*calc\(var\(--neuwo-space-3\) \+ var\(--neuwo-space-8\)\)/);
-    // The cross is a mask over the button's own colour, so hover recolours it.
-    expect(css).toMatch(/\.notice__dismiss::before\s*\{[^}]*background: currentColor/);
-    expect(css).toContain("-webkit-mask:");
-    expect(css).toContain("var(--neuwo-shadow-focus)");
+  it("reserves the close button's corner on the card and draws the cross as a mask over its own colour", () => {
+    expect(ruleFor(".neuwo-notice--dismissible")).toMatch(/padding-inline-end:\s*calc\(var\(--neuwo-space-3\) \+ var\(--neuwo-space-8\)\)/);
+    const glyph = ruleFor(".neuwo-notice__dismiss::before");
+    expect(glyph).toMatch(/background: currentColor/);
+    expect(glyph).toContain("mask:");
+    expect(glyph).toContain("-webkit-mask:");
+    expect(ruleFor(".neuwo-notice__dismiss:focus-visible")).toContain("var(--neuwo-shadow-focus)");
   });
 
   it("stacks by default and turns to a row only when there is room", () => {
-    expect(css).toMatch(/\.notice\s*\{[^}]*flex-direction: column/);
-    expect(css).toMatch(/@media \(min-width: 48rem\)[\s\S]*\.notice--row[^}]*flex-direction: row/);
+    expect(ruleFor(".neuwo-notice")).toMatch(/flex-direction: column/);
+    expect(css).toMatch(/@media \(min-width: 48rem\)[\s\S]*\.neuwo-notice--row\s*\{[^}]*flex-direction: row/);
   });
 
-  it("removes an unfilled slot from the flow", () => {
-    for (const empty of [".notice__title--empty", ".notice__message--empty", ".notice__actions--empty"])
-      expect(css).toContain(empty);
+  it("takes an empty wrapper out of the flow, after the rules that give the wrappers a display", () => {
+    const empty = ".neuwo-notice__title--empty,\n.neuwo-notice__message--empty,\n.neuwo-notice__actions--empty";
+    expect(ruleFor(empty)).toMatch(/display: none/);
+    expect(declarations.indexOf(empty)).toBeGreaterThan(declarations.indexOf(".neuwo-notice__actions {"));
   });
 
-  it("stills the entrance under reduced motion", () => {
-    expect(css).toContain("prefers-reduced-motion: reduce");
-    expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*animation: none/);
+  it("stills the entrance and the hover under reduced motion", () => {
+    const block = css.match(/@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\n\}/)[0];
+    expect(block).toMatch(/\.neuwo-notice\s*\{\s*animation: none;/);
+    expect(block).toMatch(/\.neuwo-notice__dismiss\s*\{\s*transition: none;/);
   });
 
-  it("keeps every visual value on the portable class, not on :host", () => {
-    // The only :host rule is the wrapper's display, which carries no styling.
-    expect(css).not.toMatch(/:host\(/);
-    expect(css).toMatch(/:host\s*\{\s*display: block;\s*\}/);
+  it("uses no raw colour literals, and only tokens that tokens.css defines", () => {
+    expect(declarations.replace(/url\([^)]*\)/g, "")).not.toMatch(/#[0-9a-fA-F]{3,8}\b|rgba?\(/);
+    for (const [, token] of declarations.matchAll(/var\((--neuwo-[\w-]+)/g)) {
+      if (["--neuwo-notice-max-width", "--neuwo-notice-gutter", "--neuwo-notice-rise"].includes(token)) continue;
+      expect(tokensCss, token).toContain(`${token}:`);
+    }
   });
 });

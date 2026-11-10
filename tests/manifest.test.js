@@ -158,11 +158,10 @@ describe("custom-elements.json", () => {
       expect(partsFor(manifest, "neuwo-cta").has(p)).toBe(true);
   });
 
-  it("documents the notice's axes and parts", () => {
+  it("documents the notice's axes and no parts", () => {
     const attrs = attributesFor(manifest, "neuwo-notice");
     for (const a of ["position", "layout", "dismissible", "dismiss-label"]) expect(attrs).toContain(a);
-    for (const p of ["notice", "content", "title", "message", "actions", "dismiss"])
-      expect(partsFor(manifest, "neuwo-notice").has(p)).toBe(true);
+    expect(partsFor(manifest, "neuwo-notice").size).toBe(0);
   });
 
   it("documents the logo's variant, label and no parts", () => {
