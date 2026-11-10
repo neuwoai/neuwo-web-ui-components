@@ -3,7 +3,7 @@ import { NeuwoElement, define } from "../../core/element.js";
 import { DEFAULT_REGION } from "../../core/template.js";
 import { ctaTemplate } from "./cta.template.js";
 
-// Unregistered, --neuwo-cta-angle has no value, so the spotlight's conic gradients never paint or spin.
+// cta.css registers this too, but browsers ignore @property in a shadow root, where a page may load the sheet.
 if (typeof CSS !== "undefined" && CSS.registerProperty) {
   try {
     CSS.registerProperty({ name: "--neuwo-cta-angle", syntax: "<angle>", inherits: false, initialValue: "0deg" });
