@@ -557,7 +557,10 @@ value props:
   they type into a `searchable` filter. `event.target` is the combobox itself: its `value` is the
   picked value and its `name` is the field's, as form libraries expect.
 - `value` makes it controlled: it shows whatever your state says, so a pick your handler ignores
-  is never shown. A `value` that names no enabled option shows the placeholder and submits nothing.
+  is never shown. A `value` that names no enabled option resolves as the `value` attribute does:
+  to the first enabled option marked `selected`, else to nothing, which shows the placeholder and
+  submits an empty value. Picking the option it resolved to fires no `change`, since the
+  combobox already holds that value.
 - `defaultValue` gives an uncontrolled combobox, which shows the user's pick itself and keeps it
   across re-renders. In Server Components `value` is the starting value, as above. Setting the
   element's `value` property, as React Hook Form's `register` does on a reset, shows that value.

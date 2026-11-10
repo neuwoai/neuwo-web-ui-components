@@ -170,8 +170,8 @@ function controlOf(node) {
  * @returns {boolean}
  */
 function isControlled(props, control) {
-  if (!control) return props.value !== undefined || props.checked !== undefined;
-  return isCheckable(control) ? props.checked !== undefined : props.value !== undefined;
+  if (!control) return props.value != null || props.checked != null;
+  return isCheckable(control) ? props.checked != null : props.value != null;
 }
 
 /**
@@ -192,7 +192,7 @@ function bindForm(node, props, children, form) {
   } else if (!FIXED_VALUE.has(inputTypeOf(node))) {
     const value = node.tag === "textarea" && children.length ? children.splice(0).join("") : props.value;
     delete props.value;
-    if (live) props.value = value ?? form.host.value;
+    if (live) props.value = value === undefined || String(value) === String(form.host.value) ? form.host.value : value;
     else if (value !== undefined) props.defaultValue = value;
   }
   if (live && typeof form.host.onChange === "function") props.onChange = noop;
@@ -281,11 +281,9 @@ function hostFor(tag, template, { markHost, server }) {
     const mark = markHost && { ref: useMark(props.ref, controlled) };
     const blocks = blocksOf(node);
     const root = toReact(node, distribute(node, items, slotOf), blocks, keyOf(node, blocks, 0), { host: props, controlled });
-    if (server) {
-      // A field assigns a value it is handed to its live control, which would overwrite what the user typed.
-      delete host.value;
-      delete host.checked;
-    }
+    // A field assigns a value it is handed to its live control, which would overwrite what the user typed.
+    if (server || host.value == null) delete host.value;
+    if (server || host.checked == null) delete host.checked;
     return reactJsx(/** @type {ElementType} */ (tag), { ...host, ...mark, children: root });
   }
   hostTags.set(NeuwoHost, tag);

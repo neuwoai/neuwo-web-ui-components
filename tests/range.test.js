@@ -270,6 +270,20 @@ describe("<neuwo-range> under React", () => {
     expect(fillOf(host)).toBe("20%");
   });
 
+  it("is uncontrolled with value={null} and a defaultValue, as React's own input is", async () => {
+    const errors = vi.spyOn(console, "error");
+    const tree = (name) => jsx("neuwo-range", { min: 0, max: 100, value: null, defaultValue: 40, name });
+    const { container, rerender } = await render(tree("a"));
+    const host = container.querySelector("neuwo-range");
+    expect(host[CONTROLLED]).toBe(false);
+    expect(rangeOf(host).value).toBe("40");
+    await act(async () => drag(rangeOf(host), "70"));
+    await rerender(tree("b"));
+    expect(rangeOf(host).name).toBe("b");
+    expect(rangeOf(host).value).toBe("70");
+    expect(errors).not.toHaveBeenCalled();
+  });
+
   it("renders the fill in the server string", () => {
     expect(renderToString(jsx("neuwo-range", { min: 0, max: 200, value: 50, onChange() {} }))).toContain("--neuwo-range-fill:25%");
   });

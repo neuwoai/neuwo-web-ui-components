@@ -56,9 +56,6 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   /** @type {string | undefined} */
   #picked;
 
-  /** @type {string | undefined} */
-  #deferred;
-
   #reposition = () => this.#position();
 
   #onReset = () => {
@@ -118,11 +115,10 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   }
   set value(value) {
     const controlled = Reflect.get(this, CONTROLLED);
-    if (controlled === true) return;
+    // React hands an element it is still building a value only when it controls it, and sets the flag later, from its ref.
+    if (controlled === true || (controlled === undefined && !this.isConnected && ownedByReact(this))) return;
     const next = value == null ? "" : String(value);
     if (!this.control) super.value = next;
-    // React assigns a controlled value while it builds the element, before its ref sets the flag.
-    else if (controlled === undefined && !this.isConnected && ownedByReact(this)) this.#deferred = next;
     else this.#show(this.#accept(next));
   }
 
@@ -209,7 +205,6 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     });
     this.#display.observe(this, DISPLAY);
     if (!owned) this.#sync();
-    else if (this.#deferred !== undefined) queueMicrotask(() => this.#settle());
   }
 
   disconnect() {
@@ -271,13 +266,6 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     if (!control) return;
     if (Reflect.get(this, CONTROLLED) !== true) this.#show(this.#accept(control.value));
     else if (!this.#open) this.#revertText();
-  }
-
-  /** Decides a value React assigned before its ref said whether it controls the host. */
-  #settle() {
-    const value = this.#deferred;
-    this.#deferred = undefined;
-    if (value !== undefined && Reflect.get(this, CONTROLLED) !== true) this.#show(this.#accept(value));
   }
 
   /** @returns {HTMLElement[]} */

@@ -283,6 +283,31 @@ describe("<neuwo-input> under React", () => {
     expect(errors).not.toHaveBeenCalled();
   });
 
+  it("keeps a number the user is still typing when the consumer's state holds a number", async () => {
+    const errors = vi.spyOn(console, "error");
+    const onChange = vi.fn();
+    function Form() {
+      const [n, setN] = useState(1);
+      return jsx("neuwo-input", {
+        type: "number",
+        value: n,
+        onChange: (event) => {
+          onChange(event.target.value);
+          setN(parseFloat(event.target.value));
+        },
+      });
+    }
+    const { container } = await render(jsx(Form, {}));
+    const control = inputOf(container.querySelector("neuwo-input"));
+    expect(control.value).toBe("1");
+    await act(async () => type(control, "1.0"));
+    expect(control.value).toBe("1.0");
+    await act(async () => type(control, "1.05"));
+    expect(control.value).toBe("1.05");
+    expect(onChange.mock.calls).toEqual([["1.0"], ["1.05"]]);
+    expect(errors).not.toHaveBeenCalled();
+  });
+
   it("shows whatever the consumer's state says", async () => {
     const errors = vi.spyOn(console, "error");
     function Form() {

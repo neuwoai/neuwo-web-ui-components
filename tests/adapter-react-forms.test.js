@@ -237,6 +237,27 @@ describe("React adapter: the controlled flag", () => {
     expect(host[CONTROLLED]).toBe(true);
   });
 
+  it("is false for a null value or checked, as React's own fields are, and the host gets neither", async () => {
+    const errors = vi.spyOn(console, "error");
+    const field = await render(jsx("x-field", { value: null, defaultValue: "a" }));
+    const check = await render(jsx("x-check", { value: "yes", checked: null, defaultChecked: true }));
+    const fieldHost = field.container.querySelector("x-field");
+    const checkHost = check.container.querySelector("x-check");
+    expect(fieldHost[CONTROLLED]).toBe(false);
+    expect(checkHost[CONTROLLED]).toBe(false);
+    expect(fieldHost.hasAttribute("value")).toBe(false);
+    expect(checkHost.hasAttribute("checked")).toBe(false);
+    const input = field.container.querySelector(".x-field__input");
+    expect(input.value).toBe("a");
+    await act(async () => type(input, "ab"));
+    expect(input.value).toBe("ab");
+    const box = check.container.querySelector(".x-check__input");
+    expect(box.checked).toBe(true);
+    await act(async () => box.click());
+    expect(box.checked).toBe(false);
+    expect(errors).not.toHaveBeenCalled();
+  });
+
   it("is false when the host starts uncontrolled", async () => {
     const { container } = await render(jsx("x-field", { defaultValue: "a" }));
     expect(container.querySelector("x-field")[CONTROLLED]).toBe(false);

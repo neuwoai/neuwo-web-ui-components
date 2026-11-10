@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { act, startTransition, useState } from "react";
+import { Activity, act, startTransition, useState } from "react";
 import { createRoot, hydrateRoot } from "react-dom/client";
 import { renderToString } from "react-dom/server";
 import "../src/index.js";
@@ -191,6 +191,37 @@ describe("<neuwo-combobox> under React, controlled", () => {
     expect(unexpected(errors)).toEqual([]);
   });
 
+  it("submits the option marked selected for a value that names no enabled option, and a pick of it changes nothing", () => {
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    const onChange = vi.fn();
+    const { container, host } = render(jsx("form", { children: combobox({ value: "zz", name: "country", onChange }, { selected: "se" }) }));
+    expect([...new FormData(container.querySelector("form"))]).toEqual([["country", "se"]]);
+    expect(shownOf(host)).toBe("Sweden");
+    pick(host, "se");
+    expect(onChange).not.toHaveBeenCalled();
+    expect(unexpected(errors)).toEqual([]);
+  });
+
+  it("writes nothing under a hidden Activity, where React has not run its ref, and agrees with React once shown", async () => {
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    const field = () => combobox({ value: "zz", name: "country", placeholder: "Pick", onChange() {} }, { selected: "se" });
+    const tree = (mode) => jsx(Activity, { mode, children: field() });
+    const { container, rerender } = render(tree("hidden"));
+    await settled();
+    const host = container.querySelector("neuwo-combobox");
+    expect(host[CONTROLLED]).toBeUndefined();
+    expect(formValueOf(host).value).toBe("se");
+    expect(shownOf(host)).toBe("Sweden");
+    rerender(tree("visible"));
+    await settled();
+    expect(host[CONTROLLED]).toBe(true);
+    expect(formValueOf(host).value).toBe("se");
+    expect(shownOf(host)).toBe("Sweden");
+    expect(placeholderShown(host)).toBe(false);
+    expect(selectedOf(host)).toEqual(["se"]);
+    expect(unexpected(errors)).toEqual([]);
+  });
+
   it("writes nothing when a script sets the value of a controlled element", async () => {
     const { host } = render(combobox({ value: "fi", onChange() {} }));
     const records = watch(host);
@@ -270,6 +301,20 @@ describe("<neuwo-combobox> under React, uncontrolled", () => {
     expect(formValueOf(host).value).toBe("fr");
     expect(shownOf(host)).toBe("France");
     expect(selectedOf(host)).toEqual(["fr"]);
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it("is uncontrolled with value={null} and a defaultValue, as React's own fields are", async () => {
+    const errors = vi.spyOn(console, "error");
+    const tree = (name) => combobox({ value: null, defaultValue: "fr", name });
+    const { host, rerender } = render(tree("a"));
+    expect(host[CONTROLLED]).toBe(false);
+    expect(shownOf(host)).toBe("France");
+    pick(host, "se");
+    rerender(tree("b"));
+    await settled();
+    expect(host.value).toBe("se");
+    expect(shownOf(host)).toBe("Sweden");
     expect(errors).not.toHaveBeenCalled();
   });
 
