@@ -33,8 +33,8 @@ const BOX = {
 const SIZING = {
   width: "auto",
   height: "auto",
-  "min-width": "0",
-  "min-height": "0",
+  "min-width": "auto",
+  "min-height": "auto",
   "max-width": "none",
   "max-height": "none",
 };
@@ -164,6 +164,19 @@ describe("components reset", () => {
       for (const rule of rules.filter((candidate) => candidate.declarations.has(property))) {
         for (const selector of rule.selectors) expect(selector, property).not.toContain("svg");
       }
+    }
+  });
+
+  it("returns the button's minimum size to auto over a page `button { min-width: 300px }`", () => {
+    document.body.innerHTML = `<neuwo-button><button class="neuwo-btn neuwo-btn--solid" type="button">Go</button></neuwo-button>`;
+    const button = document.querySelector("button");
+    for (const property of ["min-width", "min-height"]) {
+      const winning = rules
+        .flatMap((rule) => rule.selectors.filter((selector) => !pseudoOf(selector) && button.matches(selector)).map((selector) => ({ rule, selector })))
+        .filter(({ rule }) => rule.declarations.has(property));
+      expect(winning, property).toHaveLength(1);
+      expect(winning[0].rule.declarations.get(property), property).toBe("auto");
+      expect(compare(weight(winning[0].selector), weight("button")), property).toBeGreaterThan(0);
     }
   });
 
