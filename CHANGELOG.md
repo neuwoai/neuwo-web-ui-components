@@ -11,6 +11,10 @@
   `.neuwo-input--sm` and `.neuwo-input--error`. The label holds two new spans: `.neuwo-field__label-content`
   around the `slot="label"` children, `display: contents`, and `.neuwo-field__label-text` around the
   `label` text.
+- A native text control that a light DOM component renders, such as the `<input>` in `<neuwo-input>`,
+  keeps the browser's own text defaults (alignment, casing, spacing, weight, style, line height and
+  white space) instead of taking them from the host, as it did in a shadow root, so a centred or
+  uppercase container does not restyle what the user types.
 - Breaking: `::part(field)`, `::part(label)`, `::part(input)` and `::part(error)` on `<neuwo-input>` are
   gone. Restyle through the classes, with the element name in front for weight:
   `neuwo-input .neuwo-input { border-radius: 0; }`.
@@ -19,7 +23,9 @@
   and validates natively, in server-rendered markup before the script has loaded too. The `value`
   attribute is the starting value, as on a native input: changing it moves only an input the user has
   not edited, and a form reset returns to it and no longer clears `error`. The element no longer
-  dispatches its own `change`; the input's own `change` bubbles through it, once. `form`, `validity`,
+  dispatches its own `change`; the input's own `change` bubbles through it, once. On plain pages too,
+  `change` and `input` listeners on the element now get the inner `<input>` as `event.target`, not the
+  element; use `event.currentTarget` for the element. `form`, `validity`,
   `validationMessage`, `checkValidity()`, `reportValidity()`, `setCustomValidity()`, `focus()` and
   `blur()` act on the inner input, and `name` and `defaultValue` are now properties too.
 - Breaking: in React, `onChange` on `<neuwo-input>` fires on every keystroke, as on React's own

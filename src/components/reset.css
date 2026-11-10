@@ -25,6 +25,22 @@
   white-space: inherit;
 }
 
+/* Native text controls keep their user agent text defaults; the block above would hand them the page's. */
+:where(neuwo-badge, neuwo-button, neuwo-copy, neuwo-cta, neuwo-deal-id, neuwo-input, neuwo-logo, neuwo-notice, neuwo-status-dot) :where(input, textarea, select):is([class^="neuwo-badge"], [class*=" neuwo-badge"], [class^="neuwo-btn"], [class*=" neuwo-btn"], [class^="neuwo-copy"], [class*=" neuwo-copy"], [class^="neuwo-cta"], [class*=" neuwo-cta"], [class^="neuwo-deal-id"], [class*=" neuwo-deal-id"], [class^="neuwo-field"], [class*=" neuwo-field"], [class^="neuwo-input"], [class*=" neuwo-input"], [class^="neuwo-logo"], [class*=" neuwo-logo"], [class^="neuwo-notice"], [class*=" neuwo-notice"], [class^="neuwo-status-dot"], [class*=" neuwo-status-dot"]) {
+  text-align: start;
+  text-transform: none;
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-indent: 0;
+  text-shadow: none;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  line-height: normal;
+  white-space: normal;
+}
+:where(neuwo-badge, neuwo-button, neuwo-copy, neuwo-cta, neuwo-deal-id, neuwo-input, neuwo-logo, neuwo-notice, neuwo-status-dot) :where(textarea):is([class^="neuwo-badge"], [class*=" neuwo-badge"], [class^="neuwo-btn"], [class*=" neuwo-btn"], [class^="neuwo-copy"], [class*=" neuwo-copy"], [class^="neuwo-cta"], [class*=" neuwo-cta"], [class^="neuwo-deal-id"], [class*=" neuwo-deal-id"], [class^="neuwo-field"], [class*=" neuwo-field"], [class^="neuwo-input"], [class*=" neuwo-input"], [class^="neuwo-logo"], [class*=" neuwo-logo"], [class^="neuwo-notice"], [class*=" neuwo-notice"], [class^="neuwo-status-dot"], [class*=" neuwo-status-dot"]) { white-space: pre-wrap; }
+
 /* :where() keeps the svg exclusion weightless; a bare :not(svg) would outweigh the recipes' own sizes. */
 :where(neuwo-badge, neuwo-button, neuwo-copy, neuwo-cta, neuwo-deal-id, neuwo-input, neuwo-logo, neuwo-notice, neuwo-status-dot) :is([class^="neuwo-badge"], [class*=" neuwo-badge"], [class^="neuwo-btn"], [class*=" neuwo-btn"], [class^="neuwo-copy"], [class*=" neuwo-copy"], [class^="neuwo-cta"], [class*=" neuwo-cta"], [class^="neuwo-deal-id"], [class*=" neuwo-deal-id"], [class^="neuwo-field"], [class*=" neuwo-field"], [class^="neuwo-input"], [class*=" neuwo-input"], [class^="neuwo-logo"], [class*=" neuwo-logo"], [class^="neuwo-notice"], [class*=" neuwo-notice"], [class^="neuwo-status-dot"], [class*=" neuwo-status-dot"]):where(:not(svg)),
 :where(neuwo-badge, neuwo-button, neuwo-copy, neuwo-cta, neuwo-deal-id, neuwo-input, neuwo-logo, neuwo-notice, neuwo-status-dot) :is([class^="neuwo-badge"], [class*=" neuwo-badge"], [class^="neuwo-btn"], [class*=" neuwo-btn"], [class^="neuwo-copy"], [class*=" neuwo-copy"], [class^="neuwo-cta"], [class*=" neuwo-cta"], [class^="neuwo-deal-id"], [class*=" neuwo-deal-id"], [class^="neuwo-field"], [class*=" neuwo-field"], [class^="neuwo-input"], [class*=" neuwo-input"], [class^="neuwo-logo"], [class*=" neuwo-logo"], [class^="neuwo-notice"], [class*=" neuwo-notice"], [class^="neuwo-status-dot"], [class*=" neuwo-status-dot"]):where(:not(svg))::before,

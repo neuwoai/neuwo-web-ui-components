@@ -27,10 +27,6 @@ describe("field.css recipe", () => {
     expect(code).toMatch(/\.neuwo-input::placeholder\s*\{\s*color:\s*var\(--neuwo-color-grey-400\)/);
   });
 
-  it("gives a native text control its own line height back from the reset, at one class of weight", () => {
-    expect(code).toMatch(/\.neuwo-input:where\(input, textarea\)\s*\{\s*line-height:\s*normal;\s*\}/);
-  });
-
   it("takes an empty label out of the flow so the column gap ignores it", () => {
     expect(code).toMatch(/\.neuwo-field__label--empty\s*\{\s*display:\s*none/);
   });

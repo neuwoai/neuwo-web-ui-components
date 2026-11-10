@@ -60,6 +60,38 @@ const PSEUDO_ELEMENT = /::(before|after)$/;
 const baseOf = (selector) => selector.replace(PSEUDO_ELEMENT, "");
 const pseudoOf = (selector) => selector.match(PSEUDO_ELEMENT)?.[0] ?? "";
 
+// The user agent's text defaults for a native text control, which the old shadow reset left alone.
+const NATIVE = {
+  "text-align": "start",
+  "text-transform": "none",
+  "letter-spacing": "normal",
+  "word-spacing": "normal",
+  "text-indent": "0",
+  "text-shadow": "none",
+  "font-style": "normal",
+  "font-variant": "normal",
+  "font-weight": "normal",
+  "line-height": "normal",
+  "white-space": "normal",
+};
+
+/**
+ * The value the reset's cascade gives the element: the heaviest matching selector, the later one on a tie.
+ * @param {Element} el
+ * @param {string} property
+ */
+function winner(el, property) {
+  let best = null;
+  for (const rule of rules) {
+    if (!rule.declarations.has(property)) continue;
+    for (const selector of rule.selectors) {
+      if (pseudoOf(selector) || !el.matches(selector)) continue;
+      if (!best || compare(weight(selector), best.weight) >= 0) best = { weight: weight(selector), value: rule.declarations.get(property) };
+    }
+  }
+  return best?.value;
+}
+
 describe("components reset", () => {
   it("scopes every rule to exactly the elements that have a template", () => {
     const lists = Array.from(css.matchAll(/^:where\(([^)]*)\)/gm), ([, list]) => list.split(",").map((tag) => tag.trim()));
@@ -107,6 +139,35 @@ describe("components reset", () => {
         for (const selector of rule.selectors) expect(selector, property).not.toContain("svg");
       }
     }
+  });
+
+  it("gives template-rendered native text controls their user agent text defaults back, and nothing else", () => {
+    document.body.innerHTML =
+      `<neuwo-input><div class="neuwo-field"><label class="neuwo-field__label">L</label>` +
+      `<input class="neuwo-input"><textarea class="neuwo-input"></textarea><select class="neuwo-input"></select>` +
+      `<span class="neuwo-field__error"></span></div></neuwo-input>`;
+    for (const tag of ["input", "textarea", "select"]) {
+      const el = document.querySelector(tag);
+      for (const [property, value] of Object.entries(NATIVE)) {
+        expect(winner(el, property), `${tag} ${property}`).toBe(tag === "textarea" && property === "white-space" ? "pre-wrap" : value);
+      }
+      expect(winner(el, "color"), `${tag} color`).toBe("inherit");
+    }
+    for (const el of [document.querySelector("label"), document.querySelector("span")]) {
+      for (const property of Object.keys(NATIVE)) expect(winner(el, property), `${el.localName} ${property}`).toBe("inherit");
+    }
+    const author = document.createElement("input");
+    document.querySelector(".neuwo-field").append(author);
+    expect(winner(author, "text-align")).toBeUndefined();
+  });
+
+  it("restores those defaults after the inherit block, in one rule for every native text control", () => {
+    const inheritAt = rules.findIndex((rule) => rule.declarations.get("text-align") === "inherit");
+    const nativeAt = rules.findIndex((rule) => rule.declarations.get("text-align") === "start");
+    expect(nativeAt).toBeGreaterThan(inheritAt);
+    expect(rules[nativeAt].selectors).toHaveLength(1);
+    expect(rules[nativeAt].selectors[0]).toContain(":where(input, textarea, select):is(");
+    expect(Object.fromEntries(rules[nativeAt].declarations)).toEqual(NATIVE);
   });
 
   it("returns the button's minimum size to auto over a page `button { min-width: 300px }`", () => {

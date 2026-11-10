@@ -280,6 +280,11 @@ function hostFor(tag, template, { markHost, server }) {
     const mark = markHost && { ref: useMark(props.ref, controlled) };
     const blocks = blocksOf(node);
     const root = toReact(node, distribute(node, items, slotOf), blocks, keyOf(node, blocks, 0), { host: props, controlled });
+    if (server) {
+      // A field assigns a value it is handed to its live control, which would overwrite what the user typed.
+      delete host.value;
+      delete host.checked;
+    }
     return reactJsx(/** @type {ElementType} */ (tag), { ...host, ...mark, children: root });
   }
   hostTags.set(NeuwoHost, tag);
@@ -289,7 +294,7 @@ function hostFor(tag, template, { markHost, server }) {
 /**
  * @param {Record<string, Template>} registry
  * @param {{ markHost?: boolean, server?: boolean }} [options] `server` renders for React Server Components: no form
- *   control is controlled and the adapter adds no function prop.
+ *   control is controlled, the element itself gets no `value` or `checked`, and the adapter adds no function prop.
  * @returns {{ jsx: typeof reactJsx, jsxs: typeof reactJsxs, jsxDEV: typeof reactJsxDEV }}
  */
 export function createRuntime(registry, { markHost = true, server = false } = {}) {

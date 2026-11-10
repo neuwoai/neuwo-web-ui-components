@@ -733,9 +733,10 @@ every visual detail without forking a component:
 ## Form fields share one API
 
 `<neuwo-input>`, `<neuwo-textarea>`, `<neuwo-combobox>` and `<neuwo-range>`
-share the same attributes and properties (`name`, `value`, `label`, `disabled`,
-`required`, `error`, `error-muted`, `no-error-line`, `size`) and the same
-`change` event. The selection controls (`<neuwo-checkbox>`, `<neuwo-toggle>`,
+share the same attributes (`name`, `value`, `label`, `disabled`, `required`,
+`error`, `error-muted`, `no-error-line`, `size`), the `value`, `disabled`,
+`size` and `noErrorLine` properties, and the same `change` event. The
+selection controls (`<neuwo-checkbox>`, `<neuwo-toggle>`,
 `<neuwo-radio-group>`, `<neuwo-segmented>`) share the error and
 `no-error-line` behaviour below. The generated `.d.ts` shows these on the base
 class each control `extends`.
@@ -744,8 +745,8 @@ class each control `extends`.
 input is the form control. The element carries `name`, `value`, `required`,
 `disabled`, `readonly`, `placeholder`, `autocomplete`, `form` and the
 constraint attributes onto it, so a form of inputs submits and validates
-natively, in server-rendered markup before the script has loaded too. The element itself is
-not form-associated, so each value is submitted once.
+natively, in server-rendered markup before the script has loaded too. The
+element itself is not form-associated, so each value is submitted once.
 
 - **`value` is the starting value**, as on a native input. Changing the
   attribute moves an input the user has not edited yet, and `form.reset()`
@@ -753,7 +754,9 @@ not form-associated, so each value is submitted once.
   now and never touches the attribute; `defaultValue` reflects the attribute.
 - **The inner input's own events** reach your listeners: `input` on every
   keystroke and `change` when the user commits, both bubbling through the
-  element. The element dispatches none of its own.
+  element. The element dispatches none of its own, so `event.target` is the
+  inner `<input>` (its `value` is the field's); use `event.currentTarget` for
+  the element.
 - **The native form API** answers for the inner input: `form`, `validity`,
   `validationMessage`, `checkValidity()`, `reportValidity()` and
   `setCustomValidity()`. `focus()` and `blur()` move focus to it, and a click on

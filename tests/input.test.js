@@ -8,6 +8,8 @@ import { NeuwoInput } from "../src/components/fields/input/neuwo-input.js";
 import { NeuwoFieldElement } from "../src/components/fields/field-element.js";
 import { expand } from "../src/server/index.js";
 import { jsx, jsxs } from "../src/react/jsx-runtime.js";
+import { createRuntime } from "../src/core/adapters/react.js";
+import { templates } from "../src/templates.js";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -30,6 +32,11 @@ function make(html) {
   const holder = document.createElement("div");
   holder.innerHTML = html;
   return attach(holder).firstElementChild;
+}
+
+// Microtasks only: happy-dom holds an observer's callback in a WeakRef, so a GC between tasks can silence it.
+async function settled() {
+  for (let turn = 0; turn < 3; turn++) await Promise.resolve();
 }
 
 function watch(target) {
@@ -111,12 +118,31 @@ describe("<neuwo-input>", () => {
     expect(el.getAttribute("value")).toBe("c");
   });
 
-  it("lets the inner input's native change reach a host listener exactly once", () => {
+  it("lets the inner input's native change and input reach a host listener exactly once, with the input as target", () => {
     const el = make(`<neuwo-input></neuwo-input>`);
-    const heard = vi.fn();
-    el.addEventListener("change", heard);
-    inputOf(el).dispatchEvent(new Event("change", { bubbles: true }));
-    expect(heard).toHaveBeenCalledTimes(1);
+    for (const name of ["change", "input"]) {
+      const heard = vi.fn((event) => [event.target, event.currentTarget]);
+      el.addEventListener(name, heard);
+      inputOf(el).dispatchEvent(new Event(name, { bubbles: true }));
+      expect(heard, name).toHaveBeenCalledTimes(1);
+      expect(heard.mock.results[0].value, name).toEqual([inputOf(el), el]);
+    }
+  });
+
+  it("takes a removed or changed aria-* off the inner input through its observer alone, rendered or adopted", async () => {
+    const rendered = make(`<neuwo-input aria-label="Search" aria-describedby="hint"></neuwo-input>`);
+    const holder = document.createElement("div");
+    holder.innerHTML = expand(`<neuwo-input aria-label="Search" aria-describedby="hint"></neuwo-input>`);
+    const adopted = attach(holder).firstElementChild;
+    expect(inputOf(adopted).id).toBe("neuwo-s1-control");
+    for (const el of [rendered, adopted]) {
+      expect(inputOf(el).getAttribute("aria-label")).toBe("Search");
+      el.removeAttribute("aria-label");
+      el.setAttribute("aria-describedby", "other");
+      await settled();
+      expect(inputOf(el).hasAttribute("aria-label")).toBe(false);
+      expect(inputOf(el).getAttribute("aria-describedby")).toBe("other");
+    }
   });
 
   it("reports required through checkValidity and reportValidity", () => {
@@ -291,6 +317,21 @@ describe("<neuwo-input> under React", () => {
     const host = container.querySelector("neuwo-input");
     expect(inputOf(host).getAttribute("form")).toBe("signup");
     expect(host.form).toBe(container.querySelector("form"));
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it("keeps what the user typed when a Server Component sends a new value, which is only the starting value there", async () => {
+    const errors = vi.spyOn(console, "error");
+    const server = createRuntime(templates, { markHost: false, server: true });
+    const { container, rerender } = await render(server.jsx("neuwo-input", { value: "a", name: "q" }));
+    const host = container.querySelector("neuwo-input");
+    const control = inputOf(host);
+    expect(control.value).toBe("a");
+    expect(host.hasAttribute("value")).toBe(false);
+    await act(async () => type(control, "ab"));
+    await rerender(server.jsx("neuwo-input", { value: "b", name: "q" }));
+    expect(control.value).toBe("ab");
+    expect(control.defaultValue).toBe("b");
     expect(errors).not.toHaveBeenCalled();
   });
 

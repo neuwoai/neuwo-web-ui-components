@@ -57,11 +57,6 @@ neuwo-combobox:not([hidden]) {
   transition: border-color var(--neuwo-transition-fast), box-shadow var(--neuwo-transition-fast);
 }
 
-/* The components reset makes line-height inherit, but a native text control's own is `normal`. */
-.neuwo-input:where(input, textarea) {
-  line-height: normal;
-}
-
 .neuwo-input:focus-visible {
   outline: none;
   box-shadow: var(--neuwo-shadow-focus);
