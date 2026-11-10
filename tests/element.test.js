@@ -179,6 +179,31 @@ describe("NeuwoElement (light DOM)", () => {
       expect(el.connected).toBe(0);
       expect(el.disconnected).toBe(0);
     });
+
+    it("renders nothing from an upgrade's attribute callbacks, so server markup streamed in later is adopted once", async () => {
+      class Upgrade extends TestLight {
+        connectedCallback() {}
+        run() {
+          super.connectedCallback();
+        }
+      }
+      define("test-upgrade", Upgrade);
+      loading();
+      const el = mount(`<test-upgrade tone="b"></test-upgrade>`).firstElementChild;
+      el.attributeChangedCallback("tone", null, "b");
+      el.run();
+      expect(el.querySelector(".neuwo-t")).toBeNull();
+      const detached = document.createElement("div");
+      detached.innerHTML = server("b").replace(/^<test-light tone="b">|<\/test-light>$/g, "");
+      el.append(...detached.childNodes);
+      await settled();
+      delete document.readyState;
+      document.dispatchEvent(new Event("DOMContentLoaded"));
+      await settled();
+      expect(el.querySelectorAll(".neuwo-t")).toHaveLength(1);
+      expect(el.querySelector(".neuwo-t__body").textContent).toBe("hi");
+      expect(el.connected).toBe(1);
+    });
   });
 
   it("does not render again when moved", () => {
@@ -275,16 +300,30 @@ describe("NeuwoElement (light DOM)", () => {
       expect(el.innerHTML).toBe('<span class="neuwo-t neuwo-t--b"><span class="neuwo-t__start"><i slot="start"></i></span><span class="neuwo-t__body">hi</span></span>');
     });
 
-    it("stops observing when disconnected and observes again when reconnected", async () => {
+    it("stops observing when disconnected and observes again, with one observer, when reconnected", async () => {
+      const counts = countObservers();
       const el = mount(server()).firstElementChild;
       el.remove();
       el.textContent = "y";
       await settled();
       expect(el.innerHTML).toBe("y");
+      expect(counts.calls).toBe(0);
       mount("").appendChild(el);
+      expect(counts.created).toBe(2);
       el.textContent = "z";
       await settled();
+      expect(counts.calls).toBe(1);
       expect(el.querySelector(".neuwo-t__body").textContent).toBe("z");
+    });
+
+    it("renders text a script set just before an observed attribute changed in the same task", async () => {
+      const el = mount(server()).firstElementChild;
+      el.textContent = "y";
+      el.setAttribute("tone", "b");
+      const rendered = '<span class="neuwo-t neuwo-t--b"><span class="neuwo-t__start"></span><span class="neuwo-t__body">y</span></span>';
+      expect(el.innerHTML).toBe(rendered);
+      await settled();
+      expect(el.innerHTML).toBe(rendered);
     });
 
     it.each([

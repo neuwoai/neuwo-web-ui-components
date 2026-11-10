@@ -127,7 +127,8 @@ Next.js are covered in [React](#react), Eleventy and other builds in [Server ren
 Without a framework, a script can change a rendered element as it would any other: set its
 `textContent` or `innerHTML`, append a child with a `slot`, or set `aria-*` and `title`. The element
 fits the change into its markup in a microtask, so read the markup back after an `await`, not on the
-next line.
+next line. As on first render, a child with no region to go to is removed, such as one with a
+misspelt `slot` or any child of an element that has no regions.
 
 ### A page that can only add a script
 

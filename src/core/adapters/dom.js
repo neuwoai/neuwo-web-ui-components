@@ -446,7 +446,7 @@ export function isRendered(host, template) {
  * @param {Template} template
  */
 export function adopt(host, template) {
-  if (live(host)) return patch(host, template);
+  if (live(host)) return reconcile(host, template);
   const state = stateFor(host);
   const attrs = attrsOf(host);
   const probe = template(attrs, { id: state.id, children: [] });

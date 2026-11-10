@@ -248,6 +248,18 @@ describe("adopt()", () => {
     expect(host.innerHTML).toBe('<span class="neuwo-t" title="x"><span class="neuwo-t__label"><b>bold</b></span><b class="neuwo-t__mark"></b></span>');
   });
 
+  it("places a loose child of a host it already rendered, as a move reconnects it", () => {
+    const host = make(`<neuwo-t>x</neuwo-t>`);
+    render(host, testTemplate);
+    const span = host.firstElementChild;
+    const icon = document.createElement("i");
+    icon.slot = "start";
+    host.append(icon);
+    adopt(host, testTemplate);
+    expect(host.innerHTML).toBe(shell("a", '<i slot="start"></i>', "x"));
+    expect(host.firstElementChild).toBe(span);
+  });
+
   it("corrects stale server values on the first patch", () => {
     const host = make(`<neuwo-t tone="a"><span class="neuwo-t neuwo-t--a">x</span></neuwo-t>`);
     host.setAttribute("tone", "b");

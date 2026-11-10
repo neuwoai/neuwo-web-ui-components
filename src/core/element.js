@@ -33,19 +33,21 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
   #observer = null;
 
   connectedCallback() {
-    const { template } = /** @type {typeof NeuwoElement} */ (this.constructor);
-    const doc = this.ownerDocument;
-    if (!isRendered(this, template) && doc.readyState === "loading") {
-      // The parser runs this before the children exist, so rendering now would duplicate server markup.
+    if (this.#tooEarly()) {
       if (this.#waiting) return;
       this.#waiting = () => {
         this.#waiting = null;
         this.#start();
       };
-      doc.addEventListener("DOMContentLoaded", this.#waiting, { once: true });
+      this.ownerDocument.addEventListener("DOMContentLoaded", this.#waiting, { once: true });
       return;
     }
     this.#start();
+  }
+
+  #tooEarly() {
+    // The parser may not have added the children yet, so rendering now would duplicate server markup.
+    return this.ownerDocument.readyState === "loading" && !isRendered(this, /** @type {typeof NeuwoElement} */ (this.constructor).template);
   }
 
   #start() {
@@ -74,7 +76,7 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
 
   attributeChangedCallback() {
     // Not patch: #write drops the observer's pending records, so a child a script added just before must be placed now.
-    if (this.isConnected && !this.#waiting && !ownedByReact(this)) this.#write(reconcile);
+    if (this.isConnected && !this.#waiting && !this.#tooEarly() && !ownedByReact(this)) this.#write(reconcile);
   }
 
   disconnectedCallback() {

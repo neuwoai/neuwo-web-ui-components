@@ -264,6 +264,31 @@ describe("<neuwo-button> content set by script", () => {
     expect(control(el).hasAttribute("aria-pressed")).toBe(false);
   });
 
+  it("places an end icon appended in the same task the button is moved", async () => {
+    const el = make(`<neuwo-button>Go</neuwo-button>`);
+    const other = attach(document.createElement("div"));
+    const icon = document.createElement("i");
+    icon.slot = "end";
+    el.append(icon);
+    other.append(el);
+    await Promise.resolve();
+    expect(icon.parentElement.className).toBe("neuwo-btn__end");
+    expect(el.children).toHaveLength(1);
+  });
+
+  it("places an end icon appended while the button was out of the document", async () => {
+    const el = make(`<neuwo-button>Go</neuwo-button>`);
+    const other = attach(document.createElement("div"));
+    const icon = document.createElement("i");
+    icon.slot = "end";
+    el.remove();
+    el.append(icon);
+    other.append(el);
+    await Promise.resolve();
+    expect(icon.parentElement.className).toBe("neuwo-btn__end");
+    expect(el.children).toHaveLength(1);
+  });
+
   it("labels a button created and connected by script before it had content", async () => {
     const el = attach(document.createElement("neuwo-button"));
     expect(control(el)).not.toBeNull();
