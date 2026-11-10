@@ -16,11 +16,11 @@ function output(tag, testCase) {
   const children = renderChildren(testCase.children).map(({ html, ...info }) => info);
   const root = templates[tag](testCase.attrs, { id: (suffix) => `neuwo-s1-${suffix}`, children });
   const [block] = classesOf(root);
-  const owned = (name) => name === block || name.startsWith(`${block}__`);
   const all = elements(root);
   const blocks = [...new Set(all.flatMap(classesOf).filter((name) => !name.includes("__") && !name.includes("--")))];
-  const ownedByABlock = (name) => blocks.some((each) => name === each || name.startsWith(`${each}__`) || name.startsWith(`${each}--`));
-  const wrappers = all.filter((node) => node.children.some(isRegion)).map((node) => classesOf(node).find(owned));
+  const keyed = (name) => blocks.some((each) => name === each || name.startsWith(`${each}__`));
+  const ownedByABlock = (name) => keyed(name) || blocks.some((each) => name.startsWith(`${each}--`));
+  const wrappers = all.filter((node) => node.children.some(isRegion)).map((node) => classesOf(node).find(keyed));
   return { block, blocks, ownedByABlock, all, wrappers };
 }
 
@@ -66,7 +66,7 @@ describe("template contract", () => {
             }
           });
 
-          it("gives each wrapper a class unique within the output", () => {
+          it("gives each wrapper a block or block element class unique within the output", () => {
             const { wrappers } = output(tag, testCase);
             expect(wrappers.every(Boolean)).toBe(true);
             expect(new Set(wrappers).size).toBe(wrappers.length);

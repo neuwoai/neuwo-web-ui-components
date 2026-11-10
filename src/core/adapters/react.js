@@ -1,7 +1,7 @@
 import { Children, Fragment, cloneElement, isValidElement, useCallback, useId } from "react";
 import { jsx as reactJsx, jsxs as reactJsxs } from "react/jsx-runtime";
 import { jsxDEV as reactJsxDEV } from "react/jsx-dev-runtime";
-import { DEFAULT_REGION, distribute, normalizeProps } from "../template.js";
+import { DEFAULT_REGION, blocksOf, distribute, keyClassOf, normalizeProps } from "../template.js";
 
 /** @typedef {import("react").ReactNode} ReactNode */
 /** @typedef {import("react").ElementType} ElementType */
@@ -99,23 +99,20 @@ const classesOf = (node) => (typeof node.props.class === "string" ? node.props.c
 
 /**
  * @param {TemplateNode} node
- * @param {string} block
+ * @param {Set<string>} blocks
  * @param {number} index
  * @returns {string}
  */
-function keyOf(node, block, index) {
-  const classes = classesOf(node);
-  return classes.find((name) => name.startsWith(`${block}__`)) ?? classes[0] ?? String(index);
-}
+const keyOf = (node, blocks, index) => keyClassOf(node, blocks) ?? classesOf(node)[0] ?? String(index);
 
 /**
  * @param {TemplateNode} node
  * @param {Record<string, ReactNode[]>} regions
- * @param {string} block
+ * @param {Set<string>} blocks
  * @param {string} key
  * @returns {ReactElement}
  */
-function toReact(node, regions, block, key) {
+function toReact(node, regions, blocks, key) {
   /** @type {Record<string, unknown>} */
   const props = {};
   for (const [name, value] of Object.entries(node.props)) {
@@ -132,10 +129,10 @@ function toReact(node, regions, block, key) {
     else if ("region" in child) children.push(...(regions[child.region] ?? []));
     else if ("raw" in child) props.dangerouslySetInnerHTML = { __html: child.raw };
     else {
-      const base = keyOf(child, block, index);
+      const base = keyOf(child, blocks, index);
       const count = seen.get(base) ?? 0;
       seen.set(base, count + 1);
-      children.push(toReact(child, regions, block, count ? `${base}:${count}` : base));
+      children.push(toReact(child, regions, blocks, count ? `${base}:${count}` : base));
     }
   }
   if (children.length > 1) return reactJsxs(type, { ...props, children }, key);
@@ -179,8 +176,8 @@ function hostFor(tag, template, markHost) {
     const mark = markHost && { ref: useMark(props.ref) };
     const items = flatten(/** @type {ReactNode} */ (props.children));
     const node = template(normalizeProps(props), { id: (suffix) => scope + suffix, children: describe(items) });
-    const [block = ""] = classesOf(node);
-    const root = toReact(node, distribute(node, items, slotOf), block, keyOf(node, block, 0));
+    const blocks = blocksOf(node);
+    const root = toReact(node, distribute(node, items, slotOf), blocks, keyOf(node, blocks, 0));
     return reactJsx(/** @type {ElementType} */ (tag), { ...props, ...mark, children: root });
   }
   hostTags.set(NeuwoHost, tag);

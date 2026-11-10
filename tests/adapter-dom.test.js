@@ -3,7 +3,7 @@ import { h, has, raw, region } from "../src/core/template.js";
 import { adopt, childInfo, isRendered, reconcile, render } from "../src/core/adapters/dom.js";
 import { renderElement } from "../src/core/adapters/html.js";
 import { idScope } from "../src/core/ids.js";
-import { NESTED, OPTGROUP, described } from "./fixtures/nested-children.js";
+import { NESTED, OPTGROUP, described, nestedBlocks } from "./fixtures/nested-children.js";
 
 const SVG = "http://www.w3.org/2000/svg";
 
@@ -806,5 +806,54 @@ describe("reconcile()", () => {
     const observer = watch(host);
     reconcile(host, testTemplate);
     expect(observer.takeRecords()).toHaveLength(0);
+  });
+});
+
+describe("a region wrapper owned by a nested block", () => {
+  const sameNodes = (actual, expected) => {
+    expect(actual).toHaveLength(expected.length);
+    actual.forEach((node, index) => expect(node).toBe(expected[index]));
+  };
+  const values = (children) => children.map((child) => child.attrs.value);
+
+  it("keeps its author children through render, an attribute change and a child change", () => {
+    const { calls, wrapped } = spy(nestedBlocks);
+    const host = make(`<neuwo-f><option value="a">A</option><option value="b">B</option></neuwo-f>`);
+    const options = Array.from(host.querySelectorAll("option"));
+    render(host, wrapped);
+    const select = host.querySelector(".neuwo-x__options");
+    sameNodes(Array.from(select.children), options);
+    expect(values(calls.at(-1))).toEqual(["a", "b"]);
+
+    host.setAttribute("tone", "b");
+    reconcile(host, wrapped);
+    expect(host.querySelector(".neuwo-x").className).toBe("neuwo-x--b neuwo-x");
+    expect(host.querySelector(".neuwo-x__options")).toBe(select);
+    sameNodes(Array.from(select.children), options);
+    expect(values(calls.at(-1))).toEqual(["a", "b"]);
+
+    const third = document.createElement("option");
+    third.value = "c";
+    host.append(third);
+    reconcile(host, wrapped);
+    expect(host.querySelector(".neuwo-x__options")).toBe(select);
+    sameNodes(Array.from(select.children), [...options, third]);
+    expect(values(calls.at(-1))).toEqual(["a", "b", "c"]);
+    expect(host.querySelector(".neuwo-x__value").textContent).toBe("3");
+  });
+
+  it("keeps its author children when adopted from server markup and reconciled", () => {
+    const option = (value) => ({ tag: "option", attrs: { value }, text: value, slot: "default", html: `<option value="${value}">${value}</option>` });
+    const html = renderElement("neuwo-f", {}, [option("a"), option("b")], nestedBlocks, idScope("neuwo-s"));
+    const host = make(html);
+    const options = Array.from(host.querySelectorAll("option"));
+    const { calls, wrapped } = spy(nestedBlocks);
+    adopt(host, wrapped);
+    expect(values(calls.at(-1))).toEqual(["a", "b"]);
+    host.setAttribute("tone", "b");
+    reconcile(host, wrapped);
+    sameNodes(Array.from(host.querySelector(".neuwo-x__options").children), options);
+    expect(values(calls.at(-1))).toEqual(["a", "b"]);
+    expect(host.querySelector(".neuwo-x__value").textContent).toBe("2");
   });
 });

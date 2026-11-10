@@ -10,10 +10,10 @@
  * is the root block. Every element it renders carries a class owned by one of its blocks: the block itself,
  * `<block>__*` or `<block>--*`. At most one node is marked as the form control with `control()`.
  * A region is the only child of its element, its wrapper. Every wrapper is rendered for every attribute
- * combination and carries a class unique within the template (`<block>__<name>` of the root block, or the root
- * block class when the root is the wrapper). Template text and elements appear only in elements that hold no
- * region. The adapters rely on this to tell template markup from author content: a wrapper's children are the
- * author's, every other node under the root is the template's.
+ * combination and carries a class unique within the template that is one of its blocks or a `<block>__<name>`
+ * class, never a `--` modifier. Template text and elements appear only in elements that hold no region. The
+ * adapters rely on this to tell template markup from author content: a wrapper's children are the author's,
+ * every other node under the root is the template's.
  * @typedef {(attrs: Record<string, string>, ctx: TemplateContext) => TemplateNode} Template
  */
 
@@ -83,6 +83,35 @@ export function raw(html) {
 export function control(node) {
   node.control = true;
   return node;
+}
+
+/**
+ * @param {TemplateNode} node
+ * @returns {string[]}
+ */
+const classesOf = (node) => (typeof node.props.class === "string" ? node.props.class.split(/\s+/).filter(Boolean) : []);
+
+/**
+ * The blocks of a template's output: every class in it that contains neither `__` nor `--`.
+ * @param {TemplateNode} node
+ * @param {Set<string>} [blocks]
+ * @returns {Set<string>}
+ */
+export function blocksOf(node, blocks = new Set()) {
+  for (const name of classesOf(node)) if (!name.includes("__") && !name.includes("--")) blocks.add(name);
+  for (const child of node.children) if (typeof child === "object" && "tag" in child) blocksOf(child, blocks);
+  return blocks;
+}
+
+/**
+ * The node's first class that is one of the blocks or a `<block>__*` element class, never a `--` modifier,
+ * which changes with the attributes.
+ * @param {TemplateNode} node
+ * @param {Set<string>} blocks
+ * @returns {string | undefined}
+ */
+export function keyClassOf(node, blocks) {
+  return classesOf(node).find((name) => blocks.has(name) || blocks.has(name.split("__")[0]));
 }
 
 /**

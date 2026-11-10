@@ -95,6 +95,10 @@
 - A script can still set `textContent` or `innerHTML` on a rendered light DOM element, append a child
   with a `slot`, or change its `aria-*`, `title` and `role`: the element fits the change into its
   markup in a microtask, so read the markup back after an `await`. Hosts React owns are left to React.
+- Light DOM elements have a `refresh()` method, which fits the markup to the current attributes and
+  children at once instead of in that microtask, and an `updated()` hook for component classes, which
+  runs after every reconcile but not after the first render or adoption, to re-apply live state the
+  template cannot know.
 - `components/reset.css`, the reset for the light DOM components, is published and leads the component
   styles in `neuwo-components.css`.
 - Page element rules such as `button { text-transform: uppercase }`, `span { line-height: 3 }` or

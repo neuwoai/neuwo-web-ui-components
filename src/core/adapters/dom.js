@@ -1,4 +1,4 @@
-import { DEFAULT_REGION, distribute } from "../template.js";
+import { DEFAULT_REGION, blocksOf, distribute, keyClassOf } from "../template.js";
 import { idScope } from "../ids.js";
 
 /** @typedef {import("../template.js").TemplateNode} TemplateNode */
@@ -10,7 +10,6 @@ import { idScope } from "../ids.js";
  *   id: (suffix: string) => string,
  *   issued: Set<string>,
  *   ids: Map<string, string>,
- *   block: string,
  *   wrappers: Map<string, string>,
  *   root: Element | null,
  *   dropped: Node[],
@@ -21,6 +20,7 @@ import { idScope } from "../ids.js";
 /**
  * @typedef {{
  *   state: HostState,
+ *   blocks: Set<string>,
  *   groups: Record<string, Node[]>,
  *   writes: Array<() => void>,
  *   arranges: Array<[Element, Wanted[]]>,
@@ -55,7 +55,7 @@ function stateFor(host) {
       issued.add(value);
       return value;
     };
-    state = { id, issued, ids: new Map(), block: "", wrappers: new Map(), root: null, dropped: [] };
+    state = { id, issued, ids: new Map(), wrappers: new Map(), root: null, dropped: [] };
     states.set(host, state);
   }
   return state;
@@ -86,16 +86,16 @@ const classesOf = (node) => (typeof node.props.class === "string" ? node.props.c
 
 /**
  * @param {TemplateNode} node
- * @param {string} block
+ * @param {Set<string>} blocks
  */
-const keyOf = (node, block) => classesOf(node).find((name) => name === block || name.startsWith(`${block}__`)) ?? "";
+const keyOf = (node, blocks) => keyClassOf(node, blocks) ?? "";
 
 /**
  * @param {Element} el
  * @param {TemplateNode} node
- * @param {string} block
+ * @param {Set<string>} blocks
  */
-const matches = (el, node, block) => el.localName === node.tag && (!keyOf(node, block) || el.classList.contains(keyOf(node, block)));
+const matches = (el, node, blocks) => el.localName === node.tag && (!keyOf(node, blocks) || el.classList.contains(keyOf(node, blocks)));
 
 /**
  * @param {TemplateNode} node
@@ -115,26 +115,17 @@ const isElement = (child) => typeof child === "object" && "tag" in child;
  * @returns {Map<string, string>}
  */
 function wrappersOf(node) {
-  const block = classesOf(node)[0] ?? "";
+  const blocks = blocksOf(node);
   /** @type {Map<string, string>} */
   const wrappers = new Map();
   /** @param {TemplateNode} part */
   const visit = (part) => {
     const name = only(part, "region");
-    if (name !== null) wrappers.set(keyOf(part, block), name);
+    if (name !== null) wrappers.set(keyOf(part, blocks), name);
     for (const child of part.children) if (isElement(child)) visit(/** @type {TemplateNode} */ (child));
   };
   visit(node);
   return wrappers;
-}
-
-/**
- * @param {HostState} state
- * @param {TemplateNode} node
- */
-function learn(state, node) {
-  state.block = classesOf(node)[0] ?? "";
-  state.wrappers = wrappersOf(node);
 }
 
 /**
@@ -234,17 +225,17 @@ function authorNodes(host, state) {
 }
 
 /**
- * @param {HostState} state
+ * @param {Set<string>} blocks
  * @param {Element} el
  * @param {TemplateNode} node
  * @returns {Array<Element | null>}
  */
-function pairs(state, el, node) {
+function pairs(blocks, el, node) {
   const candidates = Array.from(el.children);
   let from = 0;
   return node.children.map((child) => {
     if (!isElement(child)) return null;
-    const at = candidates.findIndex((candidate, index) => index >= from && matches(candidate, /** @type {TemplateNode} */ (child), state.block));
+    const at = candidates.findIndex((candidate, index) => index >= from && matches(candidate, /** @type {TemplateNode} */ (child), blocks));
     if (at < 0) return null;
     from = at + 1;
     return candidates[at];
@@ -262,14 +253,15 @@ function snapshot(state, el) {
 
 /**
  * @param {HostState} state
+ * @param {Set<string>} blocks
  * @param {Element} el
  * @param {TemplateNode} node
  */
-function mapIds(state, el, node) {
+function mapIds(state, blocks, el, node) {
   const { id } = node.props;
   if (typeof id === "string" && state.issued.has(id) && el.hasAttribute("id")) state.ids.set(id, el.getAttribute("id"));
   if (only(node, "region") !== null || only(node, "raw") !== null) return;
-  pairs(state, el, node).forEach((match, index) => match && mapIds(state, match, /** @type {TemplateNode} */ (node.children[index])));
+  pairs(blocks, el, node).forEach((match, index) => match && mapIds(state, blocks, match, /** @type {TemplateNode} */ (node.children[index])));
 }
 
 /**
@@ -338,7 +330,7 @@ function plan(el, node, run) {
   const wanted = [];
   if (name !== null) wanted.push(...(run.groups[name] ?? []));
   else {
-    const matched = pairs(run.state, el, node);
+    const matched = pairs(run.blocks, el, node);
     const texts = /** @type {Text[]} */ (Array.from(el.childNodes).filter((child) => child.nodeType === TEXT));
     node.children.forEach((child, index) => {
       if (typeof child === "string") {
@@ -363,8 +355,9 @@ function plan(el, node, run) {
  * @returns {Run}
  */
 function prepare(state, next, placeable, regionOf) {
+  const blocks = blocksOf(next);
   /** @type {Run} */
-  const run = { state, groups: distribute(next, placeable, regionOf), writes: [], arranges: [], records: [], replace: !matches(state.root, next, state.block) };
+  const run = { state, blocks, groups: distribute(next, placeable, regionOf), writes: [], arranges: [], records: [], replace: !matches(state.root, next, blocks) };
   if (!run.replace) plan(state.root, next, run);
   return run;
 }
@@ -379,7 +372,7 @@ function settle(state, next, placeable, groups) {
   const placed = new Set(Object.values(groups).flat());
   state.dropped = placeable.filter((node) => !placed.has(node));
   for (const node of state.dropped) /** @type {ChildNode} */ (node).remove();
-  learn(state, next);
+  state.wrappers = wrappersOf(next);
 }
 
 /**
@@ -413,7 +406,7 @@ function view(host, template) {
   const probe = template(attrsOf(host), { id: (suffix) => suffix, children: [] });
   const root = locate(host, probe);
   if (!root) return null;
-  return { id: (suffix) => suffix, issued: new Set(), ids: new Map(), block: classesOf(probe)[0] ?? "", wrappers: wrappersOf(probe), root, dropped: [] };
+  return { id: (suffix) => suffix, issued: new Set(), ids: new Map(), wrappers: wrappersOf(probe), root, dropped: [] };
 }
 
 /**
@@ -438,7 +431,7 @@ export function render(host, template) {
   const nodes = Array.from(host.childNodes);
   const next = template(attrsOf(host), { id: state.id, children: describe(nodes, slotOf) });
   /** @type {Run} */
-  const run = { state, groups: distribute(next, nodes, slotOf), writes: [], arranges: [], records: [], replace: true };
+  const run = { state, blocks: blocksOf(next), groups: distribute(next, nodes, slotOf), writes: [], arranges: [], records: [], replace: true };
   state.root = build(next, run);
   host.replaceChildren(state.root);
   settle(state, next, nodes, run.groups);
@@ -466,11 +459,11 @@ export function adopt(host, template) {
   const probe = template(attrs, { id: state.id, children: [] });
   const root = locate(host, probe);
   if (!root) return;
-  learn(state, probe);
-  Object.assign(state, { root, dropped: [], ids: new Map() });
+  Object.assign(state, { root, dropped: [], ids: new Map(), wrappers: wrappersOf(probe) });
   snapshot(state, root);
   const { nodes, regionIn } = authorNodes(host, state);
-  mapIds(state, root, template(attrs, { id: state.id, children: describe(nodes, regionIn(state.wrappers)) }));
+  const full = template(attrs, { id: state.id, children: describe(nodes, regionIn(state.wrappers)) });
+  mapIds(state, blocksOf(full), root, full);
 }
 
 /**

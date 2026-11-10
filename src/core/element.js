@@ -32,6 +32,9 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
   /** @type {MutationObserver | null} */
   #observer = null;
 
+  // Unlike the observer it survives a disconnect, so a reconnect runs updated() and an upgrade's first adoption does not.
+  #started = false;
+
   connectedCallback() {
     if (this.#tooEarly()) {
       if (this.#waiting) return;
@@ -52,12 +55,16 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
 
   #start() {
     const { template } = /** @type {typeof NeuwoElement} */ (this.constructor);
-    if (!ownedByReact(this)) {
+    const owned = ownedByReact(this);
+    const restart = this.#started && !owned;
+    if (!owned) {
       this.#write(isRendered(this, template) ? adopt : render);
       this.#observer ??= new MutationObserver((records) => this.#changed(records));
       this.#observer.observe(this, { childList: true, attributes: true });
+      this.#started = true;
     }
     this.connect();
+    if (restart) this.updated();
   }
 
   /** @param {(host: Element, template: import("./template.js").Template) => void} update */
@@ -67,10 +74,8 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
   }
 
   #reconcile() {
-    // No observer means #start has not run, so this reconcile is an upgrade's first render or adoption.
-    const started = this.#observer !== null;
     this.#write(reconcile);
-    if (started) this.updated();
+    if (this.#started) this.updated();
   }
 
   /** @param {MutationRecord[]} records */
@@ -112,8 +117,9 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
   disconnect() {}
 
   /**
-   * Hook run after each reconcile, never after render or adoption, to re-apply live state the template cannot
-   * know. It must write only values that differ from the DOM.
+   * Hook to re-apply live state the template cannot know. It runs after every write to the markup but the first
+   * render or adoption: after an attribute or child change, after `refresh()`, and after a reconnect, where it
+   * follows `connect`. It must write only values that differ from the DOM.
    */
   updated() {}
 }

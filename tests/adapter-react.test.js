@@ -6,7 +6,7 @@ import { h, has, raw, region } from "../src/core/template.js";
 import { idScope } from "../src/core/ids.js";
 import { renderElement } from "../src/core/adapters/html.js";
 import { createRuntime } from "../src/core/adapters/react.js";
-import { NESTED, described } from "./fixtures/nested-children.js";
+import { NESTED, described, nestedBlocks } from "./fixtures/nested-children.js";
 import * as runtime from "../src/react/jsx-runtime.js";
 import * as devRuntime from "../src/react/jsx-dev-runtime.js";
 import * as serverRuntime from "../src/react/jsx-runtime.react-server.js";
@@ -136,6 +136,27 @@ describe("createRuntime()", () => {
     const options = [create("option", { value: "a", children: "A" }), "\n", create("option", { children: "B" })];
     renderToStaticMarkup(create("neuwo-t", { children: createStatic("optgroup", { label: "G", children: options }) }));
     expect(seen).toEqual([NESTED]);
+  });
+
+  it("keeps author children in a region wrapper owned by a nested block across re-renders", async () => {
+    const errors = vi.spyOn(console, "error");
+    const { jsx: create, jsxs: createStatic } = createRuntime({ "neuwo-f": nestedBlocks });
+    const container = mount();
+    const root = createRoot(container);
+    cleanups.unshift(() => act(() => root.unmount()));
+    const view = (tone) =>
+      createStatic("neuwo-f", { tone, children: [create("option", { value: "a", children: "A" }), create("option", { value: "b", children: "B" })] });
+    await act(async () => root.render(view("a")));
+    const select = container.querySelector(".neuwo-x__options");
+    const options = Array.from(select.children);
+    expect(options.map((option) => option.getAttribute("value"))).toEqual(["a", "b"]);
+    await act(async () => root.render(view("b")));
+    expect(container.querySelector(".neuwo-x").className).toBe("neuwo-x--b neuwo-x");
+    expect(container.querySelector(".neuwo-x__options")).toBe(select);
+    expect(select.children).toHaveLength(2);
+    Array.from(select.children).forEach((option, index) => expect(option).toBe(options[index]));
+    expect(container.querySelector(".neuwo-x__value").textContent).toBe("2");
+    expect(errors).not.toHaveBeenCalled();
   });
 
   it("places nested elements and fragment children by slot and drops unknown slots", () => {

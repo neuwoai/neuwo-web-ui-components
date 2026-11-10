@@ -362,9 +362,11 @@ describe("updated() and refresh()", () => {
   class Updating extends TestLight {
     updates = 0;
     classes = [];
+    connectedAtUpdate = [];
     updated() {
       this.updates++;
       this.classes.push(this.querySelector(".neuwo-t").className);
+      this.connectedAtUpdate.push(this.connected);
     }
   }
   define("test-updated", Updating);
@@ -397,6 +399,18 @@ describe("updated() and refresh()", () => {
     expect(el.updates).toBe(1);
     await settled();
     expect(el.updates).toBe(1);
+  });
+
+  it("runs updated once, after connect, following the reconcile a reconnect performs", () => {
+    const el = mount(served()).firstElementChild;
+    el.remove();
+    el.setAttribute("tone", "b");
+    expect(el.updates).toBe(0);
+    mount("").appendChild(el);
+    expect(el.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--b");
+    expect(el.updates).toBe(1);
+    expect(el.classes).toEqual(["neuwo-t neuwo-t--b"]);
+    expect(el.connectedAtUpdate).toEqual([2]);
   });
 
   it("does not run updated on render or adopt", () => {
