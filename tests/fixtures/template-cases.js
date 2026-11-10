@@ -215,7 +215,7 @@ export const cases = {
     },
     {
       name: "disabled options",
-      attrs: { form: "order", disabled: "" },
+      attrs: { form: "order", disabled: "", value: "c" },
       children: [{ tag: "option", attrs: { value: "a" }, text: "Apple" }, { tag: "option", attrs: { value: "c", disabled: "", selected: "" }, text: "Cherry" }],
     },
     { name: "empty", attrs: {}, children: [] },

@@ -176,7 +176,8 @@ function isControlled(props, control) {
 
 /**
  * Gives a form element its state the way React expects: the consumer's own on the control of a controlled host,
- * the template's as a default everywhere else, so the browser keeps what the user types.
+ * as the template resolved it, and the template's as a default everywhere else, so the browser keeps what the user
+ * types.
  * @param {TemplateNode} node
  * @param {Record<string, unknown>} props
  * @param {ReactNode[]} children
@@ -191,7 +192,7 @@ function bindForm(node, props, children, form) {
   } else if (!FIXED_VALUE.has(inputTypeOf(node))) {
     const value = node.tag === "textarea" && children.length ? children.splice(0).join("") : props.value;
     delete props.value;
-    if (live) props.value = form.host.value;
+    if (live) props.value = value ?? form.host.value;
     else if (value !== undefined) props.defaultValue = value;
   }
   if (live && typeof form.host.onChange === "function") props.onChange = noop;

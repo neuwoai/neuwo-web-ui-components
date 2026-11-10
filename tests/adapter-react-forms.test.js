@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { renderToString } from "react-dom/server";
-import { h } from "../src/core/template.js";
+import { control, h } from "../src/core/template.js";
 import { createRuntime } from "../src/core/adapters/react.js";
 import { formTemplates } from "./fixtures/form-fields.js";
 
@@ -140,6 +140,35 @@ describe("React adapter: a controlled form control", () => {
     await act(async () => input.click());
     expect(targets).toEqual([input]);
     expect(input.checked).toBe(true);
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it("gives the control the value the template resolved, not the consumer's raw one", async () => {
+    const errors = vi.spyOn(console, "error");
+    const pickOne = (a) => h("div", { class: "x-pick" }, control(h("input", { class: "x-pick__input", value: ["a", "b"].includes(a.value) ? a.value : "" })));
+    const { jsx: create } = createRuntime({ "x-pick": pickOne });
+    const parsed = parse(renderToString(create("x-pick", { value: "z", onChange() {} })));
+    expect(parsed.querySelector(".x-pick__input").getAttribute("value")).toBe("");
+    const onChange = vi.fn();
+    const { container, rerender } = await render(create("x-pick", { value: "z", onChange }));
+    const input = container.querySelector(".x-pick__input");
+    expect(input.value).toBe("");
+    await act(async () => type(input, "q"));
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(input.value).toBe("");
+    await rerender(create("x-pick", { value: "b", onChange }));
+    expect(input.value).toBe("b");
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it("keeps an empty controlled textarea controlled", async () => {
+    const errors = vi.spyOn(console, "error");
+    const onChange = vi.fn();
+    const { container } = await render(jsx("x-notes", { value: "", onChange }));
+    const textarea = container.querySelector(".x-notes__input");
+    await act(async () => type(textarea, "hi"));
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(textarea.value).toBe("");
     expect(errors).not.toHaveBeenCalled();
   });
 
