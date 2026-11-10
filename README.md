@@ -1,8 +1,8 @@
 # Neuwo Web UI Library
 
 Neuwo design-language web components: vanilla custom elements, zero runtime deps. The button,
-badge, deal-ID chip, status dot and logo render into light DOM and can be server-rendered; the
-rest still use Shadow DOM while they migrate.
+badge, deal-ID chip, status dot, logo and copy wrapper render into light DOM and can be
+server-rendered; the rest still use Shadow DOM while they migrate.
 The single source for reusable Neuwo UI and its styling (tokens, component recipes, typography).
 
 ## Install
@@ -416,15 +416,15 @@ clipboard needs behaviour.
 </neuwo-copy>
 ```
 
-The wrapped content **stays in the light DOM**, and that is the whole design. Only the control
-lives in the shadow root, so the panel keeps its `.neuwo-markdown pre` styling and whatever syntax
-colouring the page applies. An element that owned the panel inside its own shadow root could not
-colour the syntax tokens at all, because `::slotted` matches only top-level slotted nodes, never
-the spans nested inside the `<pre>`.
+The element renders into its own light DOM: your content goes into a `.neuwo-copy__content`
+wrapper as authored, followed by the `.neuwo-copy__button` control and a `.neuwo-copy__status`
+live region. So the panel keeps its `.neuwo-markdown pre` styling and whatever syntax colouring the
+page applies, and a server-rendered panel shows its control from the first paint.
 
-It copies `textContent`, trimmed, so nothing has to name the source: no ids, no `for` attribute,
-no selector to keep in step with your renderer's output. The trim is what makes indented markup
-safe, since the whitespace around a nested `<pre>` is your formatting, not the sample.
+It copies the text of that wrapper, trimmed, so nothing has to name the source: no ids, no `for`
+attribute, no selector to keep in step with your renderer's output. The trim is what makes
+indented markup safe, since the whitespace around a nested `<pre>` is your formatting, not the
+sample.
 
 For an Eleventy site, that is a one-line transform:
 
@@ -441,15 +441,16 @@ pass would be a second way to do the same thing.
 
 Three details worth knowing:
 
-- **The control appears only where the clipboard is reachable.** An insecure context leaves
-  `navigator.clipboard` undefined, so rather than offer a button that silently fails, the element
-  renders none. The wrapped content is projected either way.
+- **The control is always rendered.** The markup cannot know whether the clipboard is reachable,
+  so where it is not (an insecure context leaves `navigator.clipboard` undefined) a click announces
+  `failed-label` instead of claiming success.
 - **The outcome goes to a live region**, not to the button's label. Relabelling a control the user
   has just activated is announced inconsistently; a `role="status"` region is announced reliably.
-  `label`, `copied-label` and `failed-label` are all yours to translate.
+  `label`, `copied-label` and `failed-label` are all yours to translate. For 1.2 s after a copy the
+  host carries `data-neuwo-state`: `"copied"`, which draws the tick, or `"failed"`.
 - **The corner overlay assumes a panel with room.** `.neuwo-markdown neuwo-copy pre` widens the panel's
   right padding so a long first line scrolls rather than running underneath. Around something
-  small, a chip say, give the wrapper its own clearance and pull the control in with
+  small, a chip say, give the element its own clearance and pull the control in with
   `--neuwo-copy-inset`; the library owns no box:
 
 ```css
@@ -460,8 +461,8 @@ Three details worth knowing:
 }
 ```
 
-A `copied` event fires after a successful write, with the text in `detail.text`. It bubbles and is
-composed, so it is reachable from the document.
+A `copied` event fires after a successful write, with the text in `detail.text`. It bubbles, so it
+is reachable from the document.
 
 ## React
 
@@ -485,16 +486,16 @@ createRoot(document.getElementById("root")!).render(<App />);
 ```
 
 `jsxImportSource` points JSX at the library's runtime, which wraps React's own and expands the
-light DOM elements (`<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuwo-status-dot>` and
-`<neuwo-logo>`) into their markup; MDX reads its own `jsxImportSource` option, not tsconfig's, so
-set it there too (in `@mdx-js/*` or Next's MDX config). Elements recognise markup React rendered,
-from Client or Server Components, and leave it to React, so without the setting a light DOM tag
-React renders stays bare. The same setting adds every element to JSX with each attribute's allowed
-values and each custom event's `detail`, so a misspelt variant fails the type check. React stays
-an optional peer dependency.
+light DOM elements (`<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuwo-status-dot>`,
+`<neuwo-logo>` and `<neuwo-copy>`) into their markup; MDX reads its own `jsxImportSource` option,
+not tsconfig's, so set it there too (in `@mdx-js/*` or Next's MDX config). Elements recognise
+markup React rendered, from Client or Server Components, and leave it to React, so without the
+setting a light DOM tag React renders stays bare. The same setting adds every element to JSX with
+each attribute's allowed values and each custom event's `detail`, so a misspelt variant fails the
+type check. React stays an optional peer dependency.
 
-React renders the markup of the five light DOM elements itself, so they show from the first paint.
-The Shadow DOM components (fields, selection controls, copy, CTA and notice) render when they
+React renders the markup of the six light DOM elements itself, so they show from the first paint.
+The Shadow DOM components (fields, selection controls, CTA and notice) render when they
 register, which the first import does in the same pass, before the browser paints. Registering
 later, from an effect or a script that runs after the app, shows those as bare tags first and the
 components a moment after.
@@ -540,7 +541,7 @@ export function Neuwo() {
 }
 ```
 
-Render `<Neuwo />` once in the root layout. Because the JSX runtime expands the five light DOM
+Render `<Neuwo />` once in the root layout. Because the JSX runtime expands the six light DOM
 elements, the server-rendered HTML carries their full markup and they are on-brand from the first
 paint, before the bundle has run. The Shadow DOM components arrive as bare tags and render when
 the bundle registers them. Import `neuwo.css` instead of `neuwo-components.css` to add the
@@ -588,8 +589,8 @@ Published styling files, for direct linking or non-web use:
 
 ## Restyling from the host
 
-`<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuwo-status-dot>` and `<neuwo-logo>`
-render their markup into their own light DOM, so they have no parts. Their prefixed
+`<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuwo-status-dot>`, `<neuwo-logo>` and
+`<neuwo-copy>` render their markup into their own light DOM, so they have no parts. Their prefixed
 classes are the public hooks instead. Put the element name in front for weight,
 so a rule wins without `!important`:
 
@@ -632,6 +633,10 @@ properties, or target the children you passed in.
 | `.neuwo-status-dot--glow-s`, `.neuwo-status-dot--glow-m`, `.neuwo-status-dot--glow-l` | the dot, by `glow` |
 | `.neuwo-logo` | the logo `<svg>` |
 | `.neuwo-logo--bg-light`, `.neuwo-logo--bg-dark`, `.neuwo-logo--bg-dark-alt`, `.neuwo-logo--bg-colour` | the logo, by `variant` |
+| `.neuwo-copy` | the copy wrapper's root `<div>`, `display: contents`, so it draws no box |
+| `.neuwo-copy__content` | the wrapper around the content to copy |
+| `.neuwo-copy__button` | the copy control, positioned against the host |
+| `.neuwo-copy__status` | the visually hidden live region that announces the outcome |
 
 The badge and deal-id render their text as authored, so casing is yours:
 

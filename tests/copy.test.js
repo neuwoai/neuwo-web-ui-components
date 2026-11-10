@@ -1,17 +1,19 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import "../src/components/copy/neuwo-copy.js";
+import { flushSync } from "react-dom";
+import { createRoot } from "react-dom/client";
+import "../src/index.js";
+import { NeuwoCopy } from "../src/components/copy/neuwo-copy.js";
+import { copyTemplate } from "../src/components/copy/copy.template.js";
+import { renderElement } from "../src/core/adapters/html.js";
+import { idScope } from "../src/core/ids.js";
+import { jsx } from "../src/react/jsx-runtime.js";
 
-function make(html) {
-  const host = document.createElement("div");
-  host.innerHTML = html;
-  document.body.appendChild(host);
-  return host.firstElementChild;
-}
-
+const SAMPLE = "const topics = await neuwo.classify(url);";
 const CODE = `<neuwo-copy>
-  <pre><code>const topics = await neuwo.classify(url);</code></pre>
+  <pre><code>${SAMPLE}</code></pre>
 </neuwo-copy>`;
 
+const cleanup = [];
 let writeText;
 
 beforeEach(() => {
@@ -20,66 +22,107 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  while (cleanup.length) cleanup.pop()();
   vi.useRealTimers();
   vi.restoreAllMocks();
 });
 
+function attach(node) {
+  document.body.appendChild(node);
+  cleanup.push(() => node.remove());
+  return node;
+}
+
+function make(html) {
+  const holder = document.createElement("div");
+  holder.innerHTML = html;
+  return attach(holder).firstElementChild;
+}
+
+const part = (el, name) => el.querySelector(`:scope > .neuwo-copy > .neuwo-copy__${name}`);
+
 describe("<neuwo-copy>", () => {
   it("registers the element", () => {
-    expect(customElements.get("neuwo-copy")).toBeTruthy();
-  });
-
-  it("projects the wrapped content and exposes the control's part", () => {
-    const el = make(CODE);
-    expect(el.shadowRoot.querySelector("slot")).toBeTruthy();
-    const button = el.shadowRoot.querySelector("button.copy");
-    expect(button.getAttribute("part")).toBe("button");
-    expect(button.type).toBe("button");
+    expect(customElements.get("neuwo-copy")).toBe(NeuwoCopy);
   });
 
   // Reading and tab order follow the visual order, so the control comes after
   // the content it acts on.
-  it("puts the slot before the control", () => {
+  it("renders into its light DOM, the content wrapper before the control and the live region", () => {
     const el = make(CODE);
-    const nodes = [...el.shadowRoot.children];
-    expect(nodes[0].tagName.toLowerCase()).toBe("slot");
-    expect(nodes[1]).toBe(el.shadowRoot.querySelector("button.copy"));
+    expect(el.shadowRoot).toBeNull();
+    expect(el.children).toHaveLength(1);
+    const root = el.firstElementChild;
+    expect(root.className).toBe("neuwo-copy");
+    expect(Array.from(root.children, (child) => child.className)).toEqual(["neuwo-copy__content", "neuwo-copy__button", "neuwo-copy__status"]);
+    expect(part(el, "content").querySelector("pre code").textContent).toBe(SAMPLE);
   });
 
-  it("announces the outcome through a polite live region, not by relabelling", () => {
+  it("renders a named button with no part, and a polite live region that is empty at rest", () => {
     const el = make(CODE);
-    const status = el.shadowRoot.querySelector(".copy__status");
+    const button = part(el, "button");
+    expect(button.localName).toBe("button");
+    expect(button.type).toBe("button");
+    expect(button.getAttribute("aria-label")).toBe("Copy");
+    expect(button.hasAttribute("part")).toBe(false);
+    const status = part(el, "status");
     expect(status.getAttribute("role")).toBe("status");
     expect(status.getAttribute("aria-live")).toBe("polite");
-    expect(status.getAttribute("part")).toBe("status");
+    expect(status.childNodes).toHaveLength(0);
+    expect(el.hasAttribute("data-neuwo-state")).toBe(false);
   });
 
-  // The trim is what makes indented markup safe: the newline and spaces around
-  // the nested <pre> are the author's formatting, not part of the sample.
-  it("copies the wrapped text, trimmed of the markup's own whitespace", async () => {
+  // The newline and spaces around the nested <pre> are the author's formatting,
+  // not part of the sample.
+  it("keeps indented markup's whitespace inside the content wrapper and copies the text trimmed of it", async () => {
     const el = make(CODE);
+    const content = part(el, "content");
+    expect(content.firstChild.nodeType).toBe(Node.TEXT_NODE);
+    expect(content.firstChild.data.trim()).toBe("");
+    expect(el.text).toBe(SAMPLE);
     await el.copy();
-    expect(writeText).toHaveBeenCalledWith("const topics = await neuwo.classify(url);");
+    expect(writeText).toHaveBeenCalledWith(SAMPLE);
   });
 
-  it("copies on click", async () => {
+  it("copies on a click on the control, and not on a click in the content", async () => {
     const el = make(CODE);
-    el.shadowRoot.querySelector("button.copy").click();
+    el.querySelector("pre").click();
+    await Promise.resolve();
+    expect(writeText).not.toHaveBeenCalled();
+    part(el, "button").click();
     await vi.waitFor(() => expect(writeText).toHaveBeenCalledOnce());
+    expect(writeText).toHaveBeenCalledWith(SAMPLE);
   });
 
-  it("confirms with the tick, then resets itself", async () => {
+  it("shows the tick through the host attribute and announces in the status wrapper, then clears both after 1200 ms", async () => {
     const el = make(CODE);
-    const button = el.shadowRoot.querySelector("button.copy");
-    const status = el.shadowRoot.querySelector(".copy__status");
-
-    await el.copy();
-    expect(button.classList.contains("copy--done")).toBe(true);
+    expect(await el.copy()).toBe(true);
+    expect(el.getAttribute("data-neuwo-state")).toBe("copied");
+    const status = part(el, "status");
+    expect(status.childNodes).toHaveLength(1);
+    expect(status.firstChild.nodeType).toBe(Node.TEXT_NODE);
     expect(status.textContent).toBe("Copied");
 
-    vi.runAllTimers();
-    expect(button.classList.contains("copy--done")).toBe(false);
-    expect(status.textContent).toBe("");
+    vi.advanceTimersByTime(1199);
+    expect(el.getAttribute("data-neuwo-state")).toBe("copied");
+    vi.advanceTimersByTime(1);
+    expect(el.hasAttribute("data-neuwo-state")).toBe(false);
+    expect(status.childNodes).toHaveLength(0);
+  });
+
+  it("copies only the content on a second copy inside the window, and restarts the window", async () => {
+    const el = make(CODE);
+    await el.copy();
+    expect(el.textContent).toContain("Copied");
+    vi.advanceTimersByTime(600);
+    await el.copy();
+    expect(writeText).toHaveBeenNthCalledWith(2, SAMPLE);
+    expect(part(el, "status").textContent).toBe("Copied");
+    expect(vi.getTimerCount()).toBe(1);
+    vi.advanceTimersByTime(1199);
+    expect(el.getAttribute("data-neuwo-state")).toBe("copied");
+    vi.advanceTimersByTime(1);
+    expect(el.hasAttribute("data-neuwo-state")).toBe(false);
   });
 
   it("reports a refused clipboard without claiming success", async () => {
@@ -89,35 +132,37 @@ describe("<neuwo-copy>", () => {
     el.addEventListener("copied", onCopied);
 
     expect(await el.copy()).toBe(false);
-    expect(el.shadowRoot.querySelector(".copy__status").textContent).toBe("Copying failed");
-    expect(el.shadowRoot.querySelector("button.copy").classList.contains("copy--done")).toBe(false);
+    expect(el.getAttribute("data-neuwo-state")).toBe("failed");
+    expect(part(el, "status").textContent).toBe("Copying failed");
     expect(onCopied).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(1200);
+    expect(el.hasAttribute("data-neuwo-state")).toBe(false);
+    expect(part(el, "status").textContent).toBe("");
   });
 
-  it("fires copied with the written text, composed so it escapes the shadow root", async () => {
+  it("fires copied with the written text, bubbling to the document", async () => {
     const el = make(CODE);
     const onCopied = vi.fn();
-    el.addEventListener("copied", onCopied);
+    document.addEventListener("copied", onCopied);
+    cleanup.push(() => document.removeEventListener("copied", onCopied));
 
     expect(await el.copy()).toBe(true);
     expect(onCopied).toHaveBeenCalledOnce();
     const event = onCopied.mock.calls[0][0];
-    expect(event.detail.text).toBe("const topics = await neuwo.classify(url);");
+    expect(event.target).toBe(el);
+    expect(event.detail.text).toBe(SAMPLE);
     expect(event.bubbles).toBe(true);
     expect(event.composed).toBe(true);
   });
 
-  it("names the control, and takes the consumer's language for every string", () => {
-    expect(
-      make(CODE).shadowRoot.querySelector("button.copy").getAttribute("aria-label")
-    ).toBe("Copy");
-
-    const el = make(
-      `<neuwo-copy label="Kopioi" copied-label="Kopioitu" failed-label="Kopiointi ei onnistunut"><pre>x</pre></neuwo-copy>`
-    );
-    expect(el.shadowRoot.querySelector("button.copy").getAttribute("aria-label")).toBe("Kopioi");
-    expect(el.copiedLabel).toBe("Kopioitu");
-    expect(el.failedLabel).toBe("Kopiointi ei onnistunut");
+  it("names the control, and takes the consumer's language for every string", async () => {
+    const el = make(`<neuwo-copy label="Kopioi" copied-label="Kopioitu" failed-label="Kopiointi ei onnistunut"><pre>x</pre></neuwo-copy>`);
+    expect(part(el, "button").getAttribute("aria-label")).toBe("Kopioi");
+    await el.copy();
+    expect(part(el, "status").textContent).toBe("Kopioitu");
+    writeText.mockRejectedValue(new Error("denied"));
+    await el.copy();
+    expect(part(el, "status").textContent).toBe("Kopiointi ei onnistunut");
   });
 
   it("reflects each label property to its attribute", () => {
@@ -132,31 +177,84 @@ describe("<neuwo-copy>", () => {
     el.label = "";
     expect(el.hasAttribute("label")).toBe(false);
     expect(el.label).toBe("Copy");
+    expect(el.copiedLabel).toBe("Kopioitu");
+    el.copiedLabel = null;
+    expect(el.copiedLabel).toBe("Copied");
+    el.failedLabel = null;
+    expect(el.failedLabel).toBe("Copying failed");
   });
 
-  // Relabelling patches the existing control rather than rebuilding it, so a
-  // label change cannot drop focus or interrupt the tick mid-confirmation.
-  it("keeps the same control across a label change", async () => {
+  it("keeps the control and the announcement across a label change inside the window", async () => {
     const el = make(CODE);
-    const button = el.shadowRoot.querySelector("button.copy");
+    const button = part(el, "button");
     await el.copy();
     el.label = "Kopioi";
-    expect(el.shadowRoot.querySelector("button.copy")).toBe(button);
+    await Promise.resolve();
+    expect(part(el, "button")).toBe(button);
     expect(button.getAttribute("aria-label")).toBe("Kopioi");
-    expect(button.classList.contains("copy--done")).toBe(true);
+    expect(el.getAttribute("data-neuwo-state")).toBe("copied");
+    expect(part(el, "status").textContent).toBe("Copied");
   });
 
-  it("stops its reset timer when removed", async () => {
+  it("clears the timer, the attribute and the announcement when removed inside the window, and copies again once back", async () => {
     const el = make(CODE);
     await el.copy();
+    expect(vi.getTimerCount()).toBe(1);
     el.remove();
-    expect(() => vi.runAllTimers()).not.toThrow();
+    expect(vi.getTimerCount()).toBe(0);
+    expect(el.hasAttribute("data-neuwo-state")).toBe(false);
+    expect(part(el, "status").childNodes).toHaveLength(0);
+
+    attach(el);
+    part(el, "button").click();
+    await vi.waitFor(() => expect(writeText).toHaveBeenCalledTimes(2));
+    expect(el.getAttribute("data-neuwo-state")).toBe("copied");
+  });
+
+  it("copies from server markup it adopted without a mutation, through the delegated click", async () => {
+    const text = (value) => ({ tag: null, attrs: {}, text: value, slot: "default", html: value });
+    const pre = { tag: "pre", attrs: {}, text: SAMPLE, slot: "default", html: `<pre>${SAMPLE}</pre>` };
+    const holder = document.createElement("div");
+    holder.innerHTML = renderElement("neuwo-copy", {}, [text("\n  "), pre, text("\n")], copyTemplate, idScope("neuwo-s"));
+    const records = [];
+    const observer = new MutationObserver((list) => records.push(...list));
+    observer.observe(holder, { subtree: true, childList: true, attributes: true, characterData: true });
+    attach(holder);
+    await Promise.resolve();
+    records.push(...observer.takeRecords());
+    observer.disconnect();
+    expect(records).toEqual([]);
+
+    const el = holder.firstElementChild;
+    expect(el).toBeInstanceOf(NeuwoCopy);
+    part(el, "button").click();
+    await vi.waitFor(() => expect(writeText).toHaveBeenCalledWith(SAMPLE));
+    expect(part(el, "status").textContent).toBe("Copied");
+  });
+
+  it("copies the text a script set after render", async () => {
+    const el = make(CODE);
+    el.textContent = "npm test";
+    await Promise.resolve();
+    expect(part(el, "content").textContent).toBe("npm test");
+    part(el, "button").click();
+    await vi.waitFor(() => expect(writeText).toHaveBeenCalledWith("npm test"));
+  });
+
+  it("drives only its own wrapper when copy wrappers nest", async () => {
+    const outer = make(`<neuwo-copy><p>Outer</p><neuwo-copy><pre>inner</pre></neuwo-copy></neuwo-copy>`);
+    const inner = outer.querySelector("neuwo-copy");
+    part(inner, "button").click();
+    await vi.waitFor(() => expect(writeText).toHaveBeenCalledOnce());
+    expect(writeText).toHaveBeenCalledWith("inner");
+    expect(inner.getAttribute("data-neuwo-state")).toBe("copied");
+    expect(part(inner, "status").textContent).toBe("Copied");
+    expect(outer.hasAttribute("data-neuwo-state")).toBe(false);
+    expect(part(outer, "status").textContent).toBe("");
   });
 });
 
-// An insecure context leaves navigator.clipboard undefined. A button that
-// silently fails is worse than no button, but the wrapped content must still
-// appear, so only the control is withheld.
+// An insecure context leaves navigator.clipboard undefined, which the markup cannot know.
 describe("<neuwo-copy> without a clipboard", () => {
   let clipboard;
 
@@ -169,15 +267,52 @@ describe("<neuwo-copy> without a clipboard", () => {
     Object.defineProperty(navigator, "clipboard", { value: clipboard, configurable: true });
   });
 
-  it("still projects the content, but renders no control", () => {
+  it("renders the control, and a click announces the failure", async () => {
     const el = make(CODE);
-    expect(el.shadowRoot.querySelector("slot")).toBeTruthy();
-    expect(el.shadowRoot.querySelector("button.copy")).toBeNull();
-    expect(el.shadowRoot.querySelector(".copy__status")).toBeNull();
+    expect(part(el, "button")).not.toBeNull();
+    part(el, "button").click();
+    await vi.waitFor(() => expect(el.getAttribute("data-neuwo-state")).toBe("failed"));
+    expect(part(el, "status").textContent).toBe("Copying failed");
   });
 
   it("reports failure from a programmatic copy instead of throwing", async () => {
     const el = make(CODE);
+    const onCopied = vi.fn();
+    el.addEventListener("copied", onCopied);
     await expect(el.copy()).resolves.toBe(false);
+    expect(onCopied).not.toHaveBeenCalled();
+  });
+});
+
+describe("<neuwo-copy> under React", () => {
+  it("shows the status after a click, keeps it across a re-render and fires oncopied, with no console.error", async () => {
+    const error = vi.spyOn(console, "error");
+    const container = attach(document.createElement("div"));
+    const root = createRoot(container);
+    cleanup.push(() => root.unmount());
+    const onCopied = vi.fn();
+    const show = (props) =>
+      flushSync(() => root.render(jsx("neuwo-copy", { ...props, oncopied: onCopied, children: jsx("pre", { children: "npm install" }) })));
+
+    show({});
+    const el = container.firstElementChild;
+    expect(el).toBeInstanceOf(NeuwoCopy);
+    part(el, "button").click();
+    await vi.waitFor(() => expect(part(el, "status").textContent).toBe("Copied"));
+    expect(writeText).toHaveBeenCalledWith("npm install");
+    expect(el.getAttribute("data-neuwo-state")).toBe("copied");
+    expect(onCopied).toHaveBeenCalledOnce();
+    expect(onCopied.mock.calls[0][0].detail.text).toBe("npm install");
+
+    show({ label: "Kopioi" });
+    expect(part(el, "button").getAttribute("aria-label")).toBe("Kopioi");
+    expect(part(el, "status").textContent).toBe("Copied");
+
+    vi.advanceTimersByTime(1200);
+    expect(el.hasAttribute("data-neuwo-state")).toBe(false);
+    expect(part(el, "status").textContent).toBe("");
+    show({});
+    expect(part(el, "button").getAttribute("aria-label")).toBe("Copy");
+    expect(error).not.toHaveBeenCalled();
   });
 });

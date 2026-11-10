@@ -11,28 +11,40 @@ const tokensCss = readFileSync(join(__dirname, "../src/foundation/tokens.css"), 
 const markdownCss = readFileSync(join(__dirname, "../src/foundation/markdown.css"), "utf8");
 // Declarations only: the comments name hover, colour literals and !important.
 const declarations = css.replace(/\/\*[\s\S]*?\*\//g, "");
+const COPIED = 'neuwo-copy[data-neuwo-state="copied"] > .neuwo-copy > .neuwo-copy__button';
+const ruleFor = (selector) => {
+  const found = declarations
+    .split("}")
+    .map((block) => block.split("{"))
+    .find(([head]) => head.trim() === selector);
+  return found ? found[1] : undefined;
+};
 
 describe("copy.css recipe", () => {
-  // The wrapper must not change how the content it wraps lays out, so :host
+  // The wrapper must not change how the content it wraps lays out, so the host
   // carries the positioning context and nothing else.
-  it("keeps :host to layout, with every visual on the portable class", () => {
-    const host = css.match(/(?:^|\n):host \{[^}]*\}/)[0];
+  it("keeps the element-name rule to the outer box, with every visual on the prefixed classes", () => {
+    expect(declarations).not.toMatch(/:host|::part|::slotted/);
+    const host = ruleFor("neuwo-copy");
     expect(host).toMatch(/display:\s*block/);
     expect(host).toMatch(/position:\s*relative/);
     for (const visual of ["background", "color", "border", "opacity", "box-shadow"]) {
       expect(host).not.toContain(`${visual}:`);
     }
-    // No functional `:host(...)` styling: the design system parses the class.
-    expect(declarations).not.toMatch(/:host\(/);
+  });
+
+  it("gives the root no box, so the control anchors to the host, and keeps the content a block", () => {
+    expect(ruleFor(".neuwo-copy")).toMatch(/display:\s*contents/);
+    expect(ruleFor(".neuwo-copy__content")).toMatch(/display:\s*block/);
+    expect(declarations).not.toMatch(/\.neuwo-copy(__content)? \{[^}]*position:/);
   });
 
   it("pins the control to the top end corner through a knob it never declares", () => {
-    const rule = css.match(/(?:^|\n)\.copy \{[^}]*\}/)[0];
+    const rule = ruleFor(".neuwo-copy__button");
     expect(rule).toMatch(/position:\s*absolute/);
     expect(rule).toMatch(/top:\s*var\(--neuwo-copy-inset, var\(--neuwo-space-3\)\)/);
-    // Logical, so a right-to-left page puts the control on the other side.
     expect(rule).toMatch(/inset-inline-end:\s*var\(--neuwo-copy-inset, var\(--neuwo-space-3\)\)/);
-    expect(rule).not.toMatch(/--neuwo-copy-inset:/);
+    expect(declarations).not.toMatch(/--neuwo-copy-inset:/);
     expect(rule).toMatch(/width:\s*var\(--neuwo-space-8\)/);
     expect(rule).toMatch(/height:\s*var\(--neuwo-space-8\)/);
   });
@@ -40,8 +52,8 @@ describe("copy.css recipe", () => {
   // A hover-only reveal would either never appear or never leave on a touch
   // screen, where a tap sticks :hover with nothing to clear it.
   it("shows the control at rest and strengthens it on hover, never reveals it", () => {
-    expect(css).toMatch(/\.copy \{[^}]*opacity:\s*0\.45/);
-    const strong = css.match(/\.copy:hover,\n\.copy:focus-visible \{[^}]*\}/)[0];
+    expect(ruleFor(".neuwo-copy__button")).toMatch(/opacity:\s*0\.45/);
+    const strong = ruleFor(".neuwo-copy__button:hover,\n.neuwo-copy__button:focus-visible");
     expect(strong).toMatch(/opacity:\s*1/);
     expect(strong).toMatch(/color:\s*var\(--neuwo-color-heading\)/);
     expect(declarations).not.toMatch(/opacity:\s*0;/);
@@ -49,36 +61,30 @@ describe("copy.css recipe", () => {
   });
 
   it("takes the shared focus ring rather than an outline of its own", () => {
-    // The rule whose selector is exactly this, not the hover rule that also
-    // lists `.copy:focus-visible` among its selectors.
-    const [, body] = declarations
-      .split("}")
-      .map((block) => block.split("{"))
-      .find(([selector]) => selector.trim() === ".copy:focus-visible");
+    const body = ruleFor(".neuwo-copy__button:focus-visible");
     expect(body).toMatch(/outline:\s*none/);
     expect(body).toMatch(/box-shadow:\s*var\(--neuwo-shadow-focus\)/);
   });
 
-  // A mask over currentColor, as on the notice's close control: the glyph follows
-  // the hover and any consumer re-colour, and the JS never builds an icon.
   it("draws both glyphs as masks over the button's own colour", () => {
-    const rest = css.match(/\.copy::before \{[^}]*\}/)[0];
+    const rest = ruleFor(".neuwo-copy__button::before");
     expect(rest).toMatch(/background:\s*currentColor/);
     expect(rest).toContain("mask:");
     expect(rest).toContain("-webkit-mask:");
-    const done = css.match(/\.copy--done::before \{[^}]*\}/)[0];
+    const done = ruleFor(`${COPIED}::before`);
     expect(done).toContain("mask-image:");
     expect(done).toContain("-webkit-mask-image:");
   });
 
-  it("holds the confirmation solid and green so it reads without a hover", () => {
-    const rule = css.match(/(?:^|\n)\.copy--done \{[^}]*\}/)[0];
+  it("holds the confirmation solid and green from the host state, so it reads without a hover", () => {
+    const rule = ruleFor(COPIED);
     expect(rule).toMatch(/opacity:\s*1/);
     expect(rule).toMatch(/color:\s*var\(--neuwo-color-green\)/);
+    expect(declarations).not.toContain("--done");
   });
 
   it("hides the status line visually while leaving it to a screen reader", () => {
-    const rule = css.match(/\.copy__status \{[^}]*\}/)[0];
+    const rule = ruleFor(".neuwo-copy__status");
     expect(rule).toMatch(/position:\s*absolute/);
     expect(rule).toMatch(/width:\s*1px/);
     expect(rule).toMatch(/height:\s*1px/);
@@ -88,7 +94,7 @@ describe("copy.css recipe", () => {
 
   it("stills the transition under reduced motion", () => {
     const block = css.match(/@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\n\}/)[0];
-    expect(block).toContain(".copy");
+    expect(block).toContain(".neuwo-copy__button");
     expect(block).toMatch(/transition:\s*none/);
   });
 
@@ -117,14 +123,11 @@ describe("copy.css recipe", () => {
     }
   });
 
-  // The shadow root cannot widen a slotted panel's padding: a declaration from
-  // the outer tree beats one from a shadow tree for slotted content, whatever
-  // the specificity. So the gutter lives in the document sheet, derived from the
-  // control's own size and inset so the two cannot drift.
-  it("leaves the panel gutter to markdown.css, which is the only sheet that can set it", () => {
-    expect(declarations).not.toMatch(/::slotted/);
+  it("leaves the panel gutter to the Markdown surface, which owns the panel's padding", () => {
+    expect(declarations).not.toMatch(/\bpre\b/);
     expect(markdownCss).toMatch(
       /\.neuwo-markdown neuwo-copy pre \{[^}]*padding-right:\s*calc\(var\(--neuwo-space-8\) \+ var\(--neuwo-space-3\) \* 2\)/
     );
+    expect(markdownCss).not.toMatch(/shadow (root|tree)|::slotted/);
   });
 });

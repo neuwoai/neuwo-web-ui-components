@@ -171,10 +171,9 @@ describe("custom-elements.json", () => {
     expect(partsFor(manifest, "neuwo-logo").size).toBe(0);
   });
 
-  it("documents the copy wrapper's three labels and both parts", () => {
+  it("documents the copy wrapper's three labels and no parts", () => {
     const attrs = attributesFor(manifest, "neuwo-copy");
     for (const a of ["label", "copied-label", "failed-label"]) expect(attrs).toContain(a);
-    const parts = partsFor(manifest, "neuwo-copy");
-    for (const p of ["button", "status"]) expect(parts.has(p)).toBe(true);
+    expect(partsFor(manifest, "neuwo-copy").size).toBe(0);
   });
 });

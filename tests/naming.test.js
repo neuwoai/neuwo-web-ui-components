@@ -9,6 +9,7 @@ const LIGHT_CSS = [
   "components/reset.css",
   "components/badge/badge.css",
   "components/button/button.css",
+  "components/copy/copy.css",
   "components/deal-id/deal-id.css",
   "components/logo/logo.css",
   "components/status-dot/status-dot.css",
@@ -40,7 +41,7 @@ describe("custom property naming", () => {
 describe("light DOM recipes", () => {
   it("avoid shadow-only selectors and prefix every class and keyframe", () => {
     for (const file of LIGHT_CSS) {
-      const code = read(file).replace(/\/\*[\s\S]*?\*\//g, "");
+      const code = read(file).replace(/\/\*[\s\S]*?\*\//g, "").replace(/url\([^)]*\)/g, "");
       expect(code, file).not.toMatch(/:host|::part|::slotted/);
       for (const [, name] of code.matchAll(/\.([a-zA-Z_][\w-]*)/g)) {
         expect(name, `${file}: .${name}`).toMatch(/^neuwo-(?!neuwo-)/);

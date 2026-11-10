@@ -121,8 +121,7 @@
         padding-right: 2rem;
         --neuwo-copy-inset: 0.125rem;
       }
-      /* Hostile rule: if Shadow DOM leaked, the copy controls would turn hot pink
-         and square off. They must NOT. */
+      /* Hostile rule: the old unprefixed class no longer reaches the copy controls. */
       .copy {
         background: hotpink !important;
         border-radius: 0 !important;
@@ -577,15 +576,15 @@
     <h2>Copy to clipboard</h2>
     <p>
       <code>&lt;neuwo-copy&gt;</code> wraps anything whose text is worth pasting and puts a
-      control in the corner. The page defines a hostile <code>.copy</code> rule, so a leaked
-      shadow root would show a wide pink square instead of the control. The code panel in the
+      control in the corner. The page defines a hostile <code>.copy</code> rule and a bare
+      <code>button</code> rule. The classes are prefixed (<code>.neuwo-copy__button</code>) and
+      outweigh a bare element rule, so neither styles the control. The code panel in the
       Markdown section above is wrapped the same way.
     </p>
     <p>
-      The wrapped content stays in the light DOM, which is the point: the panel keeps the
-      <code>.neuwo-markdown pre</code> styling and any syntax colouring the page applies. Only the
-      control is encapsulated. It copies <code>textContent</code>, so nothing has to name the
-      source.
+      The wrapped content stays as authored inside <code>.neuwo-copy__content</code>: the panel
+      keeps the <code>.neuwo-markdown pre</code> styling and any syntax colouring the page applies.
+      It copies the text of that wrapper, so nothing has to name the source.
     </p>
     <div class="neuwo-markdown">
       <neuwo-copy id="copy-demo">

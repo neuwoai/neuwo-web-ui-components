@@ -44,6 +44,19 @@ export const cases = {
     { name: "nested element", attrs: {}, children: ["Sale ", { tag: "b", text: "50%" }] },
     { name: "empty", attrs: {}, children: [] },
   ],
+  "neuwo-copy": [
+    {
+      name: "indented code panel",
+      attrs: {},
+      children: ["\n  ", { tag: "pre", children: [{ tag: "code", text: "npm install @neuwo/web-ui-library--demo" }] }, "\n"],
+    },
+    { name: "nested deal-id", attrs: {}, children: [{ tag: "neuwo-deal-id", text: "NEUWO-CTX-000123" }] },
+    {
+      name: "custom labels",
+      attrs: { label: "Kopioi", "copied-label": "Kopioitu", "failed-label": "Kopiointi ei onnistunut" },
+      children: [{ tag: "pre", text: "npm test" }],
+    },
+  ],
   "neuwo-deal-id": [
     { name: "default", attrs: {}, children: ["NW-CA-2026-04-8A3F"] },
     { name: "small", attrs: { size: "s" }, children: ["NW-1"] },

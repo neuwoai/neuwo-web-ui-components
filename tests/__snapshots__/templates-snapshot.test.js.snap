@@ -38,6 +38,16 @@ exports[`template markup snapshots > neuwo-button > solid default 1`] = `"<neuwo
 
 exports[`template markup snapshots > neuwo-button > start icon and forwarded attributes 1`] = `"<neuwo-button title="Add" aria-label="Add item" data-track="add"><button class="neuwo-btn neuwo-btn--solid" type="button" title="Add" aria-label="Add item"><span class="neuwo-btn__start"><span slot="start">+</span></span><span class="neuwo-btn__label">Add</span><span class="neuwo-btn__end"></span></button></neuwo-button>"`;
 
+exports[`template markup snapshots > neuwo-copy > custom labels 1`] = `"<neuwo-copy label="Kopioi" copied-label="Kopioitu" failed-label="Kopiointi ei onnistunut"><div class="neuwo-copy"><div class="neuwo-copy__content"><pre>npm test</pre></div><button class="neuwo-copy__button" type="button" aria-label="Kopioi"></button><span class="neuwo-copy__status" role="status" aria-live="polite"></span></div></neuwo-copy>"`;
+
+exports[`template markup snapshots > neuwo-copy > indented code panel 1`] = `
+"<neuwo-copy><div class="neuwo-copy"><div class="neuwo-copy__content">
+  <pre><code>npm install @neuwo/web-ui-library--demo</code></pre>
+</div><button class="neuwo-copy__button" type="button" aria-label="Copy"></button><span class="neuwo-copy__status" role="status" aria-live="polite"></span></div></neuwo-copy>"
+`;
+
+exports[`template markup snapshots > neuwo-copy > nested deal-id 1`] = `"<neuwo-copy><div class="neuwo-copy"><div class="neuwo-copy__content"><neuwo-deal-id><span class="neuwo-deal-id">NEUWO-CTX-000123</span></neuwo-deal-id></div><button class="neuwo-copy__button" type="button" aria-label="Copy"></button><span class="neuwo-copy__status" role="status" aria-live="polite"></span></div></neuwo-copy>"`;
+
 exports[`template markup snapshots > neuwo-deal-id > default 1`] = `"<neuwo-deal-id><span class="neuwo-deal-id">NW-CA-2026-04-8A3F</span></neuwo-deal-id>"`;
 
 exports[`template markup snapshots > neuwo-deal-id > empty 1`] = `"<neuwo-deal-id><span class="neuwo-deal-id"></span></neuwo-deal-id>"`;

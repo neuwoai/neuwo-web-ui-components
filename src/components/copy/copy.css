@@ -1,11 +1,18 @@
-:host {
-  /* Layout only: the control positions against this box, and the wrapper must
-     not change how the content it wraps lays out. */
+neuwo-copy {
   display: block;
   position: relative;
 }
 
-.copy {
+/* No box of its own, so the control keeps anchoring to the host, which a consumer may restyle. */
+.neuwo-copy {
+  display: contents;
+}
+
+.neuwo-copy__content {
+  display: block;
+}
+
+.neuwo-copy__button {
   position: absolute;
   /* Read with a fallback rather than declared, so a consumer can pull the
      control further in without fighting a declaration on this element. */
@@ -31,14 +38,14 @@
     border-color var(--neuwo-transition-fast);
 }
 
-.copy:hover,
-.copy:focus-visible {
+.neuwo-copy__button:hover,
+.neuwo-copy__button:focus-visible {
   opacity: 1;
   color: var(--neuwo-color-heading);
   border-color: var(--neuwo-glass-border-hover);
 }
 
-.copy:focus-visible {
+.neuwo-copy__button:focus-visible {
   outline: none;
   box-shadow: var(--neuwo-shadow-focus);
 }
@@ -46,7 +53,7 @@
 /* The glyph is a mask over the button's own colour, as on the notice's close
    control, so it follows the hover and any consumer re-colour without a second
    asset and without the JS building an icon. */
-.copy::before {
+.neuwo-copy__button::before {
   content: "";
   width: 0.875rem;
   height: 0.875rem;
@@ -57,13 +64,13 @@
 
 /* Confirmation: the tick replaces the sheets, and the button is held solid and
    green so the state reads without hovering. */
-.copy--done {
+neuwo-copy[data-neuwo-state="copied"] > .neuwo-copy > .neuwo-copy__button {
   opacity: 1;
   color: var(--neuwo-color-green);
   border-color: var(--neuwo-tint-green-25);
 }
 
-.copy--done::before {
+neuwo-copy[data-neuwo-state="copied"] > .neuwo-copy > .neuwo-copy__button::before {
   mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E");
   -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E");
 }
@@ -71,7 +78,7 @@
 /* The outcome, for a screen reader only. The button's own name stays put:
    relabelling a control the user has just activated is announced
    inconsistently, where a live region is announced reliably. */
-.copy__status {
+.neuwo-copy__status {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -84,7 +91,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .copy {
+  .neuwo-copy__button {
     transition: none;
   }
 }
