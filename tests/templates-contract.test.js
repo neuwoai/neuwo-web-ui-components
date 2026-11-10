@@ -46,6 +46,10 @@ describe("template contract", () => {
             for (const node of all) expect(classesOf(node).some(owned), `<${node.tag} class="${node.props.class ?? ""}">`).toBe(true);
           });
 
+          it("emits no <neuwo-*> tag", () => {
+            for (const node of output(tag, testCase).all) expect(node.tag, `<${node.tag}>`).not.toMatch(/^neuwo-/);
+          });
+
           it("keeps every region the only child of its wrapper", () => {
             for (const node of output(tag, testCase).all) {
               if (node.children.some(isRegion)) expect(node.children, `<${node.tag}>`).toHaveLength(1);
