@@ -1,4 +1,5 @@
 import { NeuwoFieldElement, fieldSheet } from "../field-element.js";
+import { define } from "../../../core/element.js";
 import { sheet } from "../../../core/sheet.js";
 import rangeCss from "./range.css?raw";
 
@@ -88,4 +89,4 @@ export class NeuwoRange extends NeuwoFieldElement {
   }
 }
 
-customElements.define("neuwo-range", NeuwoRange);
+define("neuwo-range", NeuwoRange);

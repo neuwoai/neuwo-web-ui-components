@@ -1,4 +1,5 @@
 import { NeuwoBooleanControl } from "../boolean-control.js";
+import { define } from "../../../core/element.js";
 import { formCheckSheet } from "../form-check.js";
 import { controlsSheet } from "../controls.js";
 
@@ -63,4 +64,4 @@ export class NeuwoCheckbox extends NeuwoBooleanControl {
   }
 }
 
-customElements.define("neuwo-checkbox", NeuwoCheckbox);
+define("neuwo-checkbox", NeuwoCheckbox);

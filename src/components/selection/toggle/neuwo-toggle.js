@@ -1,4 +1,5 @@
 import { NeuwoBooleanControl } from "../boolean-control.js";
+import { define } from "../../../core/element.js";
 import { sheet } from "../../../core/sheet.js";
 import { controlsSheet } from "../controls.js";
 import toggleCss from "./toggle.css?raw";
@@ -61,4 +62,4 @@ export class NeuwoToggle extends NeuwoBooleanControl {
   }
 }
 
-customElements.define("neuwo-toggle", NeuwoToggle);
+define("neuwo-toggle", NeuwoToggle);

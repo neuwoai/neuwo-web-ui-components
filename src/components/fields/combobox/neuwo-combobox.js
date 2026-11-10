@@ -1,4 +1,5 @@
 import { NeuwoFieldElement, fieldSheet } from "../field-element.js";
+import { define } from "../../../core/element.js";
 import { sheet } from "../../../core/sheet.js";
 import { positionPopup } from "../../../core/position-popup.js";
 import comboboxCss from "./combobox.css?raw";
@@ -543,4 +544,4 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   };
 }
 
-customElements.define("neuwo-combobox", NeuwoCombobox);
+define("neuwo-combobox", NeuwoCombobox);

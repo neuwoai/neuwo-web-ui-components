@@ -1,4 +1,5 @@
 import { NeuwoFieldElement } from "../field-element.js";
+import { define } from "../../../core/element.js";
 
 // Single-line, text-shaped types. An unknown value falls back to text.
 const TYPES = ["text", "email", "url", "password", "number", "search", "tel"];
@@ -55,4 +56,4 @@ export class NeuwoInput extends NeuwoFieldElement {
   }
 }
 
-customElements.define("neuwo-input", NeuwoInput);
+define("neuwo-input", NeuwoInput);

@@ -1,4 +1,5 @@
 import { NeuwoShadowElement } from "../../core/shadow-element.js";
+import { define } from "../../core/element.js";
 import { sheet } from "../../core/sheet.js";
 import dealIdCss from "./deal-id.css?raw";
 
@@ -37,4 +38,4 @@ export class NeuwoDealId extends NeuwoShadowElement {
   }
 }
 
-customElements.define("neuwo-deal-id", NeuwoDealId);
+define("neuwo-deal-id", NeuwoDealId);

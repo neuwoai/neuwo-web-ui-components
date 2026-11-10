@@ -1,4 +1,5 @@
 import { NeuwoSingleSelect } from "../single-select.js";
+import { define } from "../../../core/element.js";
 import { sheet } from "../../../core/sheet.js";
 import { controlsSheet } from "../controls.js";
 import segmentedCss from "./segmented.css?raw";
@@ -128,4 +129,4 @@ export class NeuwoSegmented extends NeuwoSingleSelect {
   }
 }
 
-customElements.define("neuwo-segmented", NeuwoSegmented);
+define("neuwo-segmented", NeuwoSegmented);

@@ -1,4 +1,5 @@
 import { NeuwoShadowElement } from "../../core/shadow-element.js";
+import { define } from "../../core/element.js";
 import { sheet } from "../../core/sheet.js";
 import logoCss from "./logo.css?raw";
 import bgLight from "../../foundation/logos/neuwo-logo--bg-light.svg?raw";
@@ -78,4 +79,4 @@ export class NeuwoLogo extends NeuwoShadowElement {
   }
 }
 
-customElements.define("neuwo-logo", NeuwoLogo);
+define("neuwo-logo", NeuwoLogo);

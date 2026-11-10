@@ -1,4 +1,5 @@
 import { NeuwoShadowElement } from "../../../core/shadow-element.js";
+import { define } from "../../../core/element.js";
 import { formCheckSheet } from "../form-check.js";
 
 let uid = 0;
@@ -97,4 +98,4 @@ export class NeuwoRadio extends NeuwoShadowElement {
   }
 }
 
-customElements.define("neuwo-radio", NeuwoRadio);
+define("neuwo-radio", NeuwoRadio);

@@ -1,4 +1,5 @@
 import { NeuwoSingleSelect } from "../single-select.js";
+import { define } from "../../../core/element.js";
 import { sheet } from "../../../core/sheet.js";
 import { controlsSheet } from "../controls.js";
 import radioGroupCss from "./radio-group.css?raw";
@@ -74,4 +75,4 @@ export class NeuwoRadioGroup extends NeuwoSingleSelect {
   }
 }
 
-customElements.define("neuwo-radio-group", NeuwoRadioGroup);
+define("neuwo-radio-group", NeuwoRadioGroup);

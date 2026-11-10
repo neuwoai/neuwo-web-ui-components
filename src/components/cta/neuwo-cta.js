@@ -1,4 +1,5 @@
 import { NeuwoShadowElement } from "../../core/shadow-element.js";
+import { define } from "../../core/element.js";
 import { sheet } from "../../core/sheet.js";
 import ctaCss from "./cta.css?raw";
 
@@ -212,4 +213,4 @@ export class NeuwoCta extends NeuwoShadowElement {
   }
 }
 
-customElements.define("neuwo-cta", NeuwoCta);
+define("neuwo-cta", NeuwoCta);

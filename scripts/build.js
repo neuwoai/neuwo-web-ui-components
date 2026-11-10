@@ -22,18 +22,6 @@ const rawText = {
   },
 };
 
-const options = {
-  entryPoints: ["src/index.js"],
-  bundle: true,
-  format: "esm",
-  outfile: "dist/neuwo.js",
-  // Parse and compile cost scales with raw bytes, not compressed ones, so this
-  // buys more than the transfer saving suggests.
-  minify: true,
-  plugins: [rawText],
-  logLevel: "info",
-};
-
 await rm("dist", { recursive: true, force: true });
 await mkdir("dist", { recursive: true });
 await cp("src/foundation/fonts", "dist/fonts", { recursive: true });
@@ -58,12 +46,13 @@ await writeFile("dist/foundation/fonts.css", fontsCss.replaceAll("url('fonts/", 
 
 const LIGHT_COMPONENT_CSS = [];
 
-const componentsCss = [
-  ":root { --neuwo-components: 1; }",
-  fontsCss,
-  await read("src/foundation/tokens.css"),
-  ...(await Promise.all(LIGHT_COMPONENT_CSS.map(read))),
-].join("\n");
+const composeComponentsCss = async () =>
+  [
+    ":root { --neuwo-components: 1; }",
+    ...(await Promise.all(["src/foundation/fonts.css", "src/foundation/tokens.css", ...LIGHT_COMPONENT_CSS].map(read))),
+  ].join("\n");
+
+const componentsCss = await composeComponentsCss();
 await writeFile("dist/neuwo-components.css", componentsCss);
 
 const combinedCss = [
@@ -84,12 +73,46 @@ await cp("src/components", "dist/components", {
 // Ship the hand-authored declaration files (the ?raw ambient and the tag map).
 await cp("src/types", "dist/types", { recursive: true });
 
+const componentsCssModule = {
+  name: "components-css",
+  setup(build) {
+    build.onResolve({ filter: /^neuwo:components-css$/ }, (args) => ({ path: args.path, namespace: "components-css" }));
+    build.onLoad({ filter: /.*/, namespace: "components-css" }, async () => ({
+      contents: await composeComponentsCss(),
+      loader: "text",
+    }));
+  },
+};
+
+const shared = {
+  bundle: true,
+  format: "esm",
+  // Parse and compile cost scales with raw bytes, not compressed ones, so this
+  // buys more than the transfer saving suggests.
+  minify: true,
+  plugins: [rawText],
+  logLevel: "info",
+};
+
+const builds = [
+  { ...shared, entryPoints: ["src/index.js"], outfile: "dist/neuwo.js" },
+  {
+    ...shared,
+    entryPoints: ["src/standalone.js"],
+    outfile: "dist/neuwo-standalone.js",
+    plugins: [rawText, componentsCssModule],
+  },
+  { ...shared, entryPoints: ["src/server/index.js"], outfile: "dist/server.js", platform: "node" },
+  { ...shared, entryPoints: ["src/react/jsx-runtime.js"], outfile: "dist/jsx-runtime.js", external: ["react"] },
+  { ...shared, entryPoints: ["src/react/jsx-dev-runtime.js"], outfile: "dist/jsx-dev-runtime.js", external: ["react"] },
+];
+
 if (serve) {
-  const ctx = await esbuild.context(options);
-  await ctx.watch();
-  const { port } = await ctx.serve({ servedir: ".", port: 8000 });
+  const contexts = await Promise.all(builds.map((options) => esbuild.context(options)));
+  await Promise.all(contexts.map((ctx) => ctx.watch()));
+  const { port } = await contexts[0].serve({ servedir: ".", port: 8000 });
   console.log(`Serving demo at http://localhost:${port}/demo/`);
 } else {
-  await esbuild.build(options);
-  console.log("Built dist/neuwo.js");
+  await Promise.all(builds.map((options) => esbuild.build(options)));
+  console.log(`Built ${builds.map((options) => options.outfile).join(", ")}`);
 }

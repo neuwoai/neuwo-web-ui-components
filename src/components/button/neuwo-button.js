@@ -1,4 +1,5 @@
 import { NeuwoShadowElement } from "../../core/shadow-element.js";
+import { define } from "../../core/element.js";
 import { sheet } from "../../core/sheet.js";
 import buttonCss from "./button.css?raw";
 
@@ -151,4 +152,4 @@ export class NeuwoButton extends NeuwoShadowElement {
   }
 }
 
-customElements.define("neuwo-button", NeuwoButton);
+define("neuwo-button", NeuwoButton);

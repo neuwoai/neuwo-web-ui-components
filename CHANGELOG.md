@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Breaking: `neuwo.js` no longer carries fonts or tokens. Link `neuwo-components.css` (or `neuwo.css`) on
+  the page, or import it where you import the library; `<style data-neuwo-fonts>` is no longer read.
+- `neuwo-standalone.js` is for pages that can only add a script: it embeds `neuwo-components.css`, applies
+  it only when the page has not linked it, and loads the fonts from beside itself.
+- New entries: `./server` exports `expand(html)`, `renderElement` and the Eleventy plugin, with its HTML
+  parser bundled; `./jsx-runtime` and `./jsx-dev-runtime` wrap React's runtime for `jsxImportSource`.
+- `neuwo.js` can be imported on a server, where it registers nothing, and loading it twice no longer throws.
 - `neuwo-components.css` and `foundation/fonts.css` are now published, and `neuwo.css` carries the font faces.
 - Breaking: every custom property is now prefixed `--neuwo-` (tokens such as `--neuwo-color-blue`
   and component properties such as `--neuwo-copy-inset`), so the library cannot collide with a
@@ -14,9 +21,9 @@
 - `copied` on `<neuwo-copy>` is typed `CustomEvent<{ text: string }>`.
 - README: a React section covering setup, props and events in React 19, React 18's limits, and
   loading in Next.js.
-- Brand fonts now load when `neuwo.js` is imported through a bundler. Vite, webpack and
-  Turbopack copy the woff2 files into the app's output and rewrite their URLs; previously the
-  faces 404'd into a system fallback unless `fonts/` was served beside the bundle.
+- Brand fonts now load when the stylesheet is imported through a bundler, which copies the woff2 files
+  its `url()`s name into the app's output; previously the faces 404'd into a system fallback unless
+  `fonts/` was served beside the bundle.
 
 ## 0.1.0
 

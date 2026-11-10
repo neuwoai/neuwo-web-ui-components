@@ -1,4 +1,5 @@
 import { NeuwoShadowElement } from "../../core/shadow-element.js";
+import { define } from "../../core/element.js";
 import { sheet } from "../../core/sheet.js";
 import statusDotCss from "./status-dot.css?raw";
 
@@ -64,4 +65,4 @@ export class NeuwoStatusDot extends NeuwoShadowElement {
   }
 }
 
-customElements.define("neuwo-status-dot", NeuwoStatusDot);
+define("neuwo-status-dot", NeuwoStatusDot);

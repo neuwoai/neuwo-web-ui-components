@@ -1,4 +1,3 @@
-import { injectFonts } from "./core/fonts.js";
 import "./components/button/neuwo-button.js"; // self-registers <neuwo-button>
 import "./components/fields/input/neuwo-input.js"; // self-registers <neuwo-input>
 import "./components/fields/textarea/neuwo-textarea.js"; // self-registers <neuwo-textarea>
@@ -16,8 +15,6 @@ import "./components/cta/neuwo-cta.js"; // self-registers <neuwo-cta>
 import "./components/notice/neuwo-notice.js"; // self-registers <neuwo-notice>
 import "./components/logo/neuwo-logo.js"; // self-registers <neuwo-logo>
 import "./components/copy/neuwo-copy.js"; // self-registers <neuwo-copy>
-
-injectFonts();
 
 export { NeuwoButton } from "./components/button/neuwo-button.js";
 export { NeuwoInput } from "./components/fields/input/neuwo-input.js";

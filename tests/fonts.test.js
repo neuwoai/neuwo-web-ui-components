@@ -1,12 +1,14 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { resolveFontUrls } from "../src/core/fonts.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const fontsCss = readFileSync(join(__dirname, "../src/foundation/fonts.css"), "utf8");
 const fontsJs = readFileSync(join(__dirname, "../src/core/fonts.js"), "utf8");
-const fontFiles = [...new Set([...fontsCss.matchAll(/url\(['"]?([^'")]+\.woff2)['"]?\)/g)].map((m) => m[1]))];
+const WOFF2_URL = /url\(['"]?([^'")]+\.woff2)['"]?\)/g;
+const fontFiles = [...new Set([...fontsCss.matchAll(WOFF2_URL)].map((m) => m[1]))];
 
 describe("font URLs", () => {
   it("finds the woff2 files fonts.css declares", () => {
@@ -30,27 +32,18 @@ describe("font URLs", () => {
   });
 });
 
-describe("injectFonts", () => {
-  beforeEach(() => {
-    document.head.replaceChildren();
-    vi.resetModules();
+describe("resolveFontUrls", () => {
+  it("makes every woff2 URL absolute and keeps its file name", () => {
+    const urls = [...resolveFontUrls(fontsCss).matchAll(WOFF2_URL)].map((m) => m[1]);
+    expect(urls).toHaveLength([...fontsCss.matchAll(WOFF2_URL)].length);
+    for (const url of urls) {
+      expect(URL.canParse(url)).toBe(true);
+      expect(fontFiles.some((rel) => url.endsWith(`/${rel}`))).toBe(true);
+    }
   });
 
-  it("adds one font stylesheet to the head, however often it is called", async () => {
-    const { injectFonts } = await import("../src/core/fonts.js");
-    injectFonts();
-    injectFonts();
-    expect(document.head.querySelectorAll("style[data-neuwo-fonts]")).toHaveLength(1);
-  });
-
-  it("leaves fonts the page already declared alone", async () => {
-    const own = document.createElement("style");
-    own.setAttribute("data-neuwo-fonts", "");
-    document.head.append(own);
-    const { injectFonts } = await import("../src/core/fonts.js");
-    injectFonts();
-    const styles = document.head.querySelectorAll("style[data-neuwo-fonts]");
-    expect(styles).toHaveLength(1);
-    expect(styles[0]).toBe(own);
+  it("changes nothing but the woff2 URLs", () => {
+    const strip = (css) => css.replace(WOFF2_URL, "url()");
+    expect(strip(resolveFontUrls(fontsCss))).toBe(strip(fontsCss));
   });
 });

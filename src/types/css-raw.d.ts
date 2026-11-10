@@ -11,3 +11,9 @@ declare module "*.svg?raw" {
   const svg: string;
   export default svg;
 }
+
+// The standalone build's `components-css` plugin serves the composed `neuwo-components.css` text.
+declare module "neuwo:components-css" {
+  const css: string;
+  export default css;
+}

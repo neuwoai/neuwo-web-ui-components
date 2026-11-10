@@ -1,4 +1,5 @@
 import { NeuwoShadowElement } from "../../core/shadow-element.js";
+import { define } from "../../core/element.js";
 import { sheet } from "../../core/sheet.js";
 import copyCss from "./copy.css?raw";
 
@@ -141,4 +142,4 @@ export class NeuwoCopy extends NeuwoShadowElement {
   }
 }
 
-customElements.define("neuwo-copy", NeuwoCopy);
+define("neuwo-copy", NeuwoCopy);

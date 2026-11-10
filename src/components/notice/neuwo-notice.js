@@ -1,4 +1,5 @@
 import { NeuwoShadowElement } from "../../core/shadow-element.js";
+import { define } from "../../core/element.js";
 import { sheet } from "../../core/sheet.js";
 import noticeCss from "./notice.css?raw";
 
@@ -190,4 +191,4 @@ export class NeuwoNotice extends NeuwoShadowElement {
   }
 }
 
-customElements.define("neuwo-notice", NeuwoNotice);
+define("neuwo-notice", NeuwoNotice);

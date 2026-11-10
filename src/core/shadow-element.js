@@ -12,7 +12,7 @@ const resetSheet = sheet(resetCss);
  *
  * @summary Base class for Neuwo custom elements.
  */
-export class NeuwoShadowElement extends HTMLElement {
+export class NeuwoShadowElement extends /** @type {typeof HTMLElement} */ (globalThis.HTMLElement ?? class {}) {
   constructor() {
     super();
     const ctor = /** @type {any} */ (this.constructor);

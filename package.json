@@ -24,6 +24,9 @@
   "exports": {
     ".": { "types": "./dist/types/elements.d.ts", "default": "./dist/neuwo.js" },
     "./react": { "types": "./dist/types/react.d.ts" },
+    "./server": { "types": "./dist/server/index.d.ts", "default": "./dist/server.js" },
+    "./jsx-runtime": { "types": "./dist/types/jsx-runtime.d.ts", "default": "./dist/jsx-runtime.js" },
+    "./jsx-dev-runtime": { "types": "./dist/types/jsx-dev-runtime.d.ts", "default": "./dist/jsx-dev-runtime.js" },
     "./neuwo.css": "./dist/neuwo.css",
     "./neuwo-components.css": "./dist/neuwo-components.css",
     "./foundation/*": "./dist/foundation/*",

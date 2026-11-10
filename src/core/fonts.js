@@ -1,30 +1,18 @@
-import fontsCss from "../foundation/fonts.css?raw";
-
-let injected = false;
-
-function fontUrls() {
-  // Literal so bundlers copy each file and rewrite its URL; relative to dist/neuwo.js, not this file.
-  return {
+/**
+ * Makes each `url('fonts/<file>.woff2')` in the font faces absolute, so they load from beside the
+ * script rather than beside the page.
+ * @param {string} cssText
+ * @returns {string}
+ */
+export function resolveFontUrls(cssText) {
+  // Literal so bundlers copy each file and rewrite its URL; relative to dist/neuwo-standalone.js, not this file.
+  /** @type {Record<string, string>} */
+  const urls = {
     "fonts/outfit-variable.woff2": new URL("./fonts/outfit-variable.woff2", import.meta.url).href,
     "fonts/noto-sans-variable.woff2": new URL("./fonts/noto-sans-variable.woff2", import.meta.url).href,
     "fonts/noto-sans-italic-variable.woff2": new URL("./fonts/noto-sans-italic-variable.woff2", import.meta.url).href,
   };
-}
-
-export function injectFonts() {
-  if (injected || typeof document === "undefined") return;
-  if (document.querySelector("style[data-neuwo-fonts]")) {
-    injected = true;
-    return;
-  }
-  const urls = fontUrls();
-  const css = fontsCss.replace(
-    /url\(['"]?([^'")]+\.woff2)['"]?\)/g,
-    (_match, rel) => `url('${urls[rel]}')`
+  return cssText.replace(/url\(['"]?([^'")]+\.woff2)['"]?\)/g, (match, rel) =>
+    Object.hasOwn(urls, rel) ? `url('${urls[rel]}')` : match,
   );
-  const style = document.createElement("style");
-  style.setAttribute("data-neuwo-fonts", "");
-  style.textContent = css;
-  document.head.appendChild(style);
-  injected = true;
 }

@@ -1,4 +1,5 @@
 import { NeuwoShadowElement } from "../../core/shadow-element.js";
+import { define } from "../../core/element.js";
 import { sheet } from "../../core/sheet.js";
 import badgeCss from "./badge.css?raw";
 
@@ -81,4 +82,4 @@ export class NeuwoBadge extends NeuwoShadowElement {
   }
 }
 
-customElements.define("neuwo-badge", NeuwoBadge);
+define("neuwo-badge", NeuwoBadge);

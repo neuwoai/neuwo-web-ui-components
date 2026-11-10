@@ -1,4 +1,5 @@
 import { NeuwoFieldElement, fieldSheet } from "../field-element.js";
+import { define } from "../../../core/element.js";
 import { sheet } from "../../../core/sheet.js";
 import textareaCss from "./textarea.css?raw";
 
@@ -30,4 +31,4 @@ export class NeuwoTextarea extends NeuwoFieldElement {
   }
 }
 
-customElements.define("neuwo-textarea", NeuwoTextarea);
+define("neuwo-textarea", NeuwoTextarea);
