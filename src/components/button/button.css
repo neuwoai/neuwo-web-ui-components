@@ -148,7 +148,7 @@ neuwo-button[disabled] {
 
 /* --- Modifier: block (stretch to the container) --- */
 
-neuwo-button[block] {
+neuwo-button[block]:not([hidden]) {
   display: flex;
   width: 100%;
 }

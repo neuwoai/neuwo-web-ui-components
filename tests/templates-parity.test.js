@@ -3,18 +3,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { jsx, jsxs } from "../src/react/jsx-runtime.js";
 import { templates } from "../src/templates.js";
 import "../src/index.js";
-import { cases, markup, renderHtml } from "./fixtures/template-cases.js";
-
-function normalise(html) {
-  const holder = document.createElement("template");
-  holder.innerHTML = html;
-  for (const el of holder.content.querySelectorAll("*")) {
-    const attrs = Array.from(el.attributes, ({ name, value }) => [name, value]).sort(([a], [b]) => (a < b ? -1 : 1));
-    for (const [name] of attrs) el.removeAttribute(name);
-    for (const [name, value] of attrs) el.setAttribute(name, value);
-  }
-  return holder.innerHTML;
-}
+import { expand } from "../src/server/index.js";
+import { cases, markup, normalise, renderHtml } from "./fixtures/template-cases.js";
 
 function toReact(child) {
   if (typeof child === "string") return child;
@@ -52,6 +42,7 @@ describe("template parity across the HTML, React and DOM adapters", () => {
         it(testCase.name, () => {
           const html = normalise(renderHtml(tag, testCase));
           expect(html).toContain(`<${tag}`);
+          expect(normalise(expand(markup({ tag, attrs: testCase.attrs, children: testCase.children })))).toBe(html);
           expect(normalise(viaReact(tag, testCase))).toBe(html);
           expect(normalise(viaDom(tag, testCase))).toBe(html);
         });

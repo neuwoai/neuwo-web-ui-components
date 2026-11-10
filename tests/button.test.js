@@ -11,6 +11,7 @@ import { renderElement } from "../src/core/adapters/html.js";
 import { idScope } from "../src/core/ids.js";
 import { normalizeProps } from "../src/core/template.js";
 import { jsx } from "../src/react/jsx-runtime.js";
+import { normalise } from "./fixtures/template-cases.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const buttonCss = readFileSync(join(__dirname, "../src/components/button/button.css"), "utf8");
@@ -36,17 +37,6 @@ function make(html) {
 const control = (el) => el.querySelector(".neuwo-btn");
 const text = (value) => ({ tag: null, attrs: {}, text: value, slot: "default", html: value });
 const server = (attrs, label) => renderElement("neuwo-button", attrs, [text(label)], buttonTemplate, idScope("neuwo-s"));
-
-function sorted(html) {
-  const holder = document.createElement("template");
-  holder.innerHTML = html;
-  for (const el of holder.content.querySelectorAll("*")) {
-    const attrs = Array.from(el.attributes, ({ name, value }) => [name, value]).sort(([a], [b]) => (a < b ? -1 : 1));
-    for (const [name] of attrs) el.removeAttribute(name);
-    for (const [name, value] of attrs) el.setAttribute(name, value);
-  }
-  return holder.innerHTML;
-}
 
 function submitsOf(form) {
   const submits = [];
@@ -136,11 +126,13 @@ describe("<neuwo-button>", () => {
     expect(a.hasAttribute("download")).toBe(true);
   });
 
-  it("forwards aria-*, data-* and title to the inner control", () => {
-    const btn = control(make(`<neuwo-button aria-label="Save" data-track="cta" title="Save now">Go</neuwo-button>`));
+  it("forwards aria-* and title to the inner control and keeps data-* on the host alone", () => {
+    const el = make(`<neuwo-button aria-label="Save" data-track="cta" title="Save now">Go</neuwo-button>`);
+    const btn = control(el);
     expect(btn.getAttribute("aria-label")).toBe("Save");
-    expect(btn.getAttribute("data-track")).toBe("cta");
     expect(btn.getAttribute("title")).toBe("Save now");
+    expect(btn.hasAttribute("data-track")).toBe(false);
+    expect(Array.from(document.querySelectorAll('[data-track="cta"]'))).toEqual([el]);
   });
 
   it("reflects the disabled property to the attribute and inner control", () => {
@@ -250,6 +242,24 @@ describe("<neuwo-button> in a form", () => {
     expect(submits).toHaveLength(0);
   });
 
+  it("submits a form it names with form= from outside it, carrying its name and value", () => {
+    const signup = form("");
+    signup.id = "signup";
+    const host = make(`<neuwo-button type="submit" form="signup" name="plan" value="pro">Choose</neuwo-button>`);
+    const btn = control(host);
+    expect(btn.form).toBe(signup);
+    expect(btn.name).toBe("plan");
+    expect(btn.value).toBe("pro");
+    const submits = submitsOf(signup);
+    btn.click();
+    expect(submits).toHaveLength(1);
+    host.setAttribute("value", "team");
+    host.removeAttribute("name");
+    expect(control(host)).toBe(btn);
+    expect(btn.value).toBe("team");
+    expect(btn.hasAttribute("name")).toBe(false);
+  });
+
   it("resets its form natively when a type=reset button is activated", () => {
     const f = form(`<input name="q" value="x"><neuwo-button type="reset">Reset</neuwo-button>`);
     const input = f.querySelector("input");
@@ -284,20 +294,23 @@ describe("<neuwo-button> under React", () => {
       flushSync(() => root.render(jsx("neuwo-button", { ...props, children: "Save" })));
       const host = container.firstElementChild;
       expect(host).toBeInstanceOf(NeuwoButton);
-      expect(sorted(container.innerHTML)).toBe(sorted(server(normalizeProps(props), "Save")));
-      const last = observer.takeRecords().at(-1);
+      expect(normalise(container.innerHTML)).toBe(normalise(server(normalizeProps(props), "Save")));
+      const records = observer.takeRecords();
+      expect(records.length, `React wrote nothing for ${JSON.stringify(props)}`).toBeGreaterThan(0);
+      const last = records.at(-1);
       const reactWroteLast = last.target === container || (last.target === host && last.type === "attributes");
       expect(reactWroteLast, `the element patched after React rendered ${JSON.stringify(props)}`).toBe(true);
       return control(host);
     };
 
-    show({ variant: "outline" });
-    expect(show({ variant: "outline", href: "https://neuwo.ai" }).localName).toBe("a");
-    const btn = show({ variant: "outline" });
+    const base = { variant: "outline", type: "submit", name: "plan", value: "pro" };
+    show(base);
+    expect(show({ ...base, href: "https://neuwo.ai" }).localName).toBe("a");
+    const btn = show(base);
     expect(btn.localName).toBe("button");
-    expect(show({ variant: "outline", loading: true })).toBe(btn);
+    expect(show({ ...base, loading: true })).toBe(btn);
     expect(btn.firstElementChild.className).toBe("neuwo-btn__spinner");
-    expect(show({ variant: "outline" })).toBe(btn);
+    expect(show(base)).toBe(btn);
     expect(btn.querySelector(".neuwo-btn__spinner")).toBeNull();
 
     expect(error).not.toHaveBeenCalled();
@@ -332,7 +345,8 @@ describe("button.css", () => {
   it("styles the outer box on the element name and stretches block buttons", () => {
     expect(buttonCss).toMatch(/(^|\n)neuwo-button \{[^}]*display: inline-flex;/);
     expect(buttonCss).toMatch(/neuwo-button\[disabled\] \{[^}]*cursor: not-allowed;/);
-    expect(buttonCss).toMatch(/neuwo-button\[block\] \{[^}]*display: flex;[^}]*width: 100%;/);
+    expect(buttonCss).toMatch(/neuwo-button\[block\]:not\(\[hidden\]\) \{[^}]*display: flex;[^}]*width: 100%;/);
+    expect(buttonCss).not.toMatch(/neuwo-button\[block\] \{/);
     expect(buttonCss).toMatch(/\.neuwo-btn--block \{[^}]*width: 100%;/);
   });
 

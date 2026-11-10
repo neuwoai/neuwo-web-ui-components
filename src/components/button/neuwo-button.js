@@ -17,6 +17,9 @@ import { buttonTemplate } from "./button.template.js";
  * @attr {boolean} disabled - disables the button (a disabled `href` stays a button to be inert).
  * @attr {boolean} loading - shows a spinner, sets aria-busy, and blocks activation while keeping the button's colour.
  * @attr {button|submit|reset} type - native button type, for the enclosing form (default button).
+ * @attr form - id of the form the native button belongs to, when it sits outside it.
+ * @attr name - name the native button submits with its form.
+ * @attr value - value the native button submits under `name`.
  * @attr target - link target, forwarded to the `<a>` when `href` is set.
  * @attr rel - link rel, forwarded to the `<a>` when `href` is set.
  * @attr download - link download, forwarded to the `<a>` when `href` is set.
@@ -38,6 +41,9 @@ export class NeuwoButton extends NeuwoElement {
     "disabled",
     "loading",
     "type",
+    "form",
+    "name",
+    "value",
     "target",
     "rel",
     "download",

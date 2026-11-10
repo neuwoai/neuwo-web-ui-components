@@ -12,9 +12,13 @@
 - Breaking: `::part(button)` on `<neuwo-button>` is gone. Restyle through the classes, with the element
   name in front for weight: `neuwo-button .neuwo-btn { border-radius: 0; }`.
 - Breaking: `<neuwo-button>` is no longer form-associated. Its native `<button>` sits inside your form
-  and submits or resets it natively, in server-rendered markup even before the script has loaded. A
-  scripted `click()` on the host element no longer submits; call it on the inner `.neuwo-btn`, or use
-  `form.requestSubmit()`.
+  and submits or resets it natively, in server-rendered markup even before the script has loaded. The
+  host's `form`, `name` and `value` are carried onto it, so `form="id"` still ties a button outside its
+  form to that form. A scripted `click()` on the host element no longer submits; call it on the inner
+  `.neuwo-btn`, or use `form.requestSubmit()`.
+- `aria-*` and `title` on `<neuwo-button>` now appear on both the host and the inner control, which needs
+  them for its accessible name and tooltip. `data-*` stays on the host only, so a query such as
+  `[data-testid="save"]` matches one element.
 - `components/reset.css`, the reset for the light DOM components, is published and leads the component
   styles in `neuwo-components.css`.
 - Breaking: `neuwo.js` no longer carries fonts or tokens. Link `neuwo-components.css` (or `neuwo.css`) on

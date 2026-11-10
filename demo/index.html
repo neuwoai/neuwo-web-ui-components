@@ -27,9 +27,7 @@
         width: 100%;
         height: 100%;
       }
-      /* Hostile rules: a page class named .btn and a bare button rule. The
-         buttons must NOT turn hot pink: their classes are prefixed, and the
-         component reset outweighs element rules. */
+      /* Hostile rules: neither a page .btn class nor a bare button rule may reach the buttons. */
       .btn {
         background: hotpink !important;
         color: black !important;
@@ -877,7 +875,7 @@
     <h2>neuwo-cta pulse on a non-solid primary</h2>
     <p>
       The ring follows the <em>first</em> slotted action button, not its variant, so an
-      outline primary pulses without being restyled through <code>::part(button)</code>.
+      outline primary pulses too, with no restyling of the button's own classes.
     </p>
     <neuwo-cta pulse>
       Prefer a <span data-accent>quieter</span> primary?

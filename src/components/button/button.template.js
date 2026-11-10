@@ -24,9 +24,10 @@ export function buttonTemplate(attrs) {
   } else {
     props.type = attrs.type || "button";
     props.disabled = disabled || loading;
+    for (const name of ["form", "name", "value"]) if (has(attrs, name)) props[name] = attrs[name];
   }
   for (const [name, value] of Object.entries(attrs)) {
-    if (name === "title" || name.startsWith("aria-") || name.startsWith("data-")) props[name] = value;
+    if (name === "title" || name.startsWith("aria-")) props[name] = value;
   }
   if (loading) props["aria-busy"] = "true";
 

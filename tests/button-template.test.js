@@ -46,8 +46,19 @@ describe("buttonTemplate()", () => {
     expect(render({ type: "submit", disabled: "" }).props).toEqual({ class: "neuwo-btn neuwo-btn--solid", type: "submit", disabled: true });
   });
 
-  it("renders a link with its link attributes when href is set", () => {
-    const node = render({ href: "/docs", target: "_blank", rel: "noopener", download: "", type: "submit" });
+  it("carries form, name and value onto the native button when present", () => {
+    expect(render({ type: "submit", form: "signup", name: "plan", value: "pro" }).props).toEqual({
+      class: "neuwo-btn neuwo-btn--solid",
+      type: "submit",
+      form: "signup",
+      name: "plan",
+      value: "pro",
+    });
+    expect(render({ value: "" }).props.value).toBe("");
+  });
+
+  it("renders a link with its link attributes when href is set, and no form attributes", () => {
+    const node = render({ href: "/docs", target: "_blank", rel: "noopener", download: "", type: "submit", form: "f", name: "n", value: "v" });
     expect(node.tag).toBe("a");
     expect(node.props).toEqual({ class: "neuwo-btn neuwo-btn--solid", href: "/docs", target: "_blank", rel: "noopener", download: "" });
   });
@@ -74,7 +85,7 @@ describe("buttonTemplate()", () => {
     expect(node.props.disabled).toBeUndefined();
   });
 
-  it("forwards title, aria-* and data-* onto the control, and nothing else", () => {
+  it("forwards title and aria-* onto the control, and leaves data-* and the rest on the host", () => {
     const props = render({ title: "Save now", "aria-label": "Save", "aria-describedby": "hint", "data-track": "cta", id: "x", slot: "end" }).props;
     expect(props).toEqual({
       class: "neuwo-btn neuwo-btn--solid",
@@ -82,7 +93,6 @@ describe("buttonTemplate()", () => {
       title: "Save now",
       "aria-label": "Save",
       "aria-describedby": "hint",
-      "data-track": "cta",
     });
   });
 

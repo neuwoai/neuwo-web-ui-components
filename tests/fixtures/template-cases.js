@@ -20,6 +20,7 @@ export const cases = {
     },
     { name: "disabled link", attrs: { href: "https://neuwo.ai", disabled: "" }, children: ["Visit"] },
     { name: "loading", attrs: { type: "submit", loading: "" }, children: ["Saving"] },
+    { name: "form attributes", attrs: { type: "submit", form: "signup", name: "plan", value: "pro" }, children: ["Choose Pro"] },
     { name: "block", attrs: { block: "", hover: "l", xwide: "" }, children: ["Full width"] },
     {
       name: "start icon and forwarded attributes",
@@ -70,6 +71,21 @@ export function renderChildren(children) {
       html: expand(markup(child)),
     };
   });
+}
+
+/**
+ * @param {string} html
+ * @returns {string}
+ */
+export function normalise(html) {
+  const holder = document.createElement("template");
+  holder.innerHTML = html;
+  for (const el of holder.content.querySelectorAll("*")) {
+    const attrs = Array.from(el.attributes, ({ name, value }) => [name, value]).sort(([a], [b]) => (a < b ? -1 : 1));
+    for (const [name] of attrs) el.removeAttribute(name);
+    for (const [name, value] of attrs) el.setAttribute(name, value);
+  }
+  return holder.innerHTML;
 }
 
 /**

@@ -6,6 +6,8 @@ exports[`template markup snapshots > neuwo-button > disabled link 1`] = `"<neuwo
 
 exports[`template markup snapshots > neuwo-button > end svg 1`] = `"<neuwo-button size="sm" hover="s" wide=""><button class="neuwo-btn neuwo-btn--solid neuwo-btn--sm neuwo-btn--hover-s neuwo-btn--wide" type="button"><span class="neuwo-btn__start"></span><span class="neuwo-btn__label">Next</span><span class="neuwo-btn__end"><svg slot="end"><path d="M0 0"></path></svg></span></button></neuwo-button>"`;
 
+exports[`template markup snapshots > neuwo-button > form attributes 1`] = `"<neuwo-button type="submit" form="signup" name="plan" value="pro"><button class="neuwo-btn neuwo-btn--solid" type="submit" form="signup" name="plan" value="pro"><span class="neuwo-btn__start"></span><span class="neuwo-btn__label">Choose Pro</span><span class="neuwo-btn__end"></span></button></neuwo-button>"`;
+
 exports[`template markup snapshots > neuwo-button > glass disabled 1`] = `"<neuwo-button variant="glass" disabled=""><button class="neuwo-btn neuwo-btn--glass" type="button" disabled=""><span class="neuwo-btn__start"></span><span class="neuwo-btn__label">Unavailable</span><span class="neuwo-btn__end"></span></button></neuwo-button>"`;
 
 exports[`template markup snapshots > neuwo-button > link 1`] = `"<neuwo-button href="https://neuwo.ai" target="_blank" rel="noopener" download=""><a class="neuwo-btn neuwo-btn--solid" href="https://neuwo.ai" target="_blank" rel="noopener" download=""><span class="neuwo-btn__start"></span><span class="neuwo-btn__label">Visit</span><span class="neuwo-btn__end"></span></a></neuwo-button>"`;
@@ -18,4 +20,4 @@ exports[`template markup snapshots > neuwo-button > outline large 1`] = `"<neuwo
 
 exports[`template markup snapshots > neuwo-button > solid default 1`] = `"<neuwo-button><button class="neuwo-btn neuwo-btn--solid" type="button"><span class="neuwo-btn__start"></span><span class="neuwo-btn__label">Get started</span><span class="neuwo-btn__end"></span></button></neuwo-button>"`;
 
-exports[`template markup snapshots > neuwo-button > start icon and forwarded attributes 1`] = `"<neuwo-button title="Add" aria-label="Add item" data-track="add"><button class="neuwo-btn neuwo-btn--solid" type="button" title="Add" aria-label="Add item" data-track="add"><span class="neuwo-btn__start"><span slot="start">+</span></span><span class="neuwo-btn__label">Add</span><span class="neuwo-btn__end"></span></button></neuwo-button>"`;
+exports[`template markup snapshots > neuwo-button > start icon and forwarded attributes 1`] = `"<neuwo-button title="Add" aria-label="Add item" data-track="add"><button class="neuwo-btn neuwo-btn--solid" type="button" title="Add" aria-label="Add item"><span class="neuwo-btn__start"><span slot="start">+</span></span><span class="neuwo-btn__label">Add</span><span class="neuwo-btn__end"></span></button></neuwo-button>"`;
