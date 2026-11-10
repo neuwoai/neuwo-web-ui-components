@@ -57,6 +57,58 @@ export const cases = {
       children: [{ tag: "pre", text: "npm test" }],
     },
   ],
+  "neuwo-cta": [
+    {
+      name: "banner with an accent and two actions",
+      attrs: {},
+      children: [
+        "Ready to ",
+        { tag: "span", attrs: { "data-accent": "" }, text: "classify at scale" },
+        "?",
+        { tag: "span", attrs: { slot: "sub" }, text: "Get started with the Classification API." },
+        { tag: "neuwo-button", attrs: { slot: "actions", variant: "solid" }, text: "Get started" },
+        { tag: "neuwo-button", attrs: { slot: "actions", variant: "outline" }, text: "Contact us" },
+      ],
+    },
+    {
+      name: "spotlight with a loud pulse",
+      attrs: { variant: "spotlight", pulse: "", intensity: "l" },
+      children: [
+        "Ready to ",
+        { tag: "span", attrs: { "data-accent": "" }, text: "earn more" },
+        " from your content?",
+        { tag: "span", attrs: { slot: "sub" }, text: "Talk to our team about monetisation." },
+        { tag: "neuwo-button", attrs: { slot: "actions", size: "lg" }, text: "Contact us" },
+        { tag: "neuwo-button", attrs: { slot: "actions", variant: "outline", size: "lg" }, text: "See pricing" },
+      ],
+    },
+    {
+      name: "capture field with a success status",
+      attrs: { status: "Thanks, we will be in touch shortly.", "status-state": "success" },
+      children: [
+        "Ready to start?",
+        { tag: "span", attrs: { slot: "sub" }, text: "Leave your work email." },
+        { tag: "neuwo-input", attrs: { slot: "field", type: "email", name: "email", size: "sm", label: "Work email" } },
+        { tag: "neuwo-button", attrs: { slot: "actions", type: "submit" }, text: "Get started" },
+      ],
+    },
+    {
+      name: "indented spotlight with a heading level and an error",
+      attrs: { variant: "spotlight", "heading-level": "3", status: "Something went wrong.", "status-state": "error" },
+      children: [
+        "\n  Ready to go?\n  ",
+        { tag: "p", attrs: { slot: "sub" }, text: "Sub line." },
+        "\n  ",
+        { tag: "neuwo-button", attrs: { slot: "actions", hover: "s" }, text: "Get started" },
+        "\n",
+      ],
+    },
+    {
+      name: "unknown values",
+      attrs: { variant: "toString", "heading-level": "9", status: "Working", "status-state": "loud" },
+      children: ["Plain headline", { tag: "neuwo-button", attrs: { slot: "actions" }, text: "Go" }],
+    },
+  ],
   "neuwo-deal-id": [
     { name: "default", attrs: {}, children: ["NW-CA-2026-04-8A3F"] },
     { name: "small", attrs: { size: "s" }, children: ["NW-1"] },

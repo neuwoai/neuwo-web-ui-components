@@ -1,8 +1,8 @@
 # Neuwo Web UI Library
 
 Neuwo design-language web components: vanilla custom elements, zero runtime deps. The button,
-badge, deal-ID chip, status dot, logo, copy wrapper and notice card render into light DOM and can
-be server-rendered; the rest still use Shadow DOM while they migrate.
+badge, deal-ID chip, status dot, logo, copy wrapper, notice card and CTA band render into light DOM
+and can be server-rendered; the rest still use Shadow DOM while they migrate.
 The single source for reusable Neuwo UI and its styling (tokens, component recipes, typography).
 
 ## Install
@@ -487,18 +487,18 @@ createRoot(document.getElementById("root")!).render(<App />);
 
 `jsxImportSource` points JSX at the library's runtime, which wraps React's own and expands the
 light DOM elements (`<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuwo-status-dot>`,
-`<neuwo-logo>`, `<neuwo-copy>` and `<neuwo-notice>`) into their markup; MDX reads its own
-`jsxImportSource` option, not tsconfig's, so set it there too (in `@mdx-js/*` or Next's MDX
-config). Elements recognise markup React rendered, from Client or Server Components, and leave it
-to React, so without the setting a light DOM tag React renders stays bare. The same setting adds
+`<neuwo-logo>`, `<neuwo-copy>`, `<neuwo-notice>` and `<neuwo-cta>`) into their markup; MDX reads
+its own `jsxImportSource` option, not tsconfig's, so set it there too (in `@mdx-js/*` or Next's
+MDX config). Elements recognise markup React rendered, from Client or Server Components, and leave
+it to React, so without the setting a light DOM tag React renders stays bare. The same setting adds
 every element to JSX with each attribute's allowed values and each custom event's `detail`, so a
 misspelt variant fails the type check. React stays an optional peer dependency.
 
-React renders the markup of the seven light DOM elements itself, so they show from the first paint.
-The Shadow DOM components (fields, selection controls and CTA) render when they
-register, which the first import does in the same pass, before the browser paints. Registering
-later, from an effect or a script that runs after the app, shows those as bare tags first and the
-components a moment after.
+React renders the markup of the eight light DOM elements itself, so they show from the first paint.
+The Shadow DOM components (fields and selection controls) render when they register, which the
+first import does in the same pass, before the browser paints. Registering later, from an effect
+or a script that runs after the app, shows those as bare tags first and the components a moment
+after.
 
 React 19 sets a property where the element has one and binds events, so the elements behave like
 native controls:
@@ -543,7 +543,7 @@ export function Neuwo() {
 }
 ```
 
-Render `<Neuwo />` once in the root layout. Because the JSX runtime expands the seven light DOM
+Render `<Neuwo />` once in the root layout. Because the JSX runtime expands the eight light DOM
 elements, the server-rendered HTML carries their full markup and they are on-brand from the first
 paint, before the bundle has run. The Shadow DOM components arrive as bare tags and render when
 the bundle registers them. Import `neuwo.css` instead of `neuwo-components.css` to add the
@@ -592,9 +592,9 @@ Published styling files, for direct linking or non-web use:
 ## Restyling from the host
 
 `<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuwo-status-dot>`, `<neuwo-logo>`,
-`<neuwo-copy>` and `<neuwo-notice>` render their markup into their own light DOM, so they have no
-parts. Their prefixed classes are the public hooks instead. Put the element name in front for
-weight, so a rule wins without `!important`:
+`<neuwo-copy>`, `<neuwo-notice>` and `<neuwo-cta>` render their markup into their own light DOM, so
+they have no parts. Their prefixed classes are the public hooks instead. Put the element name in
+front for weight, so a rule wins without `!important`:
 
 ```css
 neuwo-button .neuwo-btn { border-radius: 0; }
@@ -646,6 +646,15 @@ properties, or target the children you passed in.
 | `.neuwo-notice__title`, `.neuwo-notice__message`, `.neuwo-notice__actions` | the wrappers around the `slot="title"` children, the message and the `slot="actions"` children |
 | `.neuwo-notice__title--empty`, `.neuwo-notice__message--empty`, `.neuwo-notice__actions--empty` | a wrapper nothing fills, taken out of the flow |
 | `.neuwo-notice__dismiss` | the close button, while `dismissible` |
+| `.neuwo-cta` | the band's root `<div>` |
+| `.neuwo-cta--banner`, `.neuwo-cta--spotlight` | the band, by `variant` |
+| `.neuwo-cta__body` | the banner's text column, beside the actions |
+| `.neuwo-cta__glow`, `.neuwo-cta__inner` | the spotlight's blurred halo and the panel that holds everything else |
+| `.neuwo-cta__headline` | the `<h2>` (or the `heading-level` tag) around the headline |
+| `.neuwo-cta__sub`, `.neuwo-cta__field`, `.neuwo-cta__actions` | the wrappers around the `slot="sub"`, `slot="field"` and `slot="actions"` children |
+| `.neuwo-cta__field--empty` | the field wrapper while nothing fills it, taken out of the flow |
+| `.neuwo-cta__status` | the status line, a polite live region |
+| `.neuwo-cta__status--success`, `.neuwo-cta__status--error` | the status line, by `status-state` |
 
 The badge and deal-id render their text as authored, so casing is yours:
 
@@ -661,12 +670,12 @@ CSS out, but two channels are deliberately open, and together they reach almost
 every visual detail without forking a component:
 
 - **`::part(...)`** is the intended restyling hook. Every element exposes its
-  internals as parts (`input`, `cta`, the
-  field `label` and `error`, and more, listed per component in the manifest).
-  Adjust size, weight, colour, font or spacing from the host:
+  internals as parts (`input`, the field `label` and `error`, and more, listed
+  per component in the manifest). Adjust size, weight, colour, font or spacing
+  from the host:
 
   ```css
-  .my-cta::part(cta) { font-weight: 500; }
+  .my-field::part(label) { font-weight: 500; }
   ```
 
 - **Inherited CSS properties** cross the boundary into slotted content, so a
@@ -768,6 +777,16 @@ cta.statusState = "success";
 
 Fields carry a `size="sm"` density step for placements like this one, which
 tightens the control, its label and its error line together.
+
+The element renders into its own light DOM, so a server-rendered band is styled from the first
+paint. The headline goes into `.neuwo-cta__headline`, and the `slot="sub"`, `slot="field"` and
+`slot="actions"` children into `.neuwo-cta__sub`, `.neuwo-cta__field` and `.neuwo-cta__actions`.
+The sub wrapper is a `<div>`, so a paragraph works as the sub line. The field wrapper carries
+`.neuwo-cta__field--empty` and leaves no gap while nothing fills it. Appending a field to the
+element updates it in a microtask; a field a script removes from inside its wrapper is caught up
+the next time the element reconciles, when an attribute such as `status` changes or a child is
+added to or removed from the element itself. A `<neuwo-input>` in the field still renders into a
+shadow root, so it appears when the bundle registers it.
 
 ## Notices
 

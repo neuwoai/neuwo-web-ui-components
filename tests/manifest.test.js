@@ -150,12 +150,11 @@ describe("custom-elements.json", () => {
     expect(partsFor(manifest, "neuwo-status-dot").size).toBe(0);
   });
 
-  it("documents the cta's attributes and parts", () => {
+  it("documents the cta's attributes and no parts", () => {
     const attrs = attributesFor(manifest, "neuwo-cta");
     for (const a of ["variant", "pulse", "intensity", "heading-level", "status", "status-state"])
       expect(attrs).toContain(a);
-    for (const p of ["cta", "inner", "headline", "sub", "actions", "field", "status"])
-      expect(partsFor(manifest, "neuwo-cta").has(p)).toBe(true);
+    expect(partsFor(manifest, "neuwo-cta").size).toBe(0);
   });
 
   it("documents the notice's axes and no parts", () => {

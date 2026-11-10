@@ -1,31 +1,13 @@
-import { NeuwoShadowElement } from "../../core/shadow-element.js";
-import { define } from "../../core/element.js";
-import { sheet } from "../../core/sheet.js";
-import ctaCss from "./cta.css?raw";
+import { NeuwoElement, define } from "../../core/element.js";
+import { ctaTemplate } from "./cta.template.js";
 
-// The spotlight border animates `--neuwo-cta-angle` through a conic gradient. A
-// `@property` rule inside an adopted (shadow) stylesheet does not register the
-// custom property in every engine, so register it document-globally here. Without
-// registration the angle cannot interpolate and the gradient never paints.
+// Unregistered, --neuwo-cta-angle has no value, so the spotlight's conic gradients never paint or spin.
 if (typeof CSS !== "undefined" && CSS.registerProperty) {
   try {
     CSS.registerProperty({ name: "--neuwo-cta-angle", syntax: "<angle>", inherits: false, initialValue: "0deg" });
   } catch {
-    // Already registered (e.g. the module evaluated twice); ignore.
+    // Already registered, as when the module evaluates twice.
   }
-}
-
-function el(tag, className, part) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (part) node.setAttribute("part", part);
-  return node;
-}
-
-function slot(name) {
-  const s = document.createElement("slot");
-  if (name) s.setAttribute("name", name);
-  return s;
 }
 
 /**
@@ -34,47 +16,39 @@ function slot(name) {
  * for page-foot CTAs) and `spotlight` (a centred hero card framed by an animated
  * gradient border that comes alive on hover). Wrap headline words in an element
  * with `data-accent` to paint just those words with the brand gradient. With the
- * `pulse` attribute, the first slotted action button radiates a ring synced to
- * the surface shimmer, whatever its variant, and `intensity` scales that ring.
- * Presentational; the actions are slotted `<neuwo-button>`s, and an optional
- * `field` slot takes an inline control so a capture band needs no rebuild by
- * hand. Submission stays with the consumer: wrap the band in a `<form>` and a
- * slotted `<neuwo-button type="submit">` drives it.
+ * `pulse` attribute, the first action button radiates a ring synced to the
+ * surface shimmer, whatever its variant, and `intensity` scales that ring.
+ * Presentational; the actions are `<neuwo-button>`s, and an optional `field`
+ * region takes an inline control so a capture band needs no rebuild by hand.
+ * Submission stays with the consumer: wrap the band in a `<form>` and a
+ * `<neuwo-button type="submit">` among the actions drives it.
  *
- * @summary Neuwo call-to-action band.
+ * @summary Neuwo call-to-action band. Public classes: `.neuwo-cta` on the band, with `--banner` or `--spotlight`; `.neuwo-cta__body` (banner) or `.neuwo-cta__glow` and `.neuwo-cta__inner` (spotlight) inside it; `.neuwo-cta__headline`, `.neuwo-cta__sub`, `.neuwo-cta__field` and `.neuwo-cta__actions` around the author's content, with `.neuwo-cta__field--empty` on a field wrapper nothing fills; `.neuwo-cta__status` on the status line, with `--success` or `--error`.
  * @customElement neuwo-cta
  * @attr {banner|spotlight} variant - layout and chrome (default banner).
- * @attr {boolean} pulse - radiate a synchronised pulse ring on the first slotted action button, any variant; honours prefers-reduced-motion.
+ * @attr {boolean} pulse - radiate a synchronised pulse ring on the first action button, any variant; honours prefers-reduced-motion.
  * @attr {s|m|l} intensity - amplitude of the pulse ring (default m). No effect without `pulse`.
  * @attr {1|2|3|4|5|6} heading-level - heading level for the headline element (default 2).
  * @attr status - message shown under the field after the band's action; the consumer sets it, the component renders the line and its live region.
  * @attr {muted|success|error} status-state - colour of the status message (default muted).
  * @slot - the headline; wrap gradient fragments in an element with `data-accent`.
  * @slot sub - the supporting line under the headline.
- * @slot field - an inline field in the text column (an email capture); wrap the band in your own <form> and the slotted control submits with it.
+ * @slot field - an inline field in the text column (an email capture); wrap the band in your own <form> and the control submits with it.
  * @slot actions - one or two action buttons.
- * @csspart cta - the outer band.
- * @csspart inner - the inner panel (spotlight variant only).
- * @csspart headline - the headline element.
- * @csspart sub - the supporting line.
- * @csspart field - the wrapper around the slotted field.
- * @csspart status - the status message line.
- * @csspart actions - the actions row.
  * @cssprop --neuwo-color-blue - brand accent (shimmer, pulse, gradient border); re-theme on :root.
  * @cssprop --neuwo-color-green - brand accent (gradient border + text accent); re-theme on :root.
- * @cssprop --neuwo-cta-field-width - cap on the slotted field's width (default 24rem).
+ * @cssprop --neuwo-cta-field-width - cap on the field's width (default 24rem).
  */
-export class NeuwoCta extends NeuwoShadowElement {
-  static styles = sheet(ctaCss);
-  static observedAttributes = ["variant", "heading-level", "status", "status-state"];
+export class NeuwoCta extends NeuwoElement {
+  static template = ctaTemplate;
+  static observedAttributes = ["variant", "pulse", "intensity", "heading-level", "status", "status-state"];
 
   get variant() { return this.getAttribute("variant") || "banner"; }
   set variant(value) {
     if (value == null || value === "") this.removeAttribute("variant");
     else this.setAttribute("variant", String(value));
   }
-  // `pulse` and `intensity` are driven purely by `:host([...])` rules, so
-  // neither needs a render pass or a place in observedAttributes.
+
   get pulse() { return this.hasAttribute("pulse"); }
   set pulse(value) { this.toggleAttribute("pulse", Boolean(value)); }
 
@@ -102,114 +76,17 @@ export class NeuwoCta extends NeuwoShadowElement {
     else this.setAttribute("status-state", String(value));
   }
 
-  // What the current tree was built from, so a non-structural change patches.
-  #builtWith = null;
-  #fieldEl = null;
-  #statusEl = null;
-
-  connectedCallback() {
-    super.connectedCallback(); // builds via render()
-    // Light-DOM children may not be parsed yet at connect time; defer the
-    // content check until they are.
+  connect() {
     queueMicrotask(() => this.#validate());
   }
 
-  #headingTag() {
-    const n = parseInt(this.getAttribute("heading-level") ?? "", 10);
-    return n >= 1 && n <= 6 ? `h${n}` : "h2";
-  }
-
-  render() {
-    const variant = this.getAttribute("variant") === "spotlight" ? "spotlight" : "banner";
-    const headingTag = this.#headingTag();
-    // Both of these change the tree itself: a spotlight nests the card in a glow
-    // and an inner panel, and the heading level is an element's tag name. Every
-    // other attribute is patched, so writing one at runtime never rebuilds the
-    // band under the visitor and restarts the shimmer.
-    const structural =
-      !this.#builtWith ||
-      this.#builtWith.variant !== variant ||
-      this.#builtWith.headingTag !== headingTag;
-    if (structural) this.#build(variant, headingTag);
-    this.#patch();
-  }
-
-  #build(variant, headingTag) {
-    const spotlight = variant === "spotlight";
-    const root = el("div", `cta cta--${variant}`, "cta");
-
-    const headline = el(headingTag, "cta__headline", "headline");
-    const headlineSlot = slot(); // default slot carries the headline content
-    headline.append(headlineSlot);
-    const sub = el("p", "cta__sub", "sub");
-    sub.append(slot("sub"));
-    const field = el("div", "cta__field", "field");
-    const fieldSlot = slot("field");
-    field.append(fieldSlot);
-    this.#fieldEl = field;
-    // Always in the DOM and never display:none. A live region that is injected,
-    // or un-hidden with its text already in place, does not reliably announce;
-    // one that is present and then written to does.
-    const status = el("p", "cta__status", "status");
-    status.setAttribute("role", "status");
-    status.setAttribute("aria-live", "polite");
-    this.#statusEl = status;
-    const actions = el("div", "cta__actions", "actions");
-    const actionsSlot = slot("actions");
-    actions.append(actionsSlot);
-
-    if (spotlight) {
-      // card -> blurred glow halo + inner panel (the gradient-frame layering).
-      const glow = el("div", "cta__glow");
-      glow.setAttribute("aria-hidden", "true");
-      const inner = el("div", "cta__inner", "inner");
-      inner.append(headline, sub, field, status, actions);
-      root.append(glow, inner);
-    } else {
-      const body = el("div", "cta__body");
-      body.append(headline, sub, field, status);
-      root.append(body, actions);
-    }
-
-    this.shadowRoot.replaceChildren(root);
-
-    // Re-check when slotted content changes at runtime.
-    headlineSlot.addEventListener("slotchange", () => this.#validate());
-    actionsSlot.addEventListener("slotchange", () => this.#validate());
-    fieldSlot.addEventListener("slotchange", () => this.#patch());
-
-    this.#builtWith = { variant, headingTag };
-  }
-
-  #patch() {
-    // Read the light DOM rather than assignedNodes(), so the answer is right
-    // before the first slot assignment and in every rendering environment.
-    const hasField = this.querySelector(':scope > [slot="field"]') !== null;
-    this.#fieldEl.classList.toggle("cta__field--empty", !hasField);
-
-    const status = this.getAttribute("status") ?? "";
-    if (this.#statusEl.textContent !== status) this.#statusEl.textContent = status;
-    // Only the two named states colour the line; anything else stays muted.
-    const state = this.getAttribute("status-state");
-    this.#statusEl.classList.toggle("cta__status--success", state === "success");
-    this.#statusEl.classList.toggle("cta__status--error", state === "error");
-  }
-
-  // Dev-time guard: a CTA needs a headline and at least one action button.
-  // Slotted content cannot be "required" like a form field, so warn instead of
-  // failing. Reads the host's own light DOM, which is robust across environments.
   #validate() {
-    const kids = [...this.childNodes];
-    const hasHeadline = kids.some(
-      (n) =>
-        (n instanceof Element && !n.hasAttribute("slot")) ||
-        (n.nodeType === Node.TEXT_NODE && (n.textContent ?? "").trim() !== "")
-    );
-    const hasButton = kids.some(
-      (n) => n instanceof Element && n.getAttribute("slot") === "actions"
-    );
-    if (!hasHeadline) console.warn("<neuwo-cta>: expected headline content in the default slot.");
-    if (!hasButton) console.warn('<neuwo-cta>: expected at least one button in the "actions" slot.');
+    const root = this.querySelector(":scope > .neuwo-cta");
+    if (!root) return;
+    const headline = root.querySelector(":scope > * > .neuwo-cta__headline");
+    const actions = root.querySelector(":scope > .neuwo-cta__actions, :scope > .neuwo-cta__inner > .neuwo-cta__actions");
+    if (!headline?.firstElementChild && !headline?.textContent?.trim()) console.warn("<neuwo-cta>: expected headline content in the default slot.");
+    if (!actions?.firstElementChild) console.warn('<neuwo-cta>: expected at least one button in the "actions" slot.');
   }
 }
 

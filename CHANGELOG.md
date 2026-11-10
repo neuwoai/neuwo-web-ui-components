@@ -2,6 +2,28 @@
 
 ## Unreleased
 
+- Breaking: `<neuwo-cta>` renders into its own light DOM from one template, so a server-rendered band
+  is styled from the first paint. Its classes are prefixed: `.cta` is now `.neuwo-cta` (with
+  `.neuwo-cta--{banner|spotlight}`), and `.cta__body`, `.cta__glow`, `.cta__inner`, `.cta__headline`,
+  `.cta__sub`, `.cta__field`, `.cta__status` and `.cta__actions` are now `.neuwo-cta__body`,
+  `.neuwo-cta__glow`, `.neuwo-cta__inner`, `.neuwo-cta__headline`, `.neuwo-cta__sub`, `.neuwo-cta__field`,
+  `.neuwo-cta__status` and `.neuwo-cta__actions`, with `.neuwo-cta__field--empty` and
+  `.neuwo-cta__status--{success|error}`. The `cta-scan`, `cta-spin` and `cta-button-pulse` keyframes
+  are now `neuwo-cta-scan`, `neuwo-cta-spin` and `neuwo-cta-button-pulse`.
+- Breaking: the `<neuwo-cta>` sub wrapper, `.neuwo-cta__sub`, is a `<div>`, not a `<p>`, so it can
+  hold a paragraph.
+- Breaking: `::part(cta)`, `::part(inner)`, `::part(headline)`, `::part(sub)`, `::part(field)`,
+  `::part(status)` and `::part(actions)` on `<neuwo-cta>` are gone. Restyle through the classes, with
+  the element name in front for weight: `neuwo-cta .neuwo-cta__headline { font-weight: 500; }`.
+- The `<neuwo-cta>` rules that reached your content through `::slotted` are descendant selectors now.
+  `data-accent` paints at any depth in the headline (`.neuwo-cta__headline [data-accent]`), not only
+  on a direct child, and the pulse ring goes on the first `<neuwo-button>` among the actions
+  (`neuwo-cta[pulse] .neuwo-cta__actions > neuwo-button:first-of-type`), not the first one across
+  every slot.
+- `<neuwo-cta>` now observes `pulse` and `intensity`, which it already documented. They still change
+  no markup, only the ring's styles.
+- The spotlight `<neuwo-cta>` isolates its stacking context, so the hover glow stays behind the card
+  instead of disappearing behind a page section's background.
 - Breaking: `<neuwo-notice>` renders into its own light DOM from one template, so a server-rendered
   notice is styled from the first paint. Its classes are prefixed: `.notice` is now `.neuwo-notice`
   (with `.neuwo-notice--{fixed|top|bottom|start|end|center|row|dismissible}`), and `.notice__content`,

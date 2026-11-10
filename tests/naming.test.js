@@ -10,6 +10,7 @@ const LIGHT_CSS = [
   "components/badge/badge.css",
   "components/button/button.css",
   "components/copy/copy.css",
+  "components/cta/cta.css",
   "components/deal-id/deal-id.css",
   "components/logo/logo.css",
   "components/notice/notice.css",

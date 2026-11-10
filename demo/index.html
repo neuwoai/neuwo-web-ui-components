@@ -64,7 +64,7 @@
         border-radius: 0 !important;
         box-shadow: none !important;
       }
-      /* Hostile rule: if Shadow DOM leaked, the CTA band would turn hot pink. */
+      /* Hostile rule: the old unprefixed class no longer reaches the CTA bands. */
       .cta {
         background: hotpink !important;
       }
@@ -854,7 +854,8 @@
 
     <h2>CTA band (banner + spotlight variants)</h2>
     <p>
-      The page defines a hostile <code>.cta</code> rule. Shadow DOM keeps it out.
+      The page defines a hostile <code>.cta</code> rule. The classes are prefixed
+      (<code>.neuwo-cta</code>), so it does not reach the bands.
       Headline words wrapped in <code>data-accent</code> get the brand gradient.
     </p>
     <neuwo-cta pulse>
@@ -873,7 +874,7 @@
 
     <h2>neuwo-cta pulse on a non-solid primary</h2>
     <p>
-      The ring follows the <em>first</em> slotted action button, not its variant, so an
+      The ring follows the <em>first</em> action button, not its variant, so an
       outline primary pulses too, with no restyling of the button's own classes.
     </p>
     <neuwo-cta pulse>
