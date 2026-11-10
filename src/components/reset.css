@@ -14,8 +14,12 @@
   word-spacing: inherit;
   line-height: inherit;
   text-shadow: inherit;
+  font-family: inherit;
+  font-weight: inherit;
+  font-size: inherit;
   font-style: inherit;
   font-variant: inherit;
+  color: inherit;
   text-align: inherit;
   text-indent: inherit;
   white-space: inherit;
