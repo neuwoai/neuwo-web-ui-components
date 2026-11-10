@@ -10,6 +10,7 @@ import { DEFAULT_REGION, blocksOf, distribute, keyClassOf, normalizeProps } from
 /** @typedef {import("../template.js").TemplateNode} TemplateNode */
 /** @typedef {import("../template.js").ChildInfo} ChildInfo */
 /** @typedef {import("../template.js").Template} Template */
+/** @typedef {{ host: Record<string, unknown>, controlled: boolean }} Form */
 
 // React DOM's boolean props, copied from its setProp: it reads "" as false for these.
 const BOOLEAN = [
@@ -18,9 +19,24 @@ const BOOLEAN = [
   "noModule", "noValidate", "open", "playsInline", "readOnly", "required", "reversed", "scoped", "seamless",
 ];
 const BOOLEANS = new Set(BOOLEAN);
-const NAMES = new Map([["class", "className"], ["for", "htmlFor"], ...BOOLEAN.map((name) => /** @type {[string, string]} */ ([name.toLowerCase(), name]))]);
+const NAMES = new Map([
+  ["class", "className"],
+  ["for", "htmlFor"],
+  ["maxlength", "maxLength"],
+  ["minlength", "minLength"],
+  ["tabindex", "tabIndex"],
+  ["autocomplete", "autoComplete"],
+  ["inputmode", "inputMode"],
+  ...BOOLEAN.map((name) => /** @type {[string, string]} */ ([name.toLowerCase(), name])),
+]);
+const FIELDS = new Set(["input", "select", "textarea"]);
+// React DOM's hasReadOnlyValue: an <input> of these types takes `value` as an attribute, never as state.
+const FIXED_VALUE = new Set(["button", "checkbox", "hidden", "image", "radio", "reset", "submit"]);
 
 const REACT = Symbol.for("neuwo.react");
+const CONTROLLED = Symbol.for("neuwo.controlled");
+
+const noop = () => {};
 
 /** @type {WeakMap<Function, string>} */
 const hostTags = new WeakMap();
@@ -106,19 +122,97 @@ const classesOf = (node) => (typeof node.props.class === "string" ? node.props.c
 const keyOf = (node, blocks, index) => keyClassOf(node, blocks) ?? classesOf(node)[0] ?? String(index);
 
 /**
+ * @param {string} css
+ * @returns {Record<string, string>}
+ */
+function styleOf(css) {
+  /** @type {Record<string, string>} */
+  const style = {};
+  for (const declaration of css.split(";")) {
+    const colon = declaration.indexOf(":");
+    const name = colon < 0 ? "" : declaration.slice(0, colon).trim();
+    if (!name) continue;
+    style[name.startsWith("--") ? name : name.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())] = declaration.slice(colon + 1).trim();
+  }
+  return style;
+}
+
+/**
+ * @param {TemplateNode} node
+ * @returns {string}
+ */
+const inputTypeOf = (node) => (node.tag === "input" ? String(node.props.type ?? "text").toLowerCase() : node.tag);
+
+/**
+ * @param {TemplateNode} node
+ * @returns {boolean}
+ */
+const isCheckable = (node) => node.tag === "input" && ["checkbox", "radio"].includes(inputTypeOf(node));
+
+/**
+ * @param {TemplateNode} node
+ * @returns {TemplateNode | undefined}
+ */
+function controlOf(node) {
+  if (node.control) return node;
+  for (const child of node.children) {
+    const found = typeof child === "object" && "tag" in child ? controlOf(child) : undefined;
+    if (found) return found;
+  }
+  return undefined;
+}
+
+/**
+ * Whether React holds the state, decided as React decides for its own inputs: a checkbox or radio by `checked`,
+ * any other control by `value`.
+ * @param {Record<string, unknown>} props
+ * @param {TemplateNode | undefined} control
+ * @returns {boolean}
+ */
+function isControlled(props, control) {
+  if (!control) return props.value !== undefined || props.checked !== undefined;
+  return isCheckable(control) ? props.checked !== undefined : props.value !== undefined;
+}
+
+/**
+ * Gives a form element its state the way React expects: the consumer's own on the control of a controlled host,
+ * the template's as a default everywhere else, so the browser keeps what the user types.
+ * @param {TemplateNode} node
+ * @param {Record<string, unknown>} props
+ * @param {ReactNode[]} children
+ * @param {Form} form
+ */
+function bindForm(node, props, children, form) {
+  const live = node.control === true && form.controlled;
+  if (isCheckable(node)) {
+    delete props.checked;
+    if (live) props.checked = Boolean(form.host.checked);
+    else if (Object.hasOwn(node.props, "checked")) props.defaultChecked = true;
+  } else if (!FIXED_VALUE.has(inputTypeOf(node))) {
+    const value = node.tag === "textarea" && children.length ? children.splice(0).join("") : props.value;
+    delete props.value;
+    if (live) props.value = form.host.value;
+    else if (value !== undefined) props.defaultValue = value;
+  }
+  if (live && typeof form.host.onChange === "function") props.onChange = noop;
+}
+
+/**
  * @param {TemplateNode} node
  * @param {Record<string, ReactNode[]>} regions
  * @param {Set<string>} blocks
  * @param {string} key
+ * @param {Form} form
  * @returns {ReactElement}
  */
-function toReact(node, regions, blocks, key) {
+function toReact(node, regions, blocks, key, form) {
   /** @type {Record<string, unknown>} */
   const props = {};
   for (const [name, value] of Object.entries(node.props)) {
     const prop = NAMES.get(name) ?? name;
     props[prop] = BOOLEANS.has(prop) ? true : value === true ? "" : value;
   }
+  if (typeof props.style === "string") props.style = styleOf(props.style);
   const type = /** @type {ElementType} */ (node.tag);
   /** @type {ReactNode[]} */
   const children = [];
@@ -132,9 +226,10 @@ function toReact(node, regions, blocks, key) {
       const base = keyOf(child, blocks, index);
       const count = seen.get(base) ?? 0;
       seen.set(base, count + 1);
-      children.push(toReact(child, regions, blocks, count ? `${base}:${count}` : base));
+      children.push(toReact(child, regions, blocks, count ? `${base}:${count}` : base, form));
     }
   }
+  if (FIELDS.has(node.tag)) bindForm(node, props, children, form);
   if (children.length > 1) return reactJsxs(type, { ...props, children }, key);
   if (children.length === 1) props.children = children[0];
   return reactJsx(type, props, key);
@@ -152,33 +247,40 @@ function pass(ref, el) {
 
 /**
  * @param {unknown} authorRef
+ * @param {boolean} controlled
  */
-function useMark(authorRef) {
+function useMark(authorRef, controlled) {
   return useCallback(
     /** @param {Element | null} el */
     (el) => {
-      if (el) Reflect.set(el, REACT, true);
+      if (el) {
+        Reflect.set(el, REACT, true);
+        Reflect.set(el, CONTROLLED, controlled);
+      }
       return pass(authorRef, el);
     },
-    [authorRef],
+    [authorRef, controlled],
   );
 }
 
 /**
  * @param {string} tag
  * @param {Template} template
- * @param {boolean} markHost
+ * @param {{ markHost: boolean, server: boolean }} options
  */
-function hostFor(tag, template, markHost) {
+function hostFor(tag, template, { markHost, server }) {
   /** @param {Record<string, unknown>} props */
   function NeuwoHost(props) {
+    const { defaultValue, defaultChecked, ...host } = props;
     const scope = `neuwo${useId().replace(/[^\w-]/g, "")}-`;
-    const mark = markHost && { ref: useMark(props.ref) };
     const items = flatten(/** @type {ReactNode} */ (props.children));
-    const node = template(normalizeProps(props), { id: (suffix) => scope + suffix, children: describe(items) });
+    const attrs = normalizeProps({ ...host, value: props.value ?? defaultValue, checked: props.checked ?? defaultChecked });
+    const node = template(attrs, { id: (suffix) => scope + suffix, children: describe(items) });
+    const controlled = !server && isControlled(props, controlOf(node));
+    const mark = markHost && { ref: useMark(props.ref, controlled) };
     const blocks = blocksOf(node);
-    const root = toReact(node, distribute(node, items, slotOf), blocks, keyOf(node, blocks, 0));
-    return reactJsx(/** @type {ElementType} */ (tag), { ...props, ...mark, children: root });
+    const root = toReact(node, distribute(node, items, slotOf), blocks, keyOf(node, blocks, 0), { host: props, controlled });
+    return reactJsx(/** @type {ElementType} */ (tag), { ...host, ...mark, children: root });
   }
   hostTags.set(NeuwoHost, tag);
   return NeuwoHost;
@@ -186,17 +288,18 @@ function hostFor(tag, template, markHost) {
 
 /**
  * @param {Record<string, Template>} registry
- * @param {{ markHost?: boolean }} [options]
+ * @param {{ markHost?: boolean, server?: boolean }} [options] `server` renders for React Server Components: no form
+ *   control is controlled and the adapter adds no function prop.
  * @returns {{ jsx: typeof reactJsx, jsxs: typeof reactJsxs, jsxDEV: typeof reactJsxDEV }}
  */
-export function createRuntime(registry, { markHost = true } = {}) {
+export function createRuntime(registry, { markHost = true, server = false } = {}) {
   /** @type {Map<string, ReturnType<typeof hostFor>>} */
   const hosts = new Map();
   /** @param {ElementType} type */
   const resolve = (type) => {
     if (typeof type !== "string" || !Object.hasOwn(registry, type)) return type;
     let host = hosts.get(type);
-    if (!host) hosts.set(type, (host = hostFor(type, registry[type], markHost)));
+    if (!host) hosts.set(type, (host = hostFor(type, registry[type], { markHost, server })));
     return host;
   };
   return {

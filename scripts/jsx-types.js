@@ -17,14 +17,20 @@ function attributeType(text) {
     .join(" | ");
 }
 
+function isFormControl(declaration) {
+  return (declaration.attributes ?? []).some(({ name }) => name === "value") && (declaration.events ?? []).some(({ name }) => name === "change");
+}
+
 function elementProps(declaration) {
+  const form = isFormControl(declaration);
   const lines = [];
   const seen = new Set();
   for (const { name, type } of declaration.attributes ?? []) {
     if (seen.has(name)) continue;
     seen.add(name);
-    lines.push(`${propKey(name)}?: ${attributeType(type?.text)};`);
+    lines.push(`${propKey(name)}?: ${form && name === "value" ? "string | number" : attributeType(type?.text)};`);
   }
+  if (form) lines.push("defaultValue?: string | number;", `onChange?: React.ChangeEventHandler<${declaration.name}>;`);
   // React 19 binds an on* prop on a custom element to the event of exactly that name, case and all.
   for (const { name, type } of declaration.events ?? []) {
     if (!name || !type?.text.startsWith("CustomEvent")) continue;
@@ -44,10 +50,10 @@ export function jsxElementsTypes(manifest) {
     return [`      "${declaration.tagName}": NeuwoElementProps<${declaration.name}, {`, ...props, "      }>;"].join("\n");
   });
 
-  return `import type { DetailedHTMLProps, HTMLAttributes } from "react";
+  return `import type * as React from "react";
 import type { ${elements.map((d) => d.name).join(", ")} } from "../index.js";
 
-type NeuwoElementProps<E extends HTMLElement, P> = Omit<DetailedHTMLProps<HTMLAttributes<E>, E>, keyof P> & P;
+type NeuwoElementProps<E extends HTMLElement, P> = Omit<React.DetailedHTMLProps<React.HTMLAttributes<E>, E>, keyof P> & P;
 
 declare module "react" {
   namespace JSX {

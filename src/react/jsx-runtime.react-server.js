@@ -3,5 +3,5 @@ import { templates } from "../templates.js";
 
 export { Fragment } from "react/jsx-runtime";
 
-// Server Components reject any ref, so this build must not mark hosts; keep it apart from jsx-runtime.js.
-export const { jsx, jsxs } = createRuntime(templates, { markHost: false });
+// Server Components reject any ref or function prop, so this build marks no host and controls no field; keep it apart from jsx-runtime.js.
+export const { jsx, jsxs } = createRuntime(templates, { markHost: false, server: true });

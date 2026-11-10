@@ -52,6 +52,41 @@ describe("JSX types", () => {
     expect(block("neuwo-notice")).toContain("ondismiss?: (event: CustomEvent) => void;");
   });
 
+  it("gives a field with a value and a change event React's form props, typing the target as the element", () => {
+    const input = block("neuwo-input");
+    expect(input).toContain("value?: string | number;");
+    expect(input).toContain("defaultValue?: string | number;");
+    expect(input).toContain("onChange?: React.ChangeEventHandler<NeuwoInput>;");
+    expect(input.match(/\bvalue\?:/g)).toHaveLength(1);
+    expect(types).toContain('import type * as React from "react";');
+  });
+
+  it("reads a value and a change event whether declared or inherited", () => {
+    const declaration = (name, attributes, events) => ({ kind: "class", name, tagName: name.toLowerCase(), attributes, events });
+    const inherited = { name: "Base", module: "base.js" };
+    const generated = jsxElementsTypes({
+      modules: [
+        {
+          declarations: [
+            declaration("Own", [{ name: "value" }], [{ name: "change", type: { text: "Event" } }]),
+            declaration("Inherited", [{ name: "value", inheritedFrom: inherited }], [{ name: "change", type: { text: "Event" }, inheritedFrom: inherited }]),
+            declaration("Plain", [{ name: "value" }], []),
+          ],
+        },
+      ],
+    });
+    expect(generated).toContain("onChange?: React.ChangeEventHandler<Own>;");
+    expect(generated).toContain("onChange?: React.ChangeEventHandler<Inherited>;");
+    expect(generated).not.toContain("React.ChangeEventHandler<Plain>");
+  });
+
+  it("leaves an element with a value but no change event to React's own props", () => {
+    const button = block("neuwo-button");
+    expect(button).toContain("value?: string;");
+    expect(button).not.toContain("defaultValue");
+    expect(button).not.toContain("onChange");
+  });
+
   it("leaves native events to React's own handlers", () => {
     expect(types).not.toMatch(/\bonchange\?/);
     expect(types).not.toMatch(/\boninput\?/);

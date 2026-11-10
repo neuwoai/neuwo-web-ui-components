@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -43,13 +43,28 @@ function mount() {
 }
 
 describe("JSX runtime in React Server Components", () => {
+  const blocks = Object.fromEntries(
+    Object.entries(templates).map(([tag, template]) => [tag, String(template({}, { id: (suffix) => suffix, children: [] }).props.class).split(" ")[0]]),
+  );
+  let found;
+  beforeAll(() => {
+    if (built) found = JSON.parse(runServer("flight-render.mjs", blocks));
+  });
+
   it.runIf(built)("renders every light element through jsx and jsxDEV with no error", () => {
-    const blocks = Object.fromEntries(
-      Object.entries(templates).map(([tag, template]) => [tag, String(template({}, { id: (suffix) => suffix, children: [] }).props.class).split(" ")[0]]),
-    );
     const classes = Object.values(blocks);
     expect(classes).toContain("neuwo-btn");
-    expect(JSON.parse(runServer("flight-render.mjs", blocks))).toEqual({ jsx: classes, jsxDEV: classes });
+    expect(found.jsx).toEqual(classes);
+    expect(found.jsxDEV).toEqual(classes);
+  });
+
+  it.runIf(built)("renders a form control's value as its default, with no function, through the server runtime", () => {
+    const expected = {
+      input: { className: "x-field__input", name: "q", defaultValue: "a" },
+      textarea: { className: "x-notes__input", defaultValue: "n" },
+      functions: [],
+    };
+    expect(found.form).toEqual({ jsx: expected, jsxDEV: expected });
   });
 });
 

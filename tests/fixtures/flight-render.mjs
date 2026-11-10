@@ -4,21 +4,21 @@ import { renderToPipeableStream } from "react-server-dom-webpack/server";
 import { createFromReadableStream } from "react-server-dom-webpack/client.edge";
 import * as runtime from "@neuwo/web-ui-library--demo/jsx-runtime";
 import * as devRuntime from "@neuwo/web-ui-library--demo/jsx-dev-runtime";
+import { createRuntime } from "../../src/core/adapters/react.js";
+import { formTemplates } from "./form-fields.js";
 
 /** @type {Record<string, string>} */
 const blocks = JSON.parse(process.argv[2]);
 
-const factories = {
-  jsx: (type, props, key) => (Array.isArray(props.children) ? runtime.jsxs : runtime.jsx)(type, props, key),
-  jsxDEV: (type, props, key) => devRuntime.jsxDEV(type, props, key, Array.isArray(props.children)),
-};
+const factoriesOf = (prod, dev) => ({
+  jsx: (type, props, key) => (Array.isArray(props.children) ? prod.jsxs : prod.jsx)(type, props, key),
+  jsxDEV: (type, props, key) => dev.jsxDEV(type, props, key, Array.isArray(props.children)),
+});
+const factories = factoriesOf(runtime, devRuntime);
+const form = createRuntime(formTemplates, { markHost: false, server: true });
+const formFactories = factoriesOf(form, form);
 
-function render(create) {
-  const Icon = () => create("svg", { className: "icon" });
-  const Page = () =>
-    create("main", {
-      children: Object.keys(blocks).map((tag) => create(tag, { children: [create(Icon, { slot: "start" }), "Label"] }, tag)),
-    });
+function flight(element) {
   return new Promise((resolve, reject) => {
     const errors = [];
     let payload = "";
@@ -30,8 +30,19 @@ function render(create) {
     });
     sink.on("finish", () => resolve({ errors, payload }));
     sink.on("error", reject);
-    renderToPipeableStream(create(Page, {}), {}, { onError: (error) => void errors.push(String(error?.message ?? error)) }).pipe(sink);
+    renderToPipeableStream(element, {}, { onError: (error) => void errors.push(String(error?.message ?? error)) }).pipe(sink);
   });
+}
+
+const decode = (payload) => createFromReadableStream(new Response(payload).body, { serverConsumerManifest: { moduleMap: {}, moduleLoading: null } });
+
+function render(create) {
+  const Icon = () => create("svg", { className: "icon" });
+  const Page = () =>
+    create("main", {
+      children: Object.keys(blocks).map((tag) => create(tag, { children: [create(Icon, { slot: "start" }), "Label"] }, tag)),
+    });
+  return flight(create(Page, {}));
 }
 
 function find(node, match) {
@@ -40,15 +51,34 @@ function find(node, match) {
   return match(node) ? node : find(node.props.children, match);
 }
 
+function functionsIn(node, path = "", out = []) {
+  if (typeof node === "function") out.push(path);
+  else if (Array.isArray(node)) node.forEach((child, index) => functionsIn(child, `${path}[${index}]`, out));
+  else if (node && typeof node === "object" && "props" in node) {
+    for (const [name, value] of Object.entries(node.props)) functionsIn(value, `${path}/${node.type}.${name}`, out);
+  }
+  return out;
+}
+
 const found = {};
 for (const [name, create] of Object.entries(factories)) {
   const { errors, payload } = await render(create);
   assert.deepEqual(errors, [], `${name}: the Flight render reported errors`);
   found[name] = Object.values(blocks).filter((block) => new RegExp(`"className":"${block}[ "]`).test(payload));
   assert.deepEqual(found[name], Object.values(blocks), `${name}: a root class is missing from the Flight payload`);
-  const tree = await createFromReadableStream(new Response(payload).body, { serverConsumerManifest: { moduleMap: {}, moduleLoading: null } });
+  const tree = await decode(payload);
   const start = find(tree, (el) => el.props.className === "neuwo-btn__start");
   const icons = [start?.props.children].flat().map((child) => `${child?.type}.${child?.props?.className}`);
   assert.deepEqual(icons, ["svg.icon"], `${name}: the slotted icon is not inside neuwo-btn__start`);
+}
+
+found.form = {};
+for (const [name, create] of Object.entries(formFactories)) {
+  const Page = () => create("main", { children: [create("x-field", { value: "a", name: "q" }), create("x-notes", { value: "n" })] });
+  const { errors, payload } = await flight(create(Page, {}));
+  assert.deepEqual(errors, [], `${name}: the form Flight render reported errors`);
+  const tree = await decode(payload);
+  const props = (className) => find(tree, (el) => el.props.className === className)?.props;
+  found.form[name] = { input: props("x-field__input"), textarea: props("x-notes__input"), functions: functionsIn(tree) };
 }
 console.log(JSON.stringify(found));

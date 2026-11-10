@@ -115,6 +115,12 @@
   with a `react-server` build for Server Components. Elements recognise markup React rendered, from
   Client or Server Components, and leave it to React, so children passed in keep their state and DOM
   nodes across re-renders.
+- Through the JSX runtime, the native control inside a light DOM component behaves like React's own
+  input: `value` and `checked` are controlled, `onChange` on the element fires on every keystroke with
+  the native control as `event.target`, and `defaultValue` and `defaultChecked` start an uncontrolled
+  control. The Server Components build takes `value` and `checked` as starting values. The JSX types
+  give every element with a `value` and a `change` event `value` and `defaultValue` as a string or a
+  number, and an `onChange` whose target is typed as the element.
 - `neuwo.js` can be imported on a server, where it registers nothing, and loading it twice no longer throws.
 - `neuwo-components.css` and `foundation/fonts.css` are now published, and `neuwo.css` carries the font faces.
 - The metric-adjusted fallback faces also use Liberation Sans or Arimo where Arial is missing, as on most
