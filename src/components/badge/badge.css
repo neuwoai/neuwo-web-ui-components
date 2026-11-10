@@ -1,13 +1,11 @@
-:host {
+neuwo-badge {
   display: inline-block;
   vertical-align: middle;
 }
 
-.badge {
-  /* Eyebrow typography, inlined because the shadow root cannot inherit the
-     design system's shared .eyebrow class rule (Outfit, xs, 600, 0.08em). The
-     label renders as authored: pass upper-case text for the eyebrow look, or
-     mixed-case for a plain pill. The consumer owns casing, not the recipe. */
+.neuwo-badge {
+  /* Eyebrow typography, restated so the pill does not depend on typography.css's
+     .neuwo-eyebrow (Outfit, xs, 600, 0.08em). The consumer owns casing, not the recipe. */
   font-family: var(--neuwo-font-heading);
   font-size: var(--neuwo-font-size-xs);
   font-weight: var(--neuwo-font-weight-semibold);
@@ -24,26 +22,26 @@
 }
 
 /* Colour axis: blue is the base; green swaps the tints. */
-.badge--green {
+.neuwo-badge--green {
   color: var(--neuwo-color-green);
   background: var(--neuwo-tint-green-8);
   border-color: var(--neuwo-tint-green-20);
 }
 
 /* Border axis: drop the outline for a solid-looking pill. */
-.badge--borderless {
+.neuwo-badge--borderless {
   border-color: transparent;
 }
 
 /* Size axis (density): a bounded scale. m (default, no class) is the eyebrow
    xs; s shrinks to 2xs for compact chips, l grows to sm. Font-size only, so it
    composes with every other axis. */
-.badge--s { font-size: var(--neuwo-font-size-2xs); }
-.badge--l { font-size: var(--neuwo-font-size-sm); }
+.neuwo-badge--s { font-size: var(--neuwo-font-size-2xs); }
+.neuwo-badge--l { font-size: var(--neuwo-font-size-sm); }
 
 /* Glow treatment: a neon bloom keyed to the variant colour (currentColor),
    composes with any variant and either motion. Static, no reduced-motion gate. */
-.badge--glow {
+.neuwo-badge--glow {
   box-shadow: 0 0 0.75rem color-mix(in srgb, currentColor 30%, transparent),
               0 0 1.5rem color-mix(in srgb, currentColor 15%, transparent);
   text-shadow: 0 0 0.5rem color-mix(in srgb, currentColor 40%, transparent);
@@ -53,27 +51,27 @@
    via currentColor; reproduces the design system's green pulse exactly. The ring
    geometry sits in custom properties so the intensity axis can scale it without
    a second keyframe block (a modifier class cannot reach inside @keyframes). */
-.badge--pulse {
+.neuwo-badge--pulse {
   --neuwo-badge-pulse-spread: 6px;
   --neuwo-badge-pulse-alpha: 20%;
-  animation: badge-pulse 2.5s ease-in-out infinite;
+  animation: neuwo-badge-pulse 2.5s ease-in-out infinite;
 }
 
-@keyframes badge-pulse {
+@keyframes neuwo-badge-pulse {
   0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor var(--neuwo-badge-pulse-alpha), transparent); }
   50%      { box-shadow: 0 0 0 var(--neuwo-badge-pulse-spread) color-mix(in srgb, currentColor 0%, transparent); }
 }
 
 /* Shimmer motion: a sweeping highlight (the design system's solutions badge),
    variant-independent via --neuwo-color-shimmer. Mutually exclusive with pulse. */
-.badge--shimmer {
+.neuwo-badge--shimmer {
   --neuwo-badge-shimmer-width: 35%;
   --neuwo-badge-shimmer-strength: 100%;
   position: relative;
   overflow: hidden;
 }
 
-.badge--shimmer::after {
+.neuwo-badge--shimmer::after {
   content: "";
   position: absolute;
   top: 0;
@@ -86,11 +84,11 @@
     color-mix(in srgb, var(--neuwo-color-shimmer) var(--neuwo-badge-shimmer-strength), transparent),
     transparent
   );
-  animation: badge-shimmer 8s ease-in-out 2s infinite;
+  animation: neuwo-badge-shimmer 8s ease-in-out 2s infinite;
   pointer-events: none;
 }
 
-@keyframes badge-shimmer {
+@keyframes neuwo-badge-shimmer {
   0%   { left: -100%; }
   30%  { left: 200%; }
   100% { left: 200%; }
@@ -101,14 +99,14 @@
    one for hero placements. Authored after both motions so it overrides their
    defaults, and only ever sets custom properties, so it composes with either
    motion and with every other axis. */
-.badge--intensity-s {
+.neuwo-badge--intensity-s {
   --neuwo-badge-pulse-spread: 4px;
   --neuwo-badge-pulse-alpha: 14%;
   --neuwo-badge-shimmer-width: 25%;
   --neuwo-badge-shimmer-strength: 60%;
 }
 
-.badge--intensity-l {
+.neuwo-badge--intensity-l {
   --neuwo-badge-pulse-spread: 10px;
   --neuwo-badge-pulse-alpha: 30%;
   --neuwo-badge-shimmer-width: 55%;
@@ -116,8 +114,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .badge--pulse,
-  .badge--shimmer::after {
+  .neuwo-badge--pulse,
+  .neuwo-badge--shimmer::after {
     animation: none;
   }
 }

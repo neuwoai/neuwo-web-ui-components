@@ -572,9 +572,10 @@ Published styling files, for direct linking or non-web use:
 
 ## Restyling from the host
 
-`<neuwo-button>` renders its markup into its own light DOM, so it has no parts.
-Its prefixed classes are the public hooks instead. Put the element name in front
-for weight, so a rule wins without `!important`:
+`<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>` and `<neuwo-status-dot>` render
+their markup into their own light DOM, so they have no parts. Their prefixed
+classes are the public hooks instead. Put the element name in front for weight,
+so a rule wins without `!important`:
 
 ```css
 neuwo-button .neuwo-btn { border-radius: 0; }
@@ -594,27 +595,50 @@ The three wrappers are always rendered and are `display: contents`, so they draw
 no box and an empty one adds no gap. Style what they hold through inherited
 properties, or target the children you passed in.
 
+```css
+.my-tag .neuwo-badge { font-weight: 500; }
+.deal-ref .neuwo-deal-id { font-family: ui-monospace, monospace; }
+```
+
+| Class | On |
+| --- | --- |
+| `.neuwo-badge` | the pill `<span>`, which holds the label |
+| `.neuwo-badge--green`, `.neuwo-badge--s`, `.neuwo-badge--l` | the pill, by `variant` and `size` |
+| `.neuwo-badge--borderless`, `.neuwo-badge--glow` | the pill, by the attribute of the same name |
+| `.neuwo-badge--pulse`, `.neuwo-badge--shimmer` | the pill, by `motion` |
+| `.neuwo-badge--intensity-s`, `.neuwo-badge--intensity-l` | the pill, by `intensity`, only alongside a `motion` |
+| `.neuwo-deal-id` | the value `<span>`, which holds the identifier |
+| `.neuwo-deal-id--s`, `.neuwo-deal-id--l` | the value box, by `size` |
+| `.neuwo-status-dot` | the dot `<span>`, which has no children |
+| `.neuwo-status-dot--blue` | the dot, by `variant` |
+| `.neuwo-status-dot--pulse`, `.neuwo-status-dot--blink` | the dot, by `motion` |
+| `.neuwo-status-dot--halo-s`, `.neuwo-status-dot--halo-l` | the dot, by `halo` |
+| `.neuwo-status-dot--glow-s`, `.neuwo-status-dot--glow-m`, `.neuwo-status-dot--glow-l` | the dot, by `glow` |
+
+The badge and deal-id render their text as authored, so casing is yours:
+
+```css
+.hero-tags neuwo-badge { text-transform: uppercase; } /* eyebrow look */
+```
+
+Prefer a size axis where one exists (`<neuwo-badge size>`, `<neuwo-deal-id
+size>`) over a font-size override, so the scale stays on-brand.
+
 The other elements render into a shadow root. Shadow DOM keeps the host page's
 CSS out, but two channels are deliberately open, and together they reach almost
 every visual detail without forking a component:
 
 - **`::part(...)`** is the intended restyling hook. Every element exposes its
-  internals as parts (`badge`, `value`, `dot`, `input`, `button`, `cta`, the
+  internals as parts (`input`, `cta`, the
   field `label` and `error`, and more, listed per component in the manifest).
   Adjust size, weight, colour, font or spacing from the host:
 
   ```css
-  .my-tag::part(badge) { font-weight: 500; }
-  .deal-ref::part(value) { font-family: ui-monospace, monospace; }
+  .my-cta::part(cta) { font-weight: 500; }
   ```
 
-- **Inherited CSS properties** cross the boundary into slotted content. The
-  badge and deal-id render their text as authored, so the host controls casing
-  with `text-transform`:
-
-  ```css
-  .hero-tags neuwo-badge { text-transform: uppercase; } /* eyebrow look */
-  ```
+- **Inherited CSS properties** cross the boundary into slotted content, so a
+  host `text-transform` or `color` reaches the text of a shadow DOM element.
 
 - **Transient state** is reachable too: the field controls expose
   `::part(input)`, so a host-driven flag can flash a field without the
@@ -626,9 +650,6 @@ every visual detail without forking a component:
     box-shadow: var(--neuwo-shadow-danger);
   }
   ```
-
-Prefer a size axis where one exists (`<neuwo-badge size>`, `<neuwo-deal-id
-size>`) over a `::part` font-size override, so the scale stays on-brand.
 
 ## Form fields share one API
 

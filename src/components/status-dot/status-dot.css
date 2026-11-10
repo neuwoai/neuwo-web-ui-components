@@ -1,9 +1,9 @@
-:host {
+neuwo-status-dot {
   display: inline-flex;
   vertical-align: middle;
 }
 
-.status-dot {
+.neuwo-status-dot {
   width: 0.625rem;
   height: 0.625rem;
   border-radius: 50%;
@@ -16,26 +16,26 @@
 }
 
 /* Colour axis: green is the base; blue swaps the hue (core + ring follow). */
-.status-dot--blue {
+.neuwo-status-dot--blue {
   color: var(--neuwo-color-blue);
 }
 
 /* Motion axis: pulse expands the ring; blink fades the dot. Mutually exclusive. */
-.status-dot--pulse {
-  animation: status-dot-pulse 2s ease-in-out infinite;
+.neuwo-status-dot--pulse {
+  animation: neuwo-status-dot-pulse 2s ease-in-out infinite;
 }
 
-.status-dot--blink {
-  animation: status-dot-blink 2s infinite;
+.neuwo-status-dot--blink {
+  animation: neuwo-status-dot-blink 2s infinite;
 }
 
-/* Halo intensity (static ring; m == the base .status-dot ring). `s` tightens,
+/* Halo intensity (static ring; m == the base .neuwo-status-dot ring). `s` tightens,
    `l` is the wide glow halo. Authored after the base so it overrides the ring. */
-.status-dot--halo-s {
+.neuwo-status-dot--halo-s {
   box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 25%, transparent);
 }
 
-.status-dot--halo-l {
+.neuwo-status-dot--halo-l {
   box-shadow: 0 0 0 6px color-mix(in srgb, currentColor 20%, transparent),
               0 0 8px 2px color-mix(in srgb, currentColor 35%, transparent);
 }
@@ -44,28 +44,26 @@
    `filter`, not `box-shadow`, so it stacks over the base ring and the halo
    axis (which own box-shadow) instead of replacing them. currentColor keeps it
    colour-agnostic. Default (absent/none) adds no class, so no glow. */
-.status-dot--glow-s { filter: drop-shadow(0 0 0.25rem currentColor); }
-.status-dot--glow-m { filter: drop-shadow(0 0 0.5rem currentColor); }
-.status-dot--glow-l {
+.neuwo-status-dot--glow-s { filter: drop-shadow(0 0 0.25rem currentColor); }
+.neuwo-status-dot--glow-m { filter: drop-shadow(0 0 0.5rem currentColor); }
+.neuwo-status-dot--glow-l {
   filter: drop-shadow(0 0 0.5rem currentColor)
           drop-shadow(0 0 1rem currentColor);
 }
 
-@keyframes status-dot-pulse {
+@keyframes neuwo-status-dot-pulse {
   0%, 100% { box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 25%, transparent); }
   50%      { box-shadow: 0 0 0 8px color-mix(in srgb, currentColor 10%, transparent); }
 }
 
-/* Inlined from the design system's global `blink` keyframe (a shadow root cannot
-   inherit it), scoped to this component. */
-@keyframes status-dot-blink {
+@keyframes neuwo-status-dot-blink {
   0%, 100% { opacity: 1; }
   50%      { opacity: 0.3; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .status-dot--pulse,
-  .status-dot--blink {
+  .neuwo-status-dot--pulse,
+  .neuwo-status-dot--blink {
     animation: none;
   }
 }

@@ -1,5 +1,21 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`template markup snapshots > neuwo-badge > default 1`] = `"<neuwo-badge><span class="neuwo-badge">For Publishers</span></neuwo-badge>"`;
+
+exports[`template markup snapshots > neuwo-badge > empty 1`] = `"<neuwo-badge><span class="neuwo-badge"></span></neuwo-badge>"`;
+
+exports[`template markup snapshots > neuwo-badge > forwarded host attributes 1`] = `"<neuwo-badge title="Tip" aria-label="Status" data-track="badge"><span class="neuwo-badge">Beta</span></neuwo-badge>"`;
+
+exports[`template markup snapshots > neuwo-badge > green borderless pulse 1`] = `"<neuwo-badge variant="green" borderless="" motion="pulse"><span class="neuwo-badge neuwo-badge--green neuwo-badge--borderless neuwo-badge--pulse">Live</span></neuwo-badge>"`;
+
+exports[`template markup snapshots > neuwo-badge > nested element 1`] = `"<neuwo-badge><span class="neuwo-badge">Sale <b>50%</b></span></neuwo-badge>"`;
+
+exports[`template markup snapshots > neuwo-badge > shimmer large intensity 1`] = `"<neuwo-badge size="l" motion="shimmer" intensity="l"><span class="neuwo-badge neuwo-badge--l neuwo-badge--shimmer neuwo-badge--intensity-l">New</span></neuwo-badge>"`;
+
+exports[`template markup snapshots > neuwo-badge > small glow 1`] = `"<neuwo-badge size="s" glow="" intensity="s"><span class="neuwo-badge neuwo-badge--s neuwo-badge--glow">Hot</span></neuwo-badge>"`;
+
+exports[`template markup snapshots > neuwo-badge > unknown values 1`] = `"<neuwo-badge variant="xyz" size="xl" motion="xyz"><span class="neuwo-badge">Plain</span></neuwo-badge>"`;
+
 exports[`template markup snapshots > neuwo-button > block 1`] = `"<neuwo-button block="" hover="l" xwide=""><button class="neuwo-btn neuwo-btn--solid neuwo-btn--hover-l neuwo-btn--xwide neuwo-btn--block" type="button"><span class="neuwo-btn__start"></span><span class="neuwo-btn__label">Full width</span><span class="neuwo-btn__end"></span></button></neuwo-button>"`;
 
 exports[`template markup snapshots > neuwo-button > disabled link 1`] = `"<neuwo-button href="https://neuwo.ai" disabled=""><button class="neuwo-btn neuwo-btn--solid" type="button" disabled=""><span class="neuwo-btn__start"></span><span class="neuwo-btn__label">Visit</span><span class="neuwo-btn__end"></span></button></neuwo-button>"`;
@@ -14,10 +30,32 @@ exports[`template markup snapshots > neuwo-button > link 1`] = `"<neuwo-button h
 
 exports[`template markup snapshots > neuwo-button > loading 1`] = `"<neuwo-button type="submit" loading=""><button class="neuwo-btn neuwo-btn--solid neuwo-btn--loading" type="submit" disabled="" aria-busy="true"><span class="neuwo-btn__spinner" aria-hidden="true"></span><span class="neuwo-btn__start"></span><span class="neuwo-btn__label">Saving</span><span class="neuwo-btn__end"></span></button></neuwo-button>"`;
 
-exports[`template markup snapshots > neuwo-button > nested badge 1`] = `"<neuwo-button><button class="neuwo-btn neuwo-btn--solid" type="button"><span class="neuwo-btn__start"></span><span class="neuwo-btn__label">Inbox <neuwo-badge>New</neuwo-badge></span><span class="neuwo-btn__end"></span></button></neuwo-button>"`;
+exports[`template markup snapshots > neuwo-button > nested badge 1`] = `"<neuwo-button><button class="neuwo-btn neuwo-btn--solid" type="button"><span class="neuwo-btn__start"></span><span class="neuwo-btn__label">Inbox <neuwo-badge><span class="neuwo-badge">New</span></neuwo-badge></span><span class="neuwo-btn__end"></span></button></neuwo-button>"`;
 
 exports[`template markup snapshots > neuwo-button > outline large 1`] = `"<neuwo-button variant="outline" size="lg"><button class="neuwo-btn neuwo-btn--outline neuwo-btn--lg" type="button"><span class="neuwo-btn__start"></span><span class="neuwo-btn__label">Contact us</span><span class="neuwo-btn__end"></span></button></neuwo-button>"`;
 
 exports[`template markup snapshots > neuwo-button > solid default 1`] = `"<neuwo-button><button class="neuwo-btn neuwo-btn--solid" type="button"><span class="neuwo-btn__start"></span><span class="neuwo-btn__label">Get started</span><span class="neuwo-btn__end"></span></button></neuwo-button>"`;
 
 exports[`template markup snapshots > neuwo-button > start icon and forwarded attributes 1`] = `"<neuwo-button title="Add" aria-label="Add item" data-track="add"><button class="neuwo-btn neuwo-btn--solid" type="button" title="Add" aria-label="Add item"><span class="neuwo-btn__start"><span slot="start">+</span></span><span class="neuwo-btn__label">Add</span><span class="neuwo-btn__end"></span></button></neuwo-button>"`;
+
+exports[`template markup snapshots > neuwo-deal-id > default 1`] = `"<neuwo-deal-id><span class="neuwo-deal-id">NW-CA-2026-04-8A3F</span></neuwo-deal-id>"`;
+
+exports[`template markup snapshots > neuwo-deal-id > empty 1`] = `"<neuwo-deal-id><span class="neuwo-deal-id"></span></neuwo-deal-id>"`;
+
+exports[`template markup snapshots > neuwo-deal-id > large 1`] = `"<neuwo-deal-id size="l"><span class="neuwo-deal-id neuwo-deal-id--l">NW-2</span></neuwo-deal-id>"`;
+
+exports[`template markup snapshots > neuwo-deal-id > small 1`] = `"<neuwo-deal-id size="s"><span class="neuwo-deal-id neuwo-deal-id--s">NW-1</span></neuwo-deal-id>"`;
+
+exports[`template markup snapshots > neuwo-deal-id > unknown size 1`] = `"<neuwo-deal-id size="xl"><span class="neuwo-deal-id">NW-3</span></neuwo-deal-id>"`;
+
+exports[`template markup snapshots > neuwo-status-dot > blue blink 1`] = `"<neuwo-status-dot variant="blue" motion="blink"><span class="neuwo-status-dot neuwo-status-dot--blue neuwo-status-dot--blink"></span></neuwo-status-dot>"`;
+
+exports[`template markup snapshots > neuwo-status-dot > default 1`] = `"<neuwo-status-dot><span class="neuwo-status-dot"></span></neuwo-status-dot>"`;
+
+exports[`template markup snapshots > neuwo-status-dot > forwarded host attributes 1`] = `"<neuwo-status-dot title="Online" aria-label="Online"><span class="neuwo-status-dot"></span></neuwo-status-dot>"`;
+
+exports[`template markup snapshots > neuwo-status-dot > pulse with large halo 1`] = `"<neuwo-status-dot motion="pulse" halo="l"><span class="neuwo-status-dot neuwo-status-dot--pulse neuwo-status-dot--halo-l"></span></neuwo-status-dot>"`;
+
+exports[`template markup snapshots > neuwo-status-dot > small halo and medium glow 1`] = `"<neuwo-status-dot halo="s" glow="m"><span class="neuwo-status-dot neuwo-status-dot--halo-s neuwo-status-dot--glow-m"></span></neuwo-status-dot>"`;
+
+exports[`template markup snapshots > neuwo-status-dot > unknown values 1`] = `"<neuwo-status-dot variant="xyz" motion="xyz" halo="xl" glow="xl"><span class="neuwo-status-dot"></span></neuwo-status-dot>"`;

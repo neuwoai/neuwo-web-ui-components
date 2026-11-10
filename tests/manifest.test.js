@@ -133,21 +133,21 @@ describe("custom-elements.json", () => {
     for (const a of ["value", "disabled", "checked"]) expect(attrs).toContain(a);
   });
 
-  it("documents the badge's six axes and part", () => {
+  it("documents the badge's six axes and no parts", () => {
     const attrs = attributesFor(manifest, "neuwo-badge");
     for (const a of ["variant", "size", "borderless", "motion", "intensity", "glow"]) expect(attrs).toContain(a);
-    expect(partsFor(manifest, "neuwo-badge").has("badge")).toBe(true);
+    expect(partsFor(manifest, "neuwo-badge").size).toBe(0);
   });
 
-  it("documents the deal-id size attribute and value part", () => {
+  it("documents the deal-id size attribute and no parts", () => {
     expect(attributesFor(manifest, "neuwo-deal-id").has("size")).toBe(true);
-    expect(partsFor(manifest, "neuwo-deal-id").has("value")).toBe(true);
+    expect(partsFor(manifest, "neuwo-deal-id").size).toBe(0);
   });
 
-  it("documents the status-dot's four axes and part", () => {
+  it("documents the status-dot's four axes and no parts", () => {
     const attrs = attributesFor(manifest, "neuwo-status-dot");
     for (const a of ["variant", "motion", "halo", "glow"]) expect(attrs).toContain(a);
-    expect(partsFor(manifest, "neuwo-status-dot").has("dot")).toBe(true);
+    expect(partsFor(manifest, "neuwo-status-dot").size).toBe(0);
   });
 
   it("documents the cta's attributes and parts", () => {

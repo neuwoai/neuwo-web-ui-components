@@ -34,6 +34,31 @@ export const cases = {
     },
     { name: "nested badge", attrs: {}, children: ["Inbox ", { tag: "neuwo-badge", text: "New" }] },
   ],
+  "neuwo-badge": [
+    { name: "default", attrs: {}, children: ["For Publishers"] },
+    { name: "green borderless pulse", attrs: { variant: "green", borderless: "", motion: "pulse" }, children: ["Live"] },
+    { name: "shimmer large intensity", attrs: { size: "l", motion: "shimmer", intensity: "l" }, children: ["New"] },
+    { name: "small glow", attrs: { size: "s", glow: "", intensity: "s" }, children: ["Hot"] },
+    { name: "unknown values", attrs: { variant: "xyz", size: "xl", motion: "xyz" }, children: ["Plain"] },
+    { name: "forwarded host attributes", attrs: { title: "Tip", "aria-label": "Status", "data-track": "badge" }, children: ["Beta"] },
+    { name: "nested element", attrs: {}, children: ["Sale ", { tag: "b", text: "50%" }] },
+    { name: "empty", attrs: {}, children: [] },
+  ],
+  "neuwo-deal-id": [
+    { name: "default", attrs: {}, children: ["NW-CA-2026-04-8A3F"] },
+    { name: "small", attrs: { size: "s" }, children: ["NW-1"] },
+    { name: "large", attrs: { size: "l" }, children: ["NW-2"] },
+    { name: "unknown size", attrs: { size: "xl" }, children: ["NW-3"] },
+    { name: "empty", attrs: {}, children: [] },
+  ],
+  "neuwo-status-dot": [
+    { name: "default", attrs: {}, children: [] },
+    { name: "blue blink", attrs: { variant: "blue", motion: "blink" }, children: [] },
+    { name: "pulse with large halo", attrs: { motion: "pulse", halo: "l" }, children: [] },
+    { name: "small halo and medium glow", attrs: { halo: "s", glow: "m" }, children: [] },
+    { name: "unknown values", attrs: { variant: "xyz", motion: "xyz", halo: "xl", glow: "xl" }, children: [] },
+    { name: "forwarded host attributes", attrs: { title: "Online", "aria-label": "Online" }, children: [] },
+  ],
 };
 
 /** @param {string} value */

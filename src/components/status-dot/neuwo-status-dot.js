@@ -1,7 +1,5 @@
-import { NeuwoShadowElement } from "../../core/shadow-element.js";
-import { define } from "../../core/element.js";
-import { sheet } from "../../core/sheet.js";
-import statusDotCss from "./status-dot.css?raw";
+import { NeuwoElement, define } from "../../core/element.js";
+import { statusDotTemplate } from "./status-dot.template.js";
 
 /**
  * Standalone status indicator: a small coloured dot with a soft ring. Four
@@ -9,18 +7,17 @@ import statusDotCss from "./status-dot.css?raw";
  * size (`halo`), and glow (`glow`). Presentational and decorative on its own,
  * pair it with a visible or accessible label (the dot conveys no text).
  *
- * @summary Neuwo status dot (standalone indicator).
+ * @summary Neuwo status dot (standalone indicator). Public classes: `.neuwo-status-dot` on the dot `<span>`, with its modifiers `.neuwo-status-dot--blue`, `--pulse`, `--blink`, `--halo-s`, `--halo-l`, `--glow-s`, `--glow-m` and `--glow-l`.
  * @customElement neuwo-status-dot
  * @attr {green|blue} variant - dot colour (default green).
  * @attr {pulse|blink} motion - optional animation: `pulse` expands the ring, `blink` fades the dot. Honours prefers-reduced-motion.
  * @attr {s|m|l} halo - ring intensity: s tighter, l a wide glow halo (default m = base ring).
  * @attr {none|s|m|l} glow - static saturated bloom keyed to the dot colour; s subtle, l strongest (default none). Composes with any variant, halo and motion.
- * @csspart dot - the dot element.
  * @cssprop --neuwo-color-green - the default dot colour; re-theme on :root.
  * @cssprop --neuwo-color-blue - the blue-variant dot colour; re-theme on :root.
  */
-export class NeuwoStatusDot extends NeuwoShadowElement {
-  static styles = sheet(statusDotCss);
+export class NeuwoStatusDot extends NeuwoElement {
+  static template = statusDotTemplate;
   static observedAttributes = ["variant", "motion", "halo", "glow"];
 
   get variant() { return this.getAttribute("variant") || "green"; }
@@ -42,26 +39,6 @@ export class NeuwoStatusDot extends NeuwoShadowElement {
   set glow(value) {
     if (value == null || value === "") this.removeAttribute("glow");
     else this.setAttribute("glow", String(value));
-  }
-
-  render() {
-    const classes = ["status-dot"];
-    // Four orthogonal axes: only blue deviates on colour; motion adds at most one
-    // animation class (pulse and blink are mutually exclusive); halo and glow add
-    // at most one class each (m/none and absent/unknown add nothing).
-    if (this.getAttribute("variant") === "blue") classes.push("status-dot--blue");
-    const motion = this.getAttribute("motion");
-    if (motion === "pulse") classes.push("status-dot--pulse");
-    else if (motion === "blink") classes.push("status-dot--blink");
-    const halo = this.getAttribute("halo");
-    if (halo === "s" || halo === "l") classes.push(`status-dot--halo-${halo}`);
-    const glow = this.getAttribute("glow");
-    if (glow === "s" || glow === "m" || glow === "l") classes.push(`status-dot--glow-${glow}`);
-
-    const dot = document.createElement("span");
-    dot.className = classes.join(" ");
-    dot.setAttribute("part", "dot");
-    this.shadowRoot.replaceChildren(dot);
   }
 }
 

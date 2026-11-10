@@ -5,7 +5,13 @@ import { dirname, join } from "node:path";
 
 const src = join(dirname(fileURLToPath(import.meta.url)), "../src");
 const allCss = readdirSync(src, { recursive: true }).filter((file) => file.endsWith(".css"));
-const LIGHT_CSS = ["components/reset.css", "components/button/button.css"];
+const LIGHT_CSS = [
+  "components/reset.css",
+  "components/badge/badge.css",
+  "components/button/button.css",
+  "components/deal-id/deal-id.css",
+  "components/status-dot/status-dot.css",
+];
 const read = (file) => readFileSync(join(src, file), "utf8");
 
 describe("custom property naming", () => {

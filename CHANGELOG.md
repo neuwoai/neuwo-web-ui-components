@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+- Breaking: `<neuwo-badge>`, `<neuwo-deal-id>` and `<neuwo-status-dot>` render into their own light DOM
+  from one template, like the button, so server-rendered ones are styled from the first paint.
+  Their classes are prefixed: `.badge` is now `.neuwo-badge` (with `.neuwo-badge--{green|s|l|borderless|glow|pulse|shimmer|intensity-s|intensity-l}`),
+  `.deal-id` is now `.neuwo-deal-id` (with `.neuwo-deal-id--{s|l}`), and `.status-dot` is now
+  `.neuwo-status-dot` (with `.neuwo-status-dot--{blue|pulse|blink|halo-s|halo-l|glow-s|glow-m|glow-l}`).
+- The keyframes are renamed to match: `badge-pulse` and `badge-shimmer` are now `neuwo-badge-pulse` and
+  `neuwo-badge-shimmer`, and `status-dot-pulse` and `status-dot-blink` are now `neuwo-status-dot-pulse`
+  and `neuwo-status-dot-blink`.
+- Breaking: `::part(badge)`, `::part(value)` and `::part(dot)` are gone. Restyle through the classes, with
+  the element name in front for weight: `neuwo-badge .neuwo-badge { font-weight: 500; }`.
+- The label of `<neuwo-badge>` and the value of `<neuwo-deal-id>` are now plain children of their
+  `.neuwo-badge` and `.neuwo-deal-id` span instead of a slot.
+
 - Breaking: `<neuwo-button>` renders into its own light DOM from one template, the same markup the
   server and the JSX runtime produce, so server-rendered buttons are styled from the first paint.
   Its classes are prefixed: `.btn` is now `.neuwo-btn`, with `.neuwo-btn--{solid|outline|glass|sm|lg}`,

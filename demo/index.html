@@ -51,13 +51,14 @@
         border: 4px solid black !important;
         height: 3rem !important;
       }
-      /* Hostile rule: if Shadow DOM leaked, the badges would turn hot pink too. */
-      .badge {
+      /* Hostile rule: the old unprefixed classes no longer reach the badges or deal-id chips. */
+      .badge,
+      .deal-id {
         background: hotpink !important;
         color: black !important;
         border-radius: 0 !important;
       }
-      /* Hostile rule: if Shadow DOM leaked, the status dots would square off. */
+      /* Hostile rule: the old unprefixed class no longer reaches the status dots. */
       .status-dot {
         background: hotpink !important;
         border-radius: 0 !important;
@@ -749,7 +750,7 @@
     </script>
 
     <h2>Badge (label + status, mix-and-match axes)</h2>
-    <p>The page defines a hostile <code>.badge</code> rule. Shadow DOM keeps it out.</p>
+    <p>The page defines a hostile <code>.badge</code> rule. The classes are prefixed <code>.neuwo-badge</code>, so it does not reach them.</p>
     <div class="row">
       <neuwo-badge>For Publishers</neuwo-badge>
       <neuwo-badge variant="green">New</neuwo-badge>
@@ -792,7 +793,7 @@
       <neuwo-badge variant="green" size="s" borderless motion="pulse" intensity="s">Live</neuwo-badge>
     </div>
 
-    <h2>Badge token re-theming (inherits through the shadow boundary)</h2>
+    <h2>Badge token re-theming (tokens set on the page)</h2>
     <div class="row reskin">
       <neuwo-badge>Re-themed</neuwo-badge>
       <neuwo-badge variant="green">Re-themed</neuwo-badge>
@@ -810,7 +811,7 @@
     </div>
 
     <h2>Status dot (colour + motion axes)</h2>
-    <p>The page defines a hostile <code>.status-dot</code> rule. Shadow DOM keeps it out.</p>
+    <p>The page defines a hostile <code>.status-dot</code> rule. The classes are prefixed <code>.neuwo-status-dot</code>, so it does not reach them.</p>
     <div class="row">
       <span style="display: inline-flex; align-items: center; gap: 0.5rem">
         <neuwo-status-dot></neuwo-status-dot> Resting

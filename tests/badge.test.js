@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import "../src/components/badge/neuwo-badge.js";
+import "../src/index.js";
+import { NeuwoBadge } from "../src/components/badge/neuwo-badge.js";
 
 function make(html) {
   const host = document.createElement("div");
@@ -8,161 +9,116 @@ function make(html) {
   return host.firstElementChild;
 }
 
+const pill = (el) => el.querySelector(".neuwo-badge");
+const classes = (el) => pill(el).classList;
+
 describe("<neuwo-badge>", () => {
-  it("registers and renders a .badge pill that projects its label", () => {
+  it("renders a .neuwo-badge pill into its light DOM that holds the label", () => {
     const el = make(`<neuwo-badge>For Publishers</neuwo-badge>`);
-    expect(customElements.get("neuwo-badge")).toBeTruthy();
-    const badge = el.shadowRoot.querySelector(".badge");
-    expect(badge).toBeTruthy();
-    expect(badge.getAttribute("part")).toBe("badge");
-    expect(badge.querySelector("slot")).toBeTruthy();
+    expect(el).toBeInstanceOf(NeuwoBadge);
+    expect(el.shadowRoot).toBeNull();
+    expect(pill(el).localName).toBe("span");
+    expect(pill(el).className).toBe("neuwo-badge");
+    expect(pill(el).textContent).toBe("For Publishers");
+    expect(pill(el).hasAttribute("part")).toBe(false);
+    expect(el.querySelector("slot")).toBeNull();
   });
 
-  it("is blue by default and green via the variant", () => {
-    const base = make(`<neuwo-badge>x</neuwo-badge>`);
-    expect(base.shadowRoot.querySelector(".badge").classList.contains("badge--green")).toBe(false);
-    const green = make(`<neuwo-badge variant="green">x</neuwo-badge>`);
-    expect(green.shadowRoot.querySelector(".badge").classList.contains("badge--green")).toBe(true);
+  it("keeps author markup inside the pill", () => {
+    const el = make(`<neuwo-badge>Sale <b>50%</b></neuwo-badge>`);
+    expect(pill(el).innerHTML).toBe("Sale <b>50%</b>");
+    expect(el.querySelectorAll(".neuwo-badge")).toHaveLength(1);
   });
 
-  it("treats an unknown variant as the blue default", () => {
-    const el = make(`<neuwo-badge variant="xyz">x</neuwo-badge>`);
-    expect(el.shadowRoot.querySelector(".badge").classList.contains("badge--green")).toBe(false);
+  it("is blue by default and green via the variant, and treats unknown as blue", () => {
+    expect(classes(make(`<neuwo-badge>x</neuwo-badge>`)).contains("neuwo-badge--green")).toBe(false);
+    expect(classes(make(`<neuwo-badge variant="green">x</neuwo-badge>`)).contains("neuwo-badge--green")).toBe(true);
+    expect(classes(make(`<neuwo-badge variant="xyz">x</neuwo-badge>`)).contains("neuwo-badge--green")).toBe(false);
   });
 
-  it("reflects the variant property to the attribute and re-renders", () => {
+  it("reflects the variant property to the attribute and re-renders the same pill", () => {
     const el = make(`<neuwo-badge>x</neuwo-badge>`);
+    const before = pill(el);
     el.variant = "green";
     expect(el.getAttribute("variant")).toBe("green");
-    expect(el.shadowRoot.querySelector(".badge").classList.contains("badge--green")).toBe(true);
+    expect(pill(el)).toBe(before);
+    expect(classes(el).contains("neuwo-badge--green")).toBe(true);
     el.variant = "";
     expect(el.hasAttribute("variant")).toBe(false);
-    expect(el.shadowRoot.querySelector(".badge").classList.contains("badge--green")).toBe(false);
+    expect(el.variant).toBe("blue");
+    expect(classes(el).contains("neuwo-badge--green")).toBe(false);
   });
 
-  it("drops the border via the borderless axis", () => {
-    expect(make(`<neuwo-badge>x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList.contains("badge--borderless")).toBe(false);
+  it("drops the border via the borderless axis and reflects the property", () => {
+    expect(classes(make(`<neuwo-badge>x</neuwo-badge>`)).contains("neuwo-badge--borderless")).toBe(false);
     const el = make(`<neuwo-badge borderless>x</neuwo-badge>`);
-    expect(el.shadowRoot.querySelector(".badge").classList.contains("badge--borderless")).toBe(true);
+    expect(classes(el).contains("neuwo-badge--borderless")).toBe(true);
     el.borderless = false;
-    expect(el.shadowRoot.querySelector(".badge").classList.contains("badge--borderless")).toBe(false);
+    expect(el.hasAttribute("borderless")).toBe(false);
+    expect(classes(el).contains("neuwo-badge--borderless")).toBe(false);
   });
 
-  it("selects the pulse animation via motion='pulse' and reflects the property", () => {
+  it("selects pulse or shimmer via motion, independent of colour, and nothing for unknown", () => {
     const el = make(`<neuwo-badge motion="pulse">x</neuwo-badge>`);
-    expect(el.shadowRoot.querySelector(".badge").classList.contains("badge--pulse")).toBe(true);
+    expect(classes(el).contains("neuwo-badge--pulse")).toBe(true);
     el.motion = "";
     expect(el.hasAttribute("motion")).toBe(false);
-    expect(el.shadowRoot.querySelector(".badge").classList.contains("badge--pulse")).toBe(false);
+    expect(classes(el).contains("neuwo-badge--pulse")).toBe(false);
+    const shimmer = classes(make(`<neuwo-badge variant="green" motion="shimmer">New</neuwo-badge>`));
+    expect(shimmer.contains("neuwo-badge--shimmer")).toBe(true);
+    expect(shimmer.contains("neuwo-badge--green")).toBe(true);
+    expect(make(`<neuwo-badge motion="xyz">x</neuwo-badge>`).querySelector(".neuwo-badge").className).toBe("neuwo-badge");
   });
 
-  it("selects the shimmer animation via motion='shimmer', independent of colour", () => {
-    const el = make(`<neuwo-badge variant="green" motion="shimmer">New</neuwo-badge>`);
-    const c = el.shadowRoot.querySelector(".badge").classList;
-    expect(c.contains("badge--shimmer")).toBe(true);
-    expect(c.contains("badge--green")).toBe(true);
-  });
-
-  it("adds no motion class for an absent or unknown motion value", () => {
-    expect(make(`<neuwo-badge>x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList.contains("badge--pulse")).toBe(false);
-    const c = make(`<neuwo-badge motion="xyz">x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList;
-    expect(c.contains("badge--pulse")).toBe(false);
-    expect(c.contains("badge--shimmer")).toBe(false);
-  });
-
-  it("mixes the axes freely (the live badge: green + borderless + motion=pulse)", () => {
-    const el = make(`<neuwo-badge variant="green" borderless motion="pulse">Live</neuwo-badge>`);
-    const c = el.shadowRoot.querySelector(".badge").classList;
-    expect(c.contains("badge--green")).toBe(true);
-    expect(c.contains("badge--borderless")).toBe(true);
-    expect(c.contains("badge--pulse")).toBe(true);
-  });
-
-  it("is size m (no modifier class) by default", () => {
+  it("maps size s and l to a modifier, m or unknown to none, and reflects the property", () => {
+    expect(classes(make(`<neuwo-badge size="s">x</neuwo-badge>`)).contains("neuwo-badge--s")).toBe(true);
+    expect(classes(make(`<neuwo-badge size="l">x</neuwo-badge>`)).contains("neuwo-badge--l")).toBe(true);
+    expect(pill(make(`<neuwo-badge size="m">x</neuwo-badge>`)).className).toBe("neuwo-badge");
+    expect(pill(make(`<neuwo-badge size="xl">x</neuwo-badge>`)).className).toBe("neuwo-badge");
     const el = make(`<neuwo-badge>x</neuwo-badge>`);
-    const c = el.shadowRoot.querySelector(".badge").classList;
-    expect(c.contains("badge--s")).toBe(false);
-    expect(c.contains("badge--l")).toBe(false);
     expect(el.size).toBe("m");
-  });
-
-  it("maps size s and l to a modifier class, and m / unknown to none", () => {
-    expect(make(`<neuwo-badge size="s">x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList.contains("badge--s")).toBe(true);
-    expect(make(`<neuwo-badge size="l">x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList.contains("badge--l")).toBe(true);
-    const m = make(`<neuwo-badge size="m">x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList;
-    expect(m.contains("badge--s")).toBe(false);
-    expect(m.contains("badge--l")).toBe(false);
-    const unknown = make(`<neuwo-badge size="xl">x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList;
-    expect(unknown.contains("badge--s")).toBe(false);
-    expect(unknown.contains("badge--l")).toBe(false);
-  });
-
-  it("reflects the size property and composes with the other axes", () => {
-    const el = make(`<neuwo-badge>x</neuwo-badge>`);
     el.size = "s";
     expect(el.getAttribute("size")).toBe("s");
-    expect(el.shadowRoot.querySelector(".badge").classList.contains("badge--s")).toBe(true);
+    expect(classes(el).contains("neuwo-badge--s")).toBe(true);
     el.size = "";
     expect(el.hasAttribute("size")).toBe(false);
     expect(el.size).toBe("m");
-    const mixed = make(`<neuwo-badge variant="green" size="l" borderless>x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList;
-    expect(mixed.contains("badge--green")).toBe(true);
-    expect(mixed.contains("badge--l")).toBe(true);
-    expect(mixed.contains("badge--borderless")).toBe(true);
   });
 
-  it("is intensity m (no modifier class) by default", () => {
+  it("maps intensity s and l alongside a motion only, and reflects the property", () => {
     const el = make(`<neuwo-badge motion="pulse">x</neuwo-badge>`);
-    const c = el.shadowRoot.querySelector(".badge").classList;
-    expect(c.contains("badge--intensity-s")).toBe(false);
-    expect(c.contains("badge--intensity-l")).toBe(false);
     expect(el.intensity).toBe("m");
-  });
-
-  it("maps intensity s and l to a modifier class, and m / unknown to none", () => {
-    expect(make(`<neuwo-badge motion="pulse" intensity="s">x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList.contains("badge--intensity-s")).toBe(true);
-    expect(make(`<neuwo-badge motion="pulse" intensity="l">x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList.contains("badge--intensity-l")).toBe(true);
-    const unknown = make(`<neuwo-badge motion="pulse" intensity="xl">x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList;
-    expect(unknown.contains("badge--intensity-s")).toBe(false);
-    expect(unknown.contains("badge--intensity-l")).toBe(false);
-  });
-
-  it("scales either motion and stays silent without one", () => {
-    const shimmer = make(`<neuwo-badge motion="shimmer" intensity="l">x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList;
-    expect(shimmer.contains("badge--shimmer")).toBe(true);
-    expect(shimmer.contains("badge--intensity-l")).toBe(true);
-    // Amplitude with nothing to amplify: no class, so no dead custom properties.
-    const still = make(`<neuwo-badge intensity="l">x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList;
-    expect(still.contains("badge--intensity-l")).toBe(false);
-  });
-
-  it("reflects the intensity property and composes with the other axes", () => {
-    const el = make(`<neuwo-badge variant="green" size="s" borderless motion="pulse">Live</neuwo-badge>`);
+    expect(pill(el).className).toBe("neuwo-badge neuwo-badge--pulse");
     el.intensity = "s";
     expect(el.getAttribute("intensity")).toBe("s");
-    const c = el.shadowRoot.querySelector(".badge").classList;
-    expect(c.contains("badge--intensity-s")).toBe(true);
-    expect(c.contains("badge--green")).toBe(true);
-    expect(c.contains("badge--s")).toBe(true);
-    expect(c.contains("badge--borderless")).toBe(true);
-    expect(c.contains("badge--pulse")).toBe(true);
+    expect(classes(el).contains("neuwo-badge--intensity-s")).toBe(true);
     el.intensity = "";
     expect(el.hasAttribute("intensity")).toBe(false);
-    expect(el.intensity).toBe("m");
-    expect(el.shadowRoot.querySelector(".badge").classList.contains("badge--intensity-s")).toBe(false);
+    expect(classes(el).contains("neuwo-badge--intensity-s")).toBe(false);
+    expect(classes(make(`<neuwo-badge motion="shimmer" intensity="l">x</neuwo-badge>`)).contains("neuwo-badge--intensity-l")).toBe(true);
+    expect(pill(make(`<neuwo-badge intensity="l">x</neuwo-badge>`)).className).toBe("neuwo-badge");
+    expect(pill(make(`<neuwo-badge motion="pulse" intensity="xl">x</neuwo-badge>`)).className).toBe("neuwo-badge neuwo-badge--pulse");
   });
 
-  it("has no glow by default", () => {
-    expect(make(`<neuwo-badge>x</neuwo-badge>`).shadowRoot.querySelector(".badge").classList.contains("badge--glow")).toBe(false);
-  });
-
-  it("adds the glow treatment, toggles it from the property, and composes with variant + motion", () => {
+  it("adds the glow treatment, toggles it from the property, and composes with the other axes", () => {
+    expect(classes(make(`<neuwo-badge>x</neuwo-badge>`)).contains("neuwo-badge--glow")).toBe(false);
     const el = make(`<neuwo-badge variant="green" glow motion="shimmer">Hot</neuwo-badge>`);
-    const c = el.shadowRoot.querySelector(".badge").classList;
-    expect(c.contains("badge--glow")).toBe(true);
-    expect(c.contains("badge--green")).toBe(true);
-    expect(c.contains("badge--shimmer")).toBe(true);
+    for (const cls of ["neuwo-badge--glow", "neuwo-badge--green", "neuwo-badge--shimmer"]) expect(classes(el).contains(cls)).toBe(true);
     el.glow = false;
-    expect(el.shadowRoot.querySelector(".badge").classList.contains("badge--glow")).toBe(false);
+    expect(el.hasAttribute("glow")).toBe(false);
+    expect(classes(el).contains("neuwo-badge--glow")).toBe(false);
+  });
+
+  it("mixes the axes freely", () => {
+    const el = make(`<neuwo-badge variant="green" size="l" borderless motion="pulse" intensity="s">Live</neuwo-badge>`);
+    expect(pill(el).className).toBe(
+      "neuwo-badge neuwo-badge--green neuwo-badge--l neuwo-badge--borderless neuwo-badge--pulse neuwo-badge--intensity-s",
+    );
+  });
+
+  it("keeps data-* and other attributes on the host alone", () => {
+    const el = make(`<neuwo-badge data-track="b" title="Tip" aria-label="Status">x</neuwo-badge>`);
+    expect(pill(el).getAttributeNames()).toEqual(["class"]);
+    expect(Array.from(document.querySelectorAll('[data-track="b"]'))).toEqual([el]);
   });
 });
