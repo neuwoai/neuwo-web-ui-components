@@ -66,16 +66,32 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
     this.#observer?.takeRecords();
   }
 
+  #reconcile() {
+    // No observer means #start has not run, so this reconcile is an upgrade's first render or adoption.
+    const started = this.#observer !== null;
+    this.#write(reconcile);
+    if (started) this.updated();
+  }
+
   /** @param {MutationRecord[]} records */
   #changed(records) {
     if (ownedByReact(this)) {
       this.#observer?.disconnect();
       this.#observer = null;
-    } else if (records.some(relevant)) this.#write(reconcile);
+    } else if (records.some(relevant)) this.#reconcile();
   }
 
   attributeChangedCallback() {
-    if (this.isConnected && !this.#waiting && !this.#tooEarly() && !ownedByReact(this)) this.#write(reconcile);
+    if (this.isConnected && !this.#waiting && !this.#tooEarly() && !ownedByReact(this)) this.#reconcile();
+  }
+
+  /**
+   * Reconciles the markup with the attributes and children now, then runs `updated`. Does nothing on a host
+   * that is disconnected, not yet rendered, waiting for the document to parse, or rendered by React.
+   */
+  refresh() {
+    const { template } = /** @type {typeof NeuwoElement} */ (this.constructor);
+    if (this.isConnected && !this.#waiting && !ownedByReact(this) && isRendered(this, template)) this.#reconcile();
   }
 
   disconnectedCallback() {
@@ -94,6 +110,12 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
 
   /** Hook to release whatever `connect` set up. */
   disconnect() {}
+
+  /**
+   * Hook run after each reconcile, never after render or adoption, to re-apply live state the template cannot
+   * know. It must write only values that differ from the DOM.
+   */
+  updated() {}
 }
 
 /**

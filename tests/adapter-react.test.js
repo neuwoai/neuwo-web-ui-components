@@ -6,6 +6,7 @@ import { h, has, raw, region } from "../src/core/template.js";
 import { idScope } from "../src/core/ids.js";
 import { renderElement } from "../src/core/adapters/html.js";
 import { createRuntime } from "../src/core/adapters/react.js";
+import { NESTED, described } from "./fixtures/nested-children.js";
 import * as runtime from "../src/react/jsx-runtime.js";
 import * as devRuntime from "../src/react/jsx-dev-runtime.js";
 import * as serverRuntime from "../src/react/jsx-runtime.react-server.js";
@@ -107,12 +108,34 @@ describe("createRuntime()", () => {
     expect(seen[0]).toEqual([
       { tag: null, attrs: {}, text: "x", slot: "default" },
       { tag: null, attrs: {}, text: "2", slot: "default" },
-      { tag: "b", attrs: { slot: "start", title: "t", hidden: "" }, text: "ab", slot: "start" },
+      {
+        tag: "b",
+        attrs: { slot: "start", title: "t", hidden: "" },
+        text: "ab",
+        slot: "start",
+        children: [
+          described("a"),
+          { tag: "i", attrs: {}, text: "b", slot: "default", children: [described("b")] },
+        ],
+      },
       { tag: null, attrs: {}, text: "", slot: "start" },
-      { tag: "neuwo-t", attrs: { slot: "end", tone: "b" }, text: "n", slot: "end" },
+      { tag: "neuwo-t", attrs: { slot: "end", tone: "b" }, text: "n", slot: "end", children: [described("n")] },
     ]);
     expect(html).toContain('<span class="neuwo-t__body"> x2</span>');
     expect(html).toContain('<span class="neuwo-t__start"><b slot="start" title="t" hidden="" class="c">a<i>b</i></b></span>');
+  });
+
+  it("describes nested children to the template, skipping whitespace-only text", () => {
+    let seen;
+    const { jsx: create, jsxs: createStatic } = createRuntime({
+      "neuwo-t": (a, ctx) => {
+        seen = ctx.children;
+        return testTemplate(a, ctx);
+      },
+    });
+    const options = [create("option", { value: "a", children: "A" }), "\n", create("option", { children: "B" })];
+    renderToStaticMarkup(create("neuwo-t", { children: createStatic("optgroup", { label: "G", children: options }) }));
+    expect(seen).toEqual([NESTED]);
   });
 
   it("places nested elements and fragment children by slot and drops unknown slots", () => {

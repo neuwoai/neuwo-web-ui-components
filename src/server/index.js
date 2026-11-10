@@ -7,7 +7,7 @@ import { templates } from "../templates.js";
 export { renderElement };
 
 /** @import { ChildNode, Element, Text } from "domhandler" */
-/** @import { Template } from "../core/template.js" */
+/** @import { ChildInfo, Template } from "../core/template.js" */
 /** @import { RenderChild } from "../core/adapters/html.js" */
 /** @typedef {{ html: string, registry: Record<string, Template>, newIds: () => (suffix: string) => string }} Page */
 
@@ -74,6 +74,16 @@ function isRendered(el, template) {
 }
 
 /**
+ * @param {ChildNode} node
+ * @returns {ChildInfo}
+ */
+function describe(node) {
+  if (!isElement(node)) return { tag: null, attrs: {}, text: isText(node) ? node.data : "", slot: DEFAULT_REGION };
+  const attrs = { ...node.attribs };
+  return { tag: node.name, attrs, text: DomUtils.textContent(node), slot: attrs.slot || DEFAULT_REGION, children: node.children.map(describe) };
+}
+
+/**
  * @param {Page} page
  * @param {Element} el
  * @param {number} contentEnd
@@ -85,12 +95,7 @@ function expandElement(page, el, contentEnd) {
   const children = el.children.map((child, i) => {
     const next = i + 1 < el.children.length ? startOf(page.html, el.children[i + 1]) : contentEnd;
     const { start, end } = span(page.html, child, next);
-    const html = rewrite(page, [child], start, end);
-    if (!isElement(child)) {
-      return { tag: null, attrs: {}, text: isText(child) ? child.data : "", slot: DEFAULT_REGION, html };
-    }
-    const attrs = { ...child.attribs };
-    return { tag: child.name, attrs, text: DomUtils.textContent(child), slot: attrs.slot || DEFAULT_REGION, html };
+    return { ...describe(child), html: rewrite(page, [child], start, end) };
   });
   return renderElement(el.name, { ...el.attribs }, children, page.registry[el.name], () => id);
 }

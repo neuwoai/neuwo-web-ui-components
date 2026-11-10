@@ -2,8 +2,9 @@ import { describe, expect, it } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { DEFAULT_REGION, distribute, h, has, normalizeProps, raw, region } from "../src/core/template.js";
+import { DEFAULT_REGION, control, distribute, h, has, normalizeProps, raw, region } from "../src/core/template.js";
 import { idScope } from "../src/core/ids.js";
+import { toHTML } from "../src/core/adapters/html.js";
 
 describe("h()", () => {
   it("builds a node with its tag, props and children", () => {
@@ -44,6 +45,18 @@ describe("h()", () => {
     expect(() => h("span", null, region(), "x")).toThrow(/only child of <span>/);
     expect(() => h("span", null, region("start"), region())).toThrow(/only child of <span>/);
     expect(() => h("span", null, h("b", null), region())).toThrow(/only child of <span>/);
+  });
+});
+
+describe("control()", () => {
+  it("marks the node itself as the form control", () => {
+    const node = h("input");
+    expect(control(node)).toBe(node);
+    expect(node).toEqual({ tag: "input", props: {}, children: [], control: true });
+  });
+
+  it("leaves no control attribute in the HTML", () => {
+    expect(toHTML(control(h("input", { name: "q" })))).toBe('<input name="q">');
   });
 });
 

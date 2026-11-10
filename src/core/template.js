@@ -1,14 +1,19 @@
-/** @typedef {{ tag: string, props: Record<string, string | true>, children: TemplateChild[] }} TemplateNode */
+/** @typedef {{ tag: string, props: Record<string, string | true>, children: TemplateChild[], control?: true }} TemplateNode */
 /** @typedef {TemplateNode | string | { region: string } | { raw: string }} TemplateChild */
-/** @typedef {{ tag: string | null, attrs: Record<string, string>, text: string, slot: string }} ChildInfo */
+/**
+ * An author child. An element's `children` describe its own child nodes the same way, whitespace-only text left out.
+ * @typedef {{ tag: string | null, attrs: Record<string, string>, text: string, slot: string, children?: ChildInfo[] }} ChildInfo
+ */
 /** @typedef {{ id: (suffix: string) => string, children: ChildInfo[] }} TemplateContext */
 /**
- * Every element a template renders carries the root's block class (its first class) or a `<block>__*` class.
+ * A template's blocks are the classes in its output that contain neither `__` nor `--`; the root's first class
+ * is the root block. Every element it renders carries a class owned by one of its blocks: the block itself,
+ * `<block>__*` or `<block>--*`. At most one node is marked as the form control with `control()`.
  * A region is the only child of its element, its wrapper. Every wrapper is rendered for every attribute
- * combination and carries a class unique within the template (`<block>__<name>`, or the block class when the
- * root is the wrapper). Template text and elements appear only in elements that hold no region. The adapters
- * rely on this to tell template markup from author content: a wrapper's children are the author's, every other
- * node under the root is the template's.
+ * combination and carries a class unique within the template (`<block>__<name>` of the root block, or the root
+ * block class when the root is the wrapper). Template text and elements appear only in elements that hold no
+ * region. The adapters rely on this to tell template markup from author content: a wrapper's children are the
+ * author's, every other node under the root is the template's.
  * @typedef {(attrs: Record<string, string>, ctx: TemplateContext) => TemplateNode} Template
  */
 
@@ -68,6 +73,16 @@ export function region(name = DEFAULT_REGION) {
  */
 export function raw(html) {
   return { raw: html };
+}
+
+/**
+ * Marks the node as the template's form control. The adapters render the marker as nothing.
+ * @param {TemplateNode} node
+ * @returns {TemplateNode}
+ */
+export function control(node) {
+  node.control = true;
+  return node;
 }
 
 /**

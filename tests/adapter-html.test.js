@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { h, raw, region } from "../src/core/template.js";
 import { idScope } from "../src/core/ids.js";
 import { renderElement, toHTML } from "../src/core/adapters/html.js";
+import { expand } from "../src/server/index.js";
+import { NESTED, OPTGROUP, described } from "./fixtures/nested-children.js";
 
 const testTemplate = (a) =>
   h(
@@ -98,6 +100,34 @@ describe("renderElement()", () => {
     expect(second).toContain('aria-describedby="neuwo-s2-hint"');
     expect(seen).toEqual([]);
     renderElement("neuwo-t", {}, [el("i", "start", '<i slot="start"></i>')], template, newIds);
-    expect(seen).toEqual([{ tag: "i", attrs: { slot: "start" }, text: "", slot: "start" }]);
+    expect(seen).toEqual([{ tag: "i", attrs: { slot: "start" }, text: "", slot: "start", children: [] }]);
+  });
+
+  it("describes nested children, skipping whitespace-only text and comments", () => {
+    let seen;
+    const template = (a, ctx) => {
+      seen = ctx.children;
+      return testTemplate(a);
+    };
+    const nested = {
+      ...NESTED,
+      children: [
+        { ...NESTED.children[0], children: [described("A"), described("")] },
+        described("\n"),
+        NESTED.children[1],
+      ],
+    };
+    renderElement("neuwo-t", {}, [{ ...nested, html: OPTGROUP }], template, idScope("neuwo-s"));
+    expect(seen).toEqual([NESTED]);
+  });
+
+  it("describes nested children parsed by the server", () => {
+    let seen;
+    const template = (a, ctx) => {
+      seen = ctx.children;
+      return testTemplate(a);
+    };
+    expand(`<neuwo-t>${OPTGROUP}<!-- c --></neuwo-t>`, { "neuwo-t": template });
+    expect(seen).toEqual([NESTED]);
   });
 });

@@ -82,8 +82,10 @@ function describe(items) {
   for (const item of items) {
     const el = asElement(item);
     const tag = el && tagOf(el);
-    if (tag) info.push({ tag, attrs: normalizeProps(el.props), text: textOf(/** @type {ReactNode} */ (el.props.children)), slot: slotOf(el) });
-    else if (typeof item === "object") info.push({ tag: null, attrs: {}, text: "", slot: slotOf(item) });
+    if (tag) {
+      const children = /** @type {ReactNode} */ (el.props.children);
+      info.push({ tag, attrs: normalizeProps(el.props), text: textOf(children), slot: slotOf(el), children: describe(flatten(children)) });
+    } else if (typeof item === "object") info.push({ tag: null, attrs: {}, text: "", slot: slotOf(item) });
     else if (String(item).trim() !== "") info.push({ tag: null, attrs: {}, text: String(item), slot: DEFAULT_REGION });
   }
   return info;

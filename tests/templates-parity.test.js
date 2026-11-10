@@ -4,7 +4,9 @@ import { jsx, jsxs } from "../src/react/jsx-runtime.js";
 import { templates } from "../src/templates.js";
 import "../src/index.js";
 import { expand } from "../src/server/index.js";
-import { cases, markup, normalise, renderHtml } from "./fixtures/template-cases.js";
+import { renderElement } from "../src/core/adapters/html.js";
+import { idScope } from "../src/core/ids.js";
+import { cases, markup, normalise, renderChildren, renderHtml } from "./fixtures/template-cases.js";
 
 function toReact(child) {
   if (typeof child === "string") return child;
@@ -45,6 +47,18 @@ describe("template parity across the HTML, React and DOM adapters", () => {
           expect(normalise(expand(markup({ tag, attrs: testCase.attrs, children: testCase.children })))).toBe(html);
           expect(normalise(viaReact(tag, testCase))).toBe(html);
           expect(normalise(viaDom(tag, testCase))).toBe(html);
+        });
+
+        it(`${testCase.name}: describes the children as the server does`, () => {
+          const seen = [];
+          const capture = (attrs, ctx) => {
+            seen.push(ctx.children);
+            return templates[tag](attrs, ctx);
+          };
+          renderElement(tag, testCase.attrs, renderChildren(testCase.children), capture, idScope("neuwo-s"));
+          const fixture = seen.pop();
+          expand(markup({ tag, attrs: testCase.attrs, children: testCase.children }), { [tag]: capture });
+          expect(fixture).toEqual(seen.pop());
         });
       }
     });

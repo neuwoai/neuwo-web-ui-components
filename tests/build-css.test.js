@@ -1,13 +1,30 @@
 import { describe, expect, it } from "vitest";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
+import { dirname, join, posix } from "node:path";
 import { LIGHT_COMPONENT_CSS } from "../scripts/light-css.js";
 import { templates } from "../src/templates.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const dist = join(root, "dist");
 const components = join(dist, "neuwo-components.css");
+
+const COMPONENTS = "src/components";
+const folders = readdirSync(join(root, COMPONENTS), { recursive: true })
+  .map((path) => posix.join(COMPONENTS, path))
+  .filter((path) => statSync(join(root, path)).isDirectory());
+const cssIn = (folder) =>
+  readdirSync(join(root, folder))
+    .filter((file) => file.endsWith(".css"))
+    .map((file) => posix.join(folder, file));
+
+function recipesOf(tag) {
+  const name = tag.replace(/^neuwo-/, "");
+  const found = folders.filter((folder) => posix.basename(folder) === name);
+  expect(found, tag).toHaveLength(1);
+  const parent = posix.dirname(found[0]);
+  return [...(parent === COMPONENTS ? [] : cssIn(parent)), ...cssIn(found[0])];
+}
 
 describe("combined stylesheets", () => {
   it.runIf(existsSync(components))("opens the components sheet with the marker", () => {
@@ -35,13 +52,20 @@ describe("combined stylesheets", () => {
     expect(full.startsWith(readFileSync(components, "utf8"))).toBe(true);
   });
 
-  it("composes the reset first, then the recipe of every registered template and nothing else", () => {
-    const recipes = Object.keys(templates).map((tag) => {
-      const name = tag.replace(/^neuwo-/, "");
-      return `src/components/${name}/${name}.css`;
-    });
+  it("composes the reset first, then the recipes of every registered template and nothing else", () => {
+    const recipes = new Set(Object.keys(templates).flatMap(recipesOf));
     expect(LIGHT_COMPONENT_CSS[0]).toBe("src/components/reset.css");
-    expect(LIGHT_COMPONENT_CSS.slice(1).sort()).toEqual(recipes.sort());
+    expect(LIGHT_COMPONENT_CSS.slice(1).sort()).toEqual([...recipes].sort());
     for (const file of LIGHT_COMPONENT_CSS) expect(existsSync(join(root, file)), file).toBe(true);
+  });
+
+  it("puts each shared parent recipe before the recipes below it", () => {
+    for (const [index, file] of LIGHT_COMPONENT_CSS.entries()) {
+      const folder = posix.dirname(file);
+      if (folder === COMPONENTS) continue;
+      for (const [other, below] of LIGHT_COMPONENT_CSS.entries()) {
+        if (posix.dirname(below).startsWith(`${folder}/`)) expect(index, `${file} before ${below}`).toBeLessThan(other);
+      }
+    }
   });
 });

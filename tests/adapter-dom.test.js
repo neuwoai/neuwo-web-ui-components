@@ -3,6 +3,7 @@ import { h, has, raw, region } from "../src/core/template.js";
 import { adopt, childInfo, isRendered, reconcile, render } from "../src/core/adapters/dom.js";
 import { renderElement } from "../src/core/adapters/html.js";
 import { idScope } from "../src/core/ids.js";
+import { NESTED, OPTGROUP, described } from "./fixtures/nested-children.js";
 
 const SVG = "http://www.w3.org/2000/svg";
 
@@ -53,16 +54,27 @@ describe("childInfo()", () => {
     const host = make(`<neuwo-t>a<i slot="start" title="t">b</i><!-- c -->\n  <b>d</b></neuwo-t>`);
     expect(childInfo(host)).toEqual([
       { tag: null, attrs: {}, text: "a", slot: "default" },
-      { tag: "i", attrs: { slot: "start", title: "t" }, text: "b", slot: "start" },
-      { tag: "b", attrs: {}, text: "d", slot: "default" },
+      { tag: "i", attrs: { slot: "start", title: "t" }, text: "b", slot: "start", children: [described("b")] },
+      { tag: "b", attrs: {}, text: "d", slot: "default", children: [described("d")] },
     ]);
+  });
+
+  it("describes nested children to the template, skipping whitespace-only text", () => {
+    const { calls, wrapped } = spy(testTemplate);
+    const host = make(`<neuwo-t>${OPTGROUP}</neuwo-t>`);
+    render(host, wrapped);
+    expect(calls.at(-1)).toEqual([NESTED]);
+    host.setAttribute("tone", "b");
+    reconcile(host, wrapped);
+    expect(calls.at(-1)).toEqual([NESTED]);
+    expect(childInfo(host)).toEqual([NESTED]);
   });
 
   it("describes the author children of a rendered host, not its markup", () => {
     const host = make(`<neuwo-t><i slot="start"></i>x</neuwo-t>`);
     render(host, testTemplate);
     expect(childInfo(host)).toEqual([
-      { tag: "i", attrs: { slot: "start" }, text: "", slot: "start" },
+      { tag: "i", attrs: { slot: "start" }, text: "", slot: "start", children: [] },
       { tag: null, attrs: {}, text: "x", slot: "default" },
     ]);
   });
@@ -71,13 +83,28 @@ describe("childInfo()", () => {
     const host = make(`<neuwo-t>${shell("a", '<i slot="start"></i>', "x")}<b slot="start"></b></neuwo-t>`);
     const observer = watch(host);
     expect(childInfo(host, testTemplate)).toEqual([
-      { tag: "i", attrs: { slot: "start" }, text: "", slot: "start" },
+      { tag: "i", attrs: { slot: "start" }, text: "", slot: "start", children: [] },
       { tag: null, attrs: {}, text: "x", slot: "default" },
-      { tag: "b", attrs: { slot: "start" }, text: "", slot: "start" },
+      { tag: "b", attrs: { slot: "start" }, text: "", slot: "start", children: [] },
     ]);
     expect(childInfo(host)).toEqual([
-      { tag: "span", attrs: { class: "neuwo-t neuwo-t--a" }, text: "x", slot: "default" },
-      { tag: "b", attrs: { slot: "start" }, text: "", slot: "start" },
+      {
+        tag: "span",
+        attrs: { class: "neuwo-t neuwo-t--a" },
+        text: "x",
+        slot: "default",
+        children: [
+          {
+            tag: "span",
+            attrs: { class: "neuwo-t__start" },
+            text: "",
+            slot: "default",
+            children: [{ tag: "i", attrs: { slot: "start" }, text: "", slot: "start", children: [] }],
+          },
+          { tag: "span", attrs: { class: "neuwo-t__label" }, text: "x", slot: "default", children: [described("x")] },
+        ],
+      },
+      { tag: "b", attrs: { slot: "start" }, text: "", slot: "start", children: [] },
     ]);
     expect(observer.takeRecords()).toHaveLength(0);
   });
@@ -127,7 +154,7 @@ describe("render()", () => {
     const host = make(`<neuwo-t> <i slot="start"></i></neuwo-t>`);
     render(host, wrapped);
     expect(host.innerHTML).toBe(shell("a", '<i slot="start"></i>', " "));
-    expect(calls.at(-1)).toEqual([{ tag: "i", attrs: { slot: "start" }, text: "", slot: "start" }]);
+    expect(calls.at(-1)).toEqual([{ tag: "i", attrs: { slot: "start" }, text: "", slot: "start", children: [] }]);
   });
 
   it("gives each host its own ids", () => {
@@ -165,7 +192,7 @@ describe("isRendered()", () => {
     const host = make(`<neuwo-t>${shell("a", '<i slot="start"></i>', "x")}</neuwo-t>`);
     isRendered(host, wrapped);
     const author = [
-      { tag: "i", attrs: { slot: "start" }, text: "", slot: "start" },
+      { tag: "i", attrs: { slot: "start" }, text: "", slot: "start", children: [] },
       { tag: null, attrs: {}, text: "x", slot: "default" },
     ];
     adopt(host, wrapped);
@@ -721,7 +748,7 @@ describe("reconcile()", () => {
     host.setAttribute("tone", "b");
     reconcile(host, wrapped);
     expect(calls.at(-1)).toEqual([
-      { tag: "i", attrs: { slot: "start" }, text: "", slot: "start" },
+      { tag: "i", attrs: { slot: "start" }, text: "", slot: "start", children: [] },
       { tag: null, attrs: {}, text: "x", slot: "default" },
     ]);
   });

@@ -40,7 +40,16 @@ describe("expand()", () => {
     };
     expand('<neuwo-t><b slot="start" title="a &amp; b">x <i>y</i></b> t &lt; u <!-- c --></neuwo-t>', { "neuwo-t": capture });
     expect(seen).toEqual([
-      { tag: "b", attrs: { slot: "start", title: "a & b" }, text: "x y", slot: "start" },
+      {
+        tag: "b",
+        attrs: { slot: "start", title: "a & b" },
+        text: "x y",
+        slot: "start",
+        children: [
+          { tag: null, attrs: {}, text: "x ", slot: "default" },
+          { tag: "i", attrs: {}, text: "y", slot: "default", children: [{ tag: null, attrs: {}, text: "y", slot: "default" }] },
+        ],
+      },
       { tag: null, attrs: {}, text: " t < u ", slot: "default" },
     ]);
   });

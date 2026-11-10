@@ -357,3 +357,113 @@ describe("NeuwoElement (light DOM)", () => {
     });
   });
 });
+
+describe("updated() and refresh()", () => {
+  class Updating extends TestLight {
+    updates = 0;
+    classes = [];
+    updated() {
+      this.updates++;
+      this.classes.push(this.querySelector(".neuwo-t").className);
+    }
+  }
+  define("test-updated", Updating);
+  const served = (tag = "test-updated") => server().replaceAll("test-light", tag);
+
+  it("runs updated once after an observed attribute change, after the patch", () => {
+    const el = mount(served()).firstElementChild;
+    el.setAttribute("tone", "b");
+    expect(el.updates).toBe(1);
+    expect(el.classes).toEqual(["neuwo-t neuwo-t--b"]);
+  });
+
+  it("runs updated once after a child change the observer reconciles", async () => {
+    const el = mount(served()).firstElementChild;
+    const icon = document.createElement("i");
+    icon.slot = "start";
+    el.append(icon);
+    await settled();
+    expect(icon.parentElement.className).toBe("neuwo-t__start");
+    expect(el.updates).toBe(1);
+  });
+
+  it("reconciles at once on refresh, then runs updated once", async () => {
+    const el = mount(served()).firstElementChild;
+    const icon = document.createElement("i");
+    icon.slot = "start";
+    el.append(icon);
+    el.refresh();
+    expect(icon.parentElement.className).toBe("neuwo-t__start");
+    expect(el.updates).toBe(1);
+    await settled();
+    expect(el.updates).toBe(1);
+  });
+
+  it("does not run updated on render or adopt", () => {
+    const rendered = document.createElement("test-updated");
+    mount("").appendChild(rendered);
+    const adopted = mount(served()).firstElementChild;
+    expect(rendered.querySelector(".neuwo-t")).not.toBeNull();
+    expect(rendered.updates).toBe(0);
+    expect(adopted.updates).toBe(0);
+  });
+
+  it("does not run updated when an attribute callback adopts before the connect logic, as an upgrade does", () => {
+    class Upgrading extends Updating {
+      connectedCallback() {}
+      run() {
+        super.connectedCallback();
+      }
+    }
+    define("test-updated-upgrade", Upgrading);
+    const el = mount(served("test-updated-upgrade")).firstElementChild;
+    el.attributeChangedCallback("tone", null, "a");
+    el.run();
+    expect(el.updates).toBe(0);
+  });
+
+  it.each([
+    ["the JSX runtime's marker", Symbol.for("neuwo.react")],
+    ["React DOM's fiber property", "__reactFiber$test"],
+  ])("neither reconciles nor runs updated on a host React owns, known by %s", (_, key) => {
+    const el = mount(served()).firstElementChild;
+    el[key] = true;
+    el.setAttribute("tone", "b");
+    el.refresh();
+    expect(el.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--a");
+    expect(el.updates).toBe(0);
+  });
+
+  it("leaves a disconnected host, and a connected one that has not rendered, alone on refresh", () => {
+    const gone = mount(served()).firstElementChild;
+    gone.remove();
+    gone.textContent = "y";
+    gone.refresh();
+    expect(gone.innerHTML).toBe("y");
+    define("test-updated-idle", class extends Updating {
+      connectedCallback() {}
+    });
+    const idle = mount(`<test-updated-idle>hi</test-updated-idle>`).firstElementChild;
+    idle.refresh();
+    expect(idle.innerHTML).toBe("hi");
+    expect(gone.updates + idle.updates).toBe(0);
+  });
+
+  describe("while the document is still parsing", () => {
+    afterEach(() => delete document.readyState);
+
+    it("neither reconciles nor runs updated until DOMContentLoaded, and not on the render that follows", () => {
+      Object.defineProperty(document, "readyState", { configurable: true, get: () => "loading" });
+      const el = document.createElement("test-updated");
+      mount("").appendChild(el);
+      el.append("hi");
+      el.setAttribute("tone", "b");
+      el.refresh();
+      expect(el.querySelector(".neuwo-t")).toBeNull();
+      delete document.readyState;
+      document.dispatchEvent(new Event("DOMContentLoaded"));
+      expect(el.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--b");
+      expect(el.updates).toBe(0);
+    });
+  });
+});

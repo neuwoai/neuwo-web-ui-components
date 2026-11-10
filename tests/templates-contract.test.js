@@ -18,8 +18,10 @@ function output(tag, testCase) {
   const [block] = classesOf(root);
   const owned = (name) => name === block || name.startsWith(`${block}__`);
   const all = elements(root);
+  const blocks = [...new Set(all.flatMap(classesOf).filter((name) => !name.includes("__") && !name.includes("--")))];
+  const ownedByABlock = (name) => blocks.some((each) => name === each || name.startsWith(`${each}__`) || name.startsWith(`${each}--`));
   const wrappers = all.filter((node) => node.children.some(isRegion)).map((node) => classesOf(node).find(owned));
-  return { block, owned, all, wrappers };
+  return { block, blocks, ownedByABlock, all, wrappers };
 }
 
 describe("template contract", () => {
@@ -41,9 +43,17 @@ describe("template contract", () => {
             expect(output(tag, testCase).block).toMatch(/^neuwo-(?!neuwo-)/);
           });
 
-          it("marks every element with the block class or a block element class", () => {
-            const { all, owned } = output(tag, testCase);
-            for (const node of all) expect(classesOf(node).some(owned), `<${node.tag} class="${node.props.class ?? ""}">`).toBe(true);
+          it("prefixes every block it renders", () => {
+            for (const name of output(tag, testCase).blocks) expect(name).toMatch(/^neuwo-(?!neuwo-)/);
+          });
+
+          it("marks every element with a class owned by one of the output's blocks", () => {
+            const { all, ownedByABlock } = output(tag, testCase);
+            for (const node of all) expect(classesOf(node).some(ownedByABlock), `<${node.tag} class="${node.props.class ?? ""}">`).toBe(true);
+          });
+
+          it("marks at most one control", () => {
+            expect(output(tag, testCase).all.filter((node) => node.control === true).length).toBeLessThanOrEqual(1);
           });
 
           it("emits no <neuwo-*> tag", () => {

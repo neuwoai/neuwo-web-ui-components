@@ -170,7 +170,8 @@ function describe(nodes, regionOf) {
     if (!isContent(node)) continue;
     if (node.nodeType === ELEMENT) {
       const el = /** @type {Element} */ (node);
-      info.push({ tag: el.localName, attrs: attrsOf(el), text: el.textContent, slot: regionOf(el) });
+      const children = describe(Array.from(el.childNodes), slotOf);
+      info.push({ tag: el.localName, attrs: attrsOf(el), text: el.textContent, slot: regionOf(el), children });
     } else info.push({ tag: null, attrs: {}, text: /** @type {Text} */ (node).data, slot: regionOf(node) });
   }
   return info;

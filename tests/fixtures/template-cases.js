@@ -6,6 +6,7 @@ import { templates } from "../../src/templates.js";
 /** @typedef {{ tag: string, attrs?: Record<string, string>, text?: string, children?: Child[] }} ChildElement */
 /** @typedef {string | ChildElement} Child */
 /** @typedef {{ name: string, attrs: Record<string, string>, children: Child[] }} TemplateCase */
+/** @typedef {import("../../src/core/template.js").ChildInfo} ChildInfo */
 
 /** @type {Record<string, TemplateCase[]>} */
 export const cases = {
@@ -186,20 +187,22 @@ export function markup(child) {
 const textOf = (child) => (typeof child === "string" ? child : child.children ? child.children.map(textOf).join("") : (child.text ?? ""));
 
 /**
+ * @param {Child} child
+ * @returns {ChildInfo}
+ */
+function describe(child) {
+  if (typeof child === "string") return { tag: null, attrs: {}, text: child, slot: "default" };
+  const attrs = { ...child.attrs };
+  const nested = child.children ?? (child.text ? [child.text] : []);
+  return { tag: child.tag, attrs, text: textOf(child), slot: attrs.slot || "default", children: nested.map(describe) };
+}
+
+/**
  * The children as the HTML adapter receives them from the server, nested registered elements already expanded.
  * @param {Child[]} children
  */
 export function renderChildren(children) {
-  return children.map((child) => {
-    const attrs = typeof child === "string" ? {} : { ...child.attrs };
-    return {
-      tag: typeof child === "string" ? null : child.tag,
-      attrs,
-      text: textOf(child),
-      slot: attrs.slot || "default",
-      html: expand(markup(child)),
-    };
-  });
+  return children.map((child) => ({ ...describe(child), html: expand(markup(child)) }));
 }
 
 /**

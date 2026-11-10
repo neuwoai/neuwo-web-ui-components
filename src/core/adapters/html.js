@@ -6,7 +6,8 @@ import { distribute } from "../template.js";
 /**
  * An author child of the element being rendered, with its original markup as `html`. Pass a comment as
  * `{ tag: null, attrs: {}, text: "", slot: "default", html: "<!-- ... -->" }`: comments and whitespace-only
- * text go to the default region but are not described to the template in `ctx.children`.
+ * text go to the default region but are not described to the template in `ctx.children`. An element's nested
+ * `children` need no `html`; pass a nested comment as empty text.
  * @typedef {ChildInfo & { html: string }} RenderChild
  */
 
@@ -41,6 +42,18 @@ export function toHTML(node, regions = {}) {
 }
 
 /**
+ * @param {Array<ChildInfo & { html?: string }>} children
+ * @returns {ChildInfo[]}
+ */
+function describe(children) {
+  return children
+    .filter((child) => !child.html?.startsWith("<!--") && (child.tag !== null || child.text.trim() !== ""))
+    .map(({ tag, attrs, text, slot, children: nested }) =>
+      tag === null ? { tag, attrs, text, slot } : { tag, attrs, text, slot, children: describe(nested ?? []) },
+    );
+}
+
+/**
  * @param {string} tag
  * @param {Record<string, string>} attrs
  * @param {RenderChild[]} children
@@ -49,10 +62,7 @@ export function toHTML(node, regions = {}) {
  * @returns {string}
  */
 export function renderElement(tag, attrs, children, template, newIds) {
-  const described = children
-    .filter((child) => !child.html.startsWith("<!--") && (child.tag !== null || child.text.trim() !== ""))
-    .map(({ html, ...info }) => info);
-  const node = template(attrs, { id: newIds(), children: described });
+  const node = template(attrs, { id: newIds(), children: describe(children) });
   /** @type {Record<string, string>} */
   const regions = {};
   for (const [name, list] of Object.entries(distribute(node, children, (child) => child.slot))) {
