@@ -120,11 +120,18 @@ function toReact(node, regions, block, key) {
   const type = /** @type {ElementType} */ (node.tag);
   /** @type {ReactNode[]} */
   const children = [];
+  /** @type {Map<string, number>} */
+  const seen = new Map();
   for (const [index, child] of node.children.entries()) {
     if (typeof child === "string") children.push(child);
     else if ("region" in child) children.push(...(regions[child.region] ?? []));
     else if ("raw" in child) props.dangerouslySetInnerHTML = { __html: child.raw };
-    else children.push(toReact(child, regions, block, keyOf(child, block, index)));
+    else {
+      const base = keyOf(child, block, index);
+      const count = seen.get(base) ?? 0;
+      seen.set(base, count + 1);
+      children.push(toReact(child, regions, block, count ? `${base}:${count}` : base));
+    }
   }
   if (children.length > 1) return reactJsxs(type, { ...props, children }, key);
   if (children.length === 1) props.children = children[0];

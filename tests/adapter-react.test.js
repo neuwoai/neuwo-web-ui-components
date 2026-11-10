@@ -168,6 +168,39 @@ describe("createRuntime()", () => {
     expect(errors).not.toHaveBeenCalled();
   });
 
+  it("numbers a repeated key among siblings, so repeated template elements survive a sibling appearing without React warnings", async () => {
+    const dotted = (a) =>
+      h(
+        "span",
+        { class: "neuwo-d" },
+        has(a, "flag") && h("i", { class: "neuwo-d__flag" }),
+        h("b", { class: "neuwo-d__dot" }),
+        h("b", { class: "neuwo-d__dot" }),
+        h("span", { class: "neuwo-d__body" }, region()),
+      );
+    const { jsx: create } = createRuntime({ "neuwo-d": dotted });
+    const errors = vi.spyOn(console, "error");
+    const warnings = vi.spyOn(console, "warn");
+    const container = mount();
+    const root = createRoot(container);
+    cleanups.unshift(() => act(() => root.unmount()));
+    const view = (flag) => create("neuwo-d", { flag, children: "x" });
+    const dots = () => Array.from(container.querySelectorAll(".neuwo-d__dot"));
+    await act(async () => root.render(view(false)));
+    const before = dots();
+    expect(before).toHaveLength(2);
+    await act(async () => root.render(view(true)));
+    expect(container.querySelector(".neuwo-d").firstElementChild.className).toBe("neuwo-d__flag");
+    expect(dots()[0]).toBe(before[0]);
+    expect(dots()[1]).toBe(before[1]);
+    await act(async () => root.render(view(false)));
+    expect(container.querySelector(".neuwo-d__flag")).toBeNull();
+    expect(dots()[0]).toBe(before[0]);
+    expect(dots()[1]).toBe(before[1]);
+    expect(errors).not.toHaveBeenCalled();
+    expect(warnings).not.toHaveBeenCalled();
+  });
+
   it("builds ids from useId that differ per element and survive hydration", async () => {
     const labelled = (a, ctx) => h("span", { class: "neuwo-l", "aria-describedby": ctx.id("hint") }, region());
     const { jsx: create, jsxs: createStatic } = createRuntime({ "neuwo-l": labelled });

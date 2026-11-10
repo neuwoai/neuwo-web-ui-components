@@ -336,23 +336,26 @@ describe("<neuwo-button> under React", () => {
   }
 
   it.each([
-    ["in the label", undefined],
-    ['in slot="start"', "start"],
-  ])("keeps a stateful child %s, and its DOM node, while loading toggles on and off", (_, slot) => {
+    ["in the label", undefined, "neuwo-btn__label"],
+    ['in slot="start"', "start", "neuwo-btn__start"],
+  ])("keeps a stateful child %s, and its DOM node, while loading toggles on and off", (_, slot, wrapper) => {
     const { error, warn, container, show, counter, increment } = counterApp();
     show({}, slot);
     increment();
     const node = counter();
+    expect(node.parentElement.className).toBe(wrapper);
     expect(node.textContent).toBe("1");
 
     show({ loading: true }, slot);
     expect(container.querySelector(".neuwo-btn").firstElementChild.className).toBe("neuwo-btn__spinner");
     expect(counter()).toBe(node);
+    expect(node.parentElement.className).toBe(wrapper);
     expect(node.textContent).toBe("1");
 
     show({}, slot);
     expect(container.querySelector(".neuwo-btn__spinner")).toBeNull();
     expect(counter()).toBe(node);
+    expect(node.parentElement.className).toBe(wrapper);
     expect(node.textContent).toBe("1");
 
     expect(error).not.toHaveBeenCalled();

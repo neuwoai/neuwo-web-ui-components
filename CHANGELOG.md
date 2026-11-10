@@ -4,8 +4,9 @@
 
 - Under React, toggling `loading` on `<neuwo-button>` no longer remounts the children passed into it, so
   their state and DOM nodes survive: the JSX runtime now keys every element it renders from a template.
-- The `<neuwo-badge>` shimmer sweeps with `transform` instead of `left`, so it no longer shifts layout.
-  `--neuwo-badge-shimmer-width` is now unitless, a percentage of the badge (`35`, not `35%`).
+- Breaking: the `<neuwo-badge>` shimmer sweeps with `transform` instead of `left`, so it no longer shifts
+  layout, and `--neuwo-badge-shimmer-width` is now unitless, a percentage of the badge (`35`, not `35%`).
+  An override with a unit, such as `40%`, now removes the sweep.
 - The metric-adjusted fallback faces also use Liberation Sans or Arimo where Arial is missing, as on most
   Linux systems, so text shifts less when the brand fonts arrive.
 
