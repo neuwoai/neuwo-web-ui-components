@@ -5,7 +5,7 @@ import { dirname, join } from "node:path";
 
 const src = join(dirname(fileURLToPath(import.meta.url)), "../src");
 const allCss = readdirSync(src, { recursive: true }).filter((file) => file.endsWith(".css"));
-const LIGHT_CSS = [];
+const LIGHT_CSS = ["components/reset.css", "components/button/button.css"];
 const read = (file) => readFileSync(join(src, file), "utf8");
 
 describe("custom property naming", () => {

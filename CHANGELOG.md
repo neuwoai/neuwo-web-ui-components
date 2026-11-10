@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+- Breaking: `<neuwo-button>` renders into its own light DOM from one template, the same markup the
+  server and the JSX runtime produce, so server-rendered buttons are styled from the first paint.
+  Its classes are prefixed: `.btn` is now `.neuwo-btn`, with `.neuwo-btn--{solid|outline|glass|sm|lg}`,
+  `.neuwo-btn--hover-{s|l}`, `.neuwo-btn--{wide|xwide|loading}` and `.neuwo-btn__spinner`, and the
+  `button-spin` keyframes are now `neuwo-button-spin`. `block` also adds `.neuwo-btn--block`.
+- `<neuwo-button>` wraps its children in three new spans, `.neuwo-btn__start`, `.neuwo-btn__label` and
+  `.neuwo-btn__end`, always rendered and `display: contents`, so the layout is unchanged.
+- Breaking: `::part(button)` on `<neuwo-button>` is gone. Restyle through the classes, with the element
+  name in front for weight: `neuwo-button .neuwo-btn { border-radius: 0; }`.
+- Breaking: `<neuwo-button>` is no longer form-associated. Its native `<button>` sits inside your form
+  and submits or resets it natively, in server-rendered markup even before the script has loaded. A
+  scripted `click()` on the host element no longer submits; call it on the inner `.neuwo-btn`, or use
+  `form.requestSubmit()`.
+- `components/reset.css`, the reset for the light DOM components, is published and leads the component
+  styles in `neuwo-components.css`.
 - Breaking: `neuwo.js` no longer carries fonts or tokens. Link `neuwo-components.css` (or `neuwo.css`) on
   the page, or import it where you import the library; `<style data-neuwo-fonts>` is no longer read.
 - `neuwo-standalone.js` is for pages that can only add a script: it embeds `neuwo-components.css`, applies

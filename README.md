@@ -565,15 +565,38 @@ Published styling files, for direct linking or non-web use:
 | Page surface | `@neuwo/web-ui-library--demo/foundation/background.css` |
 | Navigation links | `@neuwo/web-ui-library--demo/foundation/navigation.css` |
 | All four foundation layers (one file) | `@neuwo/web-ui-library--demo/neuwo.css` |
+| Component reset (before any recipe) | `@neuwo/web-ui-library--demo/components/reset.css` |
 | Button recipe | `@neuwo/web-ui-library--demo/components/button/button.css` |
 | Field chrome | `@neuwo/web-ui-library--demo/components/fields/field.css` |
 | Logo files | `@neuwo/web-ui-library--demo/logos/neuwo-logo--bg-dark.svg` |
 
 ## Restyling from the host
 
-Shadow DOM keeps the host page's CSS out, but two channels are deliberately
-open, and together they reach almost every visual detail without forking a
-component:
+`<neuwo-button>` renders its markup into its own light DOM, so it has no parts.
+Its prefixed classes are the public hooks instead. Put the element name in front
+for weight, so a rule wins without `!important`:
+
+```css
+neuwo-button .neuwo-btn { border-radius: 0; }
+```
+
+| Class | On |
+| --- | --- |
+| `.neuwo-btn` | the native `<button>`, or the `<a>` when `href` is set |
+| `.neuwo-btn--solid`, `.neuwo-btn--outline`, `.neuwo-btn--glass` | the control, by `variant` |
+| `.neuwo-btn--sm`, `.neuwo-btn--lg` | the control, by `size` |
+| `.neuwo-btn--hover-s`, `.neuwo-btn--hover-l` | the control, by `hover` |
+| `.neuwo-btn--wide`, `.neuwo-btn--xwide`, `.neuwo-btn--block`, `.neuwo-btn--loading` | the control, by the attribute of the same name |
+| `.neuwo-btn__spinner` | the spinner, the control's first child while `loading` |
+| `.neuwo-btn__start`, `.neuwo-btn__label`, `.neuwo-btn__end` | the wrappers around the `slot="start"` children, the label and the `slot="end"` children |
+
+The three wrappers are always rendered and are `display: contents`, so they draw
+no box and an empty one adds no gap. Style what they hold through inherited
+properties, or target the children you passed in.
+
+The other elements render into a shadow root. Shadow DOM keeps the host page's
+CSS out, but two channels are deliberately open, and together they reach almost
+every visual detail without forking a component:
 
 - **`::part(...)`** is the intended restyling hook. Every element exposes its
   internals as parts (`badge`, `value`, `dot`, `input`, `button`, `cta`, the

@@ -4,7 +4,7 @@
 
 /* --- Host: the custom element is the button's outer box --- */
 
-:host {
+neuwo-button {
   display: inline-flex;
   position: relative;
   vertical-align: middle;
@@ -13,7 +13,7 @@
 
 /* --- Base --- */
 
-.btn {
+.neuwo-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -31,43 +31,52 @@
   transition: background var(--neuwo-transition-fast), color var(--neuwo-transition-fast), box-shadow var(--neuwo-transition-fast), transform var(--neuwo-transition-fast);
 }
 
-.btn:hover {
+.neuwo-btn:hover {
   text-decoration: none;
+}
+
+/* --- Region wrappers: no box of their own, so an empty one adds no gap --- */
+
+.neuwo-btn__start,
+.neuwo-btn__label,
+.neuwo-btn__end {
+  display: contents;
 }
 
 /* --- State: disabled --- */
 
-:host([disabled]) {
+neuwo-button[disabled] {
   cursor: not-allowed;
 }
 
-.btn:disabled {
+.neuwo-btn:disabled {
   opacity: var(--neuwo-opacity-disabled);
   pointer-events: none; /* also suppresses the hover lift on a disabled button */
 }
 
 /* --- Variant: solid (primary) --- */
 
-.btn--solid {
+.neuwo-btn--solid {
   background: var(--neuwo-color-blue);
   color: var(--neuwo-color-white);
 }
 
-.btn--solid:hover {
+.neuwo-btn--solid:hover {
   background: var(--neuwo-color-blue-dark);
+  color: var(--neuwo-color-white); /* outweighs typography.css's a:hover on a link button */
   box-shadow: var(--neuwo-shadow-glow);
   transform: translateY(-0.125rem);
 }
 
 /* --- Variant: outline (secondary) --- */
 
-.btn--outline {
+.neuwo-btn--outline {
   background: transparent;
   color: var(--neuwo-color-blue);
   border-color: var(--neuwo-color-blue);
 }
 
-.btn--outline:hover {
+.neuwo-btn--outline:hover {
   background: var(--neuwo-tint-blue-10);
   color: var(--neuwo-color-blue-dark);
   border-color: var(--neuwo-color-blue-dark);
@@ -77,13 +86,13 @@
 
 /* --- Variant: glass (secondary with heavy blur) --- */
 
-.btn--glass {
+.neuwo-btn--glass {
   color: var(--neuwo-color-blue);
   border-color: var(--neuwo-color-blue);
   backdrop-filter: blur(var(--neuwo-blur-sm));
 }
 
-.btn--glass:hover {
+.neuwo-btn--glass:hover {
   color: var(--neuwo-color-blue-dark);
   border-color: var(--neuwo-color-blue-dark);
   box-shadow: var(--neuwo-shadow-glow);
@@ -92,85 +101,85 @@
 
 /* --- Modifier: hover emphasis (intensity scale; m == base variant hover) --- */
 
-.btn--hover-s:hover {
+.neuwo-btn--hover-s:hover {
   box-shadow: 0 0 0.75rem var(--neuwo-tint-blue-20);
   transform: translateY(-0.0625rem);
 }
 
-.btn--hover-l:hover {
+.neuwo-btn--hover-l:hover {
   box-shadow: var(--neuwo-shadow-glow), 0 0 2rem var(--neuwo-tint-blue-15);
   transform: translateY(-0.1875rem);
 }
 
 /* --- State: keyboard focus --- */
 
-.btn:focus-visible {
+.neuwo-btn:focus-visible {
   outline: none;
   box-shadow: var(--neuwo-shadow-focus);
 }
 
 /* --- Size: small --- */
 
-.btn--sm {
+.neuwo-btn--sm {
   padding: var(--neuwo-space-3) var(--neuwo-space-6);
   font-size: var(--neuwo-font-size-sm);
 }
 
 /* --- Size: large --- */
 
-.btn--lg {
+.neuwo-btn--lg {
   padding: var(--neuwo-space-4) var(--neuwo-space-8);
   font-size: var(--neuwo-font-size-lg);
 }
 
 /* --- Modifier: wide --- */
 
-.btn--wide {
+.neuwo-btn--wide {
   padding-left: var(--neuwo-space-10);
   padding-right: var(--neuwo-space-10);
 }
 
 /* --- Modifier: extra wide --- */
 
-.btn--xwide {
+.neuwo-btn--xwide {
   padding-left: var(--neuwo-space-16);
   padding-right: var(--neuwo-space-16);
 }
 
 /* --- Modifier: block (stretch to the container) --- */
 
-:host([block]) {
+neuwo-button[block] {
   display: flex;
   width: 100%;
 }
 
-:host([block]) .btn {
+.neuwo-btn--block {
   width: 100%;
 }
 
 /* --- State: loading (spinner; keeps colour, blocks activation) --- */
 
-.btn--loading {
+.neuwo-btn--loading {
   pointer-events: none;
 }
 
-.btn--loading:disabled {
+.neuwo-btn--loading:disabled {
   opacity: 1; /* stay full-colour while busy, unlike the dimmed disabled look */
 }
 
-.btn__spinner {
+.neuwo-btn__spinner {
   width: 1em;
   height: 1em;
   border: 2px solid color-mix(in srgb, currentColor 35%, transparent);
   border-top-color: currentColor;
   border-radius: var(--neuwo-radius-full);
-  animation: button-spin 0.6s linear infinite;
+  animation: neuwo-button-spin 0.6s linear infinite;
 }
 
-@keyframes button-spin {
+@keyframes neuwo-button-spin {
   to { transform: rotate(360deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .btn__spinner { animation: none; }
+  .neuwo-btn__spinner { animation: none; }
 }

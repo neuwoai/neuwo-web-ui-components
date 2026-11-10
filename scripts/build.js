@@ -44,7 +44,7 @@ const read = (file) => readFile(file, "utf8");
 const fontsCss = await read("src/foundation/fonts.css");
 await writeFile("dist/foundation/fonts.css", fontsCss.replaceAll("url('fonts/", "url('../fonts/"));
 
-const LIGHT_COMPONENT_CSS = [];
+const LIGHT_COMPONENT_CSS = ["src/components/reset.css", "src/components/button/button.css"];
 
 const composeComponentsCss = async () =>
   [

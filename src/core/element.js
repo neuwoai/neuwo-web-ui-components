@@ -7,7 +7,7 @@ import { adopt, isRendered, patch, render } from "./adapters/dom.js";
  *
  * @summary Base class for light DOM Neuwo custom elements.
  */
-export class NeuwoElement extends (globalThis.HTMLElement ?? class {}) {
+export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.HTMLElement ?? class {}) {
   /** @type {import("./template.js").Template} */
   static template;
 
@@ -16,9 +16,8 @@ export class NeuwoElement extends (globalThis.HTMLElement ?? class {}) {
 
   connectedCallback() {
     const { template } = /** @type {typeof NeuwoElement} */ (this.constructor);
-    const host = /** @type {HTMLElement} */ (/** @type {unknown} */ (this));
-    const { ownerDocument: doc } = host;
-    if (!isRendered(host, template) && doc.readyState === "loading") {
+    const doc = this.ownerDocument;
+    if (!isRendered(this, template) && doc.readyState === "loading") {
       // The parser runs this before the children exist, so rendering now would duplicate server markup.
       if (this.#waiting) return;
       this.#waiting = () => {
@@ -33,22 +32,19 @@ export class NeuwoElement extends (globalThis.HTMLElement ?? class {}) {
 
   #start() {
     const { template } = /** @type {typeof NeuwoElement} */ (this.constructor);
-    const host = /** @type {HTMLElement} */ (/** @type {unknown} */ (this));
-    if (isRendered(host, template)) adopt(host, template);
-    else render(host, template);
+    if (isRendered(this, template)) adopt(this, template);
+    else render(this, template);
     this.connect();
   }
 
   attributeChangedCallback() {
     const { template } = /** @type {typeof NeuwoElement} */ (this.constructor);
-    const host = /** @type {HTMLElement} */ (/** @type {unknown} */ (this));
-    if (host.isConnected && isRendered(host, template)) patch(host, template);
+    if (this.isConnected && isRendered(this, template)) patch(this, template);
   }
 
   disconnectedCallback() {
     if (this.#waiting) {
-      const host = /** @type {HTMLElement} */ (/** @type {unknown} */ (this));
-      host.ownerDocument.removeEventListener("DOMContentLoaded", this.#waiting);
+      this.ownerDocument.removeEventListener("DOMContentLoaded", this.#waiting);
       this.#waiting = null;
       return;
     }

@@ -7,7 +7,7 @@ the **library side only**; the design system's own procedure lives in that repo.
 
 - One source of truth. Tokens live once in `src/foundation/tokens.css`; each component's CSS
   lives once in its own file. Never re-type a value elsewhere.
-- Visually meaningful styling goes on the portable selector (`.btn` and variants). Reserve
+- Visually meaningful styling goes on the portable selector (`.neuwo-btn` and variants). Reserve
   `:host` for wrapper and layout concerns only, so the recipe the design system shows and
   non-web outputs copy is complete without the shadow rules.
 - Public selector and attribute names are API. Renaming one is a breaking change.
