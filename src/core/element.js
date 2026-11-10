@@ -3,6 +3,15 @@ import { adopt, isRendered, patch, render } from "./adapters/dom.js";
 const REACT = Symbol.for("neuwo.react");
 
 /**
+ * @param {Element} el
+ * @returns {boolean}
+ */
+function ownedByReact(el) {
+  // Reads React DOM's private node property, so Server Component output, which cannot carry a ref, is recognised.
+  return REACT in el || Object.keys(el).some((key) => key.startsWith("__reactFiber$"));
+}
+
+/**
  * Base class for light DOM Neuwo custom elements. The markup is one pure
  * template function, rendered on connect or adopted when the server or React
  * already produced it, and patched in place when an attribute changes.
@@ -34,7 +43,7 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
 
   #start() {
     const { template } = /** @type {typeof NeuwoElement} */ (this.constructor);
-    if (!(REACT in this)) {
+    if (!ownedByReact(this)) {
       if (isRendered(this, template)) adopt(this, template);
       else render(this, template);
     }
@@ -43,7 +52,7 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
 
   attributeChangedCallback() {
     const { template } = /** @type {typeof NeuwoElement} */ (this.constructor);
-    if (this.isConnected && !(REACT in this) && isRendered(this, template)) patch(this, template);
+    if (this.isConnected && !ownedByReact(this) && isRendered(this, template)) patch(this, template);
   }
 
   disconnectedCallback() {

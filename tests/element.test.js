@@ -177,11 +177,14 @@ describe("NeuwoElement (light DOM)", () => {
     expect(host.querySelectorAll(".neuwo-t").length).toBe(1);
   });
 
-  it("writes nothing into a host React owns, through attribute changes and moves, and still connects", () => {
+  it.each([
+    ["the JSX runtime's marker", Symbol.for("neuwo.react")],
+    ["React DOM's fiber property", "__reactFiber$test"],
+  ])("writes nothing into a host React owns, known by %s, through attribute changes and moves, and still connects", (_, key) => {
     const a = mount(server());
     const b = mount("");
     const el = a.firstElementChild;
-    el[Symbol.for("neuwo.react")] = true;
+    el[key] = true;
     const observer = new MutationObserver(() => {});
     observer.observe(el, { subtree: true, childList: true, attributes: true, characterData: true });
     el.setAttribute("tone", "b");

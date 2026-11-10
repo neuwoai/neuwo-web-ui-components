@@ -479,10 +479,10 @@ createRoot(document.getElementById("root")!).render(<App />);
 ```
 
 `jsxImportSource` points JSX at the library's runtime, which wraps React's own and expands every
-registered `<neuwo-*>` tag into its markup. Without it React would render a bare tag and the
-element would move React's children into its own markup, which breaks React's later updates. The
-same setting adds every element to JSX with each attribute's allowed values and each custom
-event's `detail`, so a misspelt variant fails the type check. React stays an optional peer
+registered `<neuwo-*>` tag into its markup. Elements recognise markup React rendered, from Client
+or Server Components, and leave it to React, so without the setting a tag React renders stays
+bare. The same setting adds every element to JSX with each attribute's allowed values and each
+custom event's `detail`, so a misspelt variant fails the type check. React stays an optional peer
 dependency.
 
 The first import registers every element, so each `<neuwo-*>` React creates renders in the same

@@ -47,9 +47,9 @@
   it only when the page has not linked it, and loads the fonts from beside itself.
 - New entries: `./server` exports `expand(html)`, `renderElement` and the Eleventy plugin, with its HTML
   parser bundled; `./jsx-runtime` and `./jsx-dev-runtime` wrap React's runtime for `jsxImportSource`,
-  with a `react-server` build for Server Components. Under React the markup is React's: children passed
-  in keep their state and DOM nodes across re-renders, and the element never moves or rewrites what
-  React rendered.
+  with a `react-server` build for Server Components. Elements recognise markup React rendered, from
+  Client or Server Components, and leave it to React, so children passed in keep their state and DOM
+  nodes across re-renders.
 - `neuwo.js` can be imported on a server, where it registers nothing, and loading it twice no longer throws.
 - `neuwo-components.css` and `foundation/fonts.css` are now published, and `neuwo.css` carries the font faces.
 - The metric-adjusted fallback faces also use Liberation Sans or Arimo where Arial is missing, as on most

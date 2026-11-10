@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { Writable } from "node:stream";
 import { renderToPipeableStream } from "react-server-dom-webpack/server";
+import { createFromReadableStream } from "react-server-dom-webpack/client.edge";
 import * as runtime from "@neuwo/web-ui-library--demo/jsx-runtime";
 import * as devRuntime from "@neuwo/web-ui-library--demo/jsx-dev-runtime";
 
@@ -33,11 +34,21 @@ function render(create) {
   });
 }
 
+function find(node, match) {
+  if (Array.isArray(node)) return node.reduce((hit, child) => hit ?? find(child, match), null);
+  if (!node || typeof node !== "object" || !("props" in node)) return null;
+  return match(node) ? node : find(node.props.children, match);
+}
+
 const found = {};
 for (const [name, create] of Object.entries(factories)) {
   const { errors, payload } = await render(create);
   assert.deepEqual(errors, [], `${name}: the Flight render reported errors`);
   found[name] = Object.values(blocks).filter((block) => new RegExp(`"className":"${block}[ "]`).test(payload));
   assert.deepEqual(found[name], Object.values(blocks), `${name}: a root class is missing from the Flight payload`);
+  const tree = await createFromReadableStream(new Response(payload).body, { serverConsumerManifest: { moduleMap: {}, moduleLoading: null } });
+  const start = find(tree, (el) => el.props.className === "neuwo-btn__start");
+  const icons = [start?.props.children].flat().map((child) => `${child?.type}.${child?.props?.className}`);
+  assert.deepEqual(icons, ["svg.icon"], `${name}: the slotted icon is not inside neuwo-btn__start`);
 }
 console.log(JSON.stringify(found));
