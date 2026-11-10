@@ -74,7 +74,15 @@
   trigger. In React, the options must be `<option>` and `<optgroup>` elements written in place, not a
   component that renders them.
 - Breaking: a required `<neuwo-combobox>` with nothing selected reports the browser's own message, such as
-  "Please fill out this field.", instead of "Please select an option.".
+  "Please fill out this field.", instead of "Please select an option.". Its trigger carries
+  `aria-required="true"`, since the required native input is hidden from assistive technology.
+- Breaking: the hidden form value of `<neuwo-combobox>` is a text field, and so is the trigger of a
+  `searchable` one, so a form whose only other field is a single text input, with no submit button, no
+  longer submits when the user presses Enter in that input. This is the trade-off of carrying `required`
+  natively; add a submit button to keep implicit submission.
+- A value the browser or a script writes into the hidden form value of `<neuwo-combobox>`, such as autofill,
+  shows in the trigger, and one no enabled option has is cleared. The form value's own `input` and `change`
+  never reach the element's listeners.
 - A form reset returns `<neuwo-combobox>` to the option marked `selected` when the `value` attribute names
   no enabled option; it used to clear the selection. A reset no longer removes `error`.
 - Typing into the filter of a `searchable` `<neuwo-combobox>` no longer fires `input` or `change` on the

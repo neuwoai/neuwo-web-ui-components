@@ -238,6 +238,28 @@ describe("<neuwo-combobox> form", () => {
     expect(triggerOf(search).value).toBe("Apple");
   });
 
+  it("keeps the form value's own input and change from the element, and shows what was written to it", () => {
+    const form = make(`<form><neuwo-combobox name="fruit" placeholder="Pick">${OPTS}</neuwo-combobox></form>`);
+    const el = form.querySelector("neuwo-combobox");
+    const heard = vi.fn();
+    for (const name of ["input", "change"]) {
+      el.addEventListener(name, heard);
+      document.addEventListener(name, heard);
+      cleanup.push(() => document.removeEventListener(name, heard));
+    }
+    const formValue = formValueOf(el);
+    formValue.value = "b";
+    formValue.dispatchEvent(new Event("input", { bubbles: true }));
+    expect(shownOf(el)).toBe("Banana");
+    expect(rowOf(el, "b").getAttribute("aria-selected")).toBe("true");
+    expect(triggerOf(el).hasAttribute("data-placeholder")).toBe(false);
+    formValue.value = "c";
+    formValue.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(el.value).toBe("");
+    expect(shownOf(el)).toBe("Pick");
+    expect(heard).not.toHaveBeenCalled();
+  });
+
   it("only accepts an enabled option's value, and shows a value set before it was connected", () => {
     const el = make(`<neuwo-combobox value="a">${OPTS}</neuwo-combobox>`);
     el.value = "c";
@@ -366,7 +388,7 @@ describe("<neuwo-combobox> ids and adoption", () => {
     expect(rowsOf(el).map((row) => row.id)).toEqual(["neuwo-s1-option-0", "neuwo-s1-option-1", "neuwo-s1-option-2"]);
   });
 
-  it("renders a first render and a reconnect without a write from the element itself", () => {
+  it("reconnects without a write to its markup", () => {
     const el = make(`<neuwo-combobox value="b">${OPTS}</neuwo-combobox>`);
     const parent = el.parentNode;
     el.remove();

@@ -122,6 +122,13 @@ describe("comboboxTemplate()", () => {
     expect(toHTML(find(comboboxTemplate({}, ctx(FRUIT)), "neuwo-combobox__value"))).toBe('<span class="neuwo-combobox__value"></span>');
   });
 
+  it("announces required on the trigger, in both modes, since the required form value is hidden from assistive technology", () => {
+    for (const attrs of [{ required: "" }, { required: "", searchable: "" }]) {
+      expect(find(comboboxTemplate(attrs, ctx(FRUIT)), "neuwo-combobox__trigger").props["aria-required"]).toBe("true");
+    }
+    expect(find(comboboxTemplate({}, ctx(FRUIT)), "neuwo-combobox__trigger").props).not.toHaveProperty("aria-required");
+  });
+
   it("carries the size and error modifiers, the error references and disabled on the trigger", () => {
     const trigger = find(comboboxTemplate({ size: "sm", error: "Choose", disabled: "", form: "f" }, ctx(FRUIT)), "neuwo-combobox__trigger");
     expect(classesOf(trigger)).toEqual(["neuwo-input", "neuwo-input--sm", "neuwo-input--error", "neuwo-combobox__trigger"]);

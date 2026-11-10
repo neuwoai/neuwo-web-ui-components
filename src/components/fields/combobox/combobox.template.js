@@ -67,6 +67,7 @@ export function comboboxTemplate(attrs, ctx) {
     "aria-haspopup": "listbox",
     "aria-expanded": "false",
     "aria-controls": ctx.id("listbox"),
+    "aria-required": has(attrs, "required") && "true",
     "data-placeholder": !chosen,
   };
   /**

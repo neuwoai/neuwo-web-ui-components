@@ -26,6 +26,16 @@ describe("combobox.css recipe", () => {
     expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*\.neuwo-combobox__popup:popover-open\s*\{\s*animation:\s*none/);
   });
 
+  it("stills the chevron's turn under reduced motion", () => {
+    expect(rule(".neuwo-combobox__chevron")).toContain("transition: transform");
+    const reduced = css.slice(css.indexOf("@media (prefers-reduced-motion: reduce)"));
+    expect(reduced).toMatch(/\.neuwo-combobox__chevron\s*\{\s*transition:\s*none;?\s*\}/);
+  });
+
+  it("draws no banner or divider comments", () => {
+    expect(css).not.toMatch(/\/\*\s*(=|-){3,}/);
+  });
+
   it("reserves a line on the value label so an empty trigger does not collapse", () => {
     expect(rule(".neuwo-combobox__value")).toContain("min-height: 1lh");
   });

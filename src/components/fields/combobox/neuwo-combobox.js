@@ -134,7 +134,7 @@ export class NeuwoCombobox extends NeuwoFieldElement {
       try {
         popup.showPopover();
       } catch {
-        // Already shown, or the popup is not in the document.
+        // It throws when already shown or detached, and either leaves nothing to do.
       }
     }
     this.#position();
@@ -158,7 +158,7 @@ export class NeuwoCombobox extends NeuwoFieldElement {
       try {
         popup.hidePopover();
       } catch {
-        // Already hidden.
+        // It throws when already hidden, which leaves nothing to do.
       }
     }
     window.removeEventListener("scroll", this.#reposition, true);
@@ -169,8 +169,8 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     super.connect();
     this.addEventListener("click", this.#onClick);
     this.addEventListener("keydown", this.#onKeydown);
-    this.addEventListener("input", this.#onFilter, true);
-    this.addEventListener("change", this.#onFilter, true);
+    this.addEventListener("input", this.#onInputOrChange, true);
+    this.addEventListener("change", this.#onInputOrChange, true);
     this.addEventListener("toggle", this.#onToggle, true);
     this.addEventListener("focus", this.#onFocus, true);
     this.addEventListener("blur", this.#onBlur, true);
@@ -183,8 +183,8 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     this.close();
     this.removeEventListener("click", this.#onClick);
     this.removeEventListener("keydown", this.#onKeydown);
-    this.removeEventListener("input", this.#onFilter, true);
-    this.removeEventListener("change", this.#onFilter, true);
+    this.removeEventListener("input", this.#onInputOrChange, true);
+    this.removeEventListener("change", this.#onInputOrChange, true);
     this.removeEventListener("toggle", this.#onToggle, true);
     this.removeEventListener("focus", this.#onFocus, true);
     this.removeEventListener("blur", this.#onBlur, true);
@@ -463,9 +463,14 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     }
   };
 
-  // Capture, at the element: stopped any later, the filter's events would reach the element's own listeners.
+  // Capture, at the element: stopped any later, these events would reach the element's own listeners.
   /** @param {Event} event */
-  #onFilter = (event) => {
+  #onInputOrChange = (event) => {
+    if (event.target === this.control) {
+      event.stopPropagation();
+      if (!ownedByReact(this)) this.#sync();
+      return;
+    }
     const trigger = this.trigger;
     if (!(trigger instanceof HTMLInputElement) || event.target !== trigger) return;
     event.stopPropagation();
