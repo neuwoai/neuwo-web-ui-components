@@ -32,7 +32,7 @@
 
 @font-face {
   font-family: 'Outfit Fallback';
-  src: local('Arial');
+  src: local('Arial'), local('Liberation Sans'), local('Arimo');
   size-adjust: 100.4%;
   ascent-override: 96%;
   descent-override: 25%;
@@ -41,7 +41,7 @@
 
 @font-face {
   font-family: 'Noto Sans Fallback';
-  src: local('Arial');
+  src: local('Arial'), local('Liberation Sans'), local('Arimo');
   size-adjust: 107%;
   ascent-override: 100.5%;
   descent-override: 27.4%;
