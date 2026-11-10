@@ -750,7 +750,7 @@ nowhere to render.
 `<neuwo-cta>` takes an inline control in its `field` slot, so an email-capture
 band is the same element as any other band rather than a hand-rebuilt copy of
 it. Submission stays with the page: wrap the band in your own `<form>`, and the
-slotted control and the submit button drive it.
+control in the field and the submit button drive it.
 
 ```html
 <form id="capture">

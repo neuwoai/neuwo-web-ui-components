@@ -19,7 +19,8 @@
   `data-accent` paints at any depth in the headline (`.neuwo-cta__headline [data-accent]`), not only
   on a direct child, and the pulse ring goes on the first `<neuwo-button>` among the actions
   (`neuwo-cta[pulse] .neuwo-cta__actions > neuwo-button:first-of-type`), not the first one across
-  every slot.
+  every slot. `data-accent` no longer paints in the sub, field or actions, where `::slotted([data-accent])`
+  used to match a top-level child in any slot.
 - `<neuwo-cta>` now observes `pulse` and `intensity`, which it already documented. They still change
   no markup, only the ring's styles.
 - The `<neuwo-cta>` scan line sweeps with `transform` instead of `left`, so a visible CTA no longer
