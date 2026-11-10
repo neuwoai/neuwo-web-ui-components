@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import "../src/components/logo/neuwo-logo.js";
+import "../src/index.js";
+import { NeuwoLogo } from "../src/components/logo/neuwo-logo.js";
 
 function make(html) {
   const host = document.createElement("div");
@@ -19,31 +20,42 @@ const INK = {
   "bg-colour": ["white", "#1E1E0A"],
 };
 
+const svgOf = (el) => el.querySelector("svg");
+
 function inkOf(el) {
-  const paths = el.shadowRoot.querySelector("svg").children;
+  const paths = svgOf(el).children;
   return [paths[0].getAttribute("fill"), paths[4].getAttribute("fill")];
 }
 
 describe("<neuwo-logo>", () => {
   it("registers and inlines the wordmark as SVG, not as an image", () => {
     expect(customElements.get("neuwo-logo")).toBeTruthy();
-    const svg = make(`<neuwo-logo></neuwo-logo>`).shadowRoot.querySelector("svg");
+    const svg = svgOf(make(`<neuwo-logo></neuwo-logo>`));
     expect(svg.namespaceURI).toBe("http://www.w3.org/2000/svg");
     expect(svg.getAttribute("viewBox")).toBe("0 0 320 50");
     expect(svg.children).toHaveLength(5);
   });
 
-  it("exposes the drawing as the logo part", () => {
+  it("renders into its light DOM with no shadow root and no part", () => {
     const el = make(`<neuwo-logo></neuwo-logo>`);
-    expect(el.shadowRoot.querySelector("svg").getAttribute("part")).toBe("logo");
+    expect(el).toBeInstanceOf(NeuwoLogo);
+    expect(el.shadowRoot).toBeNull();
+    expect(el.children).toHaveLength(1);
+    expect(svgOf(el).hasAttribute("part")).toBe(false);
+  });
+
+  it("creates the drawing in the SVG namespace, paths included", () => {
+    const svg = svgOf(make(`<neuwo-logo></neuwo-logo>`));
+    expect(svg).toBeInstanceOf(SVGSVGElement);
+    for (const path of svg.children) expect(path.namespaceURI).toBe("http://www.w3.org/2000/svg");
   });
 
   it("draws each variant's own file and names it on the class", () => {
     for (const [variant, ink] of Object.entries(INK)) {
       const el = make(`<neuwo-logo variant="${variant}"></neuwo-logo>`);
       expect(inkOf(el)).toEqual(ink);
-      expect(el.shadowRoot.querySelector("svg").getAttribute("class")).toBe(
-        `logo logo--${variant}`
+      expect(svgOf(el).getAttribute("class")).toBe(
+        `neuwo-logo neuwo-logo--${variant}`
       );
     }
   });
@@ -62,17 +74,17 @@ describe("<neuwo-logo>", () => {
 
   it("names itself Neuwo, and takes a custom name", () => {
     const el = make(`<neuwo-logo></neuwo-logo>`);
-    const svg = el.shadowRoot.querySelector("svg");
+    const svg = svgOf(el);
     expect(svg.getAttribute("role")).toBe("img");
     expect(svg.getAttribute("aria-label")).toBe("Neuwo");
     expect(el.label).toBe("Neuwo");
 
     const named = make(`<neuwo-logo label="Neuwo home"></neuwo-logo>`);
-    expect(named.shadowRoot.querySelector("svg").getAttribute("aria-label")).toBe("Neuwo home");
+    expect(svgOf(named).getAttribute("aria-label")).toBe("Neuwo home");
   });
 
   it("goes decorative on an empty label, so a labelled link says Neuwo once", () => {
-    const svg = make(`<neuwo-logo label=""></neuwo-logo>`).shadowRoot.querySelector("svg");
+    const svg = svgOf(make(`<neuwo-logo label=""></neuwo-logo>`));
     expect(svg.getAttribute("aria-hidden")).toBe("true");
     expect(svg.hasAttribute("role")).toBe(false);
     expect(svg.hasAttribute("aria-label")).toBe(false);
@@ -94,9 +106,9 @@ describe("<neuwo-logo>", () => {
     // Empty means decorative, so it must survive as an attribute where the
     // other string axes would have removed themselves.
     expect(el.getAttribute("label")).toBe("");
-    expect(el.shadowRoot.querySelector("svg").getAttribute("aria-hidden")).toBe("true");
+    expect(svgOf(el).getAttribute("aria-hidden")).toBe("true");
     el.label = null;
     expect(el.hasAttribute("label")).toBe(false);
-    expect(el.shadowRoot.querySelector("svg").getAttribute("aria-label")).toBe("Neuwo");
+    expect(svgOf(el).getAttribute("aria-label")).toBe("Neuwo");
   });
 });

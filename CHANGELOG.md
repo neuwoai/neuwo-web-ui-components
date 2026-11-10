@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Breaking: `<neuwo-logo>` renders its `<svg>` into its own light DOM from one template, so a
+  server-rendered logo is drawn from the first paint. Its classes are prefixed: `.logo` is now
+  `.neuwo-logo`, with `.neuwo-logo--{bg-light|bg-dark|bg-dark-alt|bg-colour}`.
+- Breaking: `::part(logo)` on `<neuwo-logo>` is gone. Restyle through the classes, with the element
+  name in front for weight: `neuwo-logo .neuwo-logo { opacity: 0.8; }`.
+
 - Breaking: `<neuwo-badge>`, `<neuwo-deal-id>` and `<neuwo-status-dot>` render into their own light DOM
   from one template, like the button, so server-rendered ones are styled from the first paint.
   Their classes are prefixed: `.badge` is now `.neuwo-badge` (with `.neuwo-badge--{green|s|l|borderless|glow|pulse|shimmer|intensity-s|intensity-l}`),

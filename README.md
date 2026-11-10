@@ -785,6 +785,8 @@ the background it belongs on. It inlines the SVG, so a logo costs no request.
 | `bg-light` | blue | near-black | light backgrounds |
 | `bg-colour` | white | near-black | brand-coloured backgrounds, where blue would vanish |
 
+The element renders the `<svg>` into its own light DOM, so a server-rendered logo is drawn before any script runs. The `<svg>` carries `.neuwo-logo` and one of `.neuwo-logo--bg-light`, `--bg-dark`, `--bg-dark-alt` or `--bg-colour`; there is no `::part(logo)`. Restyle through the classes, with the element name in front for weight: `neuwo-logo .neuwo-logo { opacity: 0.8; }`.
+
 Size it with `--neuwo-logo-height` (default `1.75rem`); the width follows the aspect ratio. The
 accessible name defaults to `Neuwo`, and `label=""` marks the logo decorative instead, for a
 link or heading that already names the brand:
@@ -803,7 +805,7 @@ site header logo should stay a preloaded image.
 <link rel="preload" as="image" fetchpriority="high"
       href="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.1/dist/logos/neuwo-logo--bg-dark.svg" />
 <img src="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.1/dist/logos/neuwo-logo--bg-dark.svg" alt="Neuwo"
-     width="320" height="50" class="logo" />
+     width="320" height="50" class="neuwo-logo" />
 ```
 
 The published files are the brand's own exports, byte for byte, so a future export can be

@@ -8,10 +8,11 @@ const css = readFileSync(join(__dirname, "../src/components/logo/logo.css"), "ut
 const LOGOS = join(__dirname, "../src/foundation/logos");
 
 describe("logo.css recipe", () => {
-  it("keeps :host to layout only", () => {
-    const hostRules = css.match(/:host[^{]*\{[^}]*\}/g) ?? [];
-    expect(hostRules.length).toBeGreaterThan(0);
-    for (const rule of hostRules) {
+  it("keeps the element-name rule to layout only, and guards display with :not([hidden])", () => {
+    const rules = css.match(/^neuwo-logo[^{]*\{[^}]*\}/gm) ?? [];
+    expect(rules.length).toBeGreaterThan(0);
+    for (const rule of rules) {
+      expect(rule).toContain(":not([hidden])");
       const props = rule
         .slice(rule.indexOf("{") + 1, -1)
         .split(";")
@@ -19,12 +20,13 @@ describe("logo.css recipe", () => {
         .filter(Boolean);
       expect(props).toEqual(props.filter((p) => p === "display" || p === "vertical-align"));
     }
+    expect(css).not.toContain(":host");
   });
 
   it("sizes the portable class by height alone, so the aspect ratio holds", () => {
-    expect(css).toMatch(/\.logo \{[^}]*height:\s*var\(--neuwo-logo-height, 1\.75rem\)/);
-    expect(css).toMatch(/\.logo \{[^}]*width:\s*auto/);
-    expect(css).toMatch(/\.logo \{[^}]*display:\s*block/);
+    expect(css).toMatch(/\.neuwo-logo \{[^}]*height:\s*var\(--neuwo-logo-height, 1\.75rem\)/);
+    expect(css).toMatch(/\.neuwo-logo \{[^}]*width:\s*auto/);
+    expect(css).toMatch(/\.neuwo-logo \{[^}]*display:\s*block/);
   });
 
   it("carries no colour at all, because the ink pair lives in the file", () => {

@@ -74,7 +74,7 @@
         border-radius: 0 !important;
         box-shadow: none !important;
       }
-      /* Hostile rule: if Shadow DOM leaked, the logo would be boxed and squashed. */
+      /* Hostile rule: if unprefixed class names leaked in, the logo would be boxed and squashed. */
       .logo {
         background: hotpink !important;
         height: 4rem !important;
@@ -100,9 +100,8 @@
         background: linear-gradient(100deg, #0aa5c3, #8acb46);
         color: #0f172a;
       }
-      /* The published file, sized by hand. It would normally use the same .logo
-         class the recipe publishes, but this page poisons .logo on purpose, and a
-         document-scope <img> has no shadow root to hide behind. */
+      /* The published file, sized by hand. A published-CSS consumer would use the
+         .neuwo-logo class on the <img>. */
       .logo-file {
         display: block;
         height: 1.75rem;
@@ -1026,7 +1025,7 @@
     </div>
     <p>
       The page defines a hostile <code>.logo</code> rule that would box the wordmark in
-      hot pink and stretch it to 4rem. Shadow DOM keeps it out. An unknown variant falls
+      hot pink and stretch it to 4rem. The library's classes are prefixed (<code>.neuwo-logo</code>), so it never matches. An unknown variant falls
       back to <code>bg-dark</code>:
     </p>
     <div class="panel panel--dark">

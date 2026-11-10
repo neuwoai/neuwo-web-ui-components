@@ -165,10 +165,10 @@ describe("custom-elements.json", () => {
       expect(partsFor(manifest, "neuwo-notice").has(p)).toBe(true);
   });
 
-  it("documents the logo's variant, label and part", () => {
+  it("documents the logo's variant, label and no parts", () => {
     const attrs = attributesFor(manifest, "neuwo-logo");
     for (const a of ["variant", "label"]) expect(attrs).toContain(a);
-    expect(partsFor(manifest, "neuwo-logo").has("logo")).toBe(true);
+    expect(partsFor(manifest, "neuwo-logo").size).toBe(0);
   });
 
   it("documents the copy wrapper's three labels and both parts", () => {

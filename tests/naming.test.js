@@ -10,6 +10,7 @@ const LIGHT_CSS = [
   "components/badge/badge.css",
   "components/button/button.css",
   "components/deal-id/deal-id.css",
+  "components/logo/logo.css",
   "components/status-dot/status-dot.css",
 ];
 const read = (file) => readFileSync(join(src, file), "utf8");

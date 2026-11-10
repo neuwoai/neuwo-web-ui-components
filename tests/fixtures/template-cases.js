@@ -51,6 +51,16 @@ export const cases = {
     { name: "unknown size", attrs: { size: "xl" }, children: ["NW-3"] },
     { name: "empty", attrs: {}, children: [] },
   ],
+  "neuwo-logo": [
+    { name: "default", attrs: {}, children: [] },
+    { name: "bg-light", attrs: { variant: "bg-light" }, children: [] },
+    { name: "bg-dark-alt", attrs: { variant: "bg-dark-alt" }, children: [] },
+    { name: "bg-colour", attrs: { variant: "bg-colour" }, children: [] },
+    { name: "unknown variant", attrs: { variant: "teal" }, children: [] },
+    { name: "inherited key variant", attrs: { variant: "toString" }, children: [] },
+    { name: "custom label", attrs: { label: "Neuwo home" }, children: [] },
+    { name: "decorative", attrs: { label: "" }, children: [] },
+  ],
   "neuwo-status-dot": [
     { name: "default", attrs: {}, children: [] },
     { name: "blue blink", attrs: { variant: "blue", motion: "blink" }, children: [] },
