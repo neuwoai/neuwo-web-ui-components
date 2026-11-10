@@ -1,8 +1,8 @@
 # Neuwo Web UI Library
 
 Neuwo design-language web components: vanilla custom elements, zero runtime deps. The button,
-badge, deal-ID chip, status dot, logo, copy wrapper, notice card, CTA band and text input render
-into light DOM and can be server-rendered; the rest still use Shadow DOM while they migrate.
+badge, deal-ID chip, status dot, logo, copy wrapper, notice card, CTA band and form fields render
+into light DOM and can be server-rendered; the selection controls still use Shadow DOM while they migrate.
 The single source for reusable Neuwo UI and its styling (tokens, component recipes, typography).
 
 ## Install
@@ -487,16 +487,16 @@ createRoot(document.getElementById("root")!).render(<App />);
 
 `jsxImportSource` points JSX at the library's runtime, which wraps React's own and expands the
 light DOM elements (`<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuwo-status-dot>`,
-`<neuwo-logo>`, `<neuwo-copy>`, `<neuwo-notice>`, `<neuwo-cta>` and `<neuwo-input>`) into their
-markup; MDX reads its own `jsxImportSource` option, not tsconfig's, so set it there too (in
+`<neuwo-logo>`, `<neuwo-copy>`, `<neuwo-notice>`, `<neuwo-cta>`, `<neuwo-input>`, `<neuwo-textarea>`,
+`<neuwo-range>` and `<neuwo-combobox>`) into their markup; MDX reads its own `jsxImportSource` option, not tsconfig's, so set it there too (in
 `@mdx-js/*` or Next's MDX config). Elements recognise markup React rendered, from Client or Server
 Components, and leave it to React, so without the setting a light DOM tag React renders stays bare.
 The same setting adds every element to JSX with each attribute's allowed values and each custom
 event's `detail`, so a misspelt variant fails the type check. React stays an optional peer
 dependency.
 
-React renders the markup of the nine light DOM elements itself, so they show from the first paint.
-The Shadow DOM components (the other fields and the selection controls) render when they register,
+React renders the markup of the twelve light DOM elements itself, so they show from the first paint.
+The Shadow DOM components (the selection controls) render when they register,
 which the first import does in the same pass, before the browser paints. Registering later, from an
 effect or a script that runs after the app, shows those as bare tags first and the components a
 moment after.
@@ -511,8 +511,9 @@ native controls:
 <neuwo-notice dismissible hidden={!open} ondismiss={(e) => { e.preventDefault(); setOpen(false); }}>...</neuwo-notice>
 ```
 
-- `onChange`, and `onInput` on `<neuwo-combobox>`, fire as they do on native fields. On
-  `<neuwo-input>` that means React's own model, below.
+- `onChange` fires as it does on native fields. On `<neuwo-input>` that means React's own model,
+  below. On `<neuwo-combobox>`, `onInput` and `onChange` fire when the user picks a value, never
+  while they type into a `searchable` filter.
 - A custom event binds by its exact name, so it is lower case: `oncopied`, `ondismiss`.
   `onCopied` listens for an event called `Copied`, which never fires; the types reject it.
 - Cancel the notice's `dismiss` and drive `hidden` from state. Left alone, the element hides
@@ -561,7 +562,7 @@ export function Neuwo() {
 }
 ```
 
-Render `<Neuwo />` once in the root layout. Because the JSX runtime expands the nine light DOM
+Render `<Neuwo />` once in the root layout. Because the JSX runtime expands the twelve light DOM
 elements, the server-rendered HTML carries their full markup and they are on-brand from the first
 paint, before the bundle has run. The Shadow DOM components arrive as bare tags and render when
 the bundle registers them. Import `neuwo.css` instead of `neuwo-components.css` to add the
@@ -610,7 +611,7 @@ Published styling files, for direct linking or non-web use:
 ## Restyling from the host
 
 `<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuwo-status-dot>`, `<neuwo-logo>`,
-`<neuwo-copy>`, `<neuwo-notice>`, `<neuwo-cta>` and `<neuwo-input>` render their markup into their
+`<neuwo-copy>`, `<neuwo-notice>`, `<neuwo-cta>` and the form fields render their markup into their
 own light DOM, so they have no parts. Their prefixed classes are the public hooks instead. Put the element name in
 front for weight, so a rule wins without `!important`:
 
@@ -683,6 +684,13 @@ properties, or target the children you passed in.
 | `.neuwo-input` | the native `<input>`; it was `::part(input)` |
 | `.neuwo-input--sm`, `.neuwo-input--error` | the control, by `size="sm"`, and by `error` unless `error-muted` or `no-error-line` is set |
 | `.neuwo-field__error` | the reserved error line; it was `::part(error)` |
+| `.neuwo-combobox` | the combobox's box around the trigger, the chevron, the popup and the form value |
+| `.neuwo-combobox__trigger` | the combobox's trigger, a `<button>`, or a text `<input>` with `searchable`, alongside `.neuwo-input` and its modifiers |
+| `.neuwo-combobox__value` | the selected label or the placeholder inside the button trigger |
+| `.neuwo-combobox__chevron`, `.neuwo-combobox__popup` | the chevron and the popover around the list; they were `::part(chevron)` and `::part(popup)` |
+| `.neuwo-combobox__listbox`, `.neuwo-combobox__option`, `.neuwo-combobox__option--active` | the list, each option row, and the row the keyboard highlights |
+| `.neuwo-combobox__group-item`, `.neuwo-combobox__group` | the row around an `<optgroup>`'s options and its label |
+| `.neuwo-combobox__empty` | the "No matches" row, hidden until a filter matches nothing |
 
 The badge and deal-id render their text as authored, so casing is yours:
 
@@ -718,17 +726,6 @@ every visual detail without forking a component:
 
 - **Inherited CSS properties** cross the boundary into slotted content, so a
   host `text-transform` or `color` reaches the text of a shadow DOM element.
-
-- **Transient state** is reachable too: the other field controls expose
-  `::part(input)`, so a host-driven flag can flash a field without the
-  component owning a persistent `error`:
-
-  ```css
-  .api-field[data-flash]::part(input) {
-    border-color: var(--neuwo-color-red);
-    box-shadow: var(--neuwo-shadow-danger);
-  }
-  ```
 
 ## Form fields share one API
 
@@ -769,11 +766,36 @@ On `<neuwo-textarea>` the `value` attribute is the textarea's starting text, and
 `rows`, `minlength` and `maxlength` are carried onto it. On `<neuwo-range>` the
 bounds and `step` are carried onto the range input, and the filled part of its
 track (`--neuwo-range-fill`) is written into the markup from `min`, `max` and
-`value`, so it shows in the first paint. The combobox still renders into a
-shadow root, is form-associated, and shares the parts `field`, `input`, `label`
-and `error`. On the light DOM fields those parts are the classes
-`.neuwo-field`, `.neuwo-input` (with `.neuwo-textarea` or `.neuwo-range` added
-on the textarea and the range), `.neuwo-field__label` and
+`value`, so it shows in the first paint.
+
+`<neuwo-combobox>` renders the same shell around a styled trigger and list, and
+its form control is a visually hidden native `<input>`,
+`.neuwo-combobox__form-value`. It carries `name`, the starting value,
+`required`, `disabled` and `form`, so the combobox submits, resets and validates
+with its form like the other fields, in server-rendered markup before the script
+has loaded too. It lies over the trigger, so the browser's validation message
+points there, and focus that lands on it moves to the trigger.
+
+- **The options** come only from the element's own `<option>` and `<optgroup>`
+  children, which stay in a hidden `<select>`, `.neuwo-combobox__options`. In
+  React they must be those elements written in place, not a component of yours
+  that renders them: the template sees the element's children, not inside a
+  component.
+- **The starting value** is the `value` attribute when it names an enabled
+  option, else the first enabled option marked `selected`, else nothing. A
+  form reset returns to it. In React, set `value` or `defaultValue` on the
+  element rather than `selected` on an `<option>`, which React warns about as it
+  does on a native `<select>`.
+- **Its own events**: the element dispatches `input` and then `change`, once
+  each, when the user picks a different value, with the element as
+  `event.target`. Typing into a `searchable` filter fires neither. The `value`
+  property only accepts the value of an enabled option.
+- `readonly` and `autocomplete` do not apply.
+
+None of the fields has parts. What were the parts `field`, `input`, `label` and
+`error` are the classes `.neuwo-field`, `.neuwo-input` (with `.neuwo-textarea`
+or `.neuwo-range` added on the textarea and the range, and
+`.neuwo-combobox__trigger` on the combobox's trigger), `.neuwo-field__label` and
 `.neuwo-field__error`, listed under restyling above.
 
 ## Form errors

@@ -115,10 +115,11 @@ describe("custom-elements.json", () => {
     expect(partsFor(manifest, "neuwo-range").size).toBe(0);
   });
 
-  it("documents the combobox's searchable attribute and parts", () => {
-    expect(attributesFor(manifest, "neuwo-combobox").has("searchable")).toBe(true);
-    for (const p of ["chevron", "popup"])
-      expect(partsFor(manifest, "neuwo-combobox").has(p)).toBe(true);
+  it("documents the combobox's searchable attribute, its input and change events and no parts", () => {
+    const attrs = attributesFor(manifest, "neuwo-combobox");
+    for (const a of ["searchable", "name", "value", "placeholder", "required", "disabled", "form"]) expect(attrs).toContain(a);
+    expect(declByTag(manifest, "neuwo-combobox").events.map((e) => e.name)).toEqual(expect.arrayContaining(["input", "change"]));
+    expect(partsFor(manifest, "neuwo-combobox").size).toBe(0);
   });
 
   it("documents the selection-control parts", () => {

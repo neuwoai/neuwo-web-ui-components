@@ -1,14 +1,14 @@
 /* ==========================================================================
-   Combobox -- styled trigger + top-layer listbox popup
+   Combobox: styled trigger and top-layer listbox popup
    ========================================================================== */
 
-.combobox {
+.neuwo-combobox {
   position: relative;
 }
 
-/* The trigger reuses the .input field chrome; align its label and make room
+/* The trigger reuses the .neuwo-input field chrome; align its label and make room
    for the chevron. As a <button> it must read like the other field controls. */
-.combobox__trigger {
+.neuwo-combobox__trigger {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -17,35 +17,41 @@
   padding-right: var(--neuwo-space-10);
   text-align: left;
   cursor: pointer;
+  /* The button's own text defaults, which it kept in a shadow root; the light reset would hand it the page's. */
+  text-transform: none;
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-indent: 0;
+  text-shadow: none;
 }
 
 /* Compact: the gutter and the chevron move together, so the gap between the
    value and the chevron is unchanged at the smaller padding. */
-.field--sm .combobox__trigger {
+.neuwo-field--sm .neuwo-combobox__trigger {
   padding-right: var(--neuwo-space-8);
 }
 
-.field--sm .combobox__chevron {
+.neuwo-field--sm .neuwo-combobox__chevron {
   right: var(--neuwo-space-3);
 }
 
-.combobox__trigger[aria-expanded="true"] .combobox__chevron {
+.neuwo-combobox__trigger[aria-expanded="true"] ~ .neuwo-combobox__chevron {
   transform: translateY(-50%) rotate(180deg);
 }
 
-/* Placeholder text colour when nothing is selected. */
-.combobox__trigger[data-placeholder] {
+/* Not on the trigger itself: what the user types into the searchable one keeps the text colour. */
+.neuwo-combobox__trigger[data-placeholder] .neuwo-combobox__value {
   color: var(--neuwo-color-grey-400);
 }
 
 /* The value label reserves one line so a trigger with neither a selection nor a
    placeholder keeps the same height as a populated field (an empty inline span
    would otherwise collapse the button to its padding). */
-.combobox__value {
+.neuwo-combobox__value {
   min-height: 1lh;
 }
 
-.combobox__chevron {
+.neuwo-combobox__chevron {
   position: absolute;
   top: 50%;
   right: var(--neuwo-space-4);
@@ -59,9 +65,19 @@
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
+/* Over the trigger, so the validation message points at it; with display: none the browser could not show one. */
+.neuwo-combobox__form-value {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* --- Popup panel (rendered in the top layer via the popover attribute) --- */
 
-.combobox__popup {
+.neuwo-combobox__popup {
   /* popover defaults to position: fixed; the JS positioner sets inset. */
   margin: 0;
   padding: var(--neuwo-space-2);
@@ -74,17 +90,17 @@
   color-scheme: dark;
 }
 
-.combobox__popup:popover-open {
+.neuwo-combobox__popup:popover-open {
   animation: neuwo-combobox-in var(--neuwo-transition-fast);
 }
 
-.combobox__listbox {
+.neuwo-combobox__listbox {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.combobox__option {
+.neuwo-combobox__option {
   display: block;
   padding: var(--neuwo-space-2) var(--neuwo-space-3);
   border-radius: var(--neuwo-radius-md);
@@ -93,32 +109,37 @@
   user-select: none;
 }
 
-.combobox__option:hover {
+/* The display above outranks the user agent's [hidden] rule. */
+.neuwo-combobox__option[hidden] {
+  display: none;
+}
+
+.neuwo-combobox__option:hover {
   background: var(--neuwo-tint-blue-10);
 }
 
-.combobox__option.is-active {
+.neuwo-combobox__option--active {
   background: var(--neuwo-tint-blue-15);
 }
 
 /* The selection is marked by brand-blue text, so every row starts at the same
    text edge (a leading check-mark gutter would indent all of them). */
-.combobox__option[aria-selected="true"] {
+.neuwo-combobox__option[aria-selected="true"] {
   color: var(--neuwo-color-blue);
 }
 
-.combobox__option[aria-disabled="true"] {
+.neuwo-combobox__option[aria-disabled="true"] {
   opacity: var(--neuwo-opacity-disabled);
   cursor: not-allowed;
 }
 
-.combobox__group {
+.neuwo-combobox__group {
   padding: var(--neuwo-space-2) var(--neuwo-space-3) var(--neuwo-space-1);
   font-size: var(--neuwo-font-size-sm);
   color: var(--neuwo-color-text-muted);
 }
 
-.combobox__empty {
+.neuwo-combobox__empty {
   padding: var(--neuwo-space-2) var(--neuwo-space-3);
   color: var(--neuwo-color-text-muted);
 }
@@ -129,7 +150,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .combobox__popup:popover-open {
+  .neuwo-combobox__popup:popover-open {
     animation: none;
   }
 }

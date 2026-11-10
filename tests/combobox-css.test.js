@@ -4,40 +4,73 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const css = readFileSync(
-  join(__dirname, "../src/components/fields/combobox/combobox.css"),
-  "utf8"
-);
+const read = (path) => readFileSync(join(__dirname, path), "utf8");
+const css = read("../src/components/fields/combobox/combobox.css");
+const rule = (selector) => {
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`(^|[},])\\s*${escaped}\\s*\\{([^}]*)\\}`, "m").exec(css)?.[2] ?? null;
+};
 
 describe("combobox.css recipe", () => {
   it("styles the popup and options from tokens", () => {
-    expect(css).toContain(".combobox__popup");
-    expect(css).toContain("var(--neuwo-color-surface-solid)");
-    expect(css).toContain("var(--neuwo-shadow-xl)");
-    expect(css).toContain(".combobox__option");
-    expect(css).toContain("var(--neuwo-tint-blue-10)"); // hover
-    expect(css).toContain("var(--neuwo-tint-blue-15)"); // keyboard-active
+    expect(rule(".neuwo-combobox__popup")).toContain("var(--neuwo-color-surface-solid)");
+    expect(rule(".neuwo-combobox__popup")).toContain("var(--neuwo-shadow-xl)");
+    expect(rule(".neuwo-combobox__option:hover")).toContain("var(--neuwo-tint-blue-10)");
+    expect(rule(".neuwo-combobox__option--active")).toContain("var(--neuwo-tint-blue-15)");
+    expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
   });
 
-  it("paints the chevron colour from a token and guards reduced motion", () => {
-    expect(css).toContain("background-color: var(--neuwo-color-text-muted)");
-    expect(css).toContain("prefers-reduced-motion: reduce");
+  it("paints the chevron colour from a token, turns it while open and guards reduced motion", () => {
+    expect(rule(".neuwo-combobox__chevron")).toContain("background-color: var(--neuwo-color-text-muted)");
+    expect(rule('.neuwo-combobox__trigger[aria-expanded="true"] ~ .neuwo-combobox__chevron')).toContain("rotate(180deg)");
+    expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*\.neuwo-combobox__popup:popover-open\s*\{\s*animation:\s*none/);
   });
 
   it("reserves a line on the value label so an empty trigger does not collapse", () => {
-    expect(css).toContain(".combobox__value");
-    expect(css).toContain("min-height: 1lh");
+    expect(rule(".neuwo-combobox__value")).toContain("min-height: 1lh");
+  });
+
+  it("greys the placeholder text of the button trigger only, not what the user types into the searchable one", () => {
+    expect(rule(".neuwo-combobox__trigger[data-placeholder] .neuwo-combobox__value")).toContain("var(--neuwo-color-grey-400)");
+    expect(rule(".neuwo-combobox__trigger[data-placeholder]")).toBeNull();
   });
 
   it("marks the selected option with blue text and no check-mark gutter", () => {
-    expect(css).toMatch(
-      /\.combobox__option\[aria-selected="true"\]\s*\{[^}]*color:\s*var\(--neuwo-color-blue\)/
-    );
-    expect(css).not.toContain(".combobox__option::before");
+    expect(rule('.neuwo-combobox__option[aria-selected="true"]')).toContain("color: var(--neuwo-color-blue)");
+    expect(css).not.toContain(".neuwo-combobox__option::before");
+  });
+
+  it("hides a filtered-out row, which its own display rule would otherwise keep", () => {
+    expect(rule(".neuwo-combobox__option[hidden]")).toContain("display: none");
   });
 
   it("tightens the chevron gutter at the compact size", () => {
-    expect(css).toMatch(/\.field--sm \.combobox__trigger\s*\{[^}]*padding-right:\s*var\(--neuwo-space-8\)/);
-    expect(css).toMatch(/\.field--sm \.combobox__chevron\s*\{[^}]*right:\s*var\(--neuwo-space-3\)/);
+    expect(rule(".neuwo-field--sm .neuwo-combobox__trigger")).toContain("padding-right: var(--neuwo-space-8)");
+    expect(rule(".neuwo-field--sm .neuwo-combobox__chevron")).toContain("right: var(--neuwo-space-3)");
+  });
+
+  it("lays the form value invisibly over the trigger, where the browser anchors its validation message", () => {
+    expect(rule(".neuwo-combobox")).toContain("position: relative");
+    const formValue = rule(".neuwo-combobox__form-value");
+    for (const declaration of ["position: absolute", "inset: 0", "opacity: 0", "pointer-events: none"]) expect(formValue).toContain(declaration);
+  });
+
+  it("restates on the trigger the button chrome and text defaults it had in the shadow root", () => {
+    const trigger = rule(".neuwo-combobox__trigger");
+    for (const declaration of ["cursor: pointer", "text-align: left", "text-transform: none", "letter-spacing: normal", "word-spacing: normal", "text-indent: 0", "text-shadow: none"]) {
+      expect(trigger).toContain(declaration);
+    }
+  });
+
+  it("selects only on its prefixed classes, never the bare ones", () => {
+    expect(css).not.toMatch(/(^|[\s,}~>+])\.(combobox|field|input)\b/);
+    expect(css).not.toContain(".is-active");
+    expect(css).not.toContain(":host");
+  });
+
+  it("is in the reset's tag and block lists", () => {
+    const reset = read("../src/components/reset.css");
+    expect(reset).toContain("neuwo-combobox,");
+    expect(reset).toContain('[class^="neuwo-combobox"], [class*=" neuwo-combobox"]');
   });
 });

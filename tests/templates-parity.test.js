@@ -8,9 +8,14 @@ import { renderElement } from "../src/core/adapters/html.js";
 import { idScope } from "../src/core/ids.js";
 import { cases, markup, normalise, renderChildren, renderHtml } from "./fixtures/template-cases.js";
 
+// React reads an empty string as false for these; a fixture's empty attribute is a present one.
+const BOOLEAN_PROPS = new Set(["disabled", "selected"]);
+// React renders `selected` on an <option> but warns, preferring a value on the <select>; server markup carries it.
+const SELECTED_WARNING = "instead of setting `selected` on <option>";
+
 function toReact(child) {
   if (typeof child === "string") return child;
-  const props = { ...child.attrs };
+  const props = Object.fromEntries(Object.entries(child.attrs ?? {}).map(([name, value]) => [name, value === "" && BOOLEAN_PROPS.has(name) ? true : value]));
   if (child.children) return jsxs(child.tag, { ...props, children: child.children.map(toReact) });
   return jsx(child.tag, { ...props, children: child.text });
 }
@@ -47,13 +52,13 @@ describe("template parity across the HTML, React and DOM adapters", () => {
     describe(tag, () => {
       for (const testCase of list) {
         it(testCase.name, () => {
-          const errors = vi.spyOn(console, "error");
+          const errors = vi.spyOn(console, "error").mockImplementation(() => {});
           const html = normalise(renderHtml(tag, testCase));
           expect(html).toContain(`<${tag}`);
           expect(normalise(expand(markup({ tag, attrs: testCase.attrs, children: testCase.children })))).toBe(html);
           expect(normalise(viaReact(tag, testCase))).toBe(html);
           expect(normalise(viaDom(tag, testCase), false)).toBe(html);
-          expect(errors).not.toHaveBeenCalled();
+          expect(errors.mock.calls.filter(([message]) => !String(message).includes(SELECTED_WARNING))).toEqual([]);
         });
 
         it(`${testCase.name}: describes the children as the server does`, () => {

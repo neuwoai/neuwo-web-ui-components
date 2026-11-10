@@ -6,10 +6,11 @@ const REACT = Symbol.for("neuwo.react");
 const relevant = (record) => record.type === "childList" || record.attributeName === "title" || record.attributeName === "role" || record.attributeName.startsWith("aria-");
 
 /**
+ * Whether React rendered or hydrated the element, so its markup is React's to write.
  * @param {Element} el
  * @returns {boolean}
  */
-function ownedByReact(el) {
+export function ownedByReact(el) {
   // Reads React DOM's private node property, so Server Component output, which cannot carry a ref, is recognised.
   return REACT in el || Object.keys(el).some((key) => key.startsWith("__reactFiber$"));
 }

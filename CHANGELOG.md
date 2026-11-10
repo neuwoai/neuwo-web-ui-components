@@ -54,6 +54,33 @@
   the input from `min`, `max` and `value`, so server-rendered markup shows it in WebKit and Blink before the
   script loads; it used to be written by script and the track was unfilled until then. The element keeps it
   current when the thumb moves, the value is set, a bound changes and the form resets.
+- Breaking: `<neuwo-combobox>` renders into its own light DOM from one template, with its recipe,
+  `components/fields/combobox/combobox.css`, in `neuwo-components.css`, so a server-rendered combobox shows
+  its trigger and selected label from the first paint. Its classes are prefixed: `.combobox` is now
+  `.neuwo-combobox`, and `.combobox__trigger`, `.combobox__value`, `.combobox__chevron`, `.combobox__popup`,
+  `.combobox__listbox`, `.combobox__option`, `.combobox__group-item`, `.combobox__group` and `.combobox__empty`
+  are now `.neuwo-combobox__trigger`, `.neuwo-combobox__value`, `.neuwo-combobox__chevron`,
+  `.neuwo-combobox__popup`, `.neuwo-combobox__listbox`, `.neuwo-combobox__option`,
+  `.neuwo-combobox__group-item`, `.neuwo-combobox__group` and `.neuwo-combobox__empty`. The highlighted row's
+  `.is-active` is now `.neuwo-combobox__option--active`. The trigger keeps the field classes (`.neuwo-input`
+  and its modifiers), the shell is that of `<neuwo-input>`, and `::part(field)`, `::part(label)`,
+  `::part(input)`, `::part(error)`, `::part(chevron)` and `::part(popup)` no longer match.
+- Breaking: `<neuwo-combobox>` is no longer form-associated. A visually hidden native input,
+  `.neuwo-combobox__form-value`, carries `name`, the starting value, `required`, `disabled` and `form`, so
+  the combobox submits, resets and validates with its form, in server-rendered markup before the script has
+  loaded too. The `<option>` and `<optgroup>` children stay in a hidden `<select>`,
+  `.neuwo-combobox__options`. `form`, `validity`, `validationMessage`, `checkValidity()`,
+  `reportValidity()` and `setCustomValidity()` act on that input, and focus that lands on it moves to the
+  trigger. In React, the options must be `<option>` and `<optgroup>` elements written in place, not a
+  component that renders them.
+- Breaking: a required `<neuwo-combobox>` with nothing selected reports the browser's own message, such as
+  "Please fill out this field.", instead of "Please select an option.".
+- A form reset returns `<neuwo-combobox>` to the option marked `selected` when the `value` attribute names
+  no enabled option; it used to clear the selection. A reset no longer removes `error`.
+- Typing into the filter of a `searchable` `<neuwo-combobox>` no longer fires `input` or `change` on the
+  element, so `onInput` and `onChange` in React fire only when the user picks a value.
+- The rows a `searchable` `<neuwo-combobox>` filters out are hidden; the row's `display: block` used to keep
+  them on screen. The chevron turns while the list is open, which its rule never matched before.
 - Breaking: `<neuwo-cta>` renders into its own light DOM from one template, so a server-rendered band
   is styled from the first paint. Its classes are prefixed: `.cta` is now `.neuwo-cta` (with
   `.neuwo-cta--{banner|spotlight}`), and `.cta__body`, `.cta__glow`, `.cta__inner`, `.cta__headline`,

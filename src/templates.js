@@ -1,5 +1,6 @@
 import { badgeTemplate } from "./components/badge/badge.template.js";
 import { buttonTemplate } from "./components/button/button.template.js";
+import { comboboxTemplate } from "./components/fields/combobox/combobox.template.js";
 import { copyTemplate } from "./components/copy/copy.template.js";
 import { ctaTemplate } from "./components/cta/cta.template.js";
 import { dealIdTemplate } from "./components/deal-id/deal-id.template.js";
@@ -14,6 +15,7 @@ import { textareaTemplate } from "./components/fields/textarea/textarea.template
 export const templates = {
   "neuwo-badge": badgeTemplate,
   "neuwo-button": buttonTemplate,
+  "neuwo-combobox": comboboxTemplate,
   "neuwo-copy": copyTemplate,
   "neuwo-cta": ctaTemplate,
   "neuwo-deal-id": dealIdTemplate,

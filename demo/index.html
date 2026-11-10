@@ -38,9 +38,12 @@
         padding: 0;
         border: 3px solid hotpink;
       }
-      /* Hostile rule: the old unprefixed classes no longer reach the input or textarea, and the other fields keep a shadow root. */
+      /* Hostile rule: the old unprefixed classes no longer reach the fields. */
       .input,
-      .field {
+      .field,
+      .combobox,
+      .combobox__popup,
+      .combobox__option {
         background: hotpink !important;
         color: black !important;
         border-radius: 0 !important;

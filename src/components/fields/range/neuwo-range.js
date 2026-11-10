@@ -1,12 +1,8 @@
-import { define } from "../../../core/element.js";
+import { define, ownedByReact } from "../../../core/element.js";
 import { NeuwoFieldElement } from "../field-element.js";
 import { fillPercent, rangeTemplate } from "./range.template.js";
 
 const CONTROLLED = Symbol.for("neuwo.controlled");
-const REACT = Symbol.for("neuwo.react");
-
-/** @param {Element} el */
-const ownedByReact = (el) => REACT in el || Object.keys(el).some((key) => key.startsWith("__reactFiber$"));
 
 /**
  * Slider over a numeric range. The template writes `--neuwo-range-fill` onto the native range input, so the

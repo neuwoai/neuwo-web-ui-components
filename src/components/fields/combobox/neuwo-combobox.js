@@ -1,220 +1,140 @@
-import { NeuwoShadowFieldElement, fieldSheet } from "../shadow-field-element.js";
-import { define } from "../../../core/element.js";
-import { sheet } from "../../../core/sheet.js";
+import { childInfo } from "../../../core/adapters/dom.js";
+import { define, ownedByReact } from "../../../core/element.js";
 import { positionPopup } from "../../../core/position-popup.js";
-import comboboxCss from "./combobox.css?raw";
+import { NeuwoFieldElement } from "../field-element.js";
+import { comboboxOptions, comboboxTemplate } from "./combobox.template.js";
 
-let cbUid = 0;
+const CONTROLLED = Symbol.for("neuwo.controlled");
+const ACTIVE = "neuwo-combobox__option--active";
+const BOX = ":scope > .neuwo-field > .neuwo-combobox";
+
+/** @param {Element} row */
+const enabled = (row) => row.getAttribute("aria-disabled") !== "true";
+
+/** @param {Element} row */
+const indexOf = (row) => Number(row.getAttribute("data-index"));
 
 /**
- * Fully styled dropdown that renders its list in the top layer, with optional
- * type-to-filter.
+ * Fully styled dropdown that renders its list in the top layer, with optional type-to-filter. The template renders
+ * the trigger, the listbox and a visually hidden native input that carries `name`, the starting value, `required`
+ * and `disabled`, so the combobox submits, resets and validates with its form, before the script has loaded too.
+ * The options come from the element's own `<option>` and `<optgroup>` children, which stay in a hidden `<select>`.
+ * The starting value is the `value` attribute when it names an enabled option, else the first enabled option
+ * marked `selected`. `readonly` and `autocomplete` do not apply.
  *
- * @summary Neuwo combobox.
+ * @summary Neuwo combobox. Shares the field's classes (see `neuwo-input`): `.neuwo-input` and `.neuwo-combobox__trigger` on the trigger, inside `.neuwo-combobox`; `.neuwo-combobox__value` around the shown label; `.neuwo-combobox__chevron`; `.neuwo-combobox__popup` and `.neuwo-combobox__listbox`; `.neuwo-combobox__option`, with `--active` on the highlighted row; `.neuwo-combobox__group-item` and `.neuwo-combobox__group` for an `<optgroup>`; `.neuwo-combobox__empty` on the "No matches" row; `.neuwo-combobox__options` on the hidden `<select>`; `.neuwo-combobox__form-value` on the native input that submits.
  * @customElement neuwo-combobox
  * @attr {boolean} searchable - show a text field that filters the options.
- * @fires {Event} input - the typed filter or highlighted option changed.
+ * @fires {Event} input - the user picked a new value; dispatched just before `change`. Typing into the filter does not fire it.
+ * @fires {Event} change - the user picked a new value.
  * @slot - the `<option>` and `<optgroup>` elements for the list.
- * @csspart chevron - the dropdown chevron.
- * @csspart popup - the floating list container.
  */
-export class NeuwoCombobox extends NeuwoShadowFieldElement {
-  static formAssociated = true;
-  static styles = [fieldSheet, sheet(comboboxCss)];
-  static observedAttributes = [...NeuwoShadowFieldElement.observedAttributes, "searchable"];
+export class NeuwoCombobox extends NeuwoFieldElement {
+  static template = comboboxTemplate;
+  static observedAttributes = [...NeuwoFieldElement.observedAttributes, "searchable"];
 
-  #cbId = `neuwo-cb-${++cbUid}`;
-  #options = []; // { value, label, disabled, selected, group }
-  #selected = "";
-  #trigger;
-  #chevron;
-  #popup;
-  #listbox;
-  #observer = null;
   #open = false;
-  #reposition = () => this.#position();
   #active = -1;
-  #typeahead = "";
-  /** @type {number} */
-  #typeaheadTimer = 0;
   #filter = "";
+  #typeahead = "";
+  /** @type {ReturnType<typeof setTimeout> | undefined} */
+  #typeaheadTimer;
 
-  get #searchable() {
-    return this.hasAttribute("searchable");
+  /** @type {HTMLFormElement | null} */
+  #form = null;
+
+  /** @type {MutationObserver | null} */
+  #observer = null;
+
+  /** @type {Element | null} */
+  #watched = null;
+
+  #reposition = () => this.#position();
+
+  #onReset = () => {
+    setTimeout(() => this.#sync(), 0);
+  };
+
+  /**
+   * The native input that submits the value.
+   * @returns {HTMLInputElement | null}
+   */
+  get control() {
+    return this.querySelector(`${BOX} > .neuwo-combobox__form-value`);
   }
 
-  // --- base seams ---
-
-  createControl() {
-    if (this.hasAttribute("searchable")) {
-      this.#trigger = document.createElement("input");
-      this.#trigger.type = "text";
-      this.#trigger.setAttribute("autocomplete", "off");
-      this.#trigger.setAttribute("aria-autocomplete", "list");
-    } else {
-      this.#trigger = document.createElement("button");
-      this.#trigger.type = "button";
-    }
-    this.#trigger.className = "combobox__trigger";
-    this.#trigger.setAttribute("role", "combobox");
-    this.#trigger.setAttribute("aria-haspopup", "listbox");
-    this.#trigger.setAttribute("aria-expanded", "false");
-    return this.#trigger;
+  /**
+   * The element `focus()` and `blur()` act on.
+   * @returns {HTMLElement | null}
+   */
+  get focusTarget() {
+    return this.trigger;
   }
 
-  decorateControl(control) {
-    const box = document.createElement("div");
-    box.className = "combobox";
-
-    this.#chevron = document.createElement("span");
-    this.#chevron.className = "combobox__chevron";
-    this.#chevron.setAttribute("part", "chevron");
-    this.#chevron.setAttribute("aria-hidden", "true");
-
-    this.#popup = document.createElement("div");
-    this.#popup.className = "combobox__popup";
-    this.#popup.setAttribute("part", "popup");
-    this.#popup.setAttribute("popover", "auto");
-    this.#popup.id = `${this.#cbId}-popup`;
-
-    this.#listbox = document.createElement("ul");
-    this.#listbox.className = "combobox__listbox";
-    this.#listbox.setAttribute("role", "listbox");
-    this.#listbox.id = `${this.#cbId}-listbox`;
-    // aria-labelledby is wired to the field label in syncControl (the base creates it lazily).
-
-    this.#popup.append(this.#listbox);
-    control.setAttribute("aria-controls", this.#listbox.id);
-    box.append(control, this.#chevron, this.#popup);
-    return box;
-  }
-
-  // The combobox owns its value and commit path; no native input/change wiring.
-  // Runs after decorateControl, so the popup/listbox exist to wire here.
-  wireControl() {
-    this.#trigger.addEventListener("click", this.#onTriggerClick);
-    this.#trigger.addEventListener("keydown", this.#onKeydown);
-    this.#popup.addEventListener("toggle", this.#onPopoverToggle);
-    this.#listbox.addEventListener("click", this.#onOptionClick);
-    if (this.#searchable) {
-      this.#trigger.addEventListener("input", this.#onFilterInput);
-      this.#trigger.addEventListener("focus", this.#onTriggerFocus);
-      this.#trigger.addEventListener("blur", this.#onTriggerBlur);
-    }
-  }
-
-  // No native .value to seed; read options and resolve the initial selection.
-  seedValue() {
-    this.#readOptions();
-    const selectable = this.#options.filter((o) => !o.disabled);
-    const initial = this.getAttribute("value");
-    if (initial !== null && selectable.some((o) => o.value === initial)) {
-      this.#selected = initial;
-    } else {
-      const preselected = selectable.find((o) => o.selected);
-      this.#selected = preselected ? preselected.value : "";
-    }
-  }
-
-  readValue() {
-    return this.#selected;
-  }
-
-  writeValue(v) {
-    const ok = this.#options.some((o) => o.value === v && !o.disabled);
-    this.#selected = ok ? v : "";
-    this.#renderTriggerText();
-    this.#syncSelectedAria();
-    this.syncValidity();
-  }
-
-  // Custom validity: required with no selection is valueMissing.
-  syncValidity() {
-    if (!this.internals || typeof this.internals.setValidity !== "function") return;
-    if (this.hasAttribute("required") && !this.#selected) {
-      this.internals.setValidity({ valueMissing: true }, "Please select an option.", this.#trigger);
-    } else {
-      this.internals.setValidity({});
-    }
-  }
-
-  checkValidity() {
-    if (this.internals) return this.internals.checkValidity();
-    return !(this.hasAttribute("required") && !this.#selected);
-  }
-  reportValidity() {
-    if (this.internals) return this.internals.reportValidity();
-    return !(this.hasAttribute("required") && !this.#selected);
-  }
-
-  // The combobox manages its own trigger attributes; forward nothing extra.
-  get forwardedAttributes() {
-    return [];
-  }
-
-  // Refresh the closed-state text and the listbox label on every patch.
-  syncControl() {
-    this.#renderTriggerText();
-    this.#syncListboxLabel();
-  }
-
-  // Name the listbox by the field's <label> (spec: "listbox named by the same
-  // label"). The base creates the label lazily and updates it on patch, so wire
-  // the reference here, giving the label an id when it lacks one.
-  #syncListboxLabel() {
-    if (!this.#listbox) return;
-    const labelEl = this.shadowRoot.querySelector(".field__label");
-    if (labelEl) {
-      if (!labelEl.id) labelEl.id = `${this.#cbId}-label`;
-      this.#listbox.setAttribute("aria-labelledby", labelEl.id);
-    } else {
-      this.#listbox.removeAttribute("aria-labelledby");
-    }
-  }
-
-  connectedCallback() {
-    super.connectedCallback(); // builds the structure (first time) and seeds the selection
-    this.#resync();            // re-read options, drop a vanished selection, render
-    this.internals?.setFormValue(this.#selected);
-    this.#observer = new MutationObserver(() => this.#resync());
-    this.#observer.observe(this, { childList: true, subtree: true });
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback?.();
-    this.close(); // remove the window scroll/resize listeners if open
-    this.#observer?.disconnect();
-  }
-
-  // --- protected helpers used by later tasks ---
-  get options() {
-    return this.#options;
-  }
+  /**
+   * The `<button>`, or with `searchable` the text `<input>`, that opens the list.
+   * @returns {HTMLButtonElement | HTMLInputElement | null}
+   */
   get trigger() {
-    return this.#trigger;
-  }
-  get listbox() {
-    return this.#listbox;
-  }
-  get popup() {
-    return this.#popup;
+    return this.querySelector(`${BOX} > .neuwo-combobox__trigger`);
   }
 
-  // --- open/close and positioning ---
+  /** @returns {HTMLElement | null} */
+  get popup() {
+    return this.querySelector(`${BOX} > .neuwo-combobox__popup`);
+  }
+
+  /** @returns {HTMLElement | null} */
+  get listbox() {
+    return this.querySelector(`${BOX} > .neuwo-combobox__popup > .neuwo-combobox__listbox`);
+  }
+
+  /**
+   * The options, read from the `<option>` and `<optgroup>` children.
+   * @returns {import("./combobox.template.js").ComboboxOption[]}
+   */
+  get options() {
+    return comboboxOptions(childInfo(this, comboboxTemplate));
+  }
+
+  /** @returns {string} */
+  get value() {
+    return super.value;
+  }
+  set value(value) {
+    if (Reflect.get(this, CONTROLLED) === true) return;
+    if (!this.control) super.value = value;
+    else this.#show(this.#accept(value == null ? "" : String(value)));
+  }
 
   get isOpen() {
     return this.#open;
   }
 
+  /**
+   * Picks a value as the user does: shows it, then dispatches `input` and `change` on the element when it changed.
+   * A value no enabled option has picks nothing.
+   * @param {string} value
+   */
+  commit(value) {
+    const next = this.#accept(value == null ? "" : String(value));
+    if (next === this.value) return;
+    this.#show(next);
+    this.dispatchEvent(new Event("input", { bubbles: true }));
+    this.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
   open() {
-    if (this.#open || this.hasAttribute("disabled") || !this.#options.length) return;
+    const trigger = this.trigger;
+    const popup = this.popup;
+    if (this.#open || !trigger || !popup || this.disabled || !this.#rows().length) return;
     this.#open = true;
-    this.#trigger.setAttribute("aria-expanded", "true");
-    if (typeof this.#popup.showPopover === "function") {
+    trigger.setAttribute("aria-expanded", "true");
+    if (typeof popup.showPopover === "function") {
       try {
-        this.#popup.showPopover();
+        popup.showPopover();
       } catch {
-        /* already open or unsupported */
+        // Already shown, or the popup is not in the document.
       }
     }
     this.#position();
@@ -225,322 +145,354 @@ export class NeuwoCombobox extends NeuwoShadowFieldElement {
 
   close() {
     if (!this.#open) return;
-    this.#filter = "";
-    if (this.#searchable) {
-      this.#listbox.querySelectorAll(".combobox__option").forEach((li) => (li.hidden = false));
-      const empty = this.#listbox.querySelector(".combobox__empty");
-      if (empty) empty.remove();
-      this.#renderTriggerText();
-    }
     this.#open = false;
-    this.#trigger.setAttribute("aria-expanded", "false");
-    this.#setActive(-1); // reset highlight + aria-activedescendant so the next open re-highlights the selection
-    if (typeof this.#popup.hidePopover === "function") {
+    if (this.#filter) {
+      this.#filter = "";
+      this.#applyFilter();
+    }
+    this.#revertText();
+    this.trigger?.setAttribute("aria-expanded", "false");
+    this.#setActive(-1);
+    const popup = this.popup;
+    if (popup && typeof popup.hidePopover === "function") {
       try {
-        this.#popup.hidePopover();
+        popup.hidePopover();
       } catch {
-        /* already closed */
+        // Already hidden.
       }
     }
     window.removeEventListener("scroll", this.#reposition, true);
     window.removeEventListener("resize", this.#reposition);
   }
 
-  #onTriggerClick = () => {
-    if (this.#searchable) {
-      // The input opens on focus; a click must not toggle it shut.
-      if (!this.#open) this.open();
+  connect() {
+    super.connect();
+    this.addEventListener("click", this.#onClick);
+    this.addEventListener("keydown", this.#onKeydown);
+    this.addEventListener("input", this.#onFilter, true);
+    this.addEventListener("change", this.#onFilter, true);
+    this.addEventListener("toggle", this.#onToggle, true);
+    this.addEventListener("focus", this.#onFocus, true);
+    this.addEventListener("blur", this.#onBlur, true);
+    this.#bindForm();
+    this.#watchOptions();
+    this.#sync();
+  }
+
+  disconnect() {
+    this.close();
+    this.removeEventListener("click", this.#onClick);
+    this.removeEventListener("keydown", this.#onKeydown);
+    this.removeEventListener("input", this.#onFilter, true);
+    this.removeEventListener("change", this.#onFilter, true);
+    this.removeEventListener("toggle", this.#onToggle, true);
+    this.removeEventListener("focus", this.#onFocus, true);
+    this.removeEventListener("blur", this.#onBlur, true);
+    this.#form?.removeEventListener("reset", this.#onReset);
+    this.#form = null;
+    this.#observer?.disconnect();
+    this.#observer = null;
+    this.#watched = null;
+    clearTimeout(this.#typeaheadTimer);
+  }
+
+  updated() {
+    this.#bindForm();
+    this.#watchOptions();
+    this.#sync();
+    if (this.#open) {
+      this.trigger?.setAttribute("aria-expanded", "true");
+      if (this.#filter) this.#applyFilter();
+      else if (this.#row(this.#active)) this.#setActive(this.#active);
+      else this.#activeStart();
+      this.#position();
+    }
+    this.#observer?.takeRecords();
+  }
+
+  #bindForm() {
+    const form = this.control?.form ?? null;
+    if (form === this.#form) return;
+    this.#form?.removeEventListener("reset", this.#onReset);
+    form?.addEventListener("reset", this.#onReset);
+    this.#form = form;
+  }
+
+  #watchOptions() {
+    const select = ownedByReact(this) ? null : this.querySelector(`${BOX} > .neuwo-combobox__options`);
+    if (select === this.#watched) return;
+    this.#observer?.disconnect();
+    this.#watched = select;
+    if (!select) return;
+    this.#observer ??= new MutationObserver(() => this.refresh());
+    this.#observer.observe(select, { childList: true, subtree: true, attributes: true, characterData: true });
+  }
+
+  /** Shows the live value, dropping one that no enabled option has any more. */
+  #sync() {
+    const control = this.control;
+    if (control && Reflect.get(this, CONTROLLED) !== true) this.#show(this.#accept(control.value));
+  }
+
+  /** @returns {HTMLElement[]} */
+  #rows() {
+    return Array.from(this.listbox?.querySelectorAll(".neuwo-combobox__option") ?? []);
+  }
+
+  /**
+   * @param {number} index
+   * @returns {HTMLElement | undefined}
+   */
+  #row(index) {
+    return index < 0 ? undefined : this.#rows().find((row) => indexOf(row) === index);
+  }
+
+  /**
+   * @param {string} value
+   * @returns {HTMLElement | undefined}
+   */
+  #chosen(value) {
+    return this.#rows().find((row) => enabled(row) && row.getAttribute("data-value") === value);
+  }
+
+  /**
+   * @param {string} value
+   * @returns {string}
+   */
+  #accept(value) {
+    return this.#chosen(value) ? value : "";
+  }
+
+  /**
+   * Writes the displayed value: the form value, the shown label or placeholder, and which row is selected. It writes
+   * only what differs.
+   * @param {string} value
+   */
+  #show(value) {
+    const control = this.control;
+    if (control && control.value !== value) control.value = value;
+    const chosen = this.#chosen(value);
+    for (const row of this.#rows()) {
+      const selected = String(Boolean(chosen) && row.getAttribute("data-value") === value);
+      if (row.getAttribute("aria-selected") !== selected) row.setAttribute("aria-selected", selected);
+    }
+    const trigger = this.trigger;
+    if (!trigger) return;
+    if (trigger.hasAttribute("data-placeholder") === Boolean(chosen)) trigger.toggleAttribute("data-placeholder", !chosen);
+    if (trigger instanceof HTMLInputElement) {
+      if (!this.#open) this.#revertText();
       return;
     }
-    if (this.#open) this.close();
-    else this.open();
-  };
+    const shown = trigger.querySelector(".neuwo-combobox__value");
+    const text = chosen ? (chosen.textContent ?? "") : (this.getAttribute("placeholder") ?? "");
+    if (shown && shown.textContent !== text) shown.textContent = text;
+  }
 
-  // Place the popup under the trigger, flipping above when there is no room,
-  // matching the trigger width. The popover renders in the top layer (fixed).
+  /** Puts the label of the live value back into the searchable trigger, over any filter text. */
+  #revertText() {
+    const trigger = this.trigger;
+    if (!(trigger instanceof HTMLInputElement)) return;
+    const label = this.#chosen(this.value)?.textContent ?? "";
+    if (trigger.value !== label) trigger.value = label;
+  }
+
   #position() {
-    if (!this.#open) return;
-    positionPopup(this.#trigger, this.#popup);
+    const trigger = this.trigger;
+    const popup = this.popup;
+    if (this.#open && trigger && popup) positionPopup(trigger, popup);
   }
 
-  #onPopoverToggle = (e) => {
-    // Browser-driven close (Escape, outside click) -> mirror our state.
-    if (e.newState === "closed" && this.#open) this.close();
-  };
-
-  // Indices of selectable (non-disabled, not hidden) options.
+  /** @returns {number[]} */
   #selectable() {
-    return this.#options
-      .map((o, i) => {
-        if (o.disabled) return -1;
-        const li = this.#listbox?.querySelector(`.combobox__option[data-index="${i}"]`);
-        if (li && li.hidden) return -1;
-        return i;
-      })
-      .filter((i) => i >= 0);
+    return this.#rows()
+      .filter((row) => enabled(row) && !row.hidden)
+      .map(indexOf);
   }
 
+  /** @param {number} index */
   #setActive(index) {
     this.#active = index;
-    const items = this.#listbox.querySelectorAll(".combobox__option");
-    items.forEach((li) => li.classList.remove("is-active"));
-    if (index < 0) {
-      this.#trigger.removeAttribute("aria-activedescendant");
+    const row = this.#row(index);
+    for (const each of this.#rows()) {
+      if (each.classList.contains(ACTIVE) !== (each === row)) each.classList.toggle(ACTIVE, each === row);
+    }
+    const trigger = this.trigger;
+    if (!row) {
+      trigger?.removeAttribute("aria-activedescendant");
       return;
     }
-    const el = this.#listbox.querySelector(`.combobox__option[data-index="${index}"]`);
-    if (!el) return;
-    el.classList.add("is-active");
-    this.#trigger.setAttribute("aria-activedescendant", el.id);
-    if (typeof el.scrollIntoView === "function") el.scrollIntoView({ block: "nearest" });
+    if (trigger && trigger.getAttribute("aria-activedescendant") !== row.id) trigger.setAttribute("aria-activedescendant", row.id);
+    if (typeof row.scrollIntoView === "function") row.scrollIntoView({ block: "nearest" });
   }
 
+  /**
+   * @param {number} delta
+   * @param {boolean} toEdge
+   */
   #move(delta, toEdge) {
-    const sel = this.#selectable();
-    if (!sel.length) return;
-    let pos;
-    if (toEdge) {
-      pos = delta > 0 ? 0 : sel.length - 1;
-    } else {
-      const current = sel.indexOf(this.#active);
-      if (current === -1) pos = delta > 0 ? 0 : sel.length - 1;
-      else pos = Math.min(sel.length - 1, Math.max(0, current + delta));
-    }
-    this.#setActive(sel[pos]);
+    const selectable = this.#selectable();
+    if (!selectable.length) return;
+    const current = selectable.indexOf(this.#active);
+    let at;
+    if (toEdge || current === -1) at = delta > 0 ? 0 : selectable.length - 1;
+    else at = Math.min(selectable.length - 1, Math.max(0, current + delta));
+    this.#setActive(selectable[at]);
   }
 
   #activeStart() {
-    // Open with the selected option active, else the first selectable.
-    const selIdx = this.#options.findIndex((o) => o.value === this.#selected && !o.disabled);
-    this.#setActive(selIdx >= 0 ? selIdx : this.#selectable()[0] ?? -1);
+    const chosen = this.#chosen(this.value);
+    this.#setActive(chosen ? indexOf(chosen) : (this.#selectable()[0] ?? -1));
   }
 
   #commitActive() {
-    if (this.#active >= 0 && !this.#options[this.#active].disabled) {
-      this.commit(this.#options[this.#active].value);
-    }
+    const row = this.#row(this.#active);
+    if (row && enabled(row)) this.commit(row.getAttribute("data-value") ?? "");
   }
 
+  /** @param {string} char */
   #typeaheadMatch(char) {
     this.#typeahead = (this.#typeahead + char).toLowerCase();
-    const match = this.#options.findIndex(
-      (o) => !o.disabled && o.label.toLowerCase().startsWith(this.#typeahead)
-    );
-    if (match >= 0) {
+    const match = this.#rows().find((row) => enabled(row) && (row.textContent ?? "").trim().toLowerCase().startsWith(this.#typeahead));
+    if (match) {
       if (!this.#open) this.open();
-      this.#setActive(match);
+      this.#setActive(indexOf(match));
     }
     clearTimeout(this.#typeaheadTimer);
-    this.#typeaheadTimer = /** @type {number} */ (/** @type {unknown} */ (setTimeout(() => (this.#typeahead = ""), 500)));
+    this.#typeaheadTimer = setTimeout(() => (this.#typeahead = ""), 500);
   }
 
-  #onKeydown = (e) => {
-    const k = e.key;
-    // In searchable mode, printable keys and Space must reach the input to
-    // filter/type, and Home/End move the caret, so they are not intercepted.
-    const search = this.#searchable;
-    if (!this.#open) {
-      if (k === "ArrowUp") {
-        e.preventDefault();
-        this.open();
-        this.#move(-1, true); // ArrowUp opens at the last option (APG)
-        return;
-      }
-      if (k === "ArrowDown" || k === "Enter" || (k === " " && !search)) {
-        e.preventDefault();
-        this.open(); // open() highlights the selected or first option
-        return;
-      }
-      if (!search && k.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        e.preventDefault();
-        this.#typeaheadMatch(k);
-        return;
-      }
-      return;
-    }
-    switch (k) {
-      case "ArrowDown": e.preventDefault(); this.#move(1, false); break;
-      case "ArrowUp": e.preventDefault(); this.#move(-1, false); break;
-      case "Home": if (!search) { e.preventDefault(); this.#move(1, true); } break;
-      case "End": if (!search) { e.preventDefault(); this.#move(-1, true); } break;
-      case "Enter": e.preventDefault(); this.#commitActive(); this.close(); this.#trigger.focus(); break;
-      case " ":
-        // Select-only: Space commits. Searchable: Space types into the filter.
-        if (!search) { e.preventDefault(); this.#commitActive(); this.close(); this.#trigger.focus(); }
-        break;
-      case "Escape": e.preventDefault(); this.close(); this.#trigger.focus(); break;
-      case "Tab": this.#commitActive(); this.close(); break;
-      default:
-        if (!search && k.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey) {
-          e.preventDefault();
-          this.#typeaheadMatch(k);
-        }
-    }
-  };
-
-  #onOptionClick = (e) => {
-    const li = e.target.closest(".combobox__option");
-    if (!li || li.getAttribute("aria-disabled") === "true") return;
-    this.commit(li.dataset.value);
-    this.close();
-    this.#trigger.focus();
-  };
-
-  // Commit a value: update selection, the form value, validity, and emit events.
-  commit(value) {
-    if (value === this.#selected) return;
-    this.value = value; // base setter -> writeValue + setFormValue
-    this.syncValidity();
-    this.dispatchEvent(new Event("input", { bubbles: true }));
-    this.dispatchEvent(new Event("change", { bubbles: true }));
-  }
-
-  // --- private: options + rendering ---
-
-  // Re-read the light-DOM options, drop a selection that no longer maps to an
-  // enabled option (updating the form value), and re-render. Runs on connect
-  // (so a reconnect re-syncs) and on every child mutation.
-  #resync() {
-    this.#readOptions();
-    if (this.#selected && !this.#options.some((o) => o.value === this.#selected && !o.disabled)) {
-      this.#selected = "";
-      this.internals?.setFormValue("");
-    }
-    this.#renderOptions();
-    this.#renderTriggerText();
-    this.#syncSelectedAria();
-    this.syncValidity();
-  }
-
-  #readOptions() {
-    const read = (nodes, group) =>
-      Array.from(nodes).flatMap((el) => {
-        if (el.tagName === "OPTGROUP") return read(el.children, el.getAttribute("label") || "");
-        if (el.tagName !== "OPTION") return [];
-        return [
-          {
-            value: el.getAttribute("value") ?? el.textContent.trim(),
-            label: el.textContent.trim(),
-            disabled: el.hasAttribute("disabled"),
-            selected: el.hasAttribute("selected"),
-            group,
-          },
-        ];
-      });
-    this.#options = read(this.children, "");
-  }
-
-  #renderOptions() {
-    if (!this.#listbox) return;
-    this.#listbox.replaceChildren();
-    let groupEl = null;
-    let lastGroup = "";
-    this.#options.forEach((opt, i) => {
-      if (opt.group) {
-        if (opt.group !== lastGroup) {
-          groupEl = document.createElement("li");
-          groupEl.className = "combobox__group-item";
-          groupEl.setAttribute("role", "group");
-          const labelId = `${this.#cbId}-grp-${i}`;
-          groupEl.setAttribute("aria-labelledby", labelId);
-          const label = document.createElement("div");
-          label.className = "combobox__group";
-          label.id = labelId;
-          label.textContent = opt.group;
-          groupEl.append(label);
-          this.#listbox.append(groupEl);
-          lastGroup = opt.group;
-        }
-      } else {
-        groupEl = null;
-        lastGroup = "";
-      }
-      const item = document.createElement(opt.group ? "div" : "li");
-      item.className = "combobox__option";
-      item.id = `${this.#cbId}-opt-${i}`;
-      item.dataset.value = opt.value;
-      item.dataset.index = String(i);
-      item.setAttribute("role", "option");
-      item.setAttribute("aria-selected", opt.value === this.#selected ? "true" : "false");
-      if (opt.disabled) item.setAttribute("aria-disabled", "true");
-      item.textContent = opt.label;
-      (opt.group ? groupEl : this.#listbox).append(item);
-    });
-  }
-
-  #renderTriggerText() {
-    if (!this.#trigger) return;
-    const opt = this.#options.find((o) => o.value === this.#selected);
-    if (this.#searchable) {
-      this.#trigger.value = opt ? opt.label : "";
-      this.#trigger.placeholder = this.getAttribute("placeholder") || "";
-      return;
-    }
-    const label = document.createElement("span");
-    label.className = "combobox__value";
-    if (opt) {
-      label.textContent = opt.label;
-      this.#trigger.removeAttribute("data-placeholder");
-    } else {
-      label.textContent = this.getAttribute("placeholder") || "";
-      this.#trigger.setAttribute("data-placeholder", "");
-    }
-    this.#trigger.replaceChildren(label);
-  }
-
-  #syncSelectedAria() {
-    if (!this.#listbox) return;
-    for (const li of this.#listbox.querySelectorAll('[role="option"]')) {
-      li.setAttribute("aria-selected", li.dataset.value === this.#selected ? "true" : "false");
-    }
-  }
-
-  // Filtering hides individual option rows; a group header whose options all
-  // become hidden stays visible. searchable is intended for flat option lists.
   #applyFilter() {
-    const q = this.#filter.trim().toLowerCase();
-    let anyVisible = false;
-    let firstVisible = -1;
-    this.#listbox.querySelectorAll(".combobox__option").forEach((li) => {
-      const i = Number(li.dataset.index);
-      const match = !q || this.#options[i].label.toLowerCase().includes(q);
-      li.hidden = !match;
+    const query = this.#filter.trim().toLowerCase();
+    let any = false;
+    let first = -1;
+    for (const row of this.#rows()) {
+      const match = !query || (row.textContent ?? "").toLowerCase().includes(query);
+      if (row.hidden === match) row.hidden = !match;
       if (match) {
-        anyVisible = true;
-        if (firstVisible < 0 && !this.#options[i].disabled) firstVisible = i;
+        any = true;
+        if (first < 0 && enabled(row)) first = indexOf(row);
       }
-    });
-    let empty = this.#listbox.querySelector(".combobox__empty");
-    if (!anyVisible) {
-      if (!empty) {
-        empty = document.createElement("li");
-        empty.className = "combobox__empty";
-        empty.setAttribute("role", "presentation");
-        empty.textContent = "No matches";
-        this.#listbox.append(empty);
-      }
-    } else if (empty) {
-      empty.remove();
     }
-    this.#setActive(firstVisible);
+    const empty = this.listbox?.querySelector(".neuwo-combobox__empty");
+    if (empty instanceof HTMLElement && empty.hidden !== any) empty.hidden = any;
+    this.#setActive(first);
   }
 
-  #onFilterInput = () => {
-    this.#filter = this.#trigger.value;
+  /** @param {MouseEvent} event */
+  #onClick = (event) => {
+    const target = /** @type {Element} */ (event.target);
+    const trigger = this.trigger;
+    if (trigger && trigger.contains(target)) {
+      if (trigger instanceof HTMLInputElement) this.open();
+      else if (this.#open) this.close();
+      else this.open();
+      return;
+    }
+    const row = target.closest?.(".neuwo-combobox__option");
+    if (!row || !this.listbox?.contains(row) || !enabled(row)) return;
+    this.commit(row.getAttribute("data-value") ?? "");
+    this.close();
+    trigger?.focus();
+  };
+
+  /** @param {KeyboardEvent} event */
+  #onKeydown = (event) => {
+    const trigger = this.trigger;
+    if (!trigger || event.target !== trigger) return;
+    const key = event.key;
+    const search = trigger instanceof HTMLInputElement;
+    const printable = !search && key.length === 1 && !event.metaKey && !event.ctrlKey && !event.altKey;
+    if (!this.#open) {
+      if (key === "ArrowUp") {
+        event.preventDefault();
+        this.open();
+        this.#move(-1, true);
+      } else if (key === "ArrowDown" || key === "Enter" || (key === " " && !search)) {
+        event.preventDefault();
+        this.open();
+      } else if (printable) {
+        event.preventDefault();
+        this.#typeaheadMatch(key);
+      }
+      return;
+    }
+    switch (key) {
+      case "ArrowDown":
+        event.preventDefault();
+        this.#move(1, false);
+        break;
+      case "ArrowUp":
+        event.preventDefault();
+        this.#move(-1, false);
+        break;
+      case "Home":
+      case "End":
+        if (!search) {
+          event.preventDefault();
+          this.#move(key === "Home" ? 1 : -1, true);
+        }
+        break;
+      case "Enter":
+        event.preventDefault();
+        this.#commitActive();
+        this.close();
+        trigger.focus();
+        break;
+      case " ":
+        if (!search) {
+          event.preventDefault();
+          this.#commitActive();
+          this.close();
+          trigger.focus();
+        }
+        break;
+      case "Escape":
+        event.preventDefault();
+        this.close();
+        trigger.focus();
+        break;
+      case "Tab":
+        this.#commitActive();
+        this.close();
+        break;
+      default:
+        if (printable) {
+          event.preventDefault();
+          this.#typeaheadMatch(key);
+        }
+    }
+  };
+
+  // Capture, at the element: stopped any later, the filter's events would reach the element's own listeners.
+  /** @param {Event} event */
+  #onFilter = (event) => {
+    const trigger = this.trigger;
+    if (!(trigger instanceof HTMLInputElement) || event.target !== trigger) return;
+    event.stopPropagation();
+    if (event.type !== "input") return;
+    this.#filter = trigger.value;
     if (!this.#open) this.open();
     this.#applyFilter();
   };
 
-  #onTriggerFocus = () => {
-    if (!this.#open) {
+  /** @param {Event} event */
+  #onToggle = (event) => {
+    if (event.target === this.popup && /** @type {ToggleEvent} */ (event).newState === "closed" && this.#open) this.close();
+  };
+
+  /** @param {FocusEvent} event */
+  #onFocus = (event) => {
+    const trigger = this.trigger;
+    if (event.target === this.control) trigger?.focus();
+    else if (trigger instanceof HTMLInputElement && event.target === trigger && !this.#open) {
       this.#filter = "";
-      this.open(); // open() highlights the current selection; options are already unfiltered after close()
+      this.open();
     }
   };
 
-  #onTriggerBlur = () => {
-    // Revert the input text to the committed selection's label.
-    if (!this.#open) this.#renderTriggerText();
+  /** @param {FocusEvent} event */
+  #onBlur = (event) => {
+    if (event.target === this.trigger && !this.#open) this.#revertText();
   };
 }
 

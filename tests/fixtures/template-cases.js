@@ -184,6 +184,47 @@ export const cases = {
     { name: "value outside the bounds and inverted bounds", attrs: { min: "10", max: "0", value: "500", error: "Too high" }, children: [] },
     { name: "small, disabled and no error line", attrs: { size: "sm", disabled: "", "no-error-line": "", "aria-label": "Volume", value: "30" }, children: [] },
   ],
+  "neuwo-combobox": [
+    {
+      name: "flat with value",
+      attrs: { name: "fruit", label: "Fruit", value: "b", placeholder: "Pick a fruit" },
+      children: [{ tag: "option", attrs: { value: "a" }, text: "Apple" }, { tag: "option", attrs: { value: "b" }, text: "Banana" }],
+    },
+    {
+      name: "grouped with selected",
+      attrs: { name: "fruit", required: "" },
+      children: [
+        "\n  ",
+        { tag: "option", attrs: { value: "a" }, text: "Apple" },
+        "\n  ",
+        {
+          tag: "optgroup",
+          attrs: { label: "Citrus" },
+          children: [
+            { tag: "option", attrs: { value: "o", selected: "" }, text: "Orange" },
+            { tag: "option", text: "Lemon" },
+          ],
+        },
+        "\n",
+      ],
+    },
+    {
+      name: "searchable",
+      attrs: { searchable: "", name: "country", value: "fi", placeholder: "Start typing", "aria-label": "Country" },
+      children: [{ tag: "option", attrs: { value: "fi" }, text: "Finland" }, { tag: "option", attrs: { value: "fr" }, text: "France" }],
+    },
+    {
+      name: "disabled options",
+      attrs: { form: "order", disabled: "" },
+      children: [{ tag: "option", attrs: { value: "a" }, text: "Apple" }, { tag: "option", attrs: { value: "c", disabled: "", selected: "" }, text: "Cherry" }],
+    },
+    { name: "empty", attrs: {}, children: [] },
+    {
+      name: "small with an error",
+      attrs: { size: "sm", label: "Plan", error: "Please choose", placeholder: "Select one" },
+      children: [{ tag: "option", attrs: { value: "pro" }, text: "Pro" }],
+    },
+  ],
   "neuwo-notice": [
     { name: "default message", attrs: {}, children: ["Read this page in Polish?"] },
     {
