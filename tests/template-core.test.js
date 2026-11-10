@@ -1,4 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync, readdirSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
 import { DEFAULT_REGION, distribute, h, has, normalizeProps, raw, region } from "../src/core/template.js";
 import { idScope } from "../src/core/ids.js";
 
@@ -112,5 +115,18 @@ describe("idScope()", () => {
   it("numbers each factory on its own", () => {
     expect(idScope("neuwo-s")()("x")).toBe("neuwo-s1-x");
     expect(idScope("neuwo-c")()("x")).toBe("neuwo-c1-x");
+  });
+});
+
+describe("light DOM sources", () => {
+  it("type their JSDoc without any", () => {
+    const src = join(dirname(fileURLToPath(import.meta.url)), "../src");
+    const files = readdirSync(src, { recursive: true }).filter((file) =>
+      /^(core\/(template|element|ids)\.js|core\/adapters\/.+\.js|react\/.+\.js|server\/.+\.js|templates\.js|components\/(badge|button|deal-id|logo|status-dot)\/.+\.js)$/.test(file),
+    );
+    expect(files).toContain("core/adapters/react.js");
+    for (const file of files) {
+      expect(readFileSync(join(src, file), "utf8"), file).not.toMatch(/[{<(,|:]\s*any\s*[}>)[,|;]/);
+    }
   });
 });

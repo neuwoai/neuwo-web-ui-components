@@ -5,7 +5,8 @@ import { DEFAULT_REGION, distribute, normalizeProps } from "../template.js";
 
 /** @typedef {import("react").ReactNode} ReactNode */
 /** @typedef {import("react").ElementType} ElementType */
-/** @typedef {import("react").ReactElement<Record<string, any>>} AnyElement */
+/** @typedef {import("react").ReactElement} ReactElement */
+/** @typedef {import("react").ReactElement<Record<string, unknown>>} AnyElement */
 /** @typedef {import("../template.js").TemplateNode} TemplateNode */
 /** @typedef {import("../template.js").ChildInfo} ChildInfo */
 /** @typedef {import("../template.js").Template} Template */
@@ -54,7 +55,7 @@ function slotOf(item) {
 function flatten(children, prefix = "", out = []) {
   for (const item of Children.toArray(children)) {
     const el = asElement(item);
-    if (el?.type === Fragment) flatten(el.props.children, `${prefix}${el.key}:`, out);
+    if (el?.type === Fragment) flatten(/** @type {ReactNode} */ (el.props.children), `${prefix}${el.key}:`, out);
     else out.push(el && prefix ? cloneElement(el, { key: prefix + el.key }) : item);
   }
   return out;
@@ -68,7 +69,7 @@ function textOf(node) {
   if (Array.isArray(node)) return node.map(textOf).join("");
   if (typeof node === "string" || typeof node === "number" || typeof node === "bigint") return String(node);
   const el = asElement(node);
-  return el && (el.type === Fragment || tagOf(el) !== null) ? textOf(el.props.children) : "";
+  return el && (el.type === Fragment || tagOf(el) !== null) ? textOf(/** @type {ReactNode} */ (el.props.children)) : "";
 }
 
 /**
@@ -81,7 +82,7 @@ function describe(items) {
   for (const item of items) {
     const el = asElement(item);
     const tag = el && tagOf(el);
-    if (tag) info.push({ tag, attrs: normalizeProps(el.props), text: textOf(el.props.children), slot: slotOf(el) });
+    if (tag) info.push({ tag, attrs: normalizeProps(el.props), text: textOf(/** @type {ReactNode} */ (el.props.children)), slot: slotOf(el) });
     else if (typeof item === "object") info.push({ tag: null, attrs: {}, text: "", slot: slotOf(item) });
     else if (String(item).trim() !== "") info.push({ tag: null, attrs: {}, text: String(item), slot: DEFAULT_REGION });
   }
@@ -110,7 +111,7 @@ function keyOf(node, block, index) {
  * @param {Record<string, ReactNode[]>} regions
  * @param {string} block
  * @param {string} key
- * @returns {AnyElement}
+ * @returns {ReactElement}
  */
 function toReact(node, regions, block, key) {
   /** @type {Record<string, unknown>} */
@@ -155,7 +156,7 @@ function pass(ref, el) {
  * @param {Template} template
  */
 function hostFor(tag, template) {
-  /** @param {Record<string, any>} props */
+  /** @param {Record<string, unknown>} props */
   function NeuwoHost(props) {
     const scope = `neuwo${useId().replace(/[^\w-]/g, "")}-`;
     const ref = useCallback(
@@ -166,7 +167,7 @@ function hostFor(tag, template) {
       },
       [props.ref],
     );
-    const items = flatten(props.children);
+    const items = flatten(/** @type {ReactNode} */ (props.children));
     const node = template(normalizeProps(props), { id: (suffix) => scope + suffix, children: describe(items) });
     const [block = ""] = classesOf(node);
     const root = toReact(node, distribute(node, items, slotOf), block, keyOf(node, block, 0));
