@@ -7,6 +7,7 @@ import { inputTemplate } from "./components/fields/input/input.template.js";
 import { logoTemplate } from "./components/logo/logo.template.js";
 import { noticeTemplate } from "./components/notice/notice.template.js";
 import { statusDotTemplate } from "./components/status-dot/status-dot.template.js";
+import { textareaTemplate } from "./components/fields/textarea/textarea.template.js";
 
 /** @type {Record<string, import("./core/template.js").Template>} */
 export const templates = {
@@ -19,4 +20,5 @@ export const templates = {
   "neuwo-logo": logoTemplate,
   "neuwo-notice": noticeTemplate,
   "neuwo-status-dot": statusDotTemplate,
+  "neuwo-textarea": textareaTemplate,
 };

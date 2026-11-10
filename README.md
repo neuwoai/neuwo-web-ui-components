@@ -741,8 +741,8 @@ selection controls (`<neuwo-checkbox>`, `<neuwo-toggle>`,
 `no-error-line` behaviour below. The generated `.d.ts` shows these on the base
 class each control `extends`.
 
-`<neuwo-input>` renders a native `<input>` into its own light DOM, and that
-input is the form control. The element carries `name`, `value`, `required`,
+`<neuwo-input>` and `<neuwo-textarea>` render a native `<input>` or `<textarea>`
+into their own light DOM, and that control is the form control. The element carries `name`, `value`, `required`,
 `disabled`, `readonly`, `placeholder`, `autocomplete`, `form` and the
 constraint attributes onto it, so a form of inputs submits and validates
 natively, in server-rendered markup before the script has loaded too. The
@@ -765,10 +765,13 @@ element itself is not form-associated, so each value is submitted once.
   which needs them for its accessible name and tooltip. `data-*` stays on the
   element only, so a query such as `[data-testid="email"]` matches one node.
 
-The textarea, combobox and range still render into a shadow root, are
-form-associated, and share the parts `field`, `input`, `label` and `error`. On
-`<neuwo-input>` those parts are the classes `.neuwo-field`, `.neuwo-input`,
-`.neuwo-field__label` and `.neuwo-field__error`, listed under restyling above.
+On `<neuwo-textarea>` the `value` attribute is the textarea's starting text, and
+`rows`, `minlength` and `maxlength` are carried onto it. The combobox and range
+still render into a shadow root, are form-associated, and share the parts
+`field`, `input`, `label` and `error`. On `<neuwo-input>` and `<neuwo-textarea>`
+those parts are the classes `.neuwo-field`, `.neuwo-input` (with
+`.neuwo-textarea` added on the textarea), `.neuwo-field__label` and
+`.neuwo-field__error`, listed under restyling above.
 
 ## Form errors
 

@@ -165,6 +165,18 @@ export const cases = {
     { name: "custom label", attrs: { label: "Neuwo home" }, children: [] },
     { name: "decorative", attrs: { label: "" }, children: [] },
   ],
+  "neuwo-textarea": [
+    { name: "default", attrs: {}, children: [] },
+    {
+      name: "label, required, rows and error",
+      attrs: { name: "message", label: "Message", required: "", rows: "6", minlength: "2", maxlength: "200", placeholder: "Say more", error: "Too short" },
+      children: [],
+    },
+    { name: "value with two lines", attrs: { value: "line one\nline two" }, children: [] },
+    { name: "value with a leading newline", attrs: { value: "\nlead" }, children: [] },
+    { name: "value with markup characters", attrs: { value: "x & y < z </textarea>" }, children: [] },
+    { name: "small, disabled, readonly and no error line", attrs: { size: "sm", disabled: "", readonly: "", "no-error-line": "", "aria-label": "Notes" }, children: [] },
+  ],
   "neuwo-notice": [
     { name: "default message", attrs: {}, children: ["Read this page in Polish?"] },
     {
@@ -247,12 +259,20 @@ const REFERENCES = ["for", "aria-describedby", "aria-labelledby", "aria-controls
 
 /**
  * Sorts attributes and renumbers ids by first appearance, so adapters that mint ids differently compare equal.
+ * A browser's parser drops the newline right after `<textarea>`, which happy-dom's does not, so markup that
+ * went through a parser (`parsed`, the default) loses one here; a serialised DOM tree already holds the value.
  * @param {string} html
+ * @param {boolean} [parsed]
  * @returns {string}
  */
-export function normalise(html) {
+export function normalise(html, parsed = true) {
   const holder = document.createElement("template");
   holder.innerHTML = html;
+  if (parsed) {
+    for (const area of holder.content.querySelectorAll("textarea")) {
+      if (area.textContent.startsWith("\n")) area.textContent = area.textContent.slice(1);
+    }
+  }
   /** @type {Map<string, string>} */
   const ids = new Map();
   for (const el of holder.content.querySelectorAll("[id]")) if (!ids.has(el.id)) ids.set(el.id, `id-${ids.size + 1}`);

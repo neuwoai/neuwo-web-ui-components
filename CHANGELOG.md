@@ -34,6 +34,15 @@
 - Breaking: `data-*` on `<neuwo-input>` stays on the element and is no longer copied onto the inner
   input, so a query such as `[data-testid="email"]` matches one node. `aria-*` and `title` are still
   copied, and a later change or removal now reaches the inner input too.
+- Breaking: `<neuwo-textarea>` renders into its own light DOM from the same template and shell as
+  `<neuwo-input>`, with its recipe, `components/fields/textarea/textarea.css`, in `neuwo-components.css`.
+  The classes are those of `<neuwo-input>` (`.neuwo-field`, `.neuwo-field__label`, `.neuwo-field__error`,
+  `.neuwo-input` and their modifiers), plus `.neuwo-textarea` on the native `<textarea>` for the minimum
+  height and vertical resize; the unprefixed `.field`, `.input` and their parts are gone, and
+  `::part(field)`, `::part(label)`, `::part(input)` and `::part(error)` no longer match. It is no longer
+  form-associated: the native `<textarea>` submits, resets and validates with its form, the `value`
+  attribute is its starting text, and the `change` and `input` events, `event.target`, `onChange` in React
+  and `data-*` follow `<neuwo-input>` above. A value that starts with a newline survives server rendering.
 - Breaking: `<neuwo-cta>` renders into its own light DOM from one template, so a server-rendered band
   is styled from the first paint. Its classes are prefixed: `.cta` is now `.neuwo-cta` (with
   `.neuwo-cta--{banner|spotlight}`), and `.cta__body`, `.cta__glow`, `.cta__inner`, `.cta__headline`,

@@ -52,7 +52,7 @@ describe("template parity across the HTML, React and DOM adapters", () => {
           expect(html).toContain(`<${tag}`);
           expect(normalise(expand(markup({ tag, attrs: testCase.attrs, children: testCase.children })))).toBe(html);
           expect(normalise(viaReact(tag, testCase))).toBe(html);
-          expect(normalise(viaDom(tag, testCase))).toBe(html);
+          expect(normalise(viaDom(tag, testCase), false)).toBe(html);
           expect(errors).not.toHaveBeenCalled();
         });
 

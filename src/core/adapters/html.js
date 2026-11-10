@@ -32,6 +32,8 @@ export function toHTML(node, regions = {}) {
   const open = `<${node.tag}${attributes(node.props)}>`;
   if (VOID.has(node.tag)) return open;
   let inner = "";
+  const [first] = node.children;
+  if (node.tag === "textarea" && typeof first === "string" && first.startsWith("\n")) inner = "\n";
   for (const child of node.children) {
     if (typeof child === "string") inner += escape(child);
     else if ("region" in child) inner += Object.hasOwn(regions, child.region) ? regions[child.region] : "";

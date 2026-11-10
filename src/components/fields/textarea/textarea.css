@@ -1,6 +1,4 @@
-/* --- Textarea: multi-line, grows vertically --- */
-
-.input {
+.neuwo-textarea {
   min-height: 8rem;
   resize: vertical;
 }
