@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { h, has, raw, region } from "../src/core/template.js";
-import { adopt, childInfo, isRendered, patch, render } from "../src/core/adapters/dom.js";
+import { adopt, childInfo, isRendered, patch, reconcile, render } from "../src/core/adapters/dom.js";
 import { renderElement } from "../src/core/adapters/html.js";
 import { idScope } from "../src/core/ids.js";
 
@@ -702,5 +702,61 @@ describe("patch()", () => {
     host.setAttribute("tone", "b");
     patch(host, badge);
     expect(host.innerHTML).toBe('<span class="neuwo-t neuwo-t--b">y</span>');
+  });
+});
+
+describe("reconcile()", () => {
+  it("renders again when the host's children were replaced", () => {
+    const host = make(`<neuwo-t><i slot="start"></i>x</neuwo-t>`);
+    render(host, testTemplate);
+    host.textContent = "y";
+    reconcile(host, testTemplate);
+    expect(host.innerHTML).toBe(shell("a", "", "y"));
+  });
+
+  it("places a loose start child into the start wrapper, keeping the root", () => {
+    const host = make(`<neuwo-t>x</neuwo-t>`);
+    render(host, testTemplate);
+    const span = host.firstElementChild;
+    const icon = document.createElement("i");
+    icon.slot = "start";
+    host.append(icon);
+    reconcile(host, testTemplate);
+    expect(host.innerHTML).toBe(shell("a", '<i slot="start"></i>', "x"));
+    expect(host.firstElementChild).toBe(span);
+    expect(host.querySelector("i")).toBe(icon);
+  });
+
+  it("leaves wrapped author nodes untouched while it places a loose one", () => {
+    const host = make(`<neuwo-t><i slot="start"></i>x</neuwo-t>`);
+    render(host, testTemplate);
+    const i = host.querySelector("i");
+    const x = host.querySelector(".neuwo-t__label").firstChild;
+    i.removeAttribute("slot");
+    const b = document.createElement("b");
+    host.append(b);
+    const observer = watch(host);
+    reconcile(host, testTemplate);
+    const label = host.querySelector(".neuwo-t__label");
+    expect(host.innerHTML).toBe(shell("a", "<i></i>", "x<b></b>"));
+    expect(host.querySelector("i")).toBe(i);
+    expect(label.firstChild).toBe(x);
+    expect(observer.takeRecords().every((record) => record.type === "childList" && (record.target === host || record.target === label))).toBe(true);
+  });
+
+  it("writes nothing when nothing changed", () => {
+    const host = make(`<neuwo-t tone="b"><i slot="start"></i>x</neuwo-t>`);
+    render(host, testTemplate);
+    const observer = watch(host);
+    reconcile(host, testTemplate);
+    expect(observer.takeRecords()).toHaveLength(0);
+  });
+
+  it("writes nothing for loose whitespace or comments around the root", () => {
+    const host = make(`<neuwo-t>\n  ${shell("a", "", "x")}\n<!-- c --></neuwo-t>`);
+    adopt(host, testTemplate);
+    const observer = watch(host);
+    reconcile(host, testTemplate);
+    expect(observer.takeRecords()).toHaveLength(0);
   });
 });

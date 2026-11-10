@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { h, region } from "../src/core/template.js";
 import { NeuwoElement, define } from "../src/core/element.js";
 
@@ -26,6 +26,7 @@ class TestLight extends NeuwoElement {
 const cleanup = [];
 afterEach(() => {
   while (cleanup.length) cleanup.pop().remove();
+  vi.unstubAllGlobals();
 });
 
 function mount(html) {
@@ -34,6 +35,29 @@ function mount(html) {
   document.body.appendChild(host);
   cleanup.push(host);
   return host;
+}
+
+// Microtasks only: happy-dom holds an observer's callback in a WeakRef, so a GC between tasks can silence it.
+async function settled() {
+  for (let turn = 0; turn < 3; turn++) await Promise.resolve();
+}
+
+function countObservers() {
+  const counts = { created: 0, calls: 0 };
+  const Native = globalThis.MutationObserver;
+  vi.stubGlobal(
+    "MutationObserver",
+    class extends Native {
+      constructor(callback) {
+        super((records, observer) => {
+          counts.calls++;
+          callback(records, observer);
+        });
+        counts.created++;
+      }
+    },
+  );
+  return counts;
 }
 
 const server = (tone = "a") =>
@@ -208,5 +232,89 @@ describe("NeuwoElement (light DOM)", () => {
     expect(records[0].attributeName).toBe("class");
     expect(el.firstElementChild).toBe(root);
     expect(root.className).toBe("neuwo-t neuwo-t--b");
+  });
+
+  describe("content a script sets after render", () => {
+    it("reconciles each script change once, never in response to its own writes", async () => {
+      const counts = countObservers();
+      const el = document.createElement("test-light");
+      mount("").appendChild(el);
+      expect(counts.created).toBe(1);
+      const icon = document.createElement("i");
+      icon.slot = "start";
+      el.append(icon);
+      await settled();
+      expect(counts.calls).toBe(1);
+      expect(icon.parentElement.className).toBe("neuwo-t__start");
+      el.textContent = "y";
+      await settled();
+      expect(counts.calls).toBe(2);
+      expect(el.querySelector(".neuwo-t__body").textContent).toBe("y");
+      expect(el.querySelectorAll(".neuwo-t")).toHaveLength(1);
+    });
+
+    it("renders a connected host that has not rendered yet when an observed attribute changes", () => {
+      define("test-idle", class extends TestLight {
+        connectedCallback() {}
+      });
+      const el = mount(`<test-idle>hi</test-idle>`).firstElementChild;
+      expect(el.querySelector(".neuwo-t")).toBeNull();
+      el.setAttribute("tone", "b");
+      expect(el.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--b");
+      expect(el.querySelector(".neuwo-t__body").textContent).toBe("hi");
+    });
+
+    it("places a child a script appended just before an observed attribute changed", async () => {
+      const el = mount(server()).firstElementChild;
+      const icon = document.createElement("i");
+      icon.slot = "start";
+      el.append(icon);
+      el.setAttribute("tone", "b");
+      expect(icon.parentElement.className).toBe("neuwo-t__start");
+      await settled();
+      expect(el.innerHTML).toBe('<span class="neuwo-t neuwo-t--b"><span class="neuwo-t__start"><i slot="start"></i></span><span class="neuwo-t__body">hi</span></span>');
+    });
+
+    it("stops observing when disconnected and observes again when reconnected", async () => {
+      const el = mount(server()).firstElementChild;
+      el.remove();
+      el.textContent = "y";
+      await settled();
+      expect(el.innerHTML).toBe("y");
+      mount("").appendChild(el);
+      el.textContent = "z";
+      await settled();
+      expect(el.querySelector(".neuwo-t__body").textContent).toBe("z");
+    });
+
+    it.each([
+      ["the JSX runtime's marker", Symbol.for("neuwo.react")],
+      ["React DOM's fiber property", "__reactFiber$test"],
+    ])("gives a host React owns, known by %s, no observer, so its script writes stay as written", async (_, key) => {
+      const counts = countObservers();
+      const el = document.createElement("test-light");
+      el[key] = true;
+      mount("").appendChild(el);
+      el.textContent = "y";
+      await settled();
+      expect(counts.created).toBe(0);
+      expect(el.innerHTML).toBe("y");
+    });
+
+    it.each([
+      ["the JSX runtime's marker", Symbol.for("neuwo.react")],
+      ["React DOM's fiber property", "__reactFiber$test"],
+    ])("stops reconciling a host React takes over after connect, known by %s", async (_, key) => {
+      const counts = countObservers();
+      const el = mount(server()).firstElementChild;
+      el[key] = true;
+      el.textContent = "y";
+      await settled();
+      expect(el.innerHTML).toBe("y");
+      el.textContent = "z";
+      await settled();
+      expect(el.innerHTML).toBe("z");
+      expect(counts.calls).toBe(1);
+    });
   });
 });

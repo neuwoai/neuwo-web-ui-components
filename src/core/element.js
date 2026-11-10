@@ -1,6 +1,9 @@
-import { adopt, isRendered, patch, render } from "./adapters/dom.js";
+import { adopt, isRendered, reconcile, render } from "./adapters/dom.js";
 
 const REACT = Symbol.for("neuwo.react");
+
+/** @param {MutationRecord} record */
+const relevant = (record) => record.type === "childList" || record.attributeName === "title" || record.attributeName.startsWith("aria-");
 
 /**
  * @param {Element} el
@@ -14,7 +17,8 @@ function ownedByReact(el) {
 /**
  * Base class for light DOM Neuwo custom elements. The markup is one pure
  * template function, rendered on connect or adopted when the server or React
- * already produced it, and patched in place when an attribute changes.
+ * already produced it, and patched in place when an attribute changes or a
+ * script changes its children.
  *
  * @summary Base class for light DOM Neuwo custom elements.
  */
@@ -24,6 +28,9 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
 
   /** @type {(() => void) | null} */
   #waiting = null;
+
+  /** @type {MutationObserver | null} */
+  #observer = null;
 
   connectedCallback() {
     const { template } = /** @type {typeof NeuwoElement} */ (this.constructor);
@@ -44,18 +51,35 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
   #start() {
     const { template } = /** @type {typeof NeuwoElement} */ (this.constructor);
     if (!ownedByReact(this)) {
-      if (isRendered(this, template)) adopt(this, template);
-      else render(this, template);
+      this.#write(isRendered(this, template) ? adopt : render);
+      this.#observer ??= new MutationObserver((records) => this.#changed(records));
+      this.#observer.observe(this, { childList: true, attributes: true });
     }
     this.connect();
   }
 
+  /** @param {(host: Element, template: import("./template.js").Template) => void} update */
+  #write(update) {
+    update(this, /** @type {typeof NeuwoElement} */ (this.constructor).template);
+    this.#observer?.takeRecords();
+  }
+
+  /** @param {MutationRecord[]} records */
+  #changed(records) {
+    if (ownedByReact(this)) {
+      this.#observer?.disconnect();
+      this.#observer = null;
+    } else if (records.some(relevant)) this.#write(reconcile);
+  }
+
   attributeChangedCallback() {
-    const { template } = /** @type {typeof NeuwoElement} */ (this.constructor);
-    if (this.isConnected && !ownedByReact(this) && isRendered(this, template)) patch(this, template);
+    // Not patch: #write drops the observer's pending records, so a child a script added just before must be placed now.
+    if (this.isConnected && !this.#waiting && !ownedByReact(this)) this.#write(reconcile);
   }
 
   disconnectedCallback() {
+    this.#observer?.disconnect();
+    this.#observer = null;
     if (this.#waiting) {
       this.ownerDocument.removeEventListener("DOMContentLoaded", this.#waiting);
       this.#waiting = null;

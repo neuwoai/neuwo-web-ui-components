@@ -124,6 +124,11 @@ Typography alone is also published as `foundation/typography.css`, and tokens al
 "The stylesheet" is `neuwo-components.css`, or `neuwo.css` for Neuwo typography too. React and
 Next.js are covered in [React](#react), Eleventy and other builds in [Server rendering](#server-rendering).
 
+Without a framework, a script can change a rendered element as it would any other: set its
+`textContent` or `innerHTML`, append a child with a `slot`, or set `aria-*` and `title`. The element
+fits the change into its markup in a microtask, so read the markup back after an `await`, not on the
+next line.
+
 ### A page that can only add a script
 
 Where you cannot link a stylesheet, load the standalone build on its own:

@@ -39,6 +39,9 @@
 - `aria-*` and `title` on `<neuwo-button>` now appear on both the host and the inner control, which needs
   them for its accessible name and tooltip. `data-*` stays on the host only, so a query such as
   `[data-testid="save"]` matches one element.
+- A script can still set `textContent` or `innerHTML` on a rendered light DOM element, append a child
+  with a `slot`, or change its `aria-*` and `title`: the element fits the change into its markup in a
+  microtask, so read the markup back after an `await`. Hosts React owns are left to React.
 - `components/reset.css`, the reset for the light DOM components, is published and leads the component
   styles in `neuwo-components.css`.
 - Breaking: `neuwo.js` no longer carries fonts or tokens. Link `neuwo-components.css` (or `neuwo.css`) on

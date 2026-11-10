@@ -78,6 +78,9 @@ function attrsOf(el) {
 /** @param {Node} node */
 const slotOf = (node) => (node.nodeType === ELEMENT && /** @type {Element} */ (node).getAttribute("slot")) || DEFAULT_REGION;
 
+/** @param {Node} node */
+const isContent = (node) => node.nodeType === ELEMENT || (node.nodeType === TEXT && /** @type {Text} */ (node).data.trim() !== "");
+
 /** @param {TemplateNode} node */
 const classesOf = (node) => (typeof node.props.class === "string" ? node.props.class.trim().split(/\s+/) : []);
 
@@ -164,12 +167,11 @@ function describe(nodes, regionOf) {
   /** @type {ChildInfo[]} */
   const info = [];
   for (const node of nodes) {
+    if (!isContent(node)) continue;
     if (node.nodeType === ELEMENT) {
       const el = /** @type {Element} */ (node);
       info.push({ tag: el.localName, attrs: attrsOf(el), text: el.textContent, slot: regionOf(el) });
-    } else if (node.nodeType === TEXT && /** @type {Text} */ (node).data.trim() !== "") {
-      info.push({ tag: null, attrs: {}, text: /** @type {Text} */ (node).data, slot: regionOf(node) });
-    }
+    } else info.push({ tag: null, attrs: {}, text: /** @type {Text} */ (node).data, slot: regionOf(node) });
   }
   return info;
 }
@@ -460,8 +462,9 @@ export function adopt(host, template) {
 /**
  * @param {Element} host
  * @param {Template} template
+ * @param {boolean} placeLoose
  */
-export function patch(host, template) {
+function update(host, template, placeLoose) {
   if (!live(host)) {
     if (!isRendered(host, template)) return render(host, template);
     adopt(host, template);
@@ -470,8 +473,24 @@ export function patch(host, template) {
   const { nodes, loose, regionIn } = authorNodes(host, state);
   const next = template(attrsOf(host), { id: state.id, children: describe(nodes, regionIn(state.wrappers)) });
   const regionOf = regionIn(wrappersOf(next));
-  const settled = nodes.filter((node) => !loose.has(node));
-  const run = prepare(state, next, settled, regionOf);
+  const placed = nodes.filter((node) => !loose.has(node) || (placeLoose && isContent(node)));
+  const run = prepare(state, next, placed, regionOf);
   if (run.replace || run.arranges.length) commit(state, next, nodes, prepare(state, next, nodes, regionOf));
-  else commit(state, next, settled, run);
+  else commit(state, next, placed, run);
+}
+
+/**
+ * @param {Element} host
+ * @param {Template} template
+ */
+export function patch(host, template) {
+  update(host, template, false);
+}
+
+/**
+ * @param {Element} host
+ * @param {Template} template
+ */
+export function reconcile(host, template) {
+  update(host, template, true);
 }

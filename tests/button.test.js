@@ -214,6 +214,67 @@ describe("<neuwo-button>", () => {
   });
 });
 
+describe("<neuwo-button> content set by script", () => {
+  it("rebuilds a working control around text set through textContent", async () => {
+    const f = document.createElement("form");
+    f.innerHTML = `<neuwo-button type="submit">Save</neuwo-button>`;
+    const el = attach(f).firstElementChild;
+    el.textContent = "Saving";
+    await Promise.resolve();
+    const btn = control(el);
+    expect(btn.localName).toBe("button");
+    expect(btn.className).toBe("neuwo-btn neuwo-btn--solid");
+    expect(el.querySelector(".neuwo-btn__label").textContent).toBe("Saving");
+    expect(el.querySelectorAll(".neuwo-btn")).toHaveLength(1);
+    const submits = submitsOf(f);
+    btn.click();
+    expect(submits).toHaveLength(1);
+  });
+
+  it("places start content and the label set through innerHTML", async () => {
+    const el = make(`<neuwo-button>Go</neuwo-button>`);
+    el.innerHTML = '<span slot="start">*</span>Go';
+    await Promise.resolve();
+    expect(el.querySelector(".neuwo-btn__start").innerHTML).toBe('<span slot="start">*</span>');
+    expect(el.querySelector(".neuwo-btn__label").innerHTML).toBe("Go");
+    expect(el.querySelectorAll(".neuwo-btn")).toHaveLength(1);
+  });
+
+  it("moves an appended end icon into the end wrapper", async () => {
+    const el = make(`<neuwo-button>Go</neuwo-button>`);
+    const btn = control(el);
+    const icon = document.createElement("i");
+    icon.slot = "end";
+    el.append(icon);
+    await Promise.resolve();
+    expect(icon.parentElement.className).toBe("neuwo-btn__end");
+    expect(control(el)).toBe(btn);
+    expect(el.children).toHaveLength(1);
+  });
+
+  it("forwards aria-* and title a script sets later to the inner control", async () => {
+    const el = make(`<neuwo-button>Go</neuwo-button>`);
+    el.setAttribute("aria-pressed", "true");
+    el.title = "Toggle";
+    await Promise.resolve();
+    expect(control(el).getAttribute("aria-pressed")).toBe("true");
+    expect(control(el).getAttribute("title")).toBe("Toggle");
+    el.removeAttribute("aria-pressed");
+    await Promise.resolve();
+    expect(control(el).hasAttribute("aria-pressed")).toBe(false);
+  });
+
+  it("labels a button created and connected by script before it had content", async () => {
+    const el = attach(document.createElement("neuwo-button"));
+    expect(control(el)).not.toBeNull();
+    el.textContent = "Save";
+    await Promise.resolve();
+    expect(control(el).localName).toBe("button");
+    expect(el.querySelector(".neuwo-btn__label").textContent).toBe("Save");
+    expect(el.querySelectorAll(".neuwo-btn")).toHaveLength(1);
+  });
+});
+
 describe("<neuwo-button> in a form", () => {
   function form(html) {
     const el = document.createElement("form");
