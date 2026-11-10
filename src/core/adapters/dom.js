@@ -405,11 +405,24 @@ function commit(state, next, placeable, run) {
 
 /**
  * @param {Element} host
+ * @param {Template} template
+ * @returns {HostState | null}
+ */
+function view(host, template) {
+  const probe = template(attrsOf(host), { id: (suffix) => suffix, children: [] });
+  const root = locate(host, probe);
+  if (!root) return null;
+  return { id: (suffix) => suffix, issued: new Set(), ids: new Map(), block: classesOf(probe)[0] ?? "", wrappers: wrappersOf(probe), root, dropped: [] };
+}
+
+/**
+ * @param {Element} host
+ * @param {Template} [template] - lets it read through markup this adapter neither rendered nor adopted, such as React's.
  * @returns {ChildInfo[]}
  */
-export function childInfo(host) {
-  if (!live(host)) return describe(Array.from(host.childNodes), slotOf);
-  const state = states.get(host);
+export function childInfo(host, template) {
+  const state = live(host) ? states.get(host) : template ? view(host, template) : null;
+  if (!state) return describe(Array.from(host.childNodes), slotOf);
   const { nodes, regionIn } = authorNodes(host, state);
   return describe(nodes, regionIn(state.wrappers));
 }

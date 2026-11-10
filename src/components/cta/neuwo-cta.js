@@ -1,4 +1,6 @@
+import { childInfo } from "../../core/adapters/dom.js";
 import { NeuwoElement, define } from "../../core/element.js";
+import { DEFAULT_REGION } from "../../core/template.js";
 import { ctaTemplate } from "./cta.template.js";
 
 // Unregistered, --neuwo-cta-angle has no value, so the spotlight's conic gradients never paint or spin.
@@ -81,12 +83,10 @@ export class NeuwoCta extends NeuwoElement {
   }
 
   #validate() {
-    const root = this.querySelector(":scope > .neuwo-cta");
-    if (!root) return;
-    const headline = root.querySelector(":scope > * > .neuwo-cta__headline");
-    const actions = root.querySelector(":scope > .neuwo-cta__actions, :scope > .neuwo-cta__inner > .neuwo-cta__actions");
-    if (!headline?.firstElementChild && !headline?.textContent?.trim()) console.warn("<neuwo-cta>: expected headline content in the default slot.");
-    if (!actions?.firstElementChild) console.warn('<neuwo-cta>: expected at least one button in the "actions" slot.');
+    if (!this.querySelector(":scope > .neuwo-cta")) return;
+    const children = childInfo(this, ctaTemplate);
+    if (!children.some((child) => child.slot === DEFAULT_REGION)) console.warn("<neuwo-cta>: expected headline content in the default slot.");
+    if (!children.some((child) => child.slot === "actions" && child.tag !== null)) console.warn('<neuwo-cta>: expected at least one button in the "actions" slot.');
   }
 }
 

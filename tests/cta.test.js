@@ -328,6 +328,22 @@ describe("<neuwo-cta>", () => {
     expect(warn.mock.calls[0][0]).toContain("headline");
   });
 
+  it("does not warn about content a script appends after connecting the element", async () => {
+    const warn = quiet();
+    const el = attach(document.createElement("neuwo-cta"));
+    const headline = document.createElement("span");
+    headline.textContent = "Ready?";
+    const button = document.createElement("button");
+    button.slot = "actions";
+    button.textContent = "Go";
+    el.append(headline);
+    el.append(button);
+    await settled();
+    expect(headline.parentElement).toBe(part(el, "headline"));
+    expect(button.parentElement).toBe(part(el, "actions"));
+    expect(warn).not.toHaveBeenCalled();
+  });
+
   it("does not warn about a complete CTA, and writes nothing while it checks", async () => {
     const warn = quiet();
     const holder = document.createElement("div");

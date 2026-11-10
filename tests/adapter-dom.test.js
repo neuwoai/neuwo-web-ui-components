@@ -66,6 +66,21 @@ describe("childInfo()", () => {
       { tag: null, attrs: {}, text: "x", slot: "default" },
     ]);
   });
+
+  it("reads through markup it neither rendered nor adopted when given the template, writing nothing", () => {
+    const host = make(`<neuwo-t>${shell("a", '<i slot="start"></i>', "x")}<b slot="start"></b></neuwo-t>`);
+    const observer = watch(host);
+    expect(childInfo(host, testTemplate)).toEqual([
+      { tag: "i", attrs: { slot: "start" }, text: "", slot: "start" },
+      { tag: null, attrs: {}, text: "x", slot: "default" },
+      { tag: "b", attrs: { slot: "start" }, text: "", slot: "start" },
+    ]);
+    expect(childInfo(host)).toEqual([
+      { tag: "span", attrs: { class: "neuwo-t neuwo-t--a" }, text: "x", slot: "default" },
+      { tag: "b", attrs: { slot: "start" }, text: "", slot: "start" },
+    ]);
+    expect(observer.takeRecords()).toHaveLength(0);
+  });
 });
 
 describe("render()", () => {
