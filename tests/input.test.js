@@ -1,52 +1,318 @@
-import { describe, expect, it } from "vitest";
-import "../src/components/fields/input/neuwo-input.js";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { Window } from "happy-dom";
+import { act, useState } from "react";
+import { createRoot, hydrateRoot } from "react-dom/client";
+import { renderToString } from "react-dom/server";
+import "../src/index.js";
+import { NeuwoInput } from "../src/components/fields/input/neuwo-input.js";
+import { NeuwoFieldElement } from "../src/components/fields/field-element.js";
+import { expand } from "../src/server/index.js";
+import { jsx, jsxs } from "../src/react/jsx-runtime.js";
 
-function make(html) {
-  const host = document.createElement("div");
-  host.innerHTML = html;
-  document.body.appendChild(host);
-  return host.firstElementChild;
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
+const CONTROLLED = Symbol.for("neuwo.controlled");
+
+const cleanup = [];
+afterEach(() => {
+  while (cleanup.length) cleanup.pop()();
+  vi.restoreAllMocks();
+});
+
+function attach(node) {
+  document.body.appendChild(node);
+  cleanup.push(() => node.remove());
+  return node;
 }
 
+// Parsed detached, then attached: innerHTML on a connected container upgrades before the children exist.
+function make(html) {
+  const holder = document.createElement("div");
+  holder.innerHTML = html;
+  return attach(holder).firstElementChild;
+}
+
+function watch(target) {
+  const records = [];
+  const observer = new MutationObserver((list) => records.push(...list));
+  observer.observe(target, { subtree: true, childList: true, attributes: true, characterData: true });
+  return () => {
+    records.push(...observer.takeRecords());
+    observer.disconnect();
+    return records;
+  };
+}
+
+/**
+ * @param {HTMLInputElement} control
+ * @param {string} value
+ */
+function type(control, value) {
+  Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(control, value);
+  control.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
+const inputOf = (el) => el.querySelector(":scope > .neuwo-field > .neuwo-input");
+const labelOf = (el) => el.querySelector(":scope > .neuwo-field > .neuwo-field__label");
+const errorOf = (el) => el.querySelector(":scope > .neuwo-field > .neuwo-field__error");
+
 describe("<neuwo-input>", () => {
-  it("renders a text input by default", () => {
-    const control = make(`<neuwo-input></neuwo-input>`).shadowRoot.querySelector("input");
-    expect(control).toBeTruthy();
-    expect(control.type).toBe("text");
+  it("registers a light DOM field element", () => {
+    expect(customElements.get("neuwo-input")).toBe(NeuwoInput);
+    expect(Object.getPrototypeOf(NeuwoInput)).toBe(NeuwoFieldElement);
+    const el = make(`<neuwo-input></neuwo-input>`);
+    expect(el.shadowRoot).toBeNull();
+    expect(inputOf(el).type).toBe("text");
+    expect(el.querySelector("[part]")).toBeNull();
   });
 
-  it("drops the reserved error line under no-error-line and reflects the property", () => {
-    const withLine = make(`<neuwo-input label="Email"></neuwo-input>`);
-    expect(withLine.shadowRoot.querySelector(".field__error")).toBeTruthy();
-    const bare = make(`<neuwo-input label="Email" no-error-line></neuwo-input>`);
-    expect(bare.shadowRoot.querySelector(".field__error")).toBe(null);
-    expect(bare.noErrorLine).toBe(true);
-    bare.noErrorLine = false;
-    expect(bare.hasAttribute("no-error-line")).toBe(false);
-    expect(bare.shadowRoot.querySelector(".field__error")).toBeTruthy();
+  it("maps an allowed type onto the inner input and falls back to text for any other", () => {
+    expect(inputOf(make(`<neuwo-input type="email"></neuwo-input>`)).type).toBe("email");
+    const el = make(`<neuwo-input type="checkbox"></neuwo-input>`);
+    expect(inputOf(el).getAttribute("type")).toBe("text");
+    el.setAttribute("type", "number");
+    expect(inputOf(el).type).toBe("number");
   });
 
-  it("maps an allowed type onto the inner input", () => {
-    const control = make(`<neuwo-input type="email"></neuwo-input>`).shadowRoot.querySelector("input");
-    expect(control.type).toBe("email");
-  });
-
-  it("falls back to text for a type outside the allowed set", () => {
-    const control = make(`<neuwo-input type="checkbox"></neuwo-input>`).shadowRoot.querySelector("input");
-    expect(control.type).toBe("text");
-  });
-
-  it("forwards validation attributes to the inner input", () => {
-    const control = make(
-      `<neuwo-input type="number" min="0" max="10" step="2"></neuwo-input>`
-    ).shadowRoot.querySelector("input");
+  it("forwards the constraint attributes to the inner input", () => {
+    const control = inputOf(make(`<neuwo-input type="number" min="0" max="10" step="2" inputmode="numeric"></neuwo-input>`));
     expect(control.getAttribute("min")).toBe("0");
     expect(control.getAttribute("max")).toBe("10");
     expect(control.getAttribute("step")).toBe("2");
+    expect(control.getAttribute("inputmode")).toBe("numeric");
   });
 
-  it("is a form-associated element", () => {
+  it("copies aria-* and title to the inner input as they change, and leaves data-* on the element", () => {
+    const el = make(`<neuwo-input aria-label="Search" title="Find" data-x="1"></neuwo-input>`);
+    expect(inputOf(el).getAttribute("aria-label")).toBe("Search");
+    expect(inputOf(el).getAttribute("title")).toBe("Find");
+    expect(inputOf(el).hasAttribute("data-x")).toBe(false);
+    el.setAttribute("aria-label", "Query");
+    el.removeAttribute("title");
+    el.refresh();
+    expect(inputOf(el).getAttribute("aria-label")).toBe("Query");
+    expect(inputOf(el).hasAttribute("title")).toBe(false);
+  });
+
+  it("keeps the value property live, while the value attribute moves only a clean input", () => {
+    const el = make(`<neuwo-input value="a"></neuwo-input>`);
+    const control = inputOf(el);
+    expect(el.value).toBe("a");
+    el.setAttribute("value", "b");
+    expect(control.value).toBe("b");
+    expect(el.defaultValue).toBe("b");
+    type(control, "typed");
+    expect(el.value).toBe("typed");
+    el.setAttribute("value", "c");
+    expect(control.getAttribute("value")).toBe("c");
+    expect(control.value).toBe("typed");
+    el.value = "set";
+    expect(control.value).toBe("set");
+    expect(el.getAttribute("value")).toBe("c");
+  });
+
+  it("lets the inner input's native change reach a host listener exactly once", () => {
     const el = make(`<neuwo-input></neuwo-input>`);
-    expect(el.constructor.formAssociated).toBe(true);
+    const heard = vi.fn();
+    el.addEventListener("change", heard);
+    inputOf(el).dispatchEvent(new Event("change", { bubbles: true }));
+    expect(heard).toHaveBeenCalledTimes(1);
+  });
+
+  it("reports required through checkValidity and reportValidity", () => {
+    const el = make(`<neuwo-input required></neuwo-input>`);
+    expect(el.checkValidity()).toBe(false);
+    expect(el.reportValidity()).toBe(false);
+    type(inputOf(el), "filled");
+    expect(el.checkValidity()).toBe(true);
+    expect(el.reportValidity()).toBe(true);
+  });
+
+  it("returns to the value attribute when its form resets", () => {
+    const form = make(`<form><neuwo-input name="q" value="seed"></neuwo-input></form>`);
+    const el = form.querySelector("neuwo-input");
+    type(inputOf(el), "typed");
+    form.reset();
+    expect(el.value).toBe("seed");
+  });
+
+  it("focuses the inner input", () => {
+    const el = make(`<neuwo-input></neuwo-input>`);
+    el.focus();
+    expect(document.activeElement).toBe(inputOf(el));
+  });
+
+  it("shows a value set before it was connected", () => {
+    const el = document.createElement("neuwo-input");
+    el.value = "early";
+    attach(el);
+    expect(inputOf(el).value).toBe("early");
+    expect(inputOf(el).hasAttribute("value")).toBe(false);
+  });
+
+  it("submits through the native input before the script loads, leaving out disabled and unnamed fields", () => {
+    const page = new Window();
+    cleanup.push(() => page.happyDOM.close());
+    page.document.body.innerHTML = expand(
+      `<form>` +
+        `<neuwo-input name="email" type="email" value="a@b.c" label="Email"></neuwo-input>` +
+        `<neuwo-input name="empty"></neuwo-input>` +
+        `<neuwo-input name="off" value="x" disabled></neuwo-input>` +
+        `<neuwo-input value="nameless"></neuwo-input>` +
+        `<neuwo-input name="q" value="&quot;quoted&quot; &amp; <tagged>"></neuwo-input>` +
+        `</form>`,
+    );
+    expect(page.customElements.get("neuwo-input")).toBeUndefined();
+    const form = page.document.querySelector("form");
+    expect(form.querySelectorAll(".neuwo-input")).toHaveLength(5);
+    expect([...new page.FormData(form)]).toEqual([
+      ["email", "a@b.c"],
+      ["empty", ""],
+      ["q", '"quoted" & <tagged>'],
+    ]);
+  });
+
+  it("gives server-rendered and script-created inputs distinct ids that resolve inside their own field", () => {
+    const holder = document.createElement("div");
+    holder.innerHTML = expand(`<neuwo-input label="One" error="First"></neuwo-input><neuwo-input label="Two" error="Second"></neuwo-input>`);
+    attach(holder);
+    const created = document.createElement("neuwo-input");
+    created.setAttribute("label", "Three");
+    created.setAttribute("error", "Third");
+    holder.append(created);
+    const fields = Array.from(holder.querySelectorAll("neuwo-input"));
+    expect(fields).toHaveLength(3);
+    const ids = Array.from(holder.querySelectorAll("[id]"), (node) => node.id);
+    expect(ids).toHaveLength(6);
+    expect(new Set(ids).size).toBe(6);
+    for (const el of fields) {
+      const control = inputOf(el);
+      const label = labelOf(el);
+      expect(document.getElementById(label.getAttribute("for"))).toBe(control);
+      expect(document.getElementById(control.getAttribute("aria-describedby"))).toBe(errorOf(el));
+      expect(label.control).toBe(control);
+      const clicked = vi.fn();
+      control.addEventListener("click", clicked);
+      label.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+      expect(clicked).toHaveBeenCalledTimes(1);
+    }
+  });
+
+  it("adopts server markup without a mutation and keeps the server's ids through later error changes", () => {
+    const holder = document.createElement("div");
+    holder.innerHTML = expand(`<neuwo-input label="Email"></neuwo-input>`);
+    const el = holder.firstElementChild;
+    const control = inputOf(el);
+    const line = errorOf(el);
+    const children = Array.from(el.querySelector(".neuwo-field").children);
+    expect(control.id).toBe("neuwo-s1-control");
+    expect(line.id).toBe("neuwo-s1-error");
+    const stop = watch(holder);
+    attach(holder);
+    expect(stop()).toEqual([]);
+
+    el.setAttribute("error", "Required");
+    expect(inputOf(el)).toBe(control);
+    expect(control.id).toBe("neuwo-s1-control");
+    expect(labelOf(el).getAttribute("for")).toBe("neuwo-s1-control");
+    expect(control.getAttribute("aria-describedby")).toBe("neuwo-s1-error");
+    expect(errorOf(el)).toBe(line);
+    expect(line.id).toBe("neuwo-s1-error");
+    expect(line.textContent).toBe("Required");
+    expect(Array.from(el.querySelector(".neuwo-field").children)).toEqual(children);
+
+    el.removeAttribute("error");
+    expect(control.hasAttribute("aria-describedby")).toBe(false);
+    el.setAttribute("error", "Again");
+    expect(control.getAttribute("aria-describedby")).toBe("neuwo-s1-error");
+    expect(Array.from(document.querySelectorAll("[id]"), (node) => node.id)).toEqual(["neuwo-s1-control", "neuwo-s1-error"]);
+  });
+});
+
+describe("<neuwo-input> under React", () => {
+  /** @param {unknown} element */
+  async function render(element) {
+    const container = attach(document.createElement("div"));
+    const root = createRoot(container);
+    cleanup.push(() => act(() => root.unmount()));
+    await act(async () => root.render(element));
+    return { container, rerender: (/** @type {unknown} */ next) => act(async () => root.render(next)) };
+  }
+
+  it("calls onChange once per keystroke with the inner input as target, and keeps a value the consumer rejects", async () => {
+    const errors = vi.spyOn(console, "error");
+    const targets = [];
+    const onChange = vi.fn((event) => void targets.push(event.target));
+    const { container } = await render(jsx("neuwo-input", { value: "a", onChange, name: "q" }));
+    const host = container.querySelector("neuwo-input");
+    const control = inputOf(host);
+    expect(host[CONTROLLED]).toBe(true);
+    expect(control.value).toBe("a");
+    await act(async () => type(control, "ab"));
+    await act(async () => type(control, "ac"));
+    expect(onChange).toHaveBeenCalledTimes(2);
+    expect(targets).toEqual([control, control]);
+    expect(control.value).toBe("a");
+    expect(host.value).toBe("a");
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it("shows whatever the consumer's state says", async () => {
+    const errors = vi.spyOn(console, "error");
+    function Form() {
+      const [value, setValue] = useState("a");
+      return jsx("neuwo-input", { value, onChange: (event) => setValue(event.target.value.toUpperCase()) });
+    }
+    const { container } = await render(jsx(Form, {}));
+    const control = inputOf(container.querySelector("neuwo-input"));
+    await act(async () => type(control, "ab"));
+    expect(control.value).toBe("AB");
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it("starts from defaultValue and keeps what the user typed across a parent re-render", async () => {
+    const errors = vi.spyOn(console, "error");
+    const { container, rerender } = await render(jsx("neuwo-input", { defaultValue: "a", name: "q" }));
+    const host = container.querySelector("neuwo-input");
+    const control = inputOf(host);
+    expect(host[CONTROLLED]).toBe(false);
+    expect(host.hasAttribute("defaultvalue")).toBe(false);
+    expect(control.value).toBe("a");
+    await act(async () => type(control, "ab"));
+    await rerender(jsx("neuwo-input", { defaultValue: "a", name: "r" }));
+    expect(control.name).toBe("r");
+    expect(control.value).toBe("ab");
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it("takes a form prop as the id of the form the inner input submits with", async () => {
+    const errors = vi.spyOn(console, "error");
+    const { container } = await render(jsxs("div", { children: [jsx("form", { id: "signup" }), jsx("neuwo-input", { form: "signup", name: "q", defaultValue: "a" })] }));
+    const host = container.querySelector("neuwo-input");
+    expect(inputOf(host).getAttribute("form")).toBe("signup");
+    expect(host.form).toBe(container.querySelector("form"));
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it("hydrates server markup with no warning and keeps the server's ids", async () => {
+    const errors = vi.spyOn(console, "error");
+    const tree = () => jsx("neuwo-input", { value: "a", onChange() {}, label: "Email", error: "Taken" });
+    const parsed = document.createElement("div");
+    parsed.innerHTML = renderToString(tree());
+    const container = attach(document.createElement("div"));
+    container.append(...parsed.childNodes);
+    const control = inputOf(container.querySelector("neuwo-input"));
+    const id = control.id;
+    const recoverable = [];
+    let root;
+    await act(async () => {
+      root = hydrateRoot(container, tree(), { onRecoverableError: (thrown) => void recoverable.push(String(thrown?.message ?? thrown)) });
+    });
+    cleanup.push(() => act(() => root.unmount()));
+    expect(recoverable).toEqual([]);
+    expect(inputOf(container.querySelector("neuwo-input"))).toBe(control);
+    expect(control.id).toBe(id);
+    expect(control.getAttribute("aria-describedby")).toBe(errorOf(container.querySelector("neuwo-input")).id);
+    expect(errors).not.toHaveBeenCalled();
   });
 });

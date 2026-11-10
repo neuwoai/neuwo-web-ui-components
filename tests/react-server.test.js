@@ -58,6 +58,14 @@ describe("JSX runtime in React Server Components", () => {
     expect(found.jsxDEV).toEqual(classes);
   });
 
+  it.runIf(built)("renders <neuwo-input value> through the built runtime as an uncontrolled control with no function", () => {
+    const expected = {
+      control: { className: "neuwo-input", type: "text", id: expect.stringMatching(/-control$/), name: "n", defaultValue: "a" },
+      functions: [],
+    };
+    expect(found.input).toEqual({ jsx: expected, jsxDEV: expected });
+  });
+
   it.runIf(built)("renders a form control's value as its default, with no function, through the server runtime", () => {
     const expected = {
       input: { className: "x-field__input", name: "q", defaultValue: "a" },

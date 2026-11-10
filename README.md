@@ -1,8 +1,8 @@
 # Neuwo Web UI Library
 
 Neuwo design-language web components: vanilla custom elements, zero runtime deps. The button,
-badge, deal-ID chip, status dot, logo, copy wrapper, notice card and CTA band render into light DOM
-and can be server-rendered; the rest still use Shadow DOM while they migrate.
+badge, deal-ID chip, status dot, logo, copy wrapper, notice card, CTA band and text input render
+into light DOM and can be server-rendered; the rest still use Shadow DOM while they migrate.
 The single source for reusable Neuwo UI and its styling (tokens, component recipes, typography).
 
 ## Install
@@ -487,18 +487,19 @@ createRoot(document.getElementById("root")!).render(<App />);
 
 `jsxImportSource` points JSX at the library's runtime, which wraps React's own and expands the
 light DOM elements (`<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuwo-status-dot>`,
-`<neuwo-logo>`, `<neuwo-copy>`, `<neuwo-notice>` and `<neuwo-cta>`) into their markup; MDX reads
-its own `jsxImportSource` option, not tsconfig's, so set it there too (in `@mdx-js/*` or Next's
-MDX config). Elements recognise markup React rendered, from Client or Server Components, and leave
-it to React, so without the setting a light DOM tag React renders stays bare. The same setting adds
-every element to JSX with each attribute's allowed values and each custom event's `detail`, so a
-misspelt variant fails the type check. React stays an optional peer dependency.
+`<neuwo-logo>`, `<neuwo-copy>`, `<neuwo-notice>`, `<neuwo-cta>` and `<neuwo-input>`) into their
+markup; MDX reads its own `jsxImportSource` option, not tsconfig's, so set it there too (in
+`@mdx-js/*` or Next's MDX config). Elements recognise markup React rendered, from Client or Server
+Components, and leave it to React, so without the setting a light DOM tag React renders stays bare.
+The same setting adds every element to JSX with each attribute's allowed values and each custom
+event's `detail`, so a misspelt variant fails the type check. React stays an optional peer
+dependency.
 
-React renders the markup of the eight light DOM elements itself, so they show from the first paint.
-The Shadow DOM components (fields and selection controls) render when they register, which the
-first import does in the same pass, before the browser paints. Registering later, from an effect
-or a script that runs after the app, shows those as bare tags first and the components a moment
-after.
+React renders the markup of the nine light DOM elements itself, so they show from the first paint.
+The Shadow DOM components (the other fields and the selection controls) render when they register,
+which the first import does in the same pass, before the browser paints. Registering later, from an
+effect or a script that runs after the app, shows those as bare tags first and the components a
+moment after.
 
 React 19 sets a property where the element has one and binds events, so the elements behave like
 native controls:
@@ -510,11 +511,28 @@ native controls:
 <neuwo-notice dismissible hidden={!open} ondismiss={(e) => { e.preventDefault(); setOpen(false); }}>...</neuwo-notice>
 ```
 
-- `onChange`, and `onInput` on `<neuwo-combobox>`, fire as they do on native fields.
+- `onChange`, and `onInput` on `<neuwo-combobox>`, fire as they do on native fields. On
+  `<neuwo-input>` that means React's own model, below.
 - A custom event binds by its exact name, so it is lower case: `oncopied`, `ondismiss`.
   `onCopied` listens for an event called `Copied`, which never fires; the types reject it.
 - Cancel the notice's `dismiss` and drive `hidden` from state. Left alone, the element hides
   itself by setting `hidden` on a host React renders, which React does not know about.
+
+`<neuwo-input>` behaves like React's own `<input>`, because the JSX runtime renders the native
+input inside it and hands it your value props:
+
+```tsx
+<neuwo-input value={email} onChange={(e) => setEmail(e.target.value)} />
+<neuwo-input defaultValue="draft" name="notes" />
+```
+
+- `value` makes the field controlled: it shows whatever your state says, and a keystroke your
+  handler ignores is undone.
+- `onChange` fires on every keystroke, as on a native `<input>` in React, with the inner
+  `<input>` as `event.target`. It used to fire only when the user committed a value.
+- `defaultValue` gives an uncontrolled field with a starting value, which keeps what the user
+  types across re-renders.
+- In Server Components there is no state to hold, so `value` is the starting value there.
 
 React 18 passes every prop to a custom element as a text attribute. `disabled={false}` becomes
 `disabled="false"`, which the element reads as disabled. `onClick` and `onInput` still work, but
@@ -543,7 +561,7 @@ export function Neuwo() {
 }
 ```
 
-Render `<Neuwo />` once in the root layout. Because the JSX runtime expands the eight light DOM
+Render `<Neuwo />` once in the root layout. Because the JSX runtime expands the nine light DOM
 elements, the server-rendered HTML carries their full markup and they are on-brand from the first
 paint, before the bundle has run. The Shadow DOM components arrive as bare tags and render when
 the bundle registers them. Import `neuwo.css` instead of `neuwo-components.css` to add the
@@ -592,8 +610,8 @@ Published styling files, for direct linking or non-web use:
 ## Restyling from the host
 
 `<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuwo-status-dot>`, `<neuwo-logo>`,
-`<neuwo-copy>`, `<neuwo-notice>` and `<neuwo-cta>` render their markup into their own light DOM, so
-they have no parts. Their prefixed classes are the public hooks instead. Put the element name in
+`<neuwo-copy>`, `<neuwo-notice>`, `<neuwo-cta>` and `<neuwo-input>` render their markup into their
+own light DOM, so they have no parts. Their prefixed classes are the public hooks instead. Put the element name in
 front for weight, so a rule wins without `!important`:
 
 ```css
@@ -655,6 +673,16 @@ properties, or target the children you passed in.
 | `.neuwo-cta__field--empty` | the field wrapper while nothing fills it, taken out of the flow |
 | `.neuwo-cta__status` | the status line, a polite live region |
 | `.neuwo-cta__status--success`, `.neuwo-cta__status--error` | the status line, by `status-state` |
+| `.neuwo-field` | the input's wrapper `<div>`, which stacks the label, the control and the error line; it was `::part(field)` |
+| `.neuwo-field--sm` | the wrapper, by `size="sm"` |
+| `.neuwo-field__label` | the `<label>`, associated with the control; it was `::part(label)` |
+| `.neuwo-field__label--empty` | the label while neither `label` nor a `slot="label"` child fills it, taken out of the flow |
+| `.neuwo-field__label-content` | the wrapper around the `slot="label"` children, `display: contents` |
+| `.neuwo-field__label-text` | the `label` text, while no `slot="label"` child replaces it |
+| `.neuwo-field__required` | the required marker after the label |
+| `.neuwo-input` | the native `<input>`; it was `::part(input)` |
+| `.neuwo-input--sm`, `.neuwo-input--error` | the control, by `size="sm"`, and by `error` unless `error-muted` or `no-error-line` is set |
+| `.neuwo-field__error` | the reserved error line; it was `::part(error)` |
 
 The badge and deal-id render their text as authored, so casing is yours:
 
@@ -664,6 +692,16 @@ The badge and deal-id render their text as authored, so casing is yours:
 
 Prefer a size axis where one exists (`<neuwo-badge size>`, `<neuwo-deal-id
 size>`) over a font-size override, so the scale stays on-brand.
+
+A transient state the component does not own, such as a field flashed red on a
+host-driven event without a persistent `error`, is a rule on the same classes:
+
+```css
+.api-field[data-flash] .neuwo-input {
+  border-color: var(--neuwo-color-red);
+  box-shadow: var(--neuwo-shadow-danger);
+}
+```
 
 The other elements render into a shadow root. Shadow DOM keeps the host page's
 CSS out, but two channels are deliberately open, and together they reach almost
@@ -681,7 +719,7 @@ every visual detail without forking a component:
 - **Inherited CSS properties** cross the boundary into slotted content, so a
   host `text-transform` or `color` reaches the text of a shadow DOM element.
 
-- **Transient state** is reachable too: the field controls expose
+- **Transient state** is reachable too: the other field controls expose
   `::part(input)`, so a host-driven flag can flash a field without the
   component owning a persistent `error`:
 
@@ -694,22 +732,50 @@ every visual detail without forking a component:
 
 ## Form fields share one API
 
-`<neuwo-input>`, `<neuwo-textarea>`, `<neuwo-combobox>` and
-`<neuwo-range>`
-extend one base, so they share the same attributes and properties (`name`,
-`value`, `label`, `disabled`, `required`, `error`, `error-muted`,
-`no-error-line`, `size`), the same `change` event, and the same parts (`field`,
-`input`, `label`, `error`). The selection controls (`<neuwo-checkbox>`,
-`<neuwo-toggle>`, `<neuwo-radio-group>`, `<neuwo-segmented>`) share the error
-and `no-error-line` behaviour below. The generated `.d.ts` shows these on the
-base class each control `extends`.
+`<neuwo-input>`, `<neuwo-textarea>`, `<neuwo-combobox>` and `<neuwo-range>`
+share the same attributes and properties (`name`, `value`, `label`, `disabled`,
+`required`, `error`, `error-muted`, `no-error-line`, `size`) and the same
+`change` event. The selection controls (`<neuwo-checkbox>`, `<neuwo-toggle>`,
+`<neuwo-radio-group>`, `<neuwo-segmented>`) share the error and
+`no-error-line` behaviour below. The generated `.d.ts` shows these on the base
+class each control `extends`.
+
+`<neuwo-input>` renders a native `<input>` into its own light DOM, and that
+input is the form control. The element carries `name`, `value`, `required`,
+`disabled`, `readonly`, `placeholder`, `autocomplete`, `form` and the
+constraint attributes onto it, so a form of inputs submits and validates
+natively, in server-rendered markup before the script has loaded too. The element itself is
+not form-associated, so each value is submitted once.
+
+- **`value` is the starting value**, as on a native input. Changing the
+  attribute moves an input the user has not edited yet, and `form.reset()`
+  returns to it. The `value` property reads and writes what the field shows
+  now and never touches the attribute; `defaultValue` reflects the attribute.
+- **The inner input's own events** reach your listeners: `input` on every
+  keystroke and `change` when the user commits, both bubbling through the
+  element. The element dispatches none of its own.
+- **The native form API** answers for the inner input: `form`, `validity`,
+  `validationMessage`, `checkValidity()`, `reportValidity()` and
+  `setCustomValidity()`. `focus()` and `blur()` move focus to it, and a click on
+  the label focuses it.
+- **`aria-*` and `title`** on the element are copied onto the inner input,
+  which needs them for its accessible name and tooltip. `data-*` stays on the
+  element only, so a query such as `[data-testid="email"]` matches one node.
+
+The textarea, combobox and range still render into a shadow root, are
+form-associated, and share the parts `field`, `input`, `label` and `error`. On
+`<neuwo-input>` those parts are the classes `.neuwo-field`, `.neuwo-input`,
+`.neuwo-field__label` and `.neuwo-field__error`, listed under restyling above.
 
 ## Form errors
 
 Every form control (fields and selection controls) shows an error from the consumer-set
 `error` attribute: the message text, a red accent, and `aria-invalid` on the control. The
 component owns no error text of its own, so the consumer decides when the error appears and
-clears (`required` validity is reported natively and separately, not as this message).
+clears (`required` validity is reported natively and separately, not as this message). On
+`<neuwo-input>` the message line is part of the rendered markup, so an error the server sets
+shows in the first paint, and a form reset leaves `error` alone: the page set it, so the page
+clears it.
 
 Add `error-muted` alongside `error` to drop the heavy control chrome without losing the note: the
 red border and box-shadow ring come off the instant the user acts, while the red message and the
@@ -785,8 +851,8 @@ The sub wrapper is a `<div>`, so a paragraph works as the sub line. The field wr
 `.neuwo-cta__field--empty` and leaves no gap while nothing fills it. Appending a field to the
 element updates it in a microtask; a field a script removes from inside its wrapper is caught up
 the next time the element reconciles, when an attribute such as `status` changes or a child is
-added to or removed from the element itself. A `<neuwo-input>` in the field still renders into a
-shadow root, so it appears when the bundle registers it.
+added to or removed from the element itself. A `<neuwo-input>` in the field is rendered with the
+band, so a server-rendered capture form is styled, and submits, before the bundle has loaded.
 
 ## Notices
 

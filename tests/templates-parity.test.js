@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { jsx, jsxs } from "../src/react/jsx-runtime.js";
 import { templates } from "../src/templates.js";
@@ -15,11 +15,16 @@ function toReact(child) {
   return jsx(child.tag, { ...props, children: child.text });
 }
 
-const viaReact = (tag, testCase) => renderToStaticMarkup(jsxs(tag, { ...testCase.attrs, children: testCase.children.map(toReact) }));
+// React warns about a value without onChange, and a fixture's value is only the starting value.
+const handlers = (attrs) => (Object.hasOwn(attrs, "value") ? { onChange() {} } : {});
+
+const viaReact = (tag, testCase) =>
+  renderToStaticMarkup(jsxs(tag, { ...testCase.attrs, ...handlers(testCase.attrs), children: testCase.children.map(toReact) }));
 
 const mounted = [];
 afterEach(() => {
   while (mounted.length) mounted.pop().remove();
+  vi.restoreAllMocks();
 });
 
 function viaDom(tag, testCase) {
@@ -42,11 +47,13 @@ describe("template parity across the HTML, React and DOM adapters", () => {
     describe(tag, () => {
       for (const testCase of list) {
         it(testCase.name, () => {
+          const errors = vi.spyOn(console, "error");
           const html = normalise(renderHtml(tag, testCase));
           expect(html).toContain(`<${tag}`);
           expect(normalise(expand(markup({ tag, attrs: testCase.attrs, children: testCase.children })))).toBe(html);
           expect(normalise(viaReact(tag, testCase))).toBe(html);
           expect(normalise(viaDom(tag, testCase))).toBe(html);
+          expect(errors).not.toHaveBeenCalled();
         });
 
         it(`${testCase.name}: describes the children as the server does`, () => {

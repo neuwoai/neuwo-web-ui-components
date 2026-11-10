@@ -1,4 +1,4 @@
-import { NeuwoFieldElement, fieldSheet } from "../field-element.js";
+import { NeuwoShadowFieldElement, fieldSheet } from "../shadow-field-element.js";
 import { define } from "../../../core/element.js";
 import { sheet } from "../../../core/sheet.js";
 import { positionPopup } from "../../../core/position-popup.js";
@@ -18,10 +18,10 @@ let cbUid = 0;
  * @csspart chevron - the dropdown chevron.
  * @csspart popup - the floating list container.
  */
-export class NeuwoCombobox extends NeuwoFieldElement {
+export class NeuwoCombobox extends NeuwoShadowFieldElement {
   static formAssociated = true;
   static styles = [fieldSheet, sheet(comboboxCss)];
-  static observedAttributes = [...NeuwoFieldElement.observedAttributes, "searchable"];
+  static observedAttributes = [...NeuwoShadowFieldElement.observedAttributes, "searchable"];
 
   #cbId = `neuwo-cb-${++cbUid}`;
   #options = []; // { value, label, disabled, selected, group }

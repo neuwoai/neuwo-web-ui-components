@@ -1,8 +1,9 @@
-import type { NeuwoButton } from "@neuwo/web-ui-library--demo";
+import type { NeuwoButton, NeuwoInput } from "@neuwo/web-ui-library--demo";
 import { useRef, useState } from "react";
 
 export function Usage() {
   const button = useRef<NeuwoButton>(null);
+  const input = useRef<NeuwoInput>(null);
   const [s, setS] = useState("");
   return (
     <>
@@ -18,7 +19,10 @@ export function Usage() {
       <neuwo-cta heading-level="3" />
       <neuwo-textarea rows={4} className="notes" />
       <neuwo-input value={s} onChange={(e) => setS(e.target.value)} />
+      <neuwo-input ref={input} defaultValue="draft" name="q" onChange={(e) => e.target.checkValidity()} />
       <neuwo-range value={40} />
+      {/* @ts-expect-error not a text-like input type */}
+      <neuwo-input type="checkbox" />
       {/* @ts-expect-error not a button variant */}
       <neuwo-button variant="primary" />
       {/* @ts-expect-error glow is a boolean */}

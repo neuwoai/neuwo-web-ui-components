@@ -1,0 +1,112 @@
+/* ==========================================================================
+   Fields: shared chrome for the text-entry controls
+   (input, textarea, combobox, range)
+   ========================================================================== */
+
+/* --- Host: a field is a block so its control can fill the width --- */
+
+:host {
+  display: block;
+}
+
+/* --- Wrapper: label + control + optional error, stacked --- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--neuwo-space-2);
+}
+
+.field__label {
+  font-size: var(--neuwo-font-size-sm);
+  font-weight: var(--neuwo-font-weight-medium);
+  color: var(--neuwo-color-heading);
+}
+
+/* The label element is always present so its slot can receive rich content at
+   any time; with neither attribute text nor slotted content it is taken out of
+   the flow entirely, so the column gap does not reserve space for it. */
+.field__label--empty {
+  display: none;
+}
+
+.field__required {
+  margin-left: var(--neuwo-space-1);
+  color: var(--neuwo-color-red);
+}
+
+/* --- The shared control chrome --- */
+
+.input {
+  width: 100%;
+  padding: var(--neuwo-space-3) var(--neuwo-space-4);
+  background: var(--neuwo-glass-bg);
+  border: 1px solid var(--neuwo-glass-border);
+  border-radius: var(--neuwo-radius-lg);
+  color: var(--neuwo-color-text);
+  color-scheme: dark; /* native spinners (neuwo-input[type=number]) render dark, not white */
+  font-family: var(--neuwo-font-text);
+  font-size: var(--neuwo-font-size-base);
+  transition: border-color var(--neuwo-transition-fast), box-shadow var(--neuwo-transition-fast);
+}
+
+.input:focus-visible {
+  outline: none;
+  box-shadow: var(--neuwo-shadow-focus);
+}
+
+.input::placeholder {
+  color: var(--neuwo-color-grey-400);
+}
+
+.input:disabled {
+  opacity: var(--neuwo-opacity-disabled);
+  cursor: not-allowed;
+}
+
+/* --- Size axis: `sm` is a density step, not only a smaller control --- */
+
+.input--sm {
+  padding: var(--neuwo-space-2) var(--neuwo-space-3);
+  font-size: var(--neuwo-font-size-sm);
+}
+
+/* A compact control under a full-size label reads wrong, so the whole column
+   tightens: the gap closes and the label and error line drop one step. */
+.field--sm {
+  gap: var(--neuwo-space-1);
+}
+
+.field--sm .field__label,
+.field--sm .field__error {
+  font-size: var(--neuwo-font-size-xs);
+}
+
+/* --- State: error (red border + danger ring + a single shake) --- */
+
+.input--error {
+  border-color: var(--neuwo-color-red);
+  box-shadow: var(--neuwo-shadow-danger);
+  animation: neuwo-field-shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+/* Always present and reserving one line, so showing or hiding the message
+   never shifts the surrounding layout. */
+.field__error {
+  min-height: 1lh;
+  font-size: var(--neuwo-font-size-sm);
+  color: var(--neuwo-color-red);
+}
+
+@keyframes neuwo-field-shake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-4px); }
+  40%, 60% { transform: translateX(4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .input--error {
+    animation: none;
+  }
+}

@@ -72,6 +72,15 @@ for (const [name, create] of Object.entries(factories)) {
   assert.deepEqual(icons, ["svg.icon"], `${name}: the slotted icon is not inside neuwo-btn__start`);
 }
 
+found.input = {};
+for (const [name, create] of Object.entries(factories)) {
+  const Page = () => create("main", { children: create("neuwo-input", { value: "a", name: "n" }) });
+  const { errors, payload } = await flight(create(Page, {}));
+  assert.deepEqual(errors, [], `${name}: the neuwo-input Flight render reported errors`);
+  const tree = await decode(payload);
+  found.input[name] = { control: find(tree, (el) => el.props.className === "neuwo-input")?.props, functions: functionsIn(tree) };
+}
+
 found.form = {};
 for (const [name, create] of Object.entries(formFactories)) {
   const Page = () => create("main", { children: [create("x-field", { value: "a", name: "q" }), create("x-notes", { value: "n" })] });

@@ -2,6 +2,32 @@
 
 ## Unreleased
 
+- Breaking: `<neuwo-input>` renders into its own light DOM from one template, so a server-rendered
+  input is styled from the first paint, and its recipe, `components/fields/field.css`, joins
+  `neuwo-components.css`. Its classes are prefixed: `.field` is now `.neuwo-field` (with
+  `.neuwo-field--sm`), `.field__label`, `.field__label--empty`, `.field__required` and `.field__error`
+  are now `.neuwo-field__label`, `.neuwo-field__label--empty`, `.neuwo-field__required` and
+  `.neuwo-field__error`, and `.input`, `.input--sm` and `.input--error` are now `.neuwo-input`,
+  `.neuwo-input--sm` and `.neuwo-input--error`. The label holds two new spans: `.neuwo-field__label-content`
+  around the `slot="label"` children, `display: contents`, and `.neuwo-field__label-text` around the
+  `label` text.
+- Breaking: `::part(field)`, `::part(label)`, `::part(input)` and `::part(error)` on `<neuwo-input>` are
+  gone. Restyle through the classes, with the element name in front for weight:
+  `neuwo-input .neuwo-input { border-radius: 0; }`.
+- Breaking: `<neuwo-input>` is no longer form-associated. Its native `<input>` sits inside your form and
+  carries `name`, `value`, `required`, `disabled`, `form` and the constraint attributes, so it submits, resets
+  and validates natively, in server-rendered markup before the script has loaded too. The `value`
+  attribute is the starting value, as on a native input: changing it moves only an input the user has
+  not edited, and a form reset returns to it and no longer clears `error`. The element no longer
+  dispatches its own `change`; the input's own `change` bubbles through it, once. `form`, `validity`,
+  `validationMessage`, `checkValidity()`, `reportValidity()`, `setCustomValidity()`, `focus()` and
+  `blur()` act on the inner input, and `name` and `defaultValue` are now properties too.
+- Breaking: in React, `onChange` on `<neuwo-input>` fires on every keystroke, as on React's own
+  `<input>`, instead of when the user commits a value. `value` makes the field controlled,
+  `defaultValue` starts an uncontrolled one, and `event.target` is the inner `<input>`.
+- Breaking: `data-*` on `<neuwo-input>` stays on the element and is no longer copied onto the inner
+  input, so a query such as `[data-testid="email"]` matches one node. `aria-*` and `title` are still
+  copied, and a later change or removal now reaches the inner input too.
 - Breaking: `<neuwo-cta>` renders into its own light DOM from one template, so a server-rendered band
   is styled from the first paint. Its classes are prefixed: `.cta` is now `.neuwo-cta` (with
   `.neuwo-cta--{banner|spotlight}`), and `.cta__body`, `.cta__glow`, `.cta__inner`, `.cta__headline`,

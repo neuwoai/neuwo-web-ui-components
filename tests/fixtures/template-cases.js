@@ -117,6 +117,44 @@ export const cases = {
     { name: "unknown size", attrs: { size: "xl" }, children: ["NW-3"] },
     { name: "empty", attrs: {}, children: [] },
   ],
+  "neuwo-input": [
+    { name: "default", attrs: {}, children: [] },
+    {
+      name: "label, required and error",
+      attrs: { name: "email", value: "nope", form: "signup", label: "Work email", required: "", error: "That value is not allowed" },
+      children: [],
+    },
+    {
+      name: "slotted label element",
+      attrs: { name: "key", required: "" },
+      children: [{ tag: "span", attrs: { slot: "label" }, children: ["API key ", { tag: "a", attrs: { href: "#why" }, text: "why?" }] }],
+    },
+    {
+      name: "small email with the constraint attributes",
+      attrs: {
+        size: "sm",
+        type: "email",
+        placeholder: "you@company.com",
+        autocomplete: "email",
+        readonly: "",
+        min: "1",
+        max: "9",
+        step: "1",
+        pattern: ".+@.+",
+        minlength: "6",
+        maxlength: "64",
+        inputmode: "email",
+      },
+      children: [],
+    },
+    { name: "no error line", attrs: { label: "Search", "no-error-line": "" }, children: [] },
+    { name: "forwarded host attributes", attrs: { "aria-label": "Search", title: "Search the site", "data-x": "1" }, children: [] },
+    {
+      name: "disabled with a muted error",
+      attrs: { label: "Plan", value: "pro", disabled: "", error: "Unavailable", "error-muted": "" },
+      children: [],
+    },
+  ],
   "neuwo-logo": [
     { name: "default", attrs: {}, children: [] },
     { name: "bg-light", attrs: { variant: "bg-light" }, children: [] },
@@ -205,13 +243,25 @@ export function renderChildren(children) {
   return children.map((child) => ({ ...describe(child), html: expand(markup(child)) }));
 }
 
+const REFERENCES = ["for", "aria-describedby", "aria-labelledby", "aria-controls"];
+
 /**
+ * Sorts attributes and renumbers ids by first appearance, so adapters that mint ids differently compare equal.
  * @param {string} html
  * @returns {string}
  */
 export function normalise(html) {
   const holder = document.createElement("template");
   holder.innerHTML = html;
+  /** @type {Map<string, string>} */
+  const ids = new Map();
+  for (const el of holder.content.querySelectorAll("[id]")) if (!ids.has(el.id)) ids.set(el.id, `id-${ids.size + 1}`);
+  for (const el of holder.content.querySelectorAll("*")) {
+    if (el.hasAttribute("id")) el.id = ids.get(el.id);
+    for (const name of REFERENCES) {
+      if (el.hasAttribute(name)) el.setAttribute(name, el.getAttribute(name).replace(/\S+/g, (token) => ids.get(token) ?? token));
+    }
+  }
   for (const el of holder.content.querySelectorAll("*")) {
     const attrs = Array.from(el.attributes, ({ name, value }) => [name, value]).sort(([a], [b]) => (a < b ? -1 : 1));
     for (const [name] of attrs) el.removeAttribute(name);

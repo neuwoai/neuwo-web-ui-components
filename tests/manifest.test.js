@@ -101,10 +101,12 @@ describe("custom-elements.json", () => {
     expect(partsFor(manifest, "neuwo-button").size).toBe(0);
   });
 
-  it("documents the input's type and constraint attributes", () => {
+  it("documents the input's type and constraint attributes, its change event and no parts", () => {
     const attrs = attributesFor(manifest, "neuwo-input");
-    for (const a of ["type", "min", "max", "step", "pattern", "minlength", "maxlength"])
+    for (const a of ["type", "min", "max", "step", "pattern", "minlength", "maxlength", "inputmode"])
       expect(attrs).toContain(a);
+    expect(declByTag(manifest, "neuwo-input").events.map((e) => e.name)).toContain("change");
+    expect(partsFor(manifest, "neuwo-input").size).toBe(0);
   });
 
   it("documents the range's bounds and its input part", () => {

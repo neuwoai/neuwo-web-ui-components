@@ -1,4 +1,4 @@
-import { NeuwoFieldElement, fieldSheet } from "../field-element.js";
+import { NeuwoShadowFieldElement, fieldSheet } from "../shadow-field-element.js";
 import { define } from "../../../core/element.js";
 import { sheet } from "../../../core/sheet.js";
 import textareaCss from "./textarea.css?raw";
@@ -12,11 +12,11 @@ import textareaCss from "./textarea.css?raw";
  * @attr minlength - minimum text length.
  * @attr maxlength - maximum text length.
  */
-export class NeuwoTextarea extends NeuwoFieldElement {
+export class NeuwoTextarea extends NeuwoShadowFieldElement {
   static formAssociated = true;
   static styles = [fieldSheet, sheet(textareaCss)];
   static observedAttributes = [
-    ...NeuwoFieldElement.observedAttributes,
+    ...NeuwoShadowFieldElement.observedAttributes,
     "rows",
     "minlength",
     "maxlength",

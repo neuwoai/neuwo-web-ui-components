@@ -1,4 +1,4 @@
-import { NeuwoFieldElement, fieldSheet } from "../field-element.js";
+import { NeuwoShadowFieldElement, fieldSheet } from "../shadow-field-element.js";
 import { define } from "../../../core/element.js";
 import { sheet } from "../../../core/sheet.js";
 import rangeCss from "./range.css?raw";
@@ -23,14 +23,14 @@ import rangeCss from "./range.css?raw";
  * @cssprop --neuwo-range-thumb-size - diameter of the thumb (default 0.875rem).
  * @cssprop --neuwo-range-fill - filled portion of the track; written by the component on every value change, not a consumer knob.
  */
-export class NeuwoRange extends NeuwoFieldElement {
+export class NeuwoRange extends NeuwoShadowFieldElement {
   static formAssociated = true;
   static styles = [fieldSheet, sheet(rangeCss)];
   // `aria-valuetext` is observed, not just forwarded: a slider's readable value
   // is formatted by the consumer and rewritten on every drag, so it has to reach
   // the control without waiting for some other attribute to trigger a render.
   static observedAttributes = [
-    ...NeuwoFieldElement.observedAttributes,
+    ...NeuwoShadowFieldElement.observedAttributes,
     "min",
     "max",
     "step",

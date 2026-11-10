@@ -38,7 +38,7 @@
         padding: 0;
         border: 3px solid hotpink;
       }
-      /* Hostile rule: if Shadow DOM leaked, the fields would turn hot pink too. */
+      /* Hostile rule: the old unprefixed classes no longer reach the input, and the other fields keep a shadow root. */
       .input,
       .field {
         background: hotpink !important;
@@ -1064,6 +1064,6 @@
     <p class="neuwo-eyebrow">Kicker label</p>
 
     <!-- Transient field-error flash from the host page (supported escape hatch):
-         neuwo-input[data-flash]::part(input) { border-color: var(--neuwo-color-red); } -->
+         neuwo-input[data-flash] .neuwo-input { border-color: var(--neuwo-color-red); } -->
   </body>
 </html>

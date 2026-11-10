@@ -13,10 +13,13 @@ const COMPONENTS = "src/components";
 const folders = readdirSync(join(root, COMPONENTS), { recursive: true })
   .map((path) => posix.join(COMPONENTS, path))
   .filter((path) => statSync(join(root, path)).isDirectory());
+// Adopted by the fields still on Shadow DOM, so it never joins the light stylesheets.
+const SHADOW_ONLY = new Set(["src/components/fields/shadow-field.css"]);
 const cssIn = (folder) =>
   readdirSync(join(root, folder))
     .filter((file) => file.endsWith(".css"))
-    .map((file) => posix.join(folder, file));
+    .map((file) => posix.join(folder, file))
+    .filter((file) => !SHADOW_ONLY.has(file));
 
 function recipesOf(tag) {
   const name = tag.replace(/^neuwo-/, "");
