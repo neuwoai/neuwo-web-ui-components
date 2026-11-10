@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { Fragment, act } from "react";
 import { createRoot, hydrateRoot } from "react-dom/client";
 import { renderToStaticMarkup, renderToString } from "react-dom/server";
-import { h, raw, region } from "../src/core/template.js";
+import { h, has, raw, region } from "../src/core/template.js";
 import { idScope } from "../src/core/ids.js";
 import { renderElement } from "../src/core/adapters/html.js";
 import { createRuntime } from "../src/core/adapters/react.js";
@@ -137,6 +137,34 @@ describe("createRuntime()", () => {
     await act(async () => root.render(view(false)));
     expect(container.querySelector("u")).toBeNull();
     expect(container.querySelector("b")).toBe(bold);
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it("keys template elements by block element class, else first class, so a template element appearing moves nothing", async () => {
+    const flagged = (a) =>
+      h(
+        "span",
+        { class: "neuwo-k" },
+        has(a, "flag") && h("i", { class: "neuwo-k__flag" }),
+        h("b", { class: "neuwo-k" }),
+        h("span", { class: "neuwo-k__body" }, region()),
+      );
+    const { jsx: create } = createRuntime({ "neuwo-k": flagged });
+    const errors = vi.spyOn(console, "error");
+    const container = mount();
+    const root = createRoot(container);
+    cleanups.unshift(() => act(() => root.unmount()));
+    const view = (flag) => create("neuwo-k", { flag, children: create("u", {}) });
+    await act(async () => root.render(view(false)));
+    const [mark, author] = [container.querySelector("b"), container.querySelector("u")];
+    await act(async () => root.render(view(true)));
+    expect(container.querySelector(".neuwo-k").firstElementChild.className).toBe("neuwo-k__flag");
+    expect(container.querySelector("b")).toBe(mark);
+    expect(container.querySelector("u")).toBe(author);
+    await act(async () => root.render(view(false)));
+    expect(container.querySelector("i")).toBeNull();
+    expect(container.querySelector("b")).toBe(mark);
+    expect(container.querySelector("u")).toBe(author);
     expect(errors).not.toHaveBeenCalled();
   });
 

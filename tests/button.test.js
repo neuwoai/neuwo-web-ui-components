@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { useState } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import "../src/index.js";
@@ -10,7 +11,7 @@ import { buttonTemplate } from "../src/components/button/button.template.js";
 import { renderElement } from "../src/core/adapters/html.js";
 import { idScope } from "../src/core/ids.js";
 import { normalizeProps } from "../src/core/template.js";
-import { jsx } from "../src/react/jsx-runtime.js";
+import { jsx, jsxs } from "../src/react/jsx-runtime.js";
 import { normalise } from "./fixtures/template-cases.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -313,6 +314,59 @@ describe("<neuwo-button> under React", () => {
     expect(show(base)).toBe(btn);
     expect(btn.querySelector(".neuwo-btn__spinner")).toBeNull();
 
+    expect(error).not.toHaveBeenCalled();
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  function counterApp() {
+    const error = vi.spyOn(console, "error");
+    const warn = vi.spyOn(console, "warn");
+    const container = attach(document.createElement("div"));
+    const root = createRoot(container);
+    cleanup.push(() => root.unmount());
+    let increment = () => {};
+    function Counter({ slot }) {
+      const [count, setCount] = useState(0);
+      increment = () => setCount((n) => n + 1);
+      return jsx("span", { slot, className: "counter", children: count });
+    }
+    const show = (props, slot) => flushSync(() => root.render(jsxs("neuwo-button", { ...props, children: [jsx(Counter, { slot }), "Save"] })));
+    const counter = () => container.querySelector(".counter");
+    return { error, warn, container, show, counter, increment: () => flushSync(() => increment()) };
+  }
+
+  it.each([
+    ["in the label", undefined],
+    ['in slot="start"', "start"],
+  ])("keeps a stateful child %s, and its DOM node, while loading toggles on and off", (_, slot) => {
+    const { error, warn, container, show, counter, increment } = counterApp();
+    show({}, slot);
+    increment();
+    const node = counter();
+    expect(node.textContent).toBe("1");
+
+    show({ loading: true }, slot);
+    expect(container.querySelector(".neuwo-btn").firstElementChild.className).toBe("neuwo-btn__spinner");
+    expect(counter()).toBe(node);
+    expect(node.textContent).toBe("1");
+
+    show({}, slot);
+    expect(container.querySelector(".neuwo-btn__spinner")).toBeNull();
+    expect(counter()).toBe(node);
+    expect(node.textContent).toBe("1");
+
+    expect(error).not.toHaveBeenCalled();
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it("renders a stateful child inside the link when href is added, without asserting identity because the root tag changes", () => {
+    const { error, warn, container, show, counter } = counterApp();
+    show({});
+    show({ href: "https://neuwo.ai" });
+    expect(counter().closest(".neuwo-btn").localName).toBe("a");
+    show({});
+    expect(counter().closest(".neuwo-btn").localName).toBe("button");
+    expect(container.querySelectorAll(".counter")).toHaveLength(1);
     expect(error).not.toHaveBeenCalled();
     expect(warn).not.toHaveBeenCalled();
   });

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Under React, toggling `loading` on `<neuwo-button>` no longer remounts the children passed into it, so
+  their state and DOM nodes survive: the JSX runtime now keys every element it renders from a template.
+
 - Breaking: `<neuwo-logo>` renders its `<svg>` into its own light DOM from one template, so a
   server-rendered logo is drawn from the first paint. Its classes are prefixed: `.logo` is now
   `.neuwo-logo`, with `.neuwo-logo--{bg-light|bg-dark|bg-dark-alt|bg-colour}`.

@@ -88,28 +88,47 @@ function describe(items) {
 
 /**
  * @param {TemplateNode} node
+ * @returns {string[]}
+ */
+const classesOf = (node) => (typeof node.props.class === "string" ? node.props.class.split(/\s+/).filter(Boolean) : []);
+
+/**
+ * @param {TemplateNode} node
+ * @param {string} block
+ * @param {number} index
+ * @returns {string}
+ */
+function keyOf(node, block, index) {
+  const classes = classesOf(node);
+  return classes.find((name) => name.startsWith(`${block}__`)) ?? classes[0] ?? String(index);
+}
+
+/**
+ * @param {TemplateNode} node
  * @param {Record<string, ReactNode[]>} regions
+ * @param {string} block
+ * @param {string} key
  * @returns {AnyElement}
  */
-function toReact(node, regions) {
+function toReact(node, regions, block, key) {
   /** @type {Record<string, unknown>} */
   const props = {};
   for (const [name, value] of Object.entries(node.props)) {
-    const key = NAMES.get(name) ?? name;
-    props[key] = BOOLEANS.has(key) ? true : value === true ? "" : value;
+    const prop = NAMES.get(name) ?? name;
+    props[prop] = BOOLEANS.has(prop) ? true : value === true ? "" : value;
   }
   const type = /** @type {ElementType} */ (node.tag);
   /** @type {ReactNode[]} */
   const children = [];
-  for (const child of node.children) {
+  for (const [index, child] of node.children.entries()) {
     if (typeof child === "string") children.push(child);
     else if ("region" in child) children.push(...(regions[child.region] ?? []));
     else if ("raw" in child) props.dangerouslySetInnerHTML = { __html: child.raw };
-    else children.push(toReact(child, regions));
+    else children.push(toReact(child, regions, block, keyOf(child, block, index)));
   }
-  if (children.length > 1) return reactJsxs(type, { ...props, children });
+  if (children.length > 1) return reactJsxs(type, { ...props, children }, key);
   if (children.length === 1) props.children = children[0];
-  return reactJsx(type, props);
+  return reactJsx(type, props, key);
 }
 
 /**
@@ -122,7 +141,9 @@ function hostFor(tag, template) {
     const scope = `neuwo${useId().replace(/[^\w-]/g, "")}-`;
     const items = flatten(props.children);
     const node = template(normalizeProps(props), { id: (suffix) => scope + suffix, children: describe(items) });
-    return reactJsx(/** @type {ElementType} */ (tag), { ...props, children: toReact(node, distribute(node, items, slotOf)) });
+    const [block = ""] = classesOf(node);
+    const root = toReact(node, distribute(node, items, slotOf), block, keyOf(node, block, 0));
+    return reactJsx(/** @type {ElementType} */ (tag), { ...props, children: root });
   }
   hostTags.set(NeuwoHost, tag);
   return NeuwoHost;
