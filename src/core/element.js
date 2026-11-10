@@ -1,5 +1,7 @@
 import { adopt, isRendered, patch, render } from "./adapters/dom.js";
 
+const REACT = Symbol.for("neuwo.react");
+
 /**
  * Base class for light DOM Neuwo custom elements. The markup is one pure
  * template function, rendered on connect or adopted when the server or React
@@ -32,14 +34,16 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
 
   #start() {
     const { template } = /** @type {typeof NeuwoElement} */ (this.constructor);
-    if (isRendered(this, template)) adopt(this, template);
-    else render(this, template);
+    if (!(REACT in this)) {
+      if (isRendered(this, template)) adopt(this, template);
+      else render(this, template);
+    }
     this.connect();
   }
 
   attributeChangedCallback() {
     const { template } = /** @type {typeof NeuwoElement} */ (this.constructor);
-    if (this.isConnected && isRendered(this, template)) patch(this, template);
+    if (this.isConnected && !(REACT in this) && isRendered(this, template)) patch(this, template);
   }
 
   disconnectedCallback() {

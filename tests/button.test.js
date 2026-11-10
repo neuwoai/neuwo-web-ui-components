@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { useState } from "react";
+import { createRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import "../src/index.js";
@@ -360,6 +360,54 @@ describe("<neuwo-button> under React", () => {
 
     expect(error).not.toHaveBeenCalled();
     expect(warn).not.toHaveBeenCalled();
+  });
+
+  it("keeps a start child that does not forward its slot prop in place across a variant change, and removes it cleanly", () => {
+    const error = vi.spyOn(console, "error");
+    const warn = vi.spyOn(console, "warn");
+    const container = attach(document.createElement("div"));
+    const root = createRoot(container);
+    cleanup.push(() => root.unmount());
+    const Icon = () => jsx("svg", { className: "icon", children: jsx("path", { d: "M0 0" }) });
+    const show = (variant, icon) =>
+      flushSync(() => root.render(jsxs("neuwo-button", { variant, children: [icon && jsx(Icon, { slot: "start" }), "Label"] })));
+
+    show("solid", true);
+    const svg = container.querySelector("svg");
+    expect(svg.parentElement.className).toBe("neuwo-btn__start");
+    show("outline", true);
+    expect(container.querySelector("svg")).toBe(svg);
+    expect(svg.parentElement.className).toBe("neuwo-btn__start");
+    expect(() => show("outline", false)).not.toThrow();
+    expect(container.querySelector("svg")).toBeNull();
+    expect(container.querySelector(".neuwo-btn__label").textContent).toBe("Label");
+
+    expect(error).not.toHaveBeenCalled();
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it("hands the author's ref the host element, and marks the host as React's", () => {
+    const container = attach(document.createElement("div"));
+    const root = createRoot(container);
+    cleanup.push(() => root.unmount());
+    const ref = createRef();
+    const calls = [];
+    const callback = (el) => {
+      calls.push(el);
+    };
+
+    flushSync(() => root.render(jsx("neuwo-button", { ref, children: "Save" })));
+    const host = container.firstElementChild;
+    expect(host).toBeInstanceOf(NeuwoButton);
+    expect(ref.current).toBe(host);
+    expect(host[Symbol.for("neuwo.react")]).toBe(true);
+    expect(host.hasAttribute("ref")).toBe(false);
+
+    flushSync(() => root.render(jsx("neuwo-button", { ref: callback, children: "Save" })));
+    expect(ref.current).toBeNull();
+    flushSync(() => root.render(jsx("neuwo-button", { ref: callback, variant: "outline", children: "Save" })));
+    flushSync(() => root.render(null));
+    expect(calls).toEqual([host, null]);
   });
 
   it("renders a stateful child inside the link when href is added, without asserting identity because the root tag changes", () => {

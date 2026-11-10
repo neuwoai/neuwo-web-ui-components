@@ -1,4 +1,4 @@
-import { Children, Fragment, cloneElement, isValidElement, useId } from "react";
+import { Children, Fragment, cloneElement, isValidElement, useCallback, useId } from "react";
 import { jsx as reactJsx, jsxs as reactJsxs } from "react/jsx-runtime";
 import { jsxDEV as reactJsxDEV } from "react/jsx-dev-runtime";
 import { DEFAULT_REGION, distribute, normalizeProps } from "../template.js";
@@ -18,6 +18,8 @@ const BOOLEAN = [
 ];
 const BOOLEANS = new Set(BOOLEAN);
 const NAMES = new Map([["class", "className"], ["for", "htmlFor"], ...BOOLEAN.map((name) => /** @type {[string, string]} */ ([name.toLowerCase(), name]))]);
+
+const REACT = Symbol.for("neuwo.react");
 
 /** @type {WeakMap<Function, string>} */
 const hostTags = new WeakMap();
@@ -139,6 +141,16 @@ function toReact(node, regions, block, key) {
 }
 
 /**
+ * @param {unknown} ref
+ * @param {Element | null} el
+ * @returns {unknown}
+ */
+function pass(ref, el) {
+  if (typeof ref === "function") return ref(el);
+  if (ref && typeof ref === "object") /** @type {{ current: unknown }} */ (ref).current = el;
+}
+
+/**
  * @param {string} tag
  * @param {Template} template
  */
@@ -146,11 +158,19 @@ function hostFor(tag, template) {
   /** @param {Record<string, any>} props */
   function NeuwoHost(props) {
     const scope = `neuwo${useId().replace(/[^\w-]/g, "")}-`;
+    const ref = useCallback(
+      /** @param {Element | null} el */
+      (el) => {
+        if (el) Reflect.set(el, REACT, true);
+        return pass(props.ref, el);
+      },
+      [props.ref],
+    );
     const items = flatten(props.children);
     const node = template(normalizeProps(props), { id: (suffix) => scope + suffix, children: describe(items) });
     const [block = ""] = classesOf(node);
     const root = toReact(node, distribute(node, items, slotOf), block, keyOf(node, block, 0));
-    return reactJsx(/** @type {ElementType} */ (tag), { ...props, children: root });
+    return reactJsx(/** @type {ElementType} */ (tag), { ...props, ref, children: root });
   }
   hostTags.set(NeuwoHost, tag);
   return NeuwoHost;

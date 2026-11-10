@@ -11,7 +11,7 @@ import { idScope } from "../ids.js";
  *   issued: Set<string>,
  *   ids: Map<string, string>,
  *   block: string,
- *   wrappers: Set<string>,
+ *   wrappers: Map<string, string>,
  *   root: Element | null,
  *   dropped: Node[],
  * }} HostState
@@ -55,7 +55,7 @@ function stateFor(host) {
       issued.add(value);
       return value;
     };
-    state = { id, issued, ids: new Map(), block: "", wrappers: new Set(), root: null, dropped: [] };
+    state = { id, issued, ids: new Map(), block: "", wrappers: new Map(), root: null, dropped: [] };
     states.set(host, state);
   }
   return state;
@@ -108,25 +108,38 @@ function only(node, kind) {
 const isElement = (child) => typeof child === "object" && "tag" in child;
 
 /**
+ * @param {TemplateNode} node
+ * @returns {Map<string, string>}
+ */
+function wrappersOf(node) {
+  const block = classesOf(node)[0] ?? "";
+  /** @type {Map<string, string>} */
+  const wrappers = new Map();
+  /** @param {TemplateNode} part */
+  const visit = (part) => {
+    const name = only(part, "region");
+    if (name !== null) wrappers.set(keyOf(part, block), name);
+    for (const child of part.children) if (isElement(child)) visit(/** @type {TemplateNode} */ (child));
+  };
+  visit(node);
+  return wrappers;
+}
+
+/**
  * @param {HostState} state
  * @param {TemplateNode} node
  */
 function learn(state, node) {
   state.block = classesOf(node)[0] ?? "";
-  state.wrappers = new Set();
-  /** @param {TemplateNode} part */
-  const visit = (part) => {
-    if (only(part, "region") !== null) state.wrappers.add(keyOf(part, state.block));
-    for (const child of part.children) if (isElement(child)) visit(/** @type {TemplateNode} */ (child));
-  };
-  visit(node);
+  state.wrappers = wrappersOf(node);
 }
 
 /**
  * @param {HostState} state
  * @param {Element} el
+ * @returns {string | undefined}
  */
-const isWrapper = (state, el) => Array.from(el.classList).some((name) => state.wrappers.has(name));
+const wrapperKey = (state, el) => Array.from(el.classList).find((name) => state.wrappers.has(name));
 
 /**
  * @param {HostState} state
@@ -144,17 +157,18 @@ function propsOf(state, node) {
 
 /**
  * @param {Node[]} nodes
+ * @param {(node: Node) => string} regionOf
  * @returns {ChildInfo[]}
  */
-function describe(nodes) {
+function describe(nodes, regionOf) {
   /** @type {ChildInfo[]} */
   const info = [];
   for (const node of nodes) {
     if (node.nodeType === ELEMENT) {
       const el = /** @type {Element} */ (node);
-      info.push({ tag: el.localName, attrs: attrsOf(el), text: el.textContent, slot: slotOf(el) });
+      info.push({ tag: el.localName, attrs: attrsOf(el), text: el.textContent, slot: regionOf(el) });
     } else if (node.nodeType === TEXT && /** @type {Text} */ (node).data.trim() !== "") {
-      info.push({ tag: null, attrs: {}, text: /** @type {Text} */ (node).data, slot: DEFAULT_REGION });
+      info.push({ tag: null, attrs: {}, text: /** @type {Text} */ (node).data, slot: regionOf(node) });
     }
   }
   return info;
@@ -177,33 +191,43 @@ function locate(host, node) {
  * @param {HostState} state
  * @param {Element} el
  * @param {Node[]} out
- * @returns {Node[]}
+ * @param {Map<Node, string>} keys
  */
-function collect(state, el, out) {
-  if (isWrapper(state, el)) out.push(...Array.from(el.childNodes));
-  else for (const child of Array.from(el.children)) collect(state, child, out);
-  return out;
+function collect(state, el, out, keys) {
+  const key = wrapperKey(state, el);
+  if (key === undefined) {
+    for (const child of Array.from(el.children)) collect(state, child, out, keys);
+    return;
+  }
+  for (const node of Array.from(el.childNodes)) {
+    out.push(node);
+    keys.set(node, key);
+  }
 }
 
 /**
  * @param {Element} host
  * @param {HostState} state
- * @returns {{ nodes: Node[], loose: Set<Node> }}
+ * @returns {{ nodes: Node[], loose: Set<Node>, regionIn: (wrappers: Map<string, string>) => (node: Node) => string }}
  */
 function authorNodes(host, state) {
   /** @type {Node[]} */
   const nodes = [];
   /** @type {Set<Node>} */
   const loose = new Set();
+  /** @type {Map<Node, string>} */
+  const keys = new Map();
   for (const node of Array.from(host.childNodes)) {
-    if (node === state.root) collect(state, state.root, nodes);
+    if (node === state.root) collect(state, state.root, nodes, keys);
     else {
       nodes.push(node);
       loose.add(node);
     }
   }
   for (const node of state.dropped) if (!node.parentNode) nodes.push(node);
-  return { nodes, loose };
+  /** @param {Map<string, string>} wrappers */
+  const regionIn = (wrappers) => (/** @type {Node} */ node) => wrappers.get(keys.get(node)) ?? slotOf(node);
+  return { nodes, loose, regionIn };
 }
 
 /**
@@ -230,7 +254,7 @@ function pairs(state, el, node) {
  */
 function snapshot(state, el) {
   seen.set(el, { attrs: attrsOf(el), raw: null });
-  if (!isWrapper(state, el)) for (const child of Array.from(el.children)) snapshot(state, child);
+  if (wrapperKey(state, el) === undefined) for (const child of Array.from(el.children)) snapshot(state, child);
 }
 
 /**
@@ -332,11 +356,12 @@ function plan(el, node, run) {
  * @param {HostState} state
  * @param {TemplateNode} next
  * @param {Node[]} placeable
+ * @param {(node: Node) => string} regionOf
  * @returns {Run}
  */
-function prepare(state, next, placeable) {
+function prepare(state, next, placeable, regionOf) {
   /** @type {Run} */
-  const run = { state, groups: distribute(next, placeable, slotOf), writes: [], arranges: [], records: [], replace: !matches(state.root, next, state.block) };
+  const run = { state, groups: distribute(next, placeable, regionOf), writes: [], arranges: [], records: [], replace: !matches(state.root, next, state.block) };
   if (!run.replace) plan(state.root, next, run);
   return run;
 }
@@ -381,7 +406,10 @@ function commit(state, next, placeable, run) {
  * @returns {ChildInfo[]}
  */
 export function childInfo(host) {
-  return describe(live(host) ? authorNodes(host, states.get(host)).nodes : Array.from(host.childNodes));
+  if (!live(host)) return describe(Array.from(host.childNodes), slotOf);
+  const state = states.get(host);
+  const { nodes, regionIn } = authorNodes(host, state);
+  return describe(nodes, regionIn(state.wrappers));
 }
 
 /**
@@ -392,7 +420,7 @@ export function render(host, template) {
   const state = stateFor(host);
   state.ids = new Map();
   const nodes = Array.from(host.childNodes);
-  const next = template(attrsOf(host), { id: state.id, children: describe(nodes) });
+  const next = template(attrsOf(host), { id: state.id, children: describe(nodes, slotOf) });
   /** @type {Run} */
   const run = { state, groups: distribute(next, nodes, slotOf), writes: [], arranges: [], records: [], replace: true };
   state.root = build(next, run);
@@ -425,7 +453,8 @@ export function adopt(host, template) {
   learn(state, probe);
   Object.assign(state, { root, dropped: [], ids: new Map() });
   snapshot(state, root);
-  mapIds(state, root, template(attrs, { id: state.id, children: describe(authorNodes(host, state).nodes) }));
+  const { nodes, regionIn } = authorNodes(host, state);
+  mapIds(state, root, template(attrs, { id: state.id, children: describe(nodes, regionIn(state.wrappers)) }));
 }
 
 /**
@@ -438,10 +467,11 @@ export function patch(host, template) {
     adopt(host, template);
   }
   const state = states.get(host);
-  const { nodes, loose } = authorNodes(host, state);
-  const next = template(attrsOf(host), { id: state.id, children: describe(nodes) });
+  const { nodes, loose, regionIn } = authorNodes(host, state);
+  const next = template(attrsOf(host), { id: state.id, children: describe(nodes, regionIn(state.wrappers)) });
+  const regionOf = regionIn(wrappersOf(next));
   const settled = nodes.filter((node) => !loose.has(node));
-  const run = prepare(state, next, settled);
-  if (run.replace || run.arranges.length) commit(state, next, nodes, prepare(state, next, nodes));
+  const run = prepare(state, next, settled, regionOf);
+  if (run.replace || run.arranges.length) commit(state, next, nodes, prepare(state, next, nodes, regionOf));
   else commit(state, next, settled, run);
 }

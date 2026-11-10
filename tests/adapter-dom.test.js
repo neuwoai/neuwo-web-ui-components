@@ -592,6 +592,42 @@ describe("patch()", () => {
     expect(host.innerHTML).toBe('<a class="neuwo-t" href="/go"><span class="neuwo-t__start"><i slot="start"></i></span><span class="neuwo-t__label">x</span></a>');
   });
 
+  it("keeps an author node in its wrapper when its slot attribute changes or goes", () => {
+    const host = make(`<neuwo-t><i slot="start"></i><b slot="start"></b>x</neuwo-t>`);
+    render(host, testTemplate);
+    const i = host.querySelector("i");
+    const b = host.querySelector("b");
+    i.removeAttribute("slot");
+    b.setAttribute("slot", "nope");
+    host.setAttribute("tone", "b");
+    const observer = watch(host);
+    patch(host, testTemplate);
+    expect(observer.takeRecords().map((record) => record.attributeName)).toEqual(["class"]);
+    expect(host.innerHTML).toBe(shell("b", '<i></i><b slot="nope"></b>', "x"));
+    expect(childInfo(host).map((child) => child.slot)).toEqual(["start", "start", "default"]);
+  });
+
+  it("keeps wrapped author nodes in their region through a rebuild, and distributes loose ones by slot", () => {
+    const template = (a) =>
+      h(
+        a.href ? "a" : "span",
+        { class: "neuwo-t", href: a.href },
+        h("span", { class: "neuwo-t__start" }, region("start")),
+        h("span", { class: "neuwo-t__label" }, region()),
+      );
+    const host = make(`<neuwo-t><i slot="start"></i>x</neuwo-t>`);
+    render(host, template);
+    const i = host.querySelector("i");
+    i.removeAttribute("slot");
+    const u = document.createElement("u");
+    u.slot = "start";
+    host.prepend(u);
+    host.setAttribute("href", "/go");
+    patch(host, template);
+    expect(host.innerHTML).toBe('<a class="neuwo-t" href="/go"><span class="neuwo-t__start"><u slot="start"></u><i></i></span><span class="neuwo-t__label">x</span></a>');
+    expect(host.querySelector("i")).toBe(i);
+  });
+
   it("keeps describing a child whose region is missing", () => {
     const { calls, wrapped } = spy(testTemplate);
     const host = make(`<neuwo-t>x<b slot="nope">n</b></neuwo-t>`);

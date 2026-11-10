@@ -177,6 +177,22 @@ describe("NeuwoElement (light DOM)", () => {
     expect(host.querySelectorAll(".neuwo-t").length).toBe(1);
   });
 
+  it("writes nothing into a host React owns, through attribute changes and moves, and still connects", () => {
+    const a = mount(server());
+    const b = mount("");
+    const el = a.firstElementChild;
+    el[Symbol.for("neuwo.react")] = true;
+    const observer = new MutationObserver(() => {});
+    observer.observe(el, { subtree: true, childList: true, attributes: true, characterData: true });
+    el.setAttribute("tone", "b");
+    b.appendChild(el);
+    const records = observer.takeRecords().filter((record) => record.target !== el || record.attributeName !== "tone");
+    expect(records.length).toBe(0);
+    expect(el.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--a");
+    expect(el.connected).toBe(2);
+    expect(el.disconnected).toBe(1);
+  });
+
   it("patches exactly one attribute on an attribute change", () => {
     const host = mount(server());
     const el = host.firstElementChild;
