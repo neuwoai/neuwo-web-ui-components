@@ -3,7 +3,7 @@ import { adopt, isRendered, reconcile, render } from "./adapters/dom.js";
 const REACT = Symbol.for("neuwo.react");
 
 /** @param {MutationRecord} record */
-const relevant = (record) => record.type === "childList" || record.attributeName === "title" || record.attributeName.startsWith("aria-");
+const relevant = (record) => record.type === "childList" || record.attributeName === "title" || record.attributeName === "role" || record.attributeName.startsWith("aria-");
 
 /**
  * @param {Element} el

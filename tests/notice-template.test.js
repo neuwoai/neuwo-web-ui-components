@@ -31,7 +31,7 @@ describe("noticeTemplate()", () => {
     expect(toHTML(render())).toBe(
       '<div class="neuwo-notice neuwo-notice--fixed neuwo-notice--bottom neuwo-notice--end" role="status">' +
         '<div class="neuwo-notice__content">' +
-        '<p class="neuwo-notice__title neuwo-notice__title--empty"></p>' +
+        '<div class="neuwo-notice__title neuwo-notice__title--empty"></div>' +
         '<div class="neuwo-notice__message neuwo-notice__message--empty"></div>' +
         "</div>" +
         '<div class="neuwo-notice__actions neuwo-notice__actions--empty"></div>' +
@@ -44,7 +44,7 @@ describe("noticeTemplate()", () => {
     expect(toHTML(node, { title: "<span>T</span>", default: "Hint", actions: "<button>Go</button>" })).toBe(
       '<div class="neuwo-notice neuwo-notice--fixed neuwo-notice--bottom neuwo-notice--end" role="status">' +
         '<div class="neuwo-notice__content">' +
-        '<p class="neuwo-notice__title"><span>T</span></p>' +
+        '<div class="neuwo-notice__title"><span>T</span></div>' +
         '<div class="neuwo-notice__message">Hint</div>' +
         "</div>" +
         '<div class="neuwo-notice__actions"><button>Go</button></div>' +
@@ -152,7 +152,7 @@ describe("noticeTemplate()", () => {
       "<neuwo-notice>" +
         '<div class="neuwo-notice neuwo-notice--fixed neuwo-notice--bottom neuwo-notice--end" role="status">' +
         '<div class="neuwo-notice__content">' +
-        '<p class="neuwo-notice__title"><span slot="title">Cookies</span></p>' +
+        '<div class="neuwo-notice__title"><span slot="title">Cookies</span></div>' +
         '<div class="neuwo-notice__message neuwo-notice__message--empty">\n  \n</div>' +
         "</div>" +
         '<div class="neuwo-notice__actions neuwo-notice__actions--empty"></div>' +
@@ -166,6 +166,6 @@ describe("noticeTemplate()", () => {
     expect(find(node, "neuwo-notice__title").children).toEqual([{ region: "title" }]);
     expect(find(node, "neuwo-notice__message").children).toEqual([{ region: "default" }]);
     expect(find(node, "neuwo-notice__actions").children).toEqual([{ region: "actions" }]);
-    expect(find(node, "neuwo-notice__content").children.map((item) => item.tag)).toEqual(["p", "div"]);
+    expect(find(node, "neuwo-notice__content").children.map((item) => item.tag)).toEqual(["div", "div"]);
   });
 });

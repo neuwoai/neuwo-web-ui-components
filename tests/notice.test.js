@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { useState } from "react";
 import { flushSync } from "react-dom";
-import { createRoot } from "react-dom/client";
-import { renderToStaticMarkup } from "react-dom/server";
+import { createRoot, hydrateRoot } from "react-dom/client";
+import { renderToStaticMarkup, renderToString } from "react-dom/server";
 import "../src/index.js";
 import { NeuwoNotice } from "../src/components/notice/neuwo-notice.js";
 import { noticeTemplate } from "../src/components/notice/notice.template.js";
@@ -62,7 +62,7 @@ describe("<neuwo-notice>", () => {
       "neuwo-notice__actions neuwo-notice__actions--empty",
       "neuwo-notice__dismiss",
     ]);
-    expect(Array.from(part(el, "content").children, (child) => child.localName)).toEqual(["p", "div"]);
+    expect(Array.from(part(el, "content").children, (child) => child.localName)).toEqual(["div", "div"]);
     expect(el.querySelector("[part]")).toBeNull();
   });
 
@@ -226,6 +226,31 @@ describe("<neuwo-notice>", () => {
     expect(isEmpty(el, "actions")).toBe(true);
   });
 
+  it("keeps a block-level title inside its wrapper through parsing, adoption and an attribute change", async () => {
+    const heading = { tag: "h2", attrs: { slot: "title" }, text: "Cookies", slot: "title", html: '<h2 slot="title">Cookies</h2>' };
+    const message = { tag: null, attrs: {}, text: "We use them.", slot: "default", html: "We use them." };
+    const holder = document.createElement("div");
+    holder.innerHTML = renderElement("neuwo-notice", {}, [heading, message], noticeTemplate, idScope("neuwo-s"));
+    const h2 = holder.querySelector("h2");
+    expect(h2.parentElement.className).toBe("neuwo-notice__title");
+    const records = [];
+    const observer = new MutationObserver((list) => records.push(...list));
+    observer.observe(holder, { subtree: true, childList: true, attributes: true, characterData: true });
+    attach(holder);
+    await settled();
+    records.push(...observer.takeRecords());
+    observer.disconnect();
+    expect(records).toEqual([]);
+
+    const el = holder.firstElementChild;
+    el.position = "top-end";
+    await settled();
+    expect(h2.isConnected).toBe(true);
+    expect(h2.parentElement).toBe(part(el, "title"));
+    expect(isEmpty(el, "title")).toBe(false);
+    expect(part(el, "content").children).toHaveLength(2);
+  });
+
   it("announces politely from the card unless the host declares a role, and never writes role onto the host", () => {
     const plain = make(`<neuwo-notice>Hint</neuwo-notice>`);
     expect(plain.hasAttribute("role")).toBe(false);
@@ -234,6 +259,18 @@ describe("<neuwo-notice>", () => {
     expect(dialog.getAttribute("role")).toBe("dialog");
     expect(card(dialog).hasAttribute("role")).toBe(false);
     expect(card(dialog).hasAttribute("aria-label")).toBe(false);
+  });
+
+  it("hands the card's role over to a role a script sets on the host after render, and takes it back when removed", async () => {
+    const el = make(`<neuwo-notice>Hint</neuwo-notice>`);
+    const root = card(el);
+    el.setAttribute("role", "dialog");
+    await settled();
+    expect(card(el)).toBe(root);
+    expect(root.hasAttribute("role")).toBe(false);
+    el.removeAttribute("role");
+    await settled();
+    expect(root.getAttribute("role")).toBe("status");
   });
 
   it("reflects every axis between property and attribute", () => {
@@ -293,6 +330,31 @@ describe("<neuwo-notice> under React", () => {
     expect(isEmpty(el, "title")).toBe(true);
     expect(card(el)).toBe(first);
     expect(el.hasAttribute("role")).toBe(false);
+    expect(error).not.toHaveBeenCalled();
+  });
+
+  it("renders and hydrates a block-level title inside its wrapper with no nesting or hydration error", async () => {
+    const error = vi.spyOn(console, "error");
+    const tree = () => jsx("neuwo-notice", { children: jsx("h2", { slot: "title", children: "Cookies" }) });
+
+    const rendered = attach(document.createElement("div"));
+    const app = createRoot(rendered);
+    cleanup.push(() => app.unmount());
+    flushSync(() => app.render(tree()));
+    expect(rendered.querySelector("h2").parentElement.className).toBe("neuwo-notice__title");
+
+    const parsed = document.createElement("div");
+    parsed.innerHTML = renderToString(tree());
+    const h2 = parsed.querySelector("h2");
+    expect(h2.parentElement.className).toBe("neuwo-notice__title");
+    const hydrated = attach(document.createElement("div"));
+    hydrated.append(...parsed.childNodes);
+    const recoverable = [];
+    const hydratedApp = hydrateRoot(hydrated, tree(), { onRecoverableError: (thrown) => void recoverable.push(String(thrown?.message ?? thrown)) });
+    cleanup.push(() => hydratedApp.unmount());
+    await vi.waitFor(() => expect(Object.keys(h2).some((key) => key.startsWith("__reactFiber$"))).toBe(true));
+    expect(recoverable).toEqual([]);
+    expect(hydrated.querySelector("h2")).toBe(h2);
     expect(error).not.toHaveBeenCalled();
   });
 

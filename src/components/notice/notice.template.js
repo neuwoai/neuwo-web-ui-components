@@ -24,21 +24,20 @@ export function noticeTemplate(attrs, ctx) {
   if (dismissible) classes.push("neuwo-notice--dismissible");
 
   /**
-   * @param {string} tag
    * @param {string} name
    * @param {string} slot
    */
-  const wrapper = (tag, name, slot) => {
+  const wrapper = (name, slot) => {
     const filled = ctx.children.some((child) => child.slot === slot);
-    return h(tag, { class: filled ? `neuwo-notice__${name}` : `neuwo-notice__${name} neuwo-notice__${name}--empty` }, region(slot));
+    // Never a <p>: authors put headings and paragraphs here, and a parser pushes those out of a <p>.
+    return h("div", { class: filled ? `neuwo-notice__${name}` : `neuwo-notice__${name} neuwo-notice__${name}--empty` }, region(slot));
   };
 
   return h(
     "div",
     { class: classes.join(" "), role: has(attrs, "role") ? null : "status" },
-    // The message is a div: it is often a paragraph already, and a server-parsed <p> cannot hold one.
-    h("div", { class: "neuwo-notice__content" }, wrapper("p", "title", "title"), wrapper("div", "message", DEFAULT_REGION)),
-    wrapper("div", "actions", "actions"),
+    h("div", { class: "neuwo-notice__content" }, wrapper("title", "title"), wrapper("message", DEFAULT_REGION)),
+    wrapper("actions", "actions"),
     dismissible && h("button", { class: "neuwo-notice__dismiss", type: "button", "aria-label": attrs["dismiss-label"] || "Dismiss" }),
   );
 }

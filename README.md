@@ -125,10 +125,10 @@ Typography alone is also published as `foundation/typography.css`, and tokens al
 Next.js are covered in [React](#react), Eleventy and other builds in [Server rendering](#server-rendering).
 
 Without a framework, a script can change a rendered element as it would any other: set its
-`textContent` or `innerHTML`, append a child with a `slot`, or set `aria-*` and `title`. The element
-fits the change into its markup in a microtask, so read the markup back after an `await`, not on the
-next line. As on first render, a child with no region to go to is removed, such as one with a
-misspelt `slot` or any child of an element that has no regions.
+`textContent` or `innerHTML`, append a child with a `slot`, or set `aria-*`, `title` and `role`. The
+element fits the change into its markup in a microtask, so read the markup back after an `await`,
+not on the next line. As on first render, a child with no region to go to is removed, such as one
+with a misspelt `slot` or any child of an element that has no regions.
 
 ### A page that can only add a script
 
@@ -796,8 +796,11 @@ if (!localStorage.getItem("lang-hint")) hint.hidden = false;
 The element renders into its own light DOM, so a server-rendered notice is styled from the first
 paint. The `slot="title"` children go into `.neuwo-notice__title`, the `slot="actions"` children
 into `.neuwo-notice__actions` and the rest into `.neuwo-notice__message`; a wrapper nothing fills
-carries its `--empty` modifier and leaves no gap. Links in the title or message share a tree with
-the card, so a rule such as `neuwo-notice .neuwo-notice__message a` reaches them.
+carries its `--empty` modifier and leaves no gap. Appending to the element or replacing its content
+updates the modifiers in a microtask. Content a script removes from inside a wrapper is caught up
+the next time the element reconciles: when an attribute such as `position` changes, or a child is
+added to or removed from the element itself. Links in the title or message share a tree with the
+card, so a rule such as `neuwo-notice .neuwo-notice__message a` reaches them.
 
 A notice announces itself politely, with `role="status"` on the `.neuwo-notice` card, unless you
 declare something stronger on the element; a consent banner is a question, so give it

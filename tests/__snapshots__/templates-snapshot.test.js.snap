@@ -138,12 +138,12 @@ exports[`template markup snapshots > neuwo-logo > unknown variant 1`] = `
 </svg></neuwo-logo>"
 `;
 
-exports[`template markup snapshots > neuwo-notice > default message 1`] = `"<neuwo-notice><div class="neuwo-notice neuwo-notice--fixed neuwo-notice--bottom neuwo-notice--end" role="status"><div class="neuwo-notice__content"><p class="neuwo-notice__title neuwo-notice__title--empty"></p><div class="neuwo-notice__message">Read this page in Polish?</div></div><div class="neuwo-notice__actions neuwo-notice__actions--empty"></div></div></neuwo-notice>"`;
+exports[`template markup snapshots > neuwo-notice > default message 1`] = `"<neuwo-notice><div class="neuwo-notice neuwo-notice--fixed neuwo-notice--bottom neuwo-notice--end" role="status"><div class="neuwo-notice__content"><div class="neuwo-notice__title neuwo-notice__title--empty"></div><div class="neuwo-notice__message">Read this page in Polish?</div></div><div class="neuwo-notice__actions neuwo-notice__actions--empty"></div></div></neuwo-notice>"`;
 
-exports[`template markup snapshots > neuwo-notice > empty 1`] = `"<neuwo-notice><div class="neuwo-notice neuwo-notice--fixed neuwo-notice--bottom neuwo-notice--end" role="status"><div class="neuwo-notice__content"><p class="neuwo-notice__title neuwo-notice__title--empty"></p><div class="neuwo-notice__message neuwo-notice__message--empty"></div></div><div class="neuwo-notice__actions neuwo-notice__actions--empty"></div></div></neuwo-notice>"`;
+exports[`template markup snapshots > neuwo-notice > empty 1`] = `"<neuwo-notice><div class="neuwo-notice neuwo-notice--fixed neuwo-notice--bottom neuwo-notice--end" role="status"><div class="neuwo-notice__content"><div class="neuwo-notice__title neuwo-notice__title--empty"></div><div class="neuwo-notice__message neuwo-notice__message--empty"></div></div><div class="neuwo-notice__actions neuwo-notice__actions--empty"></div></div></neuwo-notice>"`;
 
 exports[`template markup snapshots > neuwo-notice > indented consent banner 1`] = `
-"<neuwo-notice position="bottom-center" layout="row" role="dialog" aria-label="Cookies"><div class="neuwo-notice neuwo-notice--fixed neuwo-notice--bottom neuwo-notice--center neuwo-notice--row"><div class="neuwo-notice__content"><p class="neuwo-notice__title"><span slot="title">We use cookies</span></p><div class="neuwo-notice__message">
+"<neuwo-notice position="bottom-center" layout="row" role="dialog" aria-label="Cookies"><div class="neuwo-notice neuwo-notice--fixed neuwo-notice--bottom neuwo-notice--center neuwo-notice--row"><div class="neuwo-notice__content"><div class="neuwo-notice__title"><span slot="title">We use cookies</span></div><div class="neuwo-notice__message">
   
   We use analytics cookies.
   
@@ -152,16 +152,16 @@ exports[`template markup snapshots > neuwo-notice > indented consent banner 1`] 
 `;
 
 exports[`template markup snapshots > neuwo-notice > indented title only 1`] = `
-"<neuwo-notice position="top-end"><div class="neuwo-notice neuwo-notice--fixed neuwo-notice--top neuwo-notice--end" role="status"><div class="neuwo-notice__content"><p class="neuwo-notice__title"><span slot="title">Only a headline</span></p><div class="neuwo-notice__message neuwo-notice__message--empty">
+"<neuwo-notice position="top-end"><div class="neuwo-notice neuwo-notice--fixed neuwo-notice--top neuwo-notice--end" role="status"><div class="neuwo-notice__content"><div class="neuwo-notice__title"><span slot="title">Only a headline</span></div><div class="neuwo-notice__message neuwo-notice__message--empty">
   
 </div></div><div class="neuwo-notice__actions neuwo-notice__actions--empty"></div></div></neuwo-notice>"
 `;
 
-exports[`template markup snapshots > neuwo-notice > language hint 1`] = `"<neuwo-notice position="static" dismissible="" dismiss-label="Close"><div class="neuwo-notice neuwo-notice--dismissible" role="status"><div class="neuwo-notice__content"><p class="neuwo-notice__title"><span slot="title">Read this page in <a href="/pl/">Polski</a>?</span></p><div class="neuwo-notice__message neuwo-notice__message--empty"></div></div><div class="neuwo-notice__actions neuwo-notice__actions--empty"></div><button class="neuwo-notice__dismiss" type="button" aria-label="Close"></button></div></neuwo-notice>"`;
+exports[`template markup snapshots > neuwo-notice > language hint 1`] = `"<neuwo-notice position="static" dismissible="" dismiss-label="Close"><div class="neuwo-notice neuwo-notice--dismissible" role="status"><div class="neuwo-notice__content"><div class="neuwo-notice__title"><span slot="title">Read this page in <a href="/pl/">Polski</a>?</span></div><div class="neuwo-notice__message neuwo-notice__message--empty"></div></div><div class="neuwo-notice__actions neuwo-notice__actions--empty"></div><button class="neuwo-notice__dismiss" type="button" aria-label="Close"></button></div></neuwo-notice>"`;
 
-exports[`template markup snapshots > neuwo-notice > top-start toast 1`] = `"<neuwo-notice position="top-start" dismissible=""><div class="neuwo-notice neuwo-notice--fixed neuwo-notice--top neuwo-notice--start neuwo-notice--dismissible" role="status"><div class="neuwo-notice__content"><p class="neuwo-notice__title"><span slot="title">Saved</span></p><div class="neuwo-notice__message neuwo-notice__message--empty"></div></div><div class="neuwo-notice__actions neuwo-notice__actions--empty"></div><button class="neuwo-notice__dismiss" type="button" aria-label="Dismiss"></button></div></neuwo-notice>"`;
+exports[`template markup snapshots > neuwo-notice > top-start toast 1`] = `"<neuwo-notice position="top-start" dismissible=""><div class="neuwo-notice neuwo-notice--fixed neuwo-notice--top neuwo-notice--start neuwo-notice--dismissible" role="status"><div class="neuwo-notice__content"><div class="neuwo-notice__title"><span slot="title">Saved</span></div><div class="neuwo-notice__message neuwo-notice__message--empty"></div></div><div class="neuwo-notice__actions neuwo-notice__actions--empty"></div><button class="neuwo-notice__dismiss" type="button" aria-label="Dismiss"></button></div></neuwo-notice>"`;
 
-exports[`template markup snapshots > neuwo-notice > unknown values 1`] = `"<neuwo-notice position="toString" layout="grid"><div class="neuwo-notice neuwo-notice--fixed neuwo-notice--bottom neuwo-notice--end" role="status"><div class="neuwo-notice__content"><p class="neuwo-notice__title neuwo-notice__title--empty"></p><div class="neuwo-notice__message">Hint</div></div><div class="neuwo-notice__actions neuwo-notice__actions--empty"></div></div></neuwo-notice>"`;
+exports[`template markup snapshots > neuwo-notice > unknown values 1`] = `"<neuwo-notice position="toString" layout="grid"><div class="neuwo-notice neuwo-notice--fixed neuwo-notice--bottom neuwo-notice--end" role="status"><div class="neuwo-notice__content"><div class="neuwo-notice__title neuwo-notice__title--empty"></div><div class="neuwo-notice__message">Hint</div></div><div class="neuwo-notice__actions neuwo-notice__actions--empty"></div></div></neuwo-notice>"`;
 
 exports[`template markup snapshots > neuwo-status-dot > blue blink 1`] = `"<neuwo-status-dot variant="blue" motion="blink"><span class="neuwo-status-dot neuwo-status-dot--blue neuwo-status-dot--blink"></span></neuwo-status-dot>"`;
 

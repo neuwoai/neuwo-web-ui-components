@@ -8,13 +8,15 @@
   `.notice__title`, `.notice__message`, `.notice__actions` and `.notice__dismiss` are now
   `.neuwo-notice__content`, `.neuwo-notice__title`, `.neuwo-notice__message`, `.neuwo-notice__actions`
   and `.neuwo-notice__dismiss`, with `.neuwo-notice__{title|message|actions}--empty` on a wrapper
-  nothing fills. The `notice-in` keyframes are now `neuwo-notice-in`.
+  nothing fills. The title wrapper is a `<div>`, not a `<p>`, so it can hold a heading or a
+  paragraph. The `notice-in` keyframes are now `neuwo-notice-in`.
 - Breaking: `::part(notice)`, `::part(content)`, `::part(title)`, `::part(message)`, `::part(actions)`
   and `::part(dismiss)` on `<neuwo-notice>` are gone. Restyle through the classes, with the element
   name in front for weight: `neuwo-notice .neuwo-notice { border-radius: 0; }`.
 - Breaking: `role="status"` moves from the `<neuwo-notice>` element to its inner `.neuwo-notice` card,
   and the element no longer writes `role` onto itself. A `role` you set on the element, such as
-  `role="dialog"` on a consent banner, still takes its place: the card then carries no role.
+  `role="dialog"` on a consent banner, still takes its place, even when a script sets it after render:
+  the card then carries no role.
 - Breaking: `<neuwo-copy>` renders into its own light DOM from one template, so a server-rendered
   copy wrapper shows its control from the first paint. Your content moves into a new
   `.neuwo-copy__content` wrapper inside a `display: contents` root, `.neuwo-copy`. The classes are
@@ -65,8 +67,8 @@
   them for its accessible name and tooltip. `data-*` stays on the host only, so a query such as
   `[data-testid="save"]` matches one element.
 - A script can still set `textContent` or `innerHTML` on a rendered light DOM element, append a child
-  with a `slot`, or change its `aria-*` and `title`: the element fits the change into its markup in a
-  microtask, so read the markup back after an `await`. Hosts React owns are left to React.
+  with a `slot`, or change its `aria-*`, `title` and `role`: the element fits the change into its
+  markup in a microtask, so read the markup back after an `await`. Hosts React owns are left to React.
 - `components/reset.css`, the reset for the light DOM components, is published and leads the component
   styles in `neuwo-components.css`.
 - Page element rules such as `button { text-transform: uppercase }`, `span { line-height: 3 }` or
