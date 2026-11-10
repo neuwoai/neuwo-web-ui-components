@@ -15,14 +15,25 @@ function numberOr(value, fallback) {
 }
 
 /**
- * @param {unknown} min
- * @param {unknown} max
+ * The value a browser gives a range input with these attributes: the default (the midpoint) for a missing or
+ * invalid value, clamped into the bounds, then rounded to the nearest step, a tie going up. The step base is `min`,
+ * else the authored `value` (so that value is on-step by definition), else 0.
+ * @param {Record<string, string>} attrs
  * @returns {number}
  */
-function midpoint(min, max) {
-  const low = numberOr(min, 0);
-  const high = numberOr(max, 100);
-  return high < low ? low : low + (high - low) / 2;
+export function rangeValue(attrs) {
+  const min = numberOr(attrs.min, 0);
+  const max = Math.max(min, numberOr(attrs.max, 100));
+  const given = attrs.value == null || attrs.value === "" ? NaN : Number(attrs.value);
+  const value = Math.min(max, Math.max(min, Number.isFinite(given) ? given : min + (max - min) / 2));
+  const step = attrs.step === "any" ? 0 : numberOr(attrs.step, 1);
+  if (!(step > 0)) return value;
+  const authored = Number(attrs.value);
+  const base = has(attrs, "min") && Number.isFinite(Number(attrs.min)) ? min : has(attrs, "value") && attrs.value !== "" && Number.isFinite(authored) ? authored : 0;
+  let count = Math.floor((value - base) / step + 0.5);
+  if (base + count * step > max) count -= 1;
+  else if (base + count * step < min) count += 1;
+  return Number((base + count * step).toPrecision(12));
 }
 
 /**
@@ -36,7 +47,7 @@ function midpoint(min, max) {
 export function fillPercent(value, min, max) {
   const low = numberOr(min, 0);
   const high = numberOr(max, 100);
-  const current = value == null || value === "" ? midpoint(low, high) : Number(value);
+  const current = value == null || value === "" ? (high < low ? low : low + (high - low) / 2) : Number(value);
   if (!(high > low) || !Number.isFinite(current)) return 0;
   const percent = Math.min(100, Math.max(0, ((current - low) / (high - low)) * 100));
   return Math.round(percent * 100) / 100;
@@ -56,8 +67,8 @@ export function rangeTemplate(attrs, ctx) {
         class: `${controlClass(attrs)} neuwo-range`,
         type: "range",
         ...controlAttrs(attrs, ctx, FORWARDED),
-        value: has(attrs, "value") ? attrs.value : midpoint(attrs.min, attrs.max),
-        style: `--neuwo-range-fill:${fillPercent(attrs.value, attrs.min, attrs.max)}%`,
+        value: has(attrs, "value") ? attrs.value : String(rangeValue(attrs)),
+        style: `--neuwo-range-fill:${fillPercent(rangeValue(attrs), attrs.min, attrs.max)}%`,
       }),
     ),
   );

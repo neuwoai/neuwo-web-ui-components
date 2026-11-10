@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fillPercent, rangeTemplate } from "../src/components/fields/range/range.template.js";
+import { fillPercent, rangeTemplate, rangeValue } from "../src/components/fields/range/range.template.js";
 import { expand } from "../src/server/index.js";
 
 describe("fillPercent", () => {
@@ -35,6 +35,45 @@ describe("fillPercent", () => {
   });
 });
 
+describe("rangeValue", () => {
+  it("snaps an off-step value to the nearest step from the minimum, a tie going up", () => {
+    expect(rangeValue({ min: "0", value: "5", step: "3" })).toBe(6);
+    expect(rangeValue({ min: "0", value: "10", step: "3" })).toBe(9);
+    expect(rangeValue({ min: "0", value: "4.5", step: "3" })).toBe(6);
+    expect(rangeValue({ min: "1", value: "2.5", step: "1" })).toBe(3);
+  });
+
+  it("takes the authored value as the step base when there is no minimum, as browsers do", () => {
+    expect(rangeValue({ value: "5", step: "3" })).toBe(5);
+    expect(rangeValue({ value: "10", step: "3" })).toBe(10);
+    expect(rangeValue({ value: "150", max: "100", step: "3" })).toBe(99);
+  });
+
+  it("uses the midpoint, snapped, when there is no value or it is invalid", () => {
+    expect(rangeValue({ min: "0", max: "10", step: "3" })).toBe(6);
+    expect(rangeValue({ min: "0", max: "10" })).toBe(5);
+    expect(rangeValue({ value: "x", min: "0", max: "10" })).toBe(5);
+  });
+
+  it("does not snap for step any or a step that is not positive", () => {
+    expect(rangeValue({ value: "7.5", step: "any" })).toBe(7.5);
+    expect(rangeValue({ value: "7.5", step: "0" })).toBe(7.5);
+    expect(rangeValue({ value: "7.5", step: "-2" })).toBe(7.5);
+  });
+
+  it("keeps the result inside the bounds and on a step that fits", () => {
+    expect(rangeValue({ value: "150", max: "200", step: "50" })).toBe(150);
+    expect(rangeValue({ value: "500", min: "0", max: "10", step: "3" })).toBe(9);
+    expect(rangeValue({ value: "-5", min: "0", max: "10", step: "3" })).toBe(0);
+    expect(rangeValue({ value: "0.3", step: "0.1" })).toBe(0.3);
+  });
+
+  it("treats a maximum below the minimum as the minimum", () => {
+    expect(rangeValue({ min: "10", max: "0" })).toBe(10);
+    expect(rangeValue({ value: "500", min: "10", max: "0" })).toBe(10);
+  });
+});
+
 describe("rangeTemplate", () => {
   const ctx = { id: (name) => `x-${name}`, children: [] };
 
@@ -59,6 +98,14 @@ describe("rangeTemplate", () => {
     expect(controlOf({ min: "10", max: "0" }).props.value).toBe("10");
     expect(controlOf({}).props.value).toBe("50");
     expect(controlOf({ value: "7" }).props.value).toBe("7");
+  });
+
+  it("paints the fill of the snapped value, and leaves an authored value as authored", () => {
+    const props = controlOf({ min: "0", max: "10", step: "3", value: "5" }).props;
+    expect(props.value).toBe("5");
+    expect(props.style).toBe("--neuwo-range-fill:60%");
+    expect(controlOf({ max: "10", step: "3", value: "5" }).props.style).toBe("--neuwo-range-fill:50%");
+    expect(controlOf({ min: "0", max: "10", step: "3" }).props).toMatchObject({ value: "6", style: "--neuwo-range-fill:60%" });
   });
 
   it("is in the server markup, so the first paint is filled", () => {
