@@ -475,9 +475,8 @@ export function adopt(host, template) {
 /**
  * @param {Element} host
  * @param {Template} template
- * @param {boolean} placeLoose
  */
-function update(host, template, placeLoose) {
+export function reconcile(host, template) {
   if (!live(host)) {
     if (!isRendered(host, template)) return render(host, template);
     adopt(host, template);
@@ -486,24 +485,8 @@ function update(host, template, placeLoose) {
   const { nodes, loose, regionIn } = authorNodes(host, state);
   const next = template(attrsOf(host), { id: state.id, children: describe(nodes, regionIn(state.wrappers)) });
   const regionOf = regionIn(wrappersOf(next));
-  const placed = nodes.filter((node) => !loose.has(node) || (placeLoose && isContent(node)));
+  const placed = nodes.filter((node) => !loose.has(node) || isContent(node));
   const run = prepare(state, next, placed, regionOf);
   if (run.replace || run.arranges.length) commit(state, next, nodes, prepare(state, next, nodes, regionOf));
   else commit(state, next, placed, run);
-}
-
-/**
- * @param {Element} host
- * @param {Template} template
- */
-export function patch(host, template) {
-  update(host, template, false);
-}
-
-/**
- * @param {Element} host
- * @param {Template} template
- */
-export function reconcile(host, template) {
-  update(host, template, true);
 }

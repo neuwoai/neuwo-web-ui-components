@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { h, has, raw, region } from "../src/core/template.js";
-import { adopt, childInfo, isRendered, patch, reconcile, render } from "../src/core/adapters/dom.js";
+import { adopt, childInfo, isRendered, reconcile, render } from "../src/core/adapters/dom.js";
 import { renderElement } from "../src/core/adapters/html.js";
 import { idScope } from "../src/core/ids.js";
 
@@ -171,7 +171,7 @@ describe("isRendered()", () => {
     adopt(host, wrapped);
     expect(calls.at(-1)).toEqual(author);
     host.setAttribute("tone", "b");
-    patch(host, wrapped);
+    reconcile(host, wrapped);
     expect(calls.at(-1)).toEqual(author);
     expect(calls.flat().some((child) => child.attrs.class?.startsWith("neuwo-t"))).toBe(false);
   });
@@ -188,7 +188,7 @@ describe("isRendered()", () => {
     expect(isRendered(host, template)).toBe(true);
     adopt(host, template);
     host.setAttribute("title", "x");
-    patch(host, template);
+    reconcile(host, template);
     expect(host.innerHTML).toBe('<div class="neuwo-l" title="x"><p class="neuwo-l__empty">Nothing here</p><ul class="neuwo-l__list"></ul></div>');
   });
 });
@@ -201,7 +201,7 @@ describe("adopt()", () => {
     expect(observer.takeRecords()).toHaveLength(0);
   });
 
-  it("keeps the server's ids through later patches", () => {
+  it("keeps the server's ids through later updates", () => {
     const template = (a, ctx) =>
       h("span", { class: "neuwo-t", "aria-describedby": ctx.id("hint"), "data-tone": a.tone }, h("i", { class: "neuwo-t__hint", id: ctx.id("hint") }));
     const host = make(
@@ -210,7 +210,7 @@ describe("adopt()", () => {
     adopt(host, template);
     host.setAttribute("tone", "b");
     const observer = watch(host);
-    patch(host, template);
+    reconcile(host, template);
     expect(observer.takeRecords().map((record) => record.attributeName)).toEqual(["data-tone"]);
     expect(host.firstElementChild.getAttribute("aria-describedby")).toBe("neuwo-s1-hint");
     expect(host.querySelector("i").id).toBe("neuwo-s1-hint");
@@ -227,7 +227,7 @@ describe("adopt()", () => {
       );
     const host = make(renderElement("neuwo-f", {}, [], field, idScope("neuwo-s")));
     host.setAttribute("invalid", "");
-    patch(host, field);
+    reconcile(host, field);
     const ids = Array.from(host.querySelectorAll("[id]"), (el) => el.id);
     expect(ids).toEqual(["neuwo-s1-hint", "neuwo-s1-error"]);
     const reference = host.querySelector("input").getAttribute("aria-describedby");
@@ -243,12 +243,12 @@ describe("adopt()", () => {
     adopt(host, template);
     host.innerHTML = `<span class="neuwo-t" aria-describedby="r1-hint"><i class="neuwo-t__hint" id="r1-hint"></i></span>`;
     const observer = watch(host);
-    patch(host, template);
+    reconcile(host, template);
     expect(observer.takeRecords()).toHaveLength(0);
     host.removeAttribute("hint");
-    patch(host, template);
+    reconcile(host, template);
     host.setAttribute("hint", "");
-    patch(host, template);
+    reconcile(host, template);
     expect(host.firstElementChild.getAttribute("aria-describedby")).toBe("r1-hint");
     expect(host.querySelector("i").id).toBe("r1-hint");
   });
@@ -259,7 +259,7 @@ describe("adopt()", () => {
     const host = make(`<neuwo-t><span class="neuwo-t"><span class="neuwo-t__label"><b>bold</b></span><b class="neuwo-t__mark"></b></span></neuwo-t>`);
     adopt(host, template);
     host.setAttribute("title", "x");
-    patch(host, template);
+    reconcile(host, template);
     expect(host.innerHTML).toBe('<span class="neuwo-t" title="x"><span class="neuwo-t__label"><b>bold</b></span><b class="neuwo-t__mark"></b></span>');
   });
 
@@ -275,16 +275,16 @@ describe("adopt()", () => {
     expect(host.firstElementChild).toBe(span);
   });
 
-  it("corrects stale server values on the first patch", () => {
+  it("corrects stale server values on the first reconcile", () => {
     const host = make(`<neuwo-t tone="a"><span class="neuwo-t neuwo-t--a">x</span></neuwo-t>`);
     host.setAttribute("tone", "b");
-    patch(host, badge);
+    reconcile(host, badge);
     expect(host.innerHTML).toBe('<span class="neuwo-t neuwo-t--b">x</span>');
     const again = make(`<neuwo-t tone="a"><span class="neuwo-t neuwo-t--a">x</span></neuwo-t>`);
     again.setAttribute("tone", "b");
     adopt(again, badge);
     expect(again.innerHTML).toBe('<span class="neuwo-t neuwo-t--a">x</span>');
-    patch(again, badge);
+    reconcile(again, badge);
     expect(again.innerHTML).toBe('<span class="neuwo-t neuwo-t--b">x</span>');
   });
 
@@ -302,11 +302,11 @@ describe("adopt()", () => {
       const template = button(h("span", { class: "neuwo-btn__status" }, "Loading"));
       const host = server(template);
       host.removeAttribute("loading");
-      patch(host, template);
+      reconcile(host, template);
       expect(host.innerHTML).toBe('<button class="neuwo-btn"><span class="neuwo-btn__label">Save</span></button>');
       expect(childInfo(host)).toEqual([{ tag: null, attrs: {}, text: "Save", slot: "default" }]);
       host.setAttribute("loading", "");
-      patch(host, template);
+      reconcile(host, template);
       expect(host.innerHTML).toBe(
         '<button class="neuwo-btn" aria-busy="true"><span class="neuwo-btn__status">Loading</span><span class="neuwo-btn__label">Save</span></button>',
       );
@@ -316,7 +316,7 @@ describe("adopt()", () => {
       const template = button(h("span", { class: "neuwo-btn__spinner" }, raw('<svg viewBox="0 0 1 1"><circle r="1"></circle></svg>')));
       const host = server(template);
       host.removeAttribute("loading");
-      patch(host, template);
+      reconcile(host, template);
       expect(host.innerHTML).toBe('<button class="neuwo-btn"><span class="neuwo-btn__label">Save</span></button>');
       expect(childInfo(host)).toEqual([{ tag: null, attrs: {}, text: "Save", slot: "default" }]);
     });
@@ -326,7 +326,7 @@ describe("adopt()", () => {
         h("div", { class: "neuwo-f" }, h("label", { class: "neuwo-f__label" }, region()), has(a, "error") && h("p", { class: "neuwo-f__error" }, a.error));
       const host = make(renderElement("neuwo-f", { error: "Required" }, [text("Name")], field, idScope("neuwo-s")));
       host.removeAttribute("error");
-      patch(host, field);
+      reconcile(host, field);
       expect(host.innerHTML).toBe('<div class="neuwo-f"><label class="neuwo-f__label">Name</label></div>');
     });
   });
@@ -345,7 +345,7 @@ describe("adopt()", () => {
     );
     adopt(host, template);
     host.setAttribute("title", "x");
-    patch(host, template);
+    reconcile(host, template);
     expect(host.innerHTML).toBe(
       '<span class="neuwo-t" title="x"><span class="neuwo-t__body"><b>bold</b></span><b class="neuwo-t__mark"></b><i class="neuwo-t__label">New</i></span>',
     );
@@ -365,14 +365,14 @@ describe("adopt()", () => {
   });
 });
 
-describe("patch()", () => {
+describe("reconcile()", () => {
   it("changes only the class when an attribute changes", () => {
     const host = make(`<neuwo-t><i slot="start"></i>x</neuwo-t>`);
     render(host, testTemplate);
     const span = host.firstElementChild;
     host.setAttribute("tone", "b");
     const observer = watch(host);
-    patch(host, testTemplate);
+    reconcile(host, testTemplate);
     const records = observer.takeRecords();
     expect(records).toHaveLength(1);
     expect(records[0].type).toBe("attributes");
@@ -386,25 +386,25 @@ describe("patch()", () => {
     const host = make(`<neuwo-t tone="b"><i slot="start"></i>x</neuwo-t>`);
     render(host, testTemplate);
     const observer = watch(host);
-    patch(host, testTemplate);
+    reconcile(host, testTemplate);
     expect(observer.takeRecords()).toHaveLength(0);
   });
 
   it("adopts server-rendered markup when it has no snapshot, writing nothing", () => {
     const host = make(`<neuwo-t tone="b"><span class="neuwo-t neuwo-t--b"><i></i>x</span></neuwo-t>`);
     const observer = watch(host);
-    patch(host, badge);
+    reconcile(host, badge);
     expect(observer.takeRecords()).toHaveLength(0);
     host.setAttribute("tone", "a");
     observer.takeRecords();
-    patch(host, badge);
+    reconcile(host, badge);
     expect(observer.takeRecords()).toHaveLength(1);
     expect(host.innerHTML).toBe('<span class="neuwo-t neuwo-t--a"><i></i>x</span>');
   });
 
   it("renders a host that has not been rendered yet", () => {
     const host = make(`<neuwo-t>x<i slot="start"></i></neuwo-t>`);
-    patch(host, testTemplate);
+    reconcile(host, testTemplate);
     expect(host.innerHTML).toBe(shell("a", '<i slot="start"></i>', "x"));
   });
 
@@ -414,7 +414,7 @@ describe("patch()", () => {
     const span = host.firstElementChild;
     span.setAttribute("data-open", "");
     host.setAttribute("tone", "b");
-    patch(host, badge);
+    reconcile(host, badge);
     expect(span.hasAttribute("data-open")).toBe(true);
     expect(span.className).toBe("neuwo-t neuwo-t--b");
   });
@@ -425,7 +425,7 @@ describe("patch()", () => {
     host.firstElementChild.className = "neuwo-t neuwo-t--b";
     host.setAttribute("tone", "b");
     const observer = watch(host);
-    patch(host, badge);
+    reconcile(host, badge);
     expect(observer.takeRecords()).toHaveLength(0);
   });
 
@@ -434,7 +434,7 @@ describe("patch()", () => {
     const host = make(`<neuwo-t title="x"></neuwo-t>`);
     render(host, template);
     host.removeAttribute("title");
-    patch(host, template);
+    reconcile(host, template);
     expect(host.innerHTML).toBe('<span class="neuwo-t"></span>');
   });
 
@@ -450,11 +450,11 @@ describe("patch()", () => {
     render(host, template);
     const icon = host.querySelector("i");
     host.setAttribute("href", "/go");
-    patch(host, template);
+    reconcile(host, template);
     expect(host.innerHTML).toBe('<a class="neuwo-t" href="/go"><span class="neuwo-t__start"><i slot="start"></i></span><span class="neuwo-t__label">x</span></a>');
     expect(host.querySelector("i")).toBe(icon);
     host.removeAttribute("href");
-    patch(host, template);
+    reconcile(host, template);
     expect(host.innerHTML).toBe('<span class="neuwo-t"><span class="neuwo-t__start"><i slot="start"></i></span><span class="neuwo-t__label">x</span></span>');
     expect(host.querySelector("i")).toBe(icon);
   });
@@ -466,7 +466,7 @@ describe("patch()", () => {
     render(host, template);
     const sub = host.querySelector(".neuwo-t__sub");
     host.setAttribute("level", "h3");
-    patch(host, template);
+    reconcile(host, template);
     expect(host.innerHTML).toBe('<div class="neuwo-t"><h3 class="neuwo-t__head">Head</h3><p class="neuwo-t__sub"><span slot="sub">Sub</span></p></div>');
     expect(host.querySelector(".neuwo-t__sub")).toBe(sub);
   });
@@ -483,7 +483,7 @@ describe("patch()", () => {
     render(host, template);
     const button = host.querySelector("button");
     host.setAttribute("variant", "spotlight");
-    patch(host, template);
+    reconcile(host, template);
     expect(host.innerHTML).toBe(
       '<div class="neuwo-c"><div class="neuwo-c__glow"></div><div class="neuwo-c__inner">' +
         '<h2 class="neuwo-c__headline">Head</h2><p class="neuwo-c__sub"><span slot="sub">Sub</span></p>' +
@@ -491,7 +491,7 @@ describe("patch()", () => {
     );
     expect(host.querySelector("button")).toBe(button);
     host.removeAttribute("variant");
-    patch(host, template);
+    reconcile(host, template);
     expect(host.innerHTML).toBe(
       '<div class="neuwo-c"><div class="neuwo-c__body"><h2 class="neuwo-c__headline">Head</h2><p class="neuwo-c__sub"><span slot="sub">Sub</span></p></div>' +
         '<div class="neuwo-c__actions"><button slot="actions">Go</button></div></div>',
@@ -504,7 +504,7 @@ describe("patch()", () => {
     const host = make(`<neuwo-t><b>bold</b></neuwo-t>`);
     render(host, template);
     host.setAttribute("title", "x");
-    patch(host, template);
+    reconcile(host, template);
     expect(host.innerHTML).toBe('<span class="neuwo-t" title="x"><span class="neuwo-t__label"><b>bold</b></span><b class="neuwo-t__mark"></b></span>');
   });
 
@@ -522,10 +522,10 @@ describe("patch()", () => {
     render(host, template);
     expect(host.innerHTML).toBe(`<button class="neuwo-t"><span class="neuwo-t__spin"></span>${wrappers}</button>`);
     host.removeAttribute("busy");
-    patch(host, template);
+    reconcile(host, template);
     expect(host.innerHTML).toBe(`<button class="neuwo-t">${wrappers}</button>`);
     host.setAttribute("busy", "");
-    patch(host, template);
+    reconcile(host, template);
     expect(host.innerHTML).toBe(`<button class="neuwo-t"><span class="neuwo-t__spin"></span>${wrappers}</button>`);
   });
 
@@ -543,7 +543,7 @@ describe("patch()", () => {
     const input = host.querySelector("input");
     for (const title of ["x", "y", "z"]) {
       host.setAttribute("title", title);
-      patch(host, template);
+      reconcile(host, template);
     }
     expect(host.innerHTML).toBe(
       '<label class="neuwo-t" title="z"><span class="neuwo-t__text">Name</span><b class="neuwo-t__req">*</b><span class="neuwo-t__control"><input></span></label>',
@@ -561,7 +561,7 @@ describe("patch()", () => {
     button.focus();
     expect(document.activeElement).toBe(button);
     host.setAttribute("busy", "");
-    patch(host, template);
+    reconcile(host, template);
     expect(host.firstElementChild).toBe(button);
     expect(document.activeElement).toBe(button);
     expect(button.getAttribute("aria-expanded")).toBe("true");
@@ -579,24 +579,28 @@ describe("patch()", () => {
     const input = host.querySelector("input");
     input.focus();
     host.setAttribute("level", "h3");
-    patch(host, template);
+    reconcile(host, template);
     expect(host.querySelector(".neuwo-t__body")).toBe(body);
     expect(host.querySelector("h3")).not.toBeNull();
     expect(document.activeElement).toBe(input);
   });
 
-  it("does not render twice when an author element precedes the root", () => {
+  it("does not render twice when an author element precedes the root, and places that element", () => {
     const host = make(`<neuwo-t>x</neuwo-t>`);
     render(host, testTemplate);
     const span = host.firstElementChild;
+    const start = span.firstElementChild;
     const icon = document.createElement("i");
     icon.slot = "start";
     host.prepend(icon);
     host.setAttribute("tone", "b");
     const observer = watch(host);
-    patch(host, testTemplate);
-    expect(observer.takeRecords().map((record) => record.attributeName)).toEqual(["class"]);
-    expect(host.innerHTML).toBe(`<i slot="start"></i>${shell("b", "", "x")}`);
+    reconcile(host, testTemplate);
+    const records = observer.takeRecords();
+    expect(records.filter((record) => record.type === "attributes").map((record) => [record.target, record.attributeName])).toEqual([[span, "class"]]);
+    expect(records.filter((record) => record.type === "childList").every((record) => record.target === host || record.target === start)).toBe(true);
+    expect(host.firstElementChild).toBe(span);
+    expect(host.innerHTML).toBe(shell("b", '<i slot="start"></i>', "x"));
     expect(host.querySelectorAll(".neuwo-t")).toHaveLength(1);
     expect(span.className).toBe("neuwo-t neuwo-t--b");
   });
@@ -615,7 +619,7 @@ describe("patch()", () => {
     icon.slot = "start";
     host.prepend(icon);
     host.setAttribute("href", "/go");
-    patch(host, template);
+    reconcile(host, template);
     expect(host.innerHTML).toBe('<a class="neuwo-t" href="/go"><span class="neuwo-t__start"><i slot="start"></i></span><span class="neuwo-t__label">x</span></a>');
   });
 
@@ -628,7 +632,7 @@ describe("patch()", () => {
     b.setAttribute("slot", "nope");
     host.setAttribute("tone", "b");
     const observer = watch(host);
-    patch(host, testTemplate);
+    reconcile(host, testTemplate);
     expect(observer.takeRecords().map((record) => record.attributeName)).toEqual(["class"]);
     expect(host.innerHTML).toBe(shell("b", '<i></i><b slot="nope"></b>', "x"));
     expect(childInfo(host).map((child) => child.slot)).toEqual(["start", "start", "default"]);
@@ -650,7 +654,7 @@ describe("patch()", () => {
     u.slot = "start";
     host.prepend(u);
     host.setAttribute("href", "/go");
-    patch(host, template);
+    reconcile(host, template);
     expect(host.innerHTML).toBe('<a class="neuwo-t" href="/go"><span class="neuwo-t__start"><u slot="start"></u><i></i></span><span class="neuwo-t__label">x</span></a>');
     expect(host.querySelector("i")).toBe(i);
   });
@@ -660,7 +664,7 @@ describe("patch()", () => {
     const host = make(`<neuwo-t>x<b slot="nope">n</b></neuwo-t>`);
     render(host, wrapped);
     host.setAttribute("tone", "b");
-    patch(host, wrapped);
+    reconcile(host, wrapped);
     expect(host.innerHTML).toBe(shell("b", "", "x"));
     expect(calls.at(-1).map((child) => child.tag ?? child.text)).toEqual(["x", "b"]);
   });
@@ -672,7 +676,7 @@ describe("patch()", () => {
     render(host, template);
     host.setAttribute("label", "Two");
     const observer = watch(host);
-    patch(host, template);
+    reconcile(host, template);
     const records = observer.takeRecords();
     expect(records).toHaveLength(1);
     expect(records[0].type).toBe("characterData");
@@ -685,11 +689,11 @@ describe("patch()", () => {
     render(host, template);
     const svg = host.firstElementChild;
     let observer = watch(host);
-    patch(host, template);
+    reconcile(host, template);
     expect(observer.takeRecords()).toHaveLength(0);
     host.setAttribute("shape", "c");
     observer = watch(host);
-    patch(host, template);
+    reconcile(host, template);
     const records = observer.takeRecords();
     expect(records.length).toBeGreaterThan(0);
     expect(records.every((record) => record.type === "childList" && record.target === svg)).toBe(true);
@@ -705,7 +709,7 @@ describe("patch()", () => {
     const id = host.firstElementChild.getAttribute("aria-describedby");
     host.setAttribute("tone", "b");
     const observer = watch(host);
-    patch(host, template);
+    reconcile(host, template);
     expect(observer.takeRecords().map((record) => record.attributeName)).toEqual(["data-tone"]);
     expect(host.firstElementChild.getAttribute("aria-describedby")).toBe(id);
   });
@@ -715,7 +719,7 @@ describe("patch()", () => {
     const host = make(`<neuwo-t><i slot="start"></i>x</neuwo-t>`);
     render(host, wrapped);
     host.setAttribute("tone", "b");
-    patch(host, wrapped);
+    reconcile(host, wrapped);
     expect(calls.at(-1)).toEqual([
       { tag: "i", attrs: { slot: "start" }, text: "", slot: "start" },
       { tag: null, attrs: {}, text: "x", slot: "default" },
@@ -727,12 +731,10 @@ describe("patch()", () => {
     render(host, badge);
     host.textContent = "y";
     host.setAttribute("tone", "b");
-    patch(host, badge);
+    reconcile(host, badge);
     expect(host.innerHTML).toBe('<span class="neuwo-t neuwo-t--b">y</span>');
   });
-});
 
-describe("reconcile()", () => {
   it("renders again when the host's children were replaced", () => {
     const host = make(`<neuwo-t><i slot="start"></i>x</neuwo-t>`);
     render(host, testTemplate);
@@ -769,14 +771,6 @@ describe("reconcile()", () => {
     expect(host.querySelector("i")).toBe(i);
     expect(label.firstChild).toBe(x);
     expect(observer.takeRecords().every((record) => record.type === "childList" && (record.target === host || record.target === label))).toBe(true);
-  });
-
-  it("writes nothing when nothing changed", () => {
-    const host = make(`<neuwo-t tone="b"><i slot="start"></i>x</neuwo-t>`);
-    render(host, testTemplate);
-    const observer = watch(host);
-    reconcile(host, testTemplate);
-    expect(observer.takeRecords()).toHaveLength(0);
   });
 
   it("writes nothing for loose whitespace or comments around the root", () => {

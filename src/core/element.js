@@ -75,7 +75,6 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
   }
 
   attributeChangedCallback() {
-    // Not patch: #write drops the observer's pending records, so a child a script added just before must be placed now.
     if (this.isConnected && !this.#waiting && !this.#tooEarly() && !ownedByReact(this)) this.#write(reconcile);
   }
 
