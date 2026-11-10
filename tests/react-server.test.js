@@ -66,6 +66,40 @@ describe("JSX runtime in React Server Components", () => {
     expect(found.input).toEqual({ jsx: expected, jsxDEV: expected });
   });
 
+  it.runIf(built)("renders <neuwo-combobox value> through the built runtime with the value as its default and no function", () => {
+    for (const name of ["jsx", "jsxDEV"]) {
+      const rendered = found.combobox[name];
+      expect(rendered.hostValue, name).toBeUndefined();
+      expect(rendered.formValue, name).toMatchObject({ className: "neuwo-combobox__form-value", name: "country", defaultValue: "fr" });
+      expect(rendered.formValue, name).not.toHaveProperty("value");
+      expect(rendered.shown, name).toBe("France");
+      expect(rendered.functions, name).toEqual([]);
+    }
+  });
+
+  it.runIf(built)("keeps a <neuwo-combobox> pick when the server sends a new placeholder", async () => {
+    const decode = (payload) => createFromReadableStream(new Response(payload).body, { serverConsumerManifest: { moduleMap: {}, moduleLoading: null } });
+    const [first, second] = await Promise.all(found.combobox.payloads.map(decode));
+    const error = vi.spyOn(console, "error");
+    const container = mount();
+    const app = createRoot(container);
+    cleanups.unshift(() => act(() => app.unmount()));
+    // Synchronous act() and microtasks only: happy-dom holds an observer's callback in a WeakRef, which a GC between tasks drops.
+    act(() => app.render(first));
+    const host = container.querySelector("neuwo-combobox");
+    const shown = () => host.querySelector(".neuwo-combobox__value").textContent;
+    expect(shown()).toBe("Pick");
+    act(() => host.querySelector('.neuwo-combobox__option[data-value="fr"]').click());
+    expect(host.value).toBe("fr");
+    act(() => app.render(second));
+    for (let turn = 0; turn < 3; turn++) await Promise.resolve();
+    expect(container.querySelector("neuwo-combobox")).toBe(host);
+    expect(host.value).toBe("fr");
+    expect(shown()).toBe("France");
+    expect(host.querySelector(".neuwo-combobox__trigger").hasAttribute("data-placeholder")).toBe(false);
+    expect(error).not.toHaveBeenCalled();
+  });
+
   it.runIf(built)("renders a form control's value as its default, with no function, through the server runtime", () => {
     const expected = {
       input: { className: "x-field__input", name: "q", defaultValue: "a" },

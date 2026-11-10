@@ -81,6 +81,29 @@ for (const [name, create] of Object.entries(factories)) {
   found.input[name] = { control: find(tree, (el) => el.props.className === "neuwo-input")?.props, functions: functionsIn(tree) };
 }
 
+found.combobox = { payloads: [] };
+for (const [name, create] of Object.entries(factories)) {
+  const options = [create("option", { value: "fi", children: "Finland" }, "fi"), create("option", { value: "fr", children: "France" }, "fr")];
+  const Page = () => create("main", { children: create("neuwo-combobox", { value: "fr", name: "country", placeholder: "Pick", children: options }) });
+  const { errors, payload } = await flight(create(Page, {}));
+  assert.deepEqual(errors, [], `${name}: the neuwo-combobox Flight render reported errors`);
+  const tree = await decode(payload);
+  const host = find(tree, (el) => el.type === "neuwo-combobox");
+  found.combobox[name] = {
+    hostValue: host?.props.value,
+    formValue: find(tree, (el) => el.props.className === "neuwo-combobox__form-value")?.props,
+    shown: find(tree, (el) => el.props.className === "neuwo-combobox__value")?.props.children,
+    functions: functionsIn(tree),
+  };
+}
+for (const placeholder of ["Pick", "Choose"]) {
+  const options = [runtime.jsx("option", { value: "fi", children: "Finland" }, "fi"), runtime.jsx("option", { value: "fr", children: "France" }, "fr")];
+  const Page = () => runtime.jsx("main", { children: runtime.jsxs("neuwo-combobox", { name: "country", placeholder, children: options }) });
+  const { errors, payload } = await flight(runtime.jsx(Page, {}));
+  assert.deepEqual(errors, [], "the neuwo-combobox Flight payload reported errors");
+  found.combobox.payloads.push(payload);
+}
+
 found.form = {};
 for (const [name, create] of Object.entries(formFactories)) {
   const Page = () => create("main", { children: [create("x-field", { value: "a", name: "q" }), create("x-notes", { value: "n" })] });

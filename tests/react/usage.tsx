@@ -21,6 +21,10 @@ export function Usage() {
       <neuwo-input value={s} onChange={(e) => setS(e.target.value)} />
       <neuwo-input ref={input} defaultValue="draft" name="q" onChange={(e) => e.target.checkValidity()} />
       <neuwo-range value={40} />
+      <neuwo-combobox value={s} onChange={(e) => setS(e.target.value + e.target.name)}>
+        <option value="a">A</option>
+      </neuwo-combobox>
+      <neuwo-combobox defaultValue="a" name="plan" searchable />
       {/* @ts-expect-error not a text-like input type */}
       <neuwo-input type="checkbox" />
       {/* @ts-expect-error not a button variant */}

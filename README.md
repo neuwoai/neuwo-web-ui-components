@@ -511,35 +511,59 @@ native controls:
 <neuwo-notice dismissible hidden={!open} ondismiss={(e) => { e.preventDefault(); setOpen(false); }}>...</neuwo-notice>
 ```
 
-- `onChange` fires as it does on native fields. On `<neuwo-input>` that means React's own model,
-  below. On `<neuwo-combobox>`, `onInput` and `onChange` fire when the user picks a value, never
-  while they type into a `searchable` filter.
+- `onChange` fires as it does on native fields. On the form fields that means React's own
+  controlled and uncontrolled models, in [Form fields in React](#form-fields-in-react).
 - A custom event binds by its exact name, so it is lower case: `oncopied`, `ondismiss`.
   `onCopied` listens for an event called `Copied`, which never fires; the types reject it.
 - Cancel the notice's `dismiss` and drive `hidden` from state. Left alone, the element hides
   itself by setting `hidden` on a host React renders, which React does not know about.
-
-`<neuwo-input>` behaves like React's own `<input>`, because the JSX runtime renders the native
-input inside it and hands it your value props:
-
-```tsx
-<neuwo-input value={email} onChange={(e) => setEmail(e.target.value)} />
-<neuwo-input defaultValue="draft" name="notes" />
-```
-
-- `value` makes the field controlled: it shows whatever your state says, and a keystroke your
-  handler ignores is undone.
-- `onChange` fires on every keystroke, as on a native `<input>` in React, with the inner
-  `<input>` as `event.target`. It used to fire only when the user committed a value.
-- `defaultValue` gives an uncontrolled field with a starting value, which keeps what the user
-  types across re-renders.
-- In Server Components there is no state to hold, so `value` is the starting value there.
 
 React 18 passes every prop to a custom element as a text attribute. `disabled={false}` becomes
 `disabled="false"`, which the element reads as disabled. `onClick` and `onInput` still work, but
 `onChange` and custom event handlers never run. If you are stuck on 18, pass a boolean as
 `disabled={saving || undefined}` and attach those listeners through a `ref` with
 `addEventListener`.
+
+### Form fields in React
+
+`<neuwo-input>`, `<neuwo-textarea>` and `<neuwo-range>` behave like React's own `<input>` and
+`<textarea>`, because the JSX runtime renders the native control inside each and hands it your
+value props:
+
+```tsx
+<neuwo-input value={email} onChange={(e) => setEmail(e.target.value)} />
+<neuwo-textarea defaultValue="draft" name="notes" />
+```
+
+- `value` makes the field controlled: it shows whatever your state says, and an edit your
+  handler ignores is undone.
+- `onChange` fires on every edit, as on a native field in React, with the inner `<input>` or
+  `<textarea>` as `event.target`. It used to fire only when the user committed a value.
+- `defaultValue` gives an uncontrolled field with a starting value, which keeps what the user
+  types across re-renders.
+- In Server Components there is no state to hold, so `value` is the starting value there.
+
+`<neuwo-combobox>` follows the same two models:
+
+```tsx
+<neuwo-combobox value={plan} onChange={(e) => setPlan(e.target.value)}>
+  <option value="free">Free</option>
+  <option value="pro">Pro</option>
+</neuwo-combobox>
+<neuwo-combobox defaultValue="pro" name="plan">...</neuwo-combobox>
+```
+
+- `onInput` and `onChange` fire once each when the user picks a different value, never while
+  they type into a `searchable` filter. `event.target` is the combobox itself: its `value` is the
+  picked value and its `name` is the field's, as form libraries expect.
+- `value` makes it controlled: it shows whatever your state says, so a pick your handler ignores
+  is never shown. A `value` that names no enabled option shows the placeholder and submits nothing.
+- `defaultValue` gives an uncontrolled combobox, which shows the user's pick itself and keeps it
+  across re-renders. In Server Components `value` is the starting value, as above. Setting the
+  element's `value` property, as React Hook Form's `register` does on a reset, shows that value.
+- If the options change while the combobox is mounted, for example once they have loaded, use
+  `value`. Uncontrolled, a pick whose option goes away is cleared without a `change`, so your
+  state never hears of it.
 
 ### Next.js and server rendering
 

@@ -89,6 +89,12 @@
   element, so `onInput` and `onChange` in React fire only when the user picks a value.
 - The rows a `searchable` `<neuwo-combobox>` filters out are hidden; the row's `display: block` used to keep
   them on screen. The chevron turns while the list is open, which its rule never matched before.
+- Breaking: in React, `value` on `<neuwo-combobox>` makes it controlled, as on React's own `<select>`. A pick
+  fires `onInput` and `onChange` with the element as `event.target` and the picked value as its `value`, and
+  the combobox then shows what your state says, so a pick your handler ignores is never shown; it used to show
+  every pick. A `value` that names no enabled option shows the placeholder and submits nothing. `defaultValue`,
+  and `value` from a Server Component, give an uncontrolled combobox that keeps the user's pick across
+  re-renders, including ones that change its placeholder or an option's label.
 - Breaking: `<neuwo-cta>` renders into its own light DOM from one template, so a server-rendered band
   is styled from the first paint. Its classes are prefixed: `.cta` is now `.neuwo-cta` (with
   `.neuwo-cta--{banner|spotlight}`), and `.cta__body`, `.cta__glow`, `.cta__inner`, `.cta__headline`,
