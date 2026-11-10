@@ -60,6 +60,15 @@ describe("badge.css recipe", () => {
     expect(css).not.toMatch(/\.neuwo-badge--intensity-[sl][^}]*animation/);
   });
 
+  it("sweeps the shimmer with transform, measured in sweep widths, and moves no layout property", () => {
+    const [, shimmer] = css.match(/@keyframes neuwo-badge-shimmer\s*{([\s\S]*?)\n}/);
+    expect(shimmer).toMatch(/transform:\s*translateX\(/);
+    expect(shimmer).toContain("var(--neuwo-badge-shimmer-width)");
+    for (const [, frames] of css.matchAll(/@keyframes [\w-]+\s*{([\s\S]*?)\n}/g)) {
+      expect(frames).not.toMatch(/(?<![\w-])(left|right|top|width|margin(-[a-z]+)?)\s*:/);
+    }
+  });
+
   it("defines the glow treatment from currentColor (no raw hex)", () => {
     expect(css).toContain(".neuwo-badge--glow");
     expect(css).toContain("color-mix(in srgb, currentColor");

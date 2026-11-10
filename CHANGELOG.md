@@ -4,6 +4,8 @@
 
 - Under React, toggling `loading` on `<neuwo-button>` no longer remounts the children passed into it, so
   their state and DOM nodes survive: the JSX runtime now keys every element it renders from a template.
+- The `<neuwo-badge>` shimmer sweeps with `transform` instead of `left`, so it no longer shifts layout.
+  `--neuwo-badge-shimmer-width` is now unitless, a percentage of the badge (`35`, not `35%`).
 
 - Breaking: `<neuwo-logo>` renders its `<svg>` into its own light DOM from one template, so a
   server-rendered logo is drawn from the first paint. Its classes are prefixed: `.logo` is now
