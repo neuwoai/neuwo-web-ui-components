@@ -1,5 +1,6 @@
 import esbuild from "esbuild";
 import { cp, mkdir, rm, readFile, writeFile } from "node:fs/promises";
+import { watch } from "node:fs";
 import path from "node:path";
 
 const serve = process.argv.includes("--serve");
@@ -31,18 +32,10 @@ await cp("src/foundation/fonts", "dist/fonts", { recursive: true });
 // hands the files out.
 await cp("src/foundation/logos", "dist/logos", { recursive: true });
 
-// Publish the raw CSS so the design system can parse it and non-web outputs can copy it.
-await mkdir("dist/foundation", { recursive: true });
-await cp("src/foundation/tokens.css", "dist/foundation/tokens.css");
-await cp("src/foundation/typography.css", "dist/foundation/typography.css");
-await cp("src/foundation/background.css", "dist/foundation/background.css");
-await cp("src/foundation/navigation.css", "dist/foundation/navigation.css");
-await cp("src/foundation/markdown.css", "dist/foundation/markdown.css");
-
 const read = (file) => readFile(file, "utf8");
 
-const fontsCss = await read("src/foundation/fonts.css");
-await writeFile("dist/foundation/fonts.css", fontsCss.replaceAll("url('fonts/", "url('../fonts/"));
+const FOUNDATION_CSS = ["typography", "background", "navigation", "markdown"].map((name) => `src/foundation/${name}.css`);
+const PUBLISHED_FOUNDATION_CSS = ["src/foundation/tokens.css", ...FOUNDATION_CSS];
 
 const LIGHT_COMPONENT_CSS = [
   "src/components/reset.css",
@@ -53,29 +46,29 @@ const LIGHT_COMPONENT_CSS = [
   "src/components/status-dot/status-dot.css",
 ];
 
+const COMPONENTS_CSS_SOURCES = ["src/foundation/fonts.css", "src/foundation/tokens.css", ...LIGHT_COMPONENT_CSS];
+
 const composeComponentsCss = async () =>
-  [
-    ":root { --neuwo-components: 1; }",
-    ...(await Promise.all(["src/foundation/fonts.css", "src/foundation/tokens.css", ...LIGHT_COMPONENT_CSS].map(read))),
-  ].join("\n");
+  [":root { --neuwo-components: 1; }", ...(await Promise.all(COMPONENTS_CSS_SOURCES.map(read)))].join("\n");
 
-const componentsCss = await composeComponentsCss();
-await writeFile("dist/neuwo-components.css", componentsCss);
+const writeStylesheets = async () => {
+  await mkdir("dist/foundation", { recursive: true });
+  await Promise.all(PUBLISHED_FOUNDATION_CSS.map((file) => cp(file, path.join("dist/foundation", path.basename(file)))));
 
-const combinedCss = [
-  componentsCss,
-  await read("src/foundation/typography.css"),
-  await read("src/foundation/background.css"),
-  await read("src/foundation/navigation.css"),
-  await read("src/foundation/markdown.css"),
-].join("\n");
-await writeFile("dist/neuwo.css", combinedCss);
+  const fontsCss = await read("src/foundation/fonts.css");
+  await writeFile("dist/foundation/fonts.css", fontsCss.replaceAll("url('fonts/", "url('../fonts/"));
 
-// Component recipes only (the .js stays bundled into neuwo.js).
-await cp("src/components", "dist/components", {
-  recursive: true,
-  filter: (src) => !src.endsWith(".js"),
-});
+  const componentsCss = await composeComponentsCss();
+  await writeFile("dist/neuwo-components.css", componentsCss);
+  await writeFile("dist/neuwo.css", [componentsCss, ...(await Promise.all(FOUNDATION_CSS.map(read)))].join("\n"));
+
+  await cp("src/components", "dist/components", {
+    recursive: true,
+    filter: (src) => !src.endsWith(".js"),
+  });
+};
+
+await writeStylesheets();
 
 // Ship the hand-authored declaration files (the ?raw ambient and the tag map).
 await cp("src/types", "dist/types", { recursive: true });
@@ -87,6 +80,7 @@ const componentsCssModule = {
     build.onLoad({ filter: /.*/, namespace: "components-css" }, async () => ({
       contents: await composeComponentsCss(),
       loader: "text",
+      watchFiles: COMPONENTS_CSS_SOURCES.map((file) => path.resolve(file)),
     }));
   },
 };
@@ -120,6 +114,15 @@ if (serve) {
   const contexts = await Promise.all(builds.map((options) => esbuild.context(options)));
   await Promise.all(contexts.map((ctx) => ctx.watch()));
   const { port } = await contexts[0].serve({ servedir: ".", port: 8000 });
+
+  let timer;
+  const rewriteStylesheets = (_event, file) => {
+    if (!file?.endsWith(".css")) return;
+    clearTimeout(timer);
+    timer = setTimeout(() => writeStylesheets().catch((error) => console.error(error)), 50);
+  };
+  watch("src/foundation", { recursive: true }, rewriteStylesheets);
+  watch("src/components", { recursive: true }, rewriteStylesheets);
   console.log(`Serving demo at http://localhost:${port}/demo/`);
 } else {
   await Promise.all(builds.map((options) => esbuild.build(options)));
