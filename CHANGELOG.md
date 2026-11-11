@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed: `expand` leaves a `<neuwo-*>` tag inside `<svg>` or `<math>` as it is, where it used to write the component's markup into the foreign content, which a browser moves out of the drawing. Inside an SVG `<foreignObject>` it still expands.
 - Fixed: a range whose value is its maximum, on a fractional step such as `max="0.3" step="0.1"`, no longer resolves to the step below in the template, so served markup paints a full fill instead of two thirds.
 - Fixed: the JSX types give `onChange` the target the browser dispatches from, with `currentTarget` as the element: the inner `HTMLInputElement` or `HTMLTextAreaElement` for the input, textarea, range, checkbox, toggle, radio and radio group, and the element itself for the combobox and segmented control. `event.target.value` and `event.target.checked` type as before; a property only the element has, such as `noErrorLine`, now needs `event.currentTarget`. A handler defined apart from the element annotates its event with `NeuwoChangeEvent<NeuwoInput, HTMLInputElement>`, exported from `@neuwo/web-ui-library--demo/jsx-runtime`, instead of `React.ChangeEvent<NeuwoInput>`.
 - Fixed: under React, `options` on `<neuwo-combobox>` and `<neuwo-segmented>` reports `selected` for an option React marked selected, and the hidden `<select>` that keeps the options is now `multiple`, so the browser no longer selects its first option by itself. Forms submit and validate as before, as that select has no name.

@@ -178,6 +178,10 @@ paragraph that holds only block components, whitespace and comments with what it
 paragraph's own attributes. A block component that shares a paragraph with text or an inline element
 stays inside it and breaks.
 
+A tag inside `<svg>` or `<math>` is left as it is, since a browser parses it as SVG or MathML rather
+than as an element of the library. Inside an SVG `<foreignObject>`, which holds HTML again, `expand`
+writes components out as anywhere else.
+
 ### Links
 
 The sheet styles bare `<a>` in prose: brand blue, underlined, deepening to `--neuwo-color-blue-dark`

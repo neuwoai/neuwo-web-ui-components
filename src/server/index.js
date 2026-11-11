@@ -13,6 +13,8 @@ export { renderElement };
 
 const OPAQUE = new Set(["template", "script", "style", "textarea"]);
 
+const FOREIGN = new Set(["svg", "math"]);
+
 const PHRASING = new Set([
   "a", "abbr", "area", "audio", "b", "bdi", "bdo", "br", "button", "canvas", "cite", "code", "data", "datalist",
   "del", "dfn", "em", "embed", "i", "iframe", "img", "input", "ins", "kbd", "label", "link", "map", "mark", "math",
@@ -154,13 +156,15 @@ function expandElement(page, el, contentEnd) {
  * @param {ChildNode[]} nodes
  * @param {number} limit
  * @param {(start: number, end: number, markup: string) => void} emit
+ * @param {boolean} [foreign]
  */
-function visit(page, nodes, limit, emit) {
+function visit(page, nodes, limit, emit, foreign = false) {
   nodes.forEach((node, i) => {
     if (!isElement(node) || OPAQUE.has(node.name)) return;
     const next = i + 1 < nodes.length ? startOf(page.html, nodes[i + 1]) : limit;
     const { start, content, end } = span(page.html, node, next);
-    if (node.name === "p" && liftable(page, node)) emit(start, end, rewrite(page, node.children, startOf(page.html, node.children[0]), content));
+    if (foreign || FOREIGN.has(node.name)) visit(page, node.children, content, emit, node.name !== "foreignObject");
+    else if (node.name === "p" && liftable(page, node)) emit(start, end, rewrite(page, node.children, startOf(page.html, node.children[0]), content));
     else if (!Object.hasOwn(page.registry, node.name)) visit(page, node.children, content, emit);
     else if (!isRendered(node, page.registry[node.name])) emit(start, end, expandElement(page, node, content));
   });
@@ -186,8 +190,10 @@ function rewrite(page, nodes, from, to) {
 /**
  * Expands every registered `<neuwo-*>` element in an HTML document in place. Elements that already hold their
  * rendered markup, and anything inside `<template>`, `<script>`, `<style>` or `<textarea>`, are left alone, as
- * is every byte outside the elements it expands, but one: a `<p>` that holds nothing but elements whose markup is
- * block content, whitespace and comments, as Markdown writes around such elements, is replaced by what it holds.
+ * is anything inside `<svg>` or `<math>`, which a browser parses as foreign content, except inside an SVG
+ * `<foreignObject>`. So is every byte outside the elements it expands, but one: a `<p>` that holds nothing but
+ * elements whose markup is block content, whitespace and comments, as Markdown writes around such elements, is
+ * replaced by what it holds.
  * @param {string} html
  * @param {Record<string, Template>} [registry]
  * @returns {string}

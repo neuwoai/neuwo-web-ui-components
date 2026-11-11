@@ -119,6 +119,28 @@ describe("expand() on real-world markup", () => {
   ])("expands an element %s", (_, html, expected) => {
     expect(run(html)).toBe(expected);
   });
+
+  it.each([
+    "<svg><neuwo-t>x</neuwo-t></svg>",
+    '<svg viewBox="0 0 1 1"><g><neuwo-t tone="b"><neuwo-t>y</neuwo-t></neuwo-t></g><neuwo-t/></svg>',
+    "<math><mi><neuwo-t>x</neuwo-t></mi></math>",
+    "<SVG><neuwo-t>x</neuwo-t></SVG>",
+    "<math><foreignObject><neuwo-t>x</neuwo-t></foreignObject></math>",
+  ])("leaves registered tags inside svg and math alone: %s", (html) => {
+    expect(run(html)).toBe(html);
+  });
+
+  it("expands registered tags inside an svg foreignObject, and only there", () => {
+    const html = "<svg><foreignObject><div><neuwo-t>x</neuwo-t><svg><neuwo-t>y</neuwo-t></svg></div></foreignObject><neuwo-t>z</neuwo-t></svg><neuwo-t>w</neuwo-t>";
+    expect(run(html)).toBe(
+      `<svg><foreignObject><div>${plain("x")}<svg><neuwo-t>y</neuwo-t></svg></div></foreignObject><neuwo-t>z</neuwo-t></svg>${plain("w")}`,
+    );
+    expect(run("<svg><FOREIGNOBJECT><neuwo-t>x</neuwo-t></FOREIGNOBJECT></svg>")).toBe(`<svg><FOREIGNOBJECT>${plain("x")}</FOREIGNOBJECT></svg>`);
+  });
+
+  it("leaves svg inside a registered element's content alone", () => {
+    expect(run("<neuwo-t><svg><neuwo-t>y</neuwo-t></svg></neuwo-t>")).toBe(plain("<svg><neuwo-t>y</neuwo-t></svg>"));
+  });
 });
 
 describe("expand() on a paragraph Markdown wrapped around an element", () => {
