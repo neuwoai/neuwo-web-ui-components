@@ -217,6 +217,47 @@ describe("<neuwo-notice>", () => {
     expect(card(el)).toBe(root);
   });
 
+  it("moves a child whose slot changes", async () => {
+    const el = make(`<neuwo-notice><span slot="title">T</span>Body</neuwo-notice>`);
+    const root = card(el);
+    const title = el.querySelector('[slot="title"]');
+    title.slot = "actions";
+    await settled();
+    expect(title.parentElement).toBe(part(el, "actions"));
+    expect(isEmpty(el, "title")).toBe(true);
+    expect(isEmpty(el, "actions")).toBe(false);
+    title.removeAttribute("slot");
+    await settled();
+    expect(title.parentElement).toBe(part(el, "message"));
+    expect(part(el, "message").textContent).toBe("BodyT");
+    expect(isEmpty(el, "actions")).toBe(true);
+    expect(card(el)).toBe(root);
+  });
+
+  it("moves a child whose slot changes in the same task as an attribute", async () => {
+    const el = make(`<neuwo-notice><span slot="title">T</span>Body</neuwo-notice>`);
+    const title = el.querySelector('[slot="title"]');
+    title.slot = "actions";
+    el.layout = "row";
+    expect(title.parentElement).toBe(part(el, "actions"));
+    await settled();
+    expect(title.parentElement).toBe(part(el, "actions"));
+    expect(isEmpty(el, "title")).toBe(true);
+  });
+
+  it("restores --empty when a script empties a wrapper", async () => {
+    const el = make(`<neuwo-notice><span slot="title">T</span>Body<button slot="actions">Go</button></neuwo-notice>`);
+    const root = card(el);
+    el.querySelector('[slot="title"]').remove();
+    await settled();
+    expect(isEmpty(el, "title")).toBe(true);
+    part(el, "actions").replaceChildren();
+    await settled();
+    expect(isEmpty(el, "actions")).toBe(true);
+    expect(isEmpty(el, "message")).toBe(false);
+    expect(card(el)).toBe(root);
+  });
+
   it("counts indented markup's whitespace as empty", () => {
     const el = make(`<neuwo-notice>
       <span slot="title">Only a headline</span>

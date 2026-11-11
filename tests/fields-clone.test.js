@@ -117,6 +117,23 @@ describe("fields copied with cloneNode(true)", () => {
     expect(globalThis.CSS).toBeDefined();
   });
 
+  for (const [source, html] of [
+    ["rendered by the elements", FIELDS],
+    ["served", expand(FIELDS)],
+  ]) {
+    it(`gives fresh ids to a field ${source} re-inserted after its clone`, () => {
+      const holder = form(html);
+      const originals = Array.from(holder.children);
+      const copies = originals.map((host) => /** @type {Element} */ (host.cloneNode(true)));
+      for (const host of originals) host.remove();
+      holder.append(...copies);
+      holder.prepend(...originals);
+      const hosts = [...originals, ...copies];
+      expectOwnIds(hosts);
+      for (const host of hosts) expect(host.querySelector("label").control, host.localName).toBe(controlOf(host));
+    });
+  }
+
   it("keeps the copy's ids through a later change", async () => {
     const holder = form(FIELDS);
     const copies = Array.from(holder.children, (host) => /** @type {Element} */ (host.cloneNode(true)));

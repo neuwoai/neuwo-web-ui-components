@@ -13,7 +13,8 @@ import { idScope } from "../ids.js";
  *   wrappers: Map<string, string>,
  *   root: Element | null,
  *   dropped: Node[],
- *   separated: boolean,
+ *   loading: boolean,
+ *   reslotted: Set<Node>,
  * }} HostState
  */
 /** @typedef {{ attrs: Record<string, string>, raw: string | null }} Seen */
@@ -59,7 +60,7 @@ function stateFor(host) {
       issued.add(value);
       return value;
     };
-    state = { id, issued, ids: new Map(), wrappers: new Map(), root: null, dropped: [], separated: false };
+    state = { id, issued, ids: new Map(), wrappers: new Map(), root: null, dropped: [], loading: false, reslotted: new Set() };
     states.set(host, state);
   }
   return state;
@@ -244,7 +245,7 @@ function authorNodes(host, state) {
   }
   for (const node of state.dropped) if (!node.parentNode) nodes.push(node);
   /** @param {Map<string, string>} wrappers */
-  const regionIn = (wrappers) => (/** @type {Node} */ node) => wrappers.get(keys.get(node)) ?? slotOf(node);
+  const regionIn = (wrappers) => (/** @type {Node} */ node) => (state.reslotted.has(node) ? slotOf(node) : (wrappers.get(keys.get(node)) ?? slotOf(node)));
   return { nodes, loose, regionIn };
 }
 
@@ -307,24 +308,27 @@ function rename(state, el, fresh) {
 }
 
 /**
- * Gives each adopted id the library minted that another element in the host's root also has, as on a copy made with
- * `cloneNode`, the id the host issued for it, and points every reference to it there too. It runs once, at the first
- * adoption in the document, since a copy adopted outside it cannot see the ids it shares.
+ * Gives each id of the host's markup that the library minted and another element in the host's root also has, as on
+ * a copy made with `cloneNode`, a fresh id, and points every reference to it there too. It runs at every adoption
+ * and restart in the document, since a copy adopted outside it cannot see the ids it shares.
  * @param {Element} host
  * @param {HostState} state
  */
 function separateIds(host, state) {
-  if (state.separated || !host.isConnected) return;
-  state.separated = true;
-  if (!state.ids.size || !state.root) return;
+  if (!host.isConnected || !state.root) return;
   const scope = /** @type {ParentNode} */ (host.getRootNode());
   /** @type {Map<string, string>} */
   const fresh = new Map();
-  for (const [issued, existing] of state.ids) {
+  /** @type {((suffix: string) => string) | null} */
+  let mint = null;
+  for (const issued of state.issued) {
+    const existing = state.ids.get(issued) ?? issued;
     // getElementById finds only the first, which is the host's own when a copy goes before its original.
     if (!MINTED.test(existing) || scope.querySelectorAll(`#${existing}`).length < 2) continue;
-    fresh.set(existing, issued);
-    state.ids.delete(issued);
+    mint ??= newIds();
+    const next = mint(existing.replace(MINTED, ""));
+    fresh.set(existing, next);
+    state.ids.set(issued, next);
   }
   if (fresh.size) rename(state, state.root, fresh);
 }
@@ -393,8 +397,11 @@ function plan(el, node, run) {
   const name = only(node, "region");
   /** @type {Wanted[]} */
   const wanted = [];
+  let current = Array.from(el.childNodes);
   if (name !== null) wanted.push(...(run.groups[name] ?? []));
   else {
+    // Indentation and comments in served markup are not a change where the template has no text.
+    if (!node.children.some((child) => typeof child === "string")) current = current.filter(isContent);
     const matched = pairs(run.blocks, el, node);
     const texts = /** @type {Text[]} */ (Array.from(el.childNodes).filter((child) => child.nodeType === TEXT));
     node.children.forEach((child, index) => {
@@ -408,7 +415,6 @@ function plan(el, node, run) {
       } else wanted.push(/** @type {TemplateNode} */ (child));
     });
   }
-  const current = Array.from(el.childNodes);
   if (wanted.length !== current.length || wanted.some((item, index) => item !== current[index])) run.arranges.push([el, wanted]);
 }
 
@@ -438,6 +444,7 @@ function settle(state, next, placeable, groups) {
   state.dropped = placeable.filter((node) => !placed.has(node));
   for (const node of state.dropped) /** @type {ChildNode} */ (node).remove();
   state.wrappers = wrappersOf(next);
+  state.reslotted.clear();
 }
 
 /**
@@ -471,7 +478,7 @@ function view(host, template) {
   const probe = applyTemplate(host, template, (suffix) => suffix, []);
   const root = locate(host, probe);
   if (!root) return null;
-  return { id: (suffix) => suffix, issued: new Set(), ids: new Map(), wrappers: wrappersOf(probe), root, dropped: [], separated: true };
+  return { id: (suffix) => suffix, issued: new Set(), ids: new Map(), wrappers: wrappersOf(probe), root, dropped: [], loading: false, reslotted: new Set() };
 }
 
 /**
@@ -538,7 +545,7 @@ export function adopt(host, template) {
   const probe = applyTemplate(host, template, state.id, []);
   const root = locate(host, probe);
   if (!root) return;
-  Object.assign(state, { root, dropped: [], ids: new Map(), wrappers: wrappersOf(probe), separated: false });
+  Object.assign(state, { root, dropped: [], ids: new Map(), wrappers: wrappersOf(probe), loading: host.ownerDocument.readyState === "loading" });
   snapshot(state, root);
   const { nodes, regionIn } = authorNodes(host, state);
   const full = applyTemplate(host, template, state.id, describe(nodes, regionIn(state.wrappers)));
@@ -558,9 +565,51 @@ export function reconcile(host, template) {
   const state = states.get(host);
   const { nodes, loose, regionIn } = authorNodes(host, state);
   const next = applyTemplate(host, template, state.id, describe(nodes, regionIn(state.wrappers)));
-  const regionOf = regionIn(wrappersOf(next));
+  if (state.loading) {
+    // An adoption while the document loads maps only the ids parsed so far.
+    mapIds(state, blocksOf(next), state.root, next);
+    state.loading = host.ownerDocument.readyState === "loading";
+  }
+  // Whitespace and comments beside the root are the served markup's formatting, never content to place.
   const placed = nodes.filter((node) => !loose.has(node) || isContent(node));
-  const run = prepare(state, next, placed, regionOf);
-  if (run.replace || run.arranges.length) commit(state, next, nodes, prepare(state, next, nodes, regionOf));
-  else commit(state, next, placed, run);
+  commit(state, next, placed, prepare(state, next, placed, regionIn(wrappersOf(next))));
+}
+
+/**
+ * Gives the host's markup fresh ids for the ids the library minted that another element in its root also has, as
+ * on a restart that puts back an element a copy of which took its place.
+ * @param {Element} host
+ */
+export function separate(host) {
+  if (live(host)) separateIds(host, /** @type {HostState} */ (states.get(host)));
+}
+
+/**
+ * Has the next reconcile place an author node in one of the host's region wrappers by its `slot`, as after a script
+ * changed it, instead of keeping it in the wrapper it sits in.
+ * @param {Element} host
+ * @param {Node} node
+ */
+export function reslot(host, node) {
+  states.get(host)?.reslotted.add(node);
+}
+
+/**
+ * The host's rendered root and the region wrappers in it, which hold the author nodes, or null with no rendered root.
+ * @param {Element} host
+ * @returns {{ root: Element, wrappers: Element[] } | null}
+ */
+export function regions(host) {
+  if (!live(host)) return null;
+  const state = /** @type {HostState} */ (states.get(host));
+  const root = /** @type {Element} */ (state.root);
+  /** @type {Element[]} */
+  const wrappers = [];
+  /** @param {Element} el */
+  const visit = (el) => {
+    if (wrapperKey(state, el) !== undefined) wrappers.push(el);
+    else for (const child of Array.from(el.children)) visit(child);
+  };
+  visit(root);
+  return { root, wrappers };
 }

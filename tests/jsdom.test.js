@@ -434,6 +434,81 @@ describe("a property set on a light element before it is defined, in jsdom", () 
   });
 });
 
+describe("served markup defined while the document is still parsing it, in jsdom", () => {
+  afterEach(() => delete document.readyState);
+
+  let count = 0;
+  /**
+   * Builds the host and the start of its served markup as the parser has so far, defines the element, then
+   * appends the rest as the parser goes on.
+   * @param {string} html
+   * @param {CustomElementConstructor} base
+   * @param {(root: Element) => Array<[Element, Node]>} split - the nodes held back, each with the node it goes into
+   */
+  function stream(html, base, split) {
+    const tag = `stream-${++count}-element`;
+    const served = document.createElement("template");
+    served.innerHTML = expand(html);
+    const source = /** @type {Element} */ (served.content.firstElementChild);
+    const later = split(/** @type {Element} */ (source.firstElementChild));
+    for (const [, node] of later) node.parentNode?.removeChild(node);
+    const host = document.createElement(tag);
+    for (const { name, value } of Array.from(source.attributes)) host.setAttribute(name, value);
+    host.append(...source.childNodes);
+    Object.defineProperty(document, "readyState", { configurable: true, get: () => "loading" });
+    form("").append(host);
+    customElements.define(tag, class extends base {});
+    return { host, later };
+  }
+
+  const parsed = () => {
+    delete document.readyState;
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+  };
+
+  it("keeps the served ids of the nodes parsed after its adoption through a later change", async () => {
+    const { NeuwoInput } = await import("../src/components/fields/input/neuwo-input.js");
+    const { host, later } = stream(`<neuwo-input name="email" label="Email" error="Bad"></neuwo-input>`, NeuwoInput, (root) =>
+      Array.from(root.children).slice(1).map((node) => [root, node]),
+    );
+    for (const [parent, node] of later) parent.append(node);
+    parsed();
+    const observer = new MutationObserver(() => {});
+    observer.observe(host, { subtree: true, attributes: true, attributeOldValue: true });
+    host.setAttribute("error", "Worse");
+    const written = observer.takeRecords().filter((record) => ["id", "for", "aria-describedby"].includes(/** @type {string} */ (record.attributeName)));
+    expect(written.map(describeRecord)).toEqual([]);
+    const input = /** @type {HTMLInputElement} */ (host.querySelector("input"));
+    expect(input.id).toBe("neuwo-s1-control");
+    expect(/** @type {HTMLLabelElement} */ (host.querySelector("label")).control).toBe(input);
+    expect(document.getElementById(/** @type {string} */ (input.getAttribute("aria-describedby")))?.textContent).toBe("Worse");
+  });
+
+  it("writes nothing while the parser fills the wrappers of a notice it adopted", async () => {
+    const { NeuwoNotice } = await import("../src/components/notice/neuwo-notice.js");
+    const html = `<neuwo-notice><span slot="title">Title</span>Body<button slot="actions">Go</button></neuwo-notice>`;
+    const { host, later } = stream(html, NeuwoNotice, (root) => {
+      const content = /** @type {Element} */ (root.querySelector(".neuwo-notice__content"));
+      const title = /** @type {Element} */ (root.querySelector(".neuwo-notice__title"));
+      return [
+        [title, /** @type {Node} */ (title.firstChild)],
+        [content, /** @type {Element} */ (root.querySelector(".neuwo-notice__message"))],
+        [root, /** @type {Element} */ (root.querySelector(".neuwo-notice__actions"))],
+      ];
+    });
+    for (const [parent, node] of later) {
+      parent.append(node);
+      for (let turn = 0; turn < 3; turn++) await Promise.resolve();
+    }
+    const whole = document.createElement("template");
+    whole.innerHTML = expand(html);
+    expect(host.innerHTML).toBe(/** @type {Element} */ (whole.content.firstElementChild).innerHTML);
+    parsed();
+    for (let turn = 0; turn < 3; turn++) await Promise.resolve();
+    expect(host.innerHTML).toBe(/** @type {Element} */ (whole.content.firstElementChild).innerHTML);
+  });
+});
+
 describe("what an observed attribute change, and refresh(), do in each lifecycle state, in jsdom", () => {
   /** @param {Record<string, string>} attrs */
   const lifeTemplate = (attrs) =>

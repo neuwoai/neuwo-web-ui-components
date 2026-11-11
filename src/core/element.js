@@ -1,4 +1,4 @@
-import { adopt, hasLooseContent, isRendered, reconcile, render, withinOf } from "./adapters/dom.js";
+import { adopt, hasLooseContent, isRendered, reconcile, regions, render, reslot, separate, withinOf } from "./adapters/dom.js";
 import { REACT } from "./marks.js";
 
 /** @type {Map<string, Set<string>>} */
@@ -67,6 +67,9 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
 
   /** @type {MutationObserver | null} */
   #observer = null;
+
+  /** @type {Set<Node>} */
+  #wrappers = new Set();
 
   // Unlike the observer it survives a disconnect, so a reconnect runs updated() and an upgrade's first adoption does not.
   #started = false;
@@ -145,6 +148,7 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
     if (!owned) {
       // A move such as React's Suspense reveal reconnects served markup its attributes alone would not render.
       if (!restart || this.#changedWhileAway()) this.#write(isRendered(this, template) ? adopt : render);
+      else this.#write(separate);
       // A change made before the first start, or a child appended before definition, is not in the adopted markup.
       if (!restart && this.#changedWhileAway()) {
         this.#write(reconcile);
@@ -155,8 +159,7 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
       this.#initial = null;
       this.#within = this.#enclosing();
       this.#lent = lentBy(this);
-      this.#observer ??= new MutationObserver((records) => this.#changed(records));
-      this.#observer.observe(this, { childList: true, attributes: true });
+      this.#watch();
       this.#started = true;
     }
     this.#firstStart = !restart;
@@ -210,8 +213,39 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
 
   /** @param {(host: Element, template: import("./template.js").Template) => void} update */
   #write(update) {
+    if (this.#observer) this.#take(this.#observer.takeRecords());
     update(this, this.#template);
-    this.#observer?.takeRecords();
+    if (this.#observer) this.#watch();
+  }
+
+  #watch() {
+    const observer = (this.#observer ??= new MutationObserver((records) => this.#changed(records)));
+    observer.disconnect();
+    observer.observe(this, { childList: true, attributes: true });
+    const found = regions(this);
+    this.#wrappers = new Set(found?.wrappers);
+    if (!found) return;
+    // A node takes one set of options, so `slot` is watched from the root and the child lists on the wrappers.
+    observer.observe(found.root, { attributes: true, attributeFilter: ["slot"], subtree: true, childList: this.#wrappers.has(found.root) });
+    for (const wrapper of this.#wrappers) if (wrapper !== found.root) observer.observe(wrapper, { childList: true });
+  }
+
+  /**
+   * Whether the records hold a change the markup must fit, marking each placed child whose `slot` changed.
+   * @param {MutationRecord[]} records
+   */
+  #take(records) {
+    const changes = records.filter((record) => {
+      if (record.target === this) return relevant(record);
+      // The parser is still filling the wrappers of markup adopted before the document finished loading.
+      if (this.ownerDocument.readyState === "loading") return false;
+      if (record.type === "childList") return this.#wrappers.has(record.target);
+      const parent = record.target.parentNode;
+      if (!parent || !this.#wrappers.has(parent)) return false;
+      reslot(this, record.target);
+      return true;
+    });
+    return changes.length > 0;
   }
 
   #reconcile() {
@@ -255,7 +289,7 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
     if (ownedByReact(this)) {
       this.#observer?.disconnect();
       this.#observer = null;
-    } else if (records.some(relevant)) this.#reconcile();
+    } else if (this.#take(records)) this.#reconcile();
   }
 
   /**
@@ -288,7 +322,7 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
 
   disconnectedCallback() {
     // Disconnecting the observer drops a change made just before the move, so it is kept as a dirty mark.
-    if (this.#observer?.takeRecords().some(relevant)) this.#dirty = true;
+    if (this.#observer && this.#take(this.#observer.takeRecords())) this.#dirty = true;
     if (this.#started) this.#away = relevantAttributes(this);
     this.#observer?.disconnect();
     this.#observer = null;

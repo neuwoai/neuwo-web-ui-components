@@ -367,15 +367,19 @@
   them for its accessible name and tooltip. `data-*` stays on the host only, so a query such as
   `[data-testid="save"]` matches one element.
 - A script can still set `textContent` or `innerHTML` on a rendered light DOM element, append a child
-  with a `slot`, or change its `aria-*`, `title` and `role`: the element fits the change into its
-  markup in a microtask, so read the markup back after an `await`. Hosts React owns are left to React.
+  with a `slot`, change the `slot` of a child already placed, add or remove content inside one of the
+  element's wrappers, or change its `aria-*`, `title` and `role`: the element fits the change into its
+  markup in a microtask, so read the markup back after an `await`. A child whose `slot` changes moves to
+  the wrapper of its new slot, and a wrapper a script empties gets its `--empty` modifier back, where
+  both used to wait for the element's next change. Hosts React owns are left to React.
 - A copy of a rendered field made with `cloneNode(true)` gets ids of its own when it is inserted, and its
   label, `aria-describedby`, `aria-controls`, `aria-labelledby` and `aria-activedescendant` follow them, so
   the copy's label focuses the copy's control instead of the original's. Any light DOM element that adopts
   markup whose ids another element in the same document or shadow root already has does the same, for the ids
   `expand` and the elements write (`neuwo-s1-...`, `neuwo-c1-...`). Ids React's `useId` made are left as React
   wrote them, so hydration still finds them, and a copy a script makes of markup React rendered keeps React's
-  ids too: only the ids the library made are renamed.
+  ids too: only the ids the library made are renamed. An element put back in the page while a copy of it
+  holds its ids, as an undo of a removed row does, takes fresh ids in the same way.
 - An attribute a script sets on, or removes from, a copy of a light DOM element made with `cloneNode(true)`
   before inserting it reaches the copy's markup; it used to be lost until the next change. One of the
   element's own attributes, such as a new `name` or a cleared `error` on an "add another" row, applies at
@@ -424,6 +428,11 @@
   boundary does, so a field keeps the starting value that `value` in a Server Component, or `defaultValue`,
   put on its native control, and hydration finds the markup it sent. A moved element fits its markup to
   its attributes and children only when they changed while it was out of the document.
+- Served markup keeps its formatting and its ids. Whitespace and comments around an element's markup stay
+  where they are when a script appends a child, where they used to move into the content and show as a
+  stray space; indentation inside the markup is no longer removed on the first change; and an element the
+  browser was still parsing when the script defined it keeps the ids the server gave the parts parsed
+  after that, where its first change used to rewrite them.
 - `expand` replaces a `<p>` that holds nothing but block components, such as fields, `<neuwo-copy>`,
   `<neuwo-cta>` or `<neuwo-notice>`, with whitespace and comments, by the expanded components. Markdown
   wraps a component on a line of its own, or a run of them on consecutive lines, in a paragraph, and the

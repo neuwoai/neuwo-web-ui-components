@@ -876,6 +876,33 @@ describe("reconcile()", () => {
     expect(observer.takeRecords().every((record) => record.type === "childList" && (record.target === host || record.target === label))).toBe(true);
   });
 
+  it("keeps whitespace around the root out of the default region", () => {
+    const host = make(`<neuwo-t>\n  <span class="neuwo-t neuwo-t--a">Live</span>\n  <!-- served -->\n</neuwo-t>`);
+    adopt(host, badge);
+    const mark = document.createElement("b");
+    mark.textContent = "!";
+    host.append(mark);
+    reconcile(host, badge);
+    expect(host.querySelector(".neuwo-t").innerHTML).toBe("Live<b>!</b>");
+    expect(host.querySelector(".neuwo-t").textContent).toBe("Live!");
+  });
+
+  it("writes only the changed attribute on pretty-printed served markup", () => {
+    const host = make(`<neuwo-t>
+  <span class="neuwo-t neuwo-t--a">
+    <span class="neuwo-t__start"></span>
+    <!-- label -->
+    <span class="neuwo-t__label">x</span>
+  </span>
+</neuwo-t>`);
+    adopt(host, testTemplate);
+    host.setAttribute("tone", "b");
+    const observer = watch(host);
+    reconcile(host, testTemplate);
+    expect(observer.takeRecords().map((record) => `${record.type} ${record.attributeName}`)).toEqual(["attributes class"]);
+    expect(host.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--b");
+  });
+
   it("writes nothing for loose whitespace or comments around the root", () => {
     const host = make(`<neuwo-t>\n  ${shell("a", "", "x")}\n<!-- c --></neuwo-t>`);
     adopt(host, testTemplate);

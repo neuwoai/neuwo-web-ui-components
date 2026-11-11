@@ -213,9 +213,15 @@ describe("an element whose template reads its enclosing element (within)", () =>
     expect(added.parentElement).toBe(group.querySelector(".x-group"));
     expect(labels.filter((label) => label === "Medium" || label === "Large")).toEqual([]);
     expect(shown(holder)).toEqual(["size=m", "size=m", "size=m"]);
+    const wrapped = document.createElement("x-counted");
+    wrapped.textContent = "Tiny";
+    group.querySelector(".x-group").append(wrapped);
+    await settled();
+    expect(labels.filter((label) => label === "Medium" || label === "Large")).toEqual([]);
+    expect(shown(holder)).toEqual(["size=m", "size=m", "size=m", "size=m"]);
     group.setAttribute("value", "l");
     expect(labels.filter((label) => label === "Medium" || label === "Large")).toEqual(["Medium", "Large"]);
-    expect(shown(holder)).toEqual(["size=l", "size=l", "size=l"]);
+    expect(shown(holder)).toEqual(["size=l", "size=l", "size=l", "size=l"]);
   });
 
   it("refreshes a nested box from the box around it, never from itself", () => {
