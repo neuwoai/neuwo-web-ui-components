@@ -1,13 +1,13 @@
 import { childInfo } from "../../../core/adapters/dom.js";
-import { define, ownedByReact } from "../../../core/element.js";
-import { CONTROLLED } from "../../../core/marks.js";
+import { define } from "../../../core/element.js";
 import { positionPopup } from "../../../core/position-popup.js";
 import { NeuwoFieldElement } from "../field-element.js";
-import { comboboxOptions, comboboxTemplate } from "./combobox.template.js";
+import { OptionWidget } from "../option-widget.js";
+import { readOptions } from "../options.js";
+import { comboboxTemplate } from "./combobox.template.js";
 
 const ACTIVE = "neuwo-combobox__option--active";
 const BOX = ":scope > .neuwo-field > .neuwo-combobox";
-const DISPLAY = { subtree: true, childList: true, characterData: true, attributeFilter: ["value", "data-placeholder", "aria-selected"] };
 
 /** @param {Element} row */
 const enabled = (row) => row.getAttribute("aria-disabled") !== "true";
@@ -41,17 +41,15 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   /** @type {ReturnType<typeof setTimeout> | undefined} */
   #typeaheadTimer;
 
-  /** @type {MutationObserver | null} */
-  #observer = null;
-
-  /** @type {Element | null} */
-  #watched = null;
-
-  /** @type {MutationObserver | null} */
-  #display = null;
-
-  /** @type {string | undefined} */
-  #picked;
+  #widget = new OptionWidget(this, {
+    options: () => this.querySelector(`${BOX} > .neuwo-combobox__options`),
+    accept: (value) => this.#accept(value),
+    show: (value) => this.#show(value),
+    held: () => {
+      if (!this.#open) this.#revertText();
+    },
+    attributes: ["value", "data-placeholder", "aria-selected"],
+  });
 
   #reposition = () => this.#position();
 
@@ -91,10 +89,10 @@ export class NeuwoCombobox extends NeuwoFieldElement {
 
   /**
    * The options, read from the `<option>` and `<optgroup>` children.
-   * @returns {import("./combobox.template.js").ComboboxOption[]}
+   * @returns {import("../options.js").ListOption[]}
    */
   get options() {
-    return comboboxOptions(childInfo(this, comboboxTemplate));
+    return readOptions(childInfo(this, comboboxTemplate));
   }
 
   /**
@@ -104,15 +102,13 @@ export class NeuwoCombobox extends NeuwoFieldElement {
    * @returns {string}
    */
   get value() {
-    return this.#picked ?? super.value;
+    return this.#widget.picked ?? super.value;
   }
   set value(value) {
-    const controlled = Reflect.get(this, CONTROLLED);
-    // React hands an element it is still building a value only when it controls it, and sets the flag later, from its ref.
-    if (controlled === true || (controlled === undefined && !this.isConnected && ownedByReact(this))) return;
+    if (this.#widget.refuses) return;
     const next = value == null ? "" : String(value);
     if (!this.control) super.value = next;
-    else this.#show(this.#accept(next));
+    else this.#widget.assign(next);
   }
 
   get isOpen() {
@@ -126,16 +122,7 @@ export class NeuwoCombobox extends NeuwoFieldElement {
    * @param {string} value
    */
   commit(value) {
-    const next = this.#accept(value == null ? "" : String(value));
-    if (next === this.value) return;
-    if (Reflect.get(this, CONTROLLED) === true) this.#picked = next;
-    else this.#show(next);
-    try {
-      this.dispatchEvent(new Event("input", { bubbles: true }));
-      this.dispatchEvent(new Event("change", { bubbles: true }));
-    } finally {
-      this.#picked = undefined;
-    }
+    this.#widget.commit(value);
   }
 
   open() {
@@ -190,14 +177,7 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     this.addEventListener("blur", this.#onBlur, true);
     this.addEventListener("blur", this.#lendName, true);
     this.addEventListener("focusout", this.#lendName, true);
-    this.#watchOptions();
-    // Every host watches, since React can hydrate one after it connected and then rewrite what the element showed.
-    this.#display ??= new MutationObserver(() => {
-      if (ownedByReact(this)) this.#sync();
-    });
-    this.#display.observe(this, DISPLAY);
-    // React's ref sets the controlled flag after connect, so on a React host a write here could undo React's value.
-    if (!ownedByReact(this)) this.#sync();
+    this.#widget.connect();
   }
 
   disconnect() {
@@ -212,17 +192,13 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     this.removeEventListener("blur", this.#onBlur, true);
     this.removeEventListener("blur", this.#lendName, true);
     this.removeEventListener("focusout", this.#lendName, true);
-    this.#observer?.disconnect();
-    this.#observer = null;
-    this.#watched = null;
-    this.#display?.disconnect();
+    this.#widget.disconnect();
     clearTimeout(this.#typeaheadTimer);
   }
 
   updated() {
     super.updated();
-    this.#watchOptions();
-    this.#sync();
+    this.#widget.updated();
     if (this.#open) {
       this.trigger?.setAttribute("aria-expanded", "true");
       if (this.#filter) this.#applyFilter();
@@ -230,32 +206,10 @@ export class NeuwoCombobox extends NeuwoFieldElement {
       else this.#activeStart();
       this.#position();
     }
-    this.#observer?.takeRecords();
   }
 
   formReset() {
-    this.#sync();
-  }
-
-  #watchOptions() {
-    const select = ownedByReact(this) ? null : this.querySelector(`${BOX} > .neuwo-combobox__options`);
-    if (select === this.#watched) return;
-    this.#observer?.disconnect();
-    this.#watched = select;
-    if (!select) return;
-    this.#observer ??= new MutationObserver(() => this.refresh());
-    this.#observer.observe(select, { childList: true, subtree: true, attributes: true, characterData: true });
-  }
-
-  /**
-   * Shows the live value, dropping one that no enabled option has any more. On a host React controls, React shows
-   * it, and only the text a searchable trigger keeps from typing is the element's to put back.
-   */
-  #sync() {
-    const control = this.control;
-    if (!control) return;
-    if (Reflect.get(this, CONTROLLED) !== true) this.#show(this.#accept(control.value));
-    else if (!this.#open) this.#revertText();
+    this.#widget.sync();
   }
 
   /** @returns {HTMLElement[]} */
@@ -288,13 +242,11 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   }
 
   /**
-   * Writes the displayed value: the form value, the shown label or placeholder, and which row is selected. It writes
-   * only what differs.
+   * Writes the displayed value: the shown label or placeholder, and which row is selected. It writes only what
+   * differs.
    * @param {string} value
    */
   #show(value) {
-    const control = this.control;
-    if (control && control.value !== value) control.value = value;
     const chosen = this.#chosen(value);
     for (const row of this.#rows()) {
       const selected = String(Boolean(chosen) && row.getAttribute("data-value") === value);
@@ -309,7 +261,6 @@ export class NeuwoCombobox extends NeuwoFieldElement {
       const text = chosen ? (chosen.textContent ?? "") : (this.getAttribute("placeholder") ?? "");
       if (shown && shown.textContent !== text) shown.textContent = text;
     }
-    this.#display?.takeRecords();
   }
 
   /** Puts the label of the live value back into the searchable trigger, over any filter text. */
@@ -490,11 +441,6 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   // Capture, at the element: stopped any later, these events would reach the element's own listeners.
   /** @param {Event} event */
   #onInputOrChange = (event) => {
-    if (event.target === this.control) {
-      event.stopPropagation();
-      if (Reflect.get(this, CONTROLLED) !== true) this.#sync();
-      return;
-    }
     const trigger = this.trigger;
     if (!(trigger instanceof HTMLInputElement) || event.target !== trigger) return;
     event.stopPropagation();

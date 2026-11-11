@@ -1,55 +1,10 @@
-import { DEFAULT_REGION, control, h, has, region } from "../../../core/template.js";
+import { control, h, has, region } from "../../../core/template.js";
 import { controlAttrs, controlClass, fieldTemplate } from "../field.template.js";
+import { readOptions, resolveValue } from "../options.js";
 
-/** @typedef {import("../../../core/template.js").ChildInfo} ChildInfo */
 /** @typedef {import("../../../core/template.js").TemplateNode} TemplateNode */
 /** @typedef {import("../../../core/template.js").TemplateContext} TemplateContext */
-/** @typedef {{ value: string, label: string, disabled: boolean, selected: boolean, group: string, index: number }} ComboboxOption */
-
-/**
- * The options a combobox lists, from its `<option>` children and those of its `<optgroup>` children, in order.
- * An option's value is its `value` attribute, else its trimmed text, which is also its label.
- * @param {ChildInfo[]} children
- * @returns {ComboboxOption[]}
- */
-export function comboboxOptions(children) {
-  /** @type {ComboboxOption[]} */
-  const options = [];
-  /**
-   * @param {ChildInfo[]} list
-   * @param {string} group
-   */
-  const read = (list, group) => {
-    for (const child of list) {
-      if (child.tag === "option") {
-        const label = child.text.trim();
-        options.push({
-          value: child.attrs.value ?? label,
-          label,
-          disabled: has(child.attrs, "disabled"),
-          selected: has(child.attrs, "selected"),
-          group,
-          index: options.length,
-        });
-      } else if (child.tag === "optgroup") read(child.children ?? [], child.attrs.label ?? "");
-    }
-  };
-  read(children.filter((child) => child.slot === DEFAULT_REGION), "");
-  return options;
-}
-
-/**
- * The value a combobox starts with: the `value` attribute when it names an enabled option, else the first enabled
- * option marked `selected`, else nothing.
- * @param {Record<string, string>} attrs
- * @param {ComboboxOption[]} options
- * @returns {string}
- */
-export function resolveValue(attrs, options) {
-  const enabled = options.filter((option) => !option.disabled);
-  if (has(attrs, "value") && enabled.some((option) => option.value === attrs.value)) return attrs.value;
-  return enabled.find((option) => option.selected)?.value ?? "";
-}
+/** @typedef {import("../options.js").ListOption} ListOption */
 
 /**
  * @param {Record<string, string>} attrs
@@ -57,7 +12,7 @@ export function resolveValue(attrs, options) {
  * @returns {TemplateNode}
  */
 export function comboboxTemplate(attrs, ctx) {
-  const options = comboboxOptions(ctx.children);
+  const options = readOptions(ctx.children);
   const value = resolveValue(attrs, options);
   const chosen = options.find((option) => !option.disabled && option.value === value);
   const triggerClass = `${controlClass(attrs)} neuwo-combobox__trigger`;
@@ -72,7 +27,7 @@ export function comboboxTemplate(attrs, ctx) {
   };
   /**
    * @param {string} tag
-   * @param {ComboboxOption} option
+   * @param {ListOption} option
    */
   const row = (tag, option) =>
     h(
