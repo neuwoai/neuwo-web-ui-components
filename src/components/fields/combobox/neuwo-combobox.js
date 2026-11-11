@@ -41,6 +41,8 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   /** @type {ReturnType<typeof setTimeout> | undefined} */
   #typeaheadTimer;
   #labelClicked = false;
+  /** @type {Node | null} */
+  #labelRoot = null;
 
   #widget = new OptionWidget(this, {
     options: () => this.querySelector(`${BOX} > .neuwo-combobox__options`),
@@ -170,7 +172,8 @@ export class NeuwoCombobox extends NeuwoFieldElement {
 
   connect() {
     super.connect();
-    this.addEventListener("click", this.#onLabelClick, true);
+    this.#labelRoot = this.getRootNode();
+    this.#labelRoot.addEventListener("click", this.#onLabelClick, true);
     this.addEventListener("click", this.#onClick);
     this.addEventListener("keydown", this.#onKeydown);
     this.addEventListener("input", this.#onInputOrChange, true);
@@ -184,7 +187,8 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   disconnect() {
     super.disconnect();
     this.close();
-    this.removeEventListener("click", this.#onLabelClick, true);
+    this.#labelRoot?.removeEventListener("click", this.#onLabelClick, true);
+    this.#labelRoot = null;
     this.removeEventListener("click", this.#onClick);
     this.removeEventListener("keydown", this.#onKeydown);
     this.removeEventListener("input", this.#onInputOrChange, true);
@@ -353,10 +357,11 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     this.#setActive(first);
   }
 
-  /** @param {MouseEvent} event */
+  /** @param {Event} event */
   #onLabelClick = (event) => {
-    const label = this.querySelector(":scope > .neuwo-field > .neuwo-field__label");
-    if (!label?.contains(/** @type {Node} */ (event.target))) return;
+    const target = /** @type {Element} */ (event.target);
+    const trigger = this.trigger;
+    if (!trigger || trigger.contains(target) || target.closest?.("label")?.control !== trigger) return;
     this.#labelClicked = true;
     // Label activation clicks the trigger later in this task, if at all, so the mark must not outlive the task.
     setTimeout(() => (this.#labelClicked = false));

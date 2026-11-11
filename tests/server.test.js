@@ -120,14 +120,49 @@ describe("expand() on real-world markup", () => {
     expect(run(html)).toBe(expected);
   });
 
+  const T = "<neuwo-t>x</neuwo-t>";
+
   it.each([
     "<svg><neuwo-t>x</neuwo-t></svg>",
     '<svg viewBox="0 0 1 1"><g><neuwo-t tone="b"><neuwo-t>y</neuwo-t></neuwo-t></g><neuwo-t/></svg>',
-    "<math><mi><neuwo-t>x</neuwo-t></mi></math>",
-    "<SVG><neuwo-t>x</neuwo-t></SVG>",
-    "<math><foreignObject><neuwo-t>x</neuwo-t></foreignObject></math>",
+    `<math>${T}</math>`,
+    `<SVG>${T}</SVG>`,
+    `<math><foreignObject>${T}</foreignObject></math>`,
+    `<math><svg><foreignObject>${T}</foreignObject></svg></math>`,
+    `<math><annotation-xml encoding="application/mathml+xml">${T}</annotation-xml></math>`,
+    `<math><annotation-xml>${T}</annotation-xml></math>`,
+    `<math><mi><mglyph>${T}</mglyph></mi></math>`,
+    `<svg><math><mi>${T}</mi></math></svg>`,
+    `<svg><mtext>${T}</mtext></svg>`,
+    `<svg><font>a</font>${T}</svg>`,
+    `<svg><foreignObject><p>a</p></foreignObject>${T}</svg>`,
   ])("leaves registered tags inside svg and math alone: %s", (html) => {
     expect(run(html)).toBe(html);
+  });
+
+  it.each([
+    `<svg><desc>${T}</desc></svg>`,
+    `<svg><title>${T}</title></svg>`,
+    `<math><mi>${T}</mi></math>`,
+    `<math><mo>${T}</mo></math>`,
+    `<math><mn>${T}</mn></math>`,
+    `<math><ms>${T}</ms></math>`,
+    `<math><mtext>${T}</mtext></math>`,
+    `<math><mi><b>${T}</b></mi></math>`,
+    `<math><annotation-xml encoding="text/html">${T}</annotation-xml></math>`,
+    `<math><annotation-xml encoding="Application/XHTML+XML">${T}</annotation-xml></math>`,
+    `<math><annotation-xml><svg><foreignObject>${T}</foreignObject></svg></annotation-xml></math>`,
+  ])("expands registered tags at the parser's HTML integration points: %s", (html) => {
+    expect(run(html)).toBe(html.replace(T, plain("x")));
+  });
+
+  it.each([
+    `<svg><p>a</p>${T}</svg>`,
+    `<svg><g><b>a</b>${T}</g>${T}</svg>`,
+    `<math><mrow><div>a</div></mrow>${T}</math>`,
+    `<svg><font color="red">a</font>${T}</svg>`,
+  ])("expands registered tags after an HTML tag that ends the foreign content: %s", (html) => {
+    expect(run(html)).toBe(html.replaceAll(T, plain("x")));
   });
 
   it("expands registered tags inside an svg foreignObject, and only there", () => {

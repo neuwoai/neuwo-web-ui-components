@@ -10,10 +10,19 @@ export { renderElement };
 /** @import { ChildInfo, Template } from "../core/template.js" */
 /** @import { RenderChild } from "../core/adapters/html.js" */
 /** @typedef {{ html: string, registry: Record<string, Template>, newIds: () => (suffix: string) => string }} Page */
+/** @typedef {{ ns: "svg" | "math", run: { out: boolean } }} Foreign */
 
 const OPAQUE = new Set(["template", "script", "style", "textarea"]);
 
-const FOREIGN = new Set(["svg", "math"]);
+const SVG_HTML = new Set(["foreignObject", "desc", "title"]);
+const MATH_TEXT = new Set(["mi", "mo", "mn", "ms", "mtext"]);
+const GLYPHS = new Set(["mglyph", "malignmark"]);
+const HTML_ENCODING = /^(text\/html|application\/xhtml\+xml)$/i;
+const BREAKOUT = new Set([
+  "b", "big", "blockquote", "body", "br", "center", "code", "dd", "div", "dl", "dt", "em", "embed", "h1", "h2", "h3",
+  "h4", "h5", "h6", "head", "hr", "i", "img", "li", "listing", "menu", "meta", "nobr", "ol", "p", "pre", "ruby", "s",
+  "small", "span", "strike", "strong", "sub", "sup", "table", "tt", "u", "ul", "var",
+]);
 
 const PHRASING = new Set([
   "a", "abbr", "area", "audio", "b", "bdi", "bdo", "br", "button", "canvas", "cite", "code", "data", "datalist",
@@ -152,19 +161,45 @@ function expandElement(page, el, contentEnd) {
 }
 
 /**
+ * @param {Element} node
+ * @returns {boolean}
+ */
+const breaksOut = (node) => BREAKOUT.has(node.name) || (node.name === "font" && ["color", "face", "size"].some((name) => Object.hasOwn(node.attribs, name)));
+
+/**
+ * How a browser parses the children of an element of foreign content.
+ * @param {Element} node
+ * @param {Foreign} foreign
+ * @returns {{ foreign: Foreign | null, text: boolean }}
+ */
+function inside(node, foreign) {
+  if (foreign.ns === "svg") return SVG_HTML.has(node.name) ? { foreign: null, text: false } : { foreign, text: false };
+  if (MATH_TEXT.has(node.name)) return { foreign: null, text: true };
+  if (node.name === "annotation-xml" && HTML_ENCODING.test(node.attribs.encoding ?? "")) return { foreign: null, text: false };
+  const svg = node.name === "svg" && node.parent !== null && "attribs" in node.parent && node.parent.name === "annotation-xml";
+  return { foreign: svg ? { ns: "svg", run: foreign.run } : foreign, text: false };
+}
+
+/**
  * @param {Page} page
  * @param {ChildNode[]} nodes
  * @param {number} limit
  * @param {(start: number, end: number, markup: string) => void} emit
- * @param {boolean} [foreign]
+ * @param {Foreign | null} [foreign] - the foreign content the nodes are parsed as, until an HTML tag such as `<p>` ends it.
+ * @param {boolean} [text] - the nodes sit in a MathML text integration point.
  */
-function visit(page, nodes, limit, emit, foreign = false) {
+function visit(page, nodes, limit, emit, foreign = null, text = false) {
   nodes.forEach((node, i) => {
     if (!isElement(node) || OPAQUE.has(node.name)) return;
     const next = i + 1 < nodes.length ? startOf(page.html, nodes[i + 1]) : limit;
     const { start, content, end } = span(page.html, node, next);
-    if (foreign || FOREIGN.has(node.name)) visit(page, node.children, content, emit, node.name !== "foreignObject");
-    else if (node.name === "p" && liftable(page, node)) emit(start, end, rewrite(page, node.children, startOf(page.html, node.children[0]), content));
+    if (foreign && !foreign.run.out && breaksOut(node)) foreign.run.out = true;
+    if (foreign && !foreign.run.out) {
+      const children = inside(node, foreign);
+      visit(page, node.children, content, emit, children.foreign, children.text);
+    } else if (node.name === "svg" || node.name === "math" || (text && GLYPHS.has(node.name))) {
+      visit(page, node.children, content, emit, { ns: node.name === "svg" ? "svg" : "math", run: { out: false } });
+    } else if (node.name === "p" && liftable(page, node)) emit(start, end, rewrite(page, node.children, startOf(page.html, node.children[0]), content));
     else if (!Object.hasOwn(page.registry, node.name)) visit(page, node.children, content, emit);
     else if (!isRendered(node, page.registry[node.name])) emit(start, end, expandElement(page, node, content));
   });
@@ -190,8 +225,8 @@ function rewrite(page, nodes, from, to) {
 /**
  * Expands every registered `<neuwo-*>` element in an HTML document in place. Elements that already hold their
  * rendered markup, and anything inside `<template>`, `<script>`, `<style>` or `<textarea>`, are left alone, as
- * is anything inside `<svg>` or `<math>`, which a browser parses as foreign content, except inside an SVG
- * `<foreignObject>`. So is every byte outside the elements it expands, but one: a `<p>` that holds nothing but
+ * is anything a browser parses as SVG or MathML: inside `<svg>` or `<math>`, but for the points where the parser
+ * returns to HTML. So is every byte outside the elements it expands, but one: a `<p>` that holds nothing but
  * elements whose markup is block content, whitespace and comments, as Markdown writes around such elements, is
  * replaced by what it holds.
  * @param {string} html

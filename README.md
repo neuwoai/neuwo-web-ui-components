@@ -178,9 +178,11 @@ paragraph that holds only block components, whitespace and comments with what it
 paragraph's own attributes. A block component that shares a paragraph with text or an inline element
 stays inside it and breaks.
 
-A tag inside `<svg>` or `<math>` is left as it is, since a browser parses it as SVG or MathML rather
-than as an element of the library. Inside an SVG `<foreignObject>`, which holds HTML again, `expand`
-writes components out as anywhere else.
+A tag inside `<svg>` or `<math>` is left as it is where a browser parses it as SVG or MathML rather
+than as an element of the library. Where the browser parses HTML again, `expand` writes components
+out as anywhere else: inside an SVG `<foreignObject>`, `<desc>` or `<title>`, a MathML `<mi>`, `<mo>`,
+`<mn>`, `<ms>` or `<mtext>`, or an `<annotation-xml>` whose `encoding` is `text/html` or
+`application/xhtml+xml`, and after an HTML tag, such as `<p>` or `<div>`, that ends the drawing.
 
 ### Links
 

@@ -489,6 +489,34 @@ describe("<neuwo-combobox> open and close", () => {
     expect(el.isOpen).toBe(true);
   });
 
+  it("focuses without opening on a click on a label wrapping it", () => {
+    const label = make(`<label><span>Fruit</span> <neuwo-combobox>${OPTS}</neuwo-combobox></label>`);
+    const el = label.querySelector("neuwo-combobox");
+    label.querySelector("span").click();
+    expect(el.isOpen).toBe(false);
+    expect(document.activeElement).toBe(triggerOf(el));
+  });
+
+  it("focuses without opening on a click on a label whose for names its trigger", () => {
+    const el = make(`<neuwo-combobox>${OPTS}</neuwo-combobox>`);
+    const label = attach(document.createElement("label"));
+    label.htmlFor = triggerOf(el).id;
+    label.textContent = "Fruit";
+    label.click();
+    expect(el.isOpen).toBe(false);
+    expect(document.activeElement).toBe(triggerOf(el));
+  });
+
+  it("opens on a click on its trigger and closes on a pick inside a wrapping label", () => {
+    const label = make(`<label><span>Fruit</span> <neuwo-combobox>${OPTS}</neuwo-combobox></label>`);
+    const el = label.querySelector("neuwo-combobox");
+    triggerOf(el).click();
+    expect(el.isOpen).toBe(true);
+    rowOf(el, "b").click();
+    expect(el.value).toBe("b");
+    expect(el.isOpen).toBe(false);
+  });
+
   it("opens a searchable combobox on a label click, as focusing it does", () => {
     const el = make(`<neuwo-combobox searchable label="Fruit">${OPTS}</neuwo-combobox>`);
     labelOf(el).click();
