@@ -11,6 +11,7 @@ import * as runtime from "../src/react/jsx-runtime.js";
 import * as devRuntime from "../src/react/jsx-dev-runtime.js";
 import * as serverRuntime from "../src/react/jsx-runtime.react-server.js";
 import * as serverDevRuntime from "../src/react/jsx-dev-runtime.react-server.js";
+import { templates } from "../src/templates.js";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -64,6 +65,23 @@ describe("createRuntime()", () => {
     container.querySelector(".neuwo-t").dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(onClick).toHaveBeenCalledTimes(1);
     expect(container.innerHTML).toBe(`<neuwo-t tone="b">${shell("b", '<i slot="start"></i>', "x<b></b>")}</neuwo-t>`);
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it("puts className, data-* and ref on the host, and names each element's component after its tag", async () => {
+    const errors = vi.spyOn(console, "error");
+    const props = { className: "mine", "data-testid": "t", children: "x" };
+    expect(renderToStaticMarkup(jsx("neuwo-t", props))).toBe(`<neuwo-t class="mine" data-testid="t">${shell("a", "", "x")}</neuwo-t>`);
+    const ref = createRef();
+    const container = mount();
+    const root = createRoot(container);
+    cleanups.unshift(() => act(() => root.unmount()));
+    await act(async () => root.render(jsx("neuwo-t", { ...props, ref })));
+    const host = container.querySelector("neuwo-t");
+    expect(ref.current).toBe(host);
+    expect(host.outerHTML).toBe(`<neuwo-t class="mine" data-testid="t">${shell("a", "", "x")}</neuwo-t>`);
+    expect(jsx("neuwo-t", {}).type.displayName).toBe("neuwo-t");
+    for (const tag of Object.keys(templates)) expect(runtime.jsx(tag, {}).type.displayName, tag).toBe(tag);
     expect(errors).not.toHaveBeenCalled();
   });
 

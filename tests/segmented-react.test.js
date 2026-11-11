@@ -278,3 +278,16 @@ describe("<neuwo-segmented> rendered by a Server Component", () => {
     expect(errors).not.toHaveBeenCalled();
   });
 });
+
+describe("<neuwo-segmented> with options from a component", () => {
+  it("warns once when a segmented control's options come from a component", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const dev = createRuntime(templates, { dev: true });
+    const Options = () => ["visual", "json"].map((value) => dev.jsx("option", { value, children: value }, value));
+    renderToString(dev.jsxs("neuwo-segmented", { label: "View", children: [dev.jsx("option", { value: "visual", children: "Visual" }, "v")] }));
+    expect(warn).not.toHaveBeenCalled();
+    for (const name of ["a", "b"]) renderToString(dev.jsx("neuwo-segmented", { label: "View", name, children: dev.jsx(Options, {}) }));
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0][0]).toContain("<neuwo-segmented>");
+  });
+});

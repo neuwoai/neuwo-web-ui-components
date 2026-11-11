@@ -590,10 +590,11 @@ value props:
 - `defaultValue` gives an uncontrolled group with a starting value, which keeps the user's pick
   across re-renders. In Server Components `value` is the starting value.
 - The radios may sit in your markup inside the group, in elements, fragments, context
-  providers, `Suspense`, `StrictMode`, `Profiler`, `Activity` or other Neuwo elements, and get the
-  group's `name` and value there. A radio inside a component of your own is out of the group's
-  reach, since the JSX runtime cannot see into it: it renders on its own, and development builds
-  warn about it, so write the radios in place inside the group. One edge remains: a radio inside
+  providers, `Suspense` and its `fallback`, `StrictMode`, `Profiler`, `Activity` or other Neuwo
+  elements, and get the group's `name` and value there. A radio inside a component of your own is
+  out of the group's reach, since the JSX runtime cannot see into it, and so is one rendered
+  through a portal or by another React root: it renders on its own, and development builds warn
+  about it, so write the radios in place inside the group. One edge remains: a radio inside
   your own component, inside `Suspense`, inside a group, can mismatch on hydration when it is
   revealed.
 - In Next.js, radios a Server Component passes as `children` to a Client Component that renders
@@ -637,6 +638,10 @@ value props:
 - `defaultValue` gives an uncontrolled combobox, which shows the user's pick itself and keeps it
   across re-renders. In Server Components `value` is the starting value, as above. Setting the
   element's `value` property, as React Hook Form's `register` does on a reset, shows that value.
+- Write the `<option>` and `<optgroup>` elements in place inside the combobox, through fragments
+  if need be. Options a component of your own renders are never listed, since the JSX runtime
+  reads them before that component renders, and development builds warn about it. The same holds
+  for `<neuwo-segmented>`.
 - If the options change while the combobox is mounted, for example once they have loaded, use
   `value`. Uncontrolled, a pick whose option goes away is cleared without a `change`, so your
   state never hears of it.

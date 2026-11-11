@@ -72,6 +72,17 @@ function functionsIn(node, path = "", out = []) {
   return out;
 }
 
+function componentsIn(payload) {
+  const rows = [];
+  for (const line of payload.split("\n")) {
+    const json = line.slice(line.indexOf(":") + 1);
+    if (!json.startsWith("{")) continue;
+    const row = JSON.parse(json);
+    if (row.env === "Server" && typeof row.name === "string" && row.props) rows.push([row.name, Object.keys(row.props)]);
+  }
+  return rows;
+}
+
 const found = {};
 for (const [name, create] of Object.entries(factories)) {
   const { errors, payload } = await render(create);
@@ -126,6 +137,7 @@ for (const [name, create] of Object.entries(formFactories)) {
   found.form[name] = { input: props("x-field__input"), textarea: props("x-notes__input"), functions: functionsIn(tree) };
 }
 found.within = {};
+found.lent = {};
 for (const [name, create] of Object.entries(withinFactories)) {
   const items = [create("x-item", { children: "Medium" }, "m"), create("x-item", { children: "Large" }, "l")];
   const Page = () => create("main", { children: [create("x-group", { name: "size", value: "m", children: items }), create("x-item", { children: "Alone" })] });
@@ -138,6 +150,7 @@ for (const [name, create] of Object.entries(withinFactories)) {
     leaked: findAll(tree, (el) => Object.keys(el.props).some((prop) => /within/i.test(prop))).length > 0,
     functions: functionsIn(tree),
   };
+  found.lent[name] = { named: payload.includes("__neuwoWithin"), components: componentsIn(payload) };
 }
 found.radio = {};
 for (const [name, create] of Object.entries(factories)) {
@@ -158,6 +171,27 @@ for (const [name, create] of Object.entries(factories)) {
     leaked: findAll(tree, (el) => Object.keys(el.props).some((prop) => /within/i.test(prop))).length > 0,
     functions: functionsIn(tree),
   };
+}
+found.fixed = {};
+for (const [name, create] of Object.entries(factories)) {
+  const Page = () =>
+    create("main", {
+      children: [
+        create("neuwo-radio", { name: "plan", value: "pro", checked: true, children: "Pro" }, "radio"),
+        create("neuwo-checkbox", { name: "terms", value: "yes", checked: true, children: "Yes" }, "checkbox"),
+        create("neuwo-input", { name: "q", value: "typed" }, "input"),
+      ],
+    });
+  const { errors, payload } = await flight(create(Page, {}));
+  assert.deepEqual(errors, [], `${name}: the fixed-value Flight render reported errors`);
+  const tree = await decode(payload);
+  found.fixed[name] = Object.fromEntries(
+    ["neuwo-radio", "neuwo-checkbox", "neuwo-input"].map((tag) => {
+      const props = find(tree, (el) => el.type === tag)?.props;
+      return [tag, [props?.value ?? null, props?.checked ?? null]];
+    }),
+  );
+  found.fixed[name].components = componentsIn(payload).map(([component]) => component);
 }
 found.expanded = {};
 for (const [name, create] of Object.entries(factories)) {

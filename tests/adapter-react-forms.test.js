@@ -177,6 +177,23 @@ describe("React adapter: a controlled form control", () => {
     await render(jsx("x-field", { value: "a" }));
     expect(messages(errors).some((message) => message.includes(MISSING_ON_CHANGE))).toBe(true);
   });
+
+  it("accepts onInput alone on a controlled field, as React's input does", async () => {
+    const errors = vi.spyOn(console, "error");
+    const onInput = vi.fn();
+    const { container } = await render([jsx("x-field", { value: "a", onInput }, "field"), jsx("x-notes", { value: "hi", onInput }, "notes")]);
+    const input = container.querySelector(".x-field__input");
+    await act(async () => type(input, "ab"));
+    expect(onInput).toHaveBeenCalledTimes(1);
+    expect(input.value).toBe("a");
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it("keeps React's warning for a checked checkbox with onInput alone, as React's checkbox does", async () => {
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    await render(jsx("x-check", { value: "yes", checked: true, onInput() {} }));
+    expect(messages(errors).some((message) => message.includes(MISSING_ON_CHANGE))).toBe(true);
+  });
 });
 
 describe("React adapter: an uncontrolled form control", () => {

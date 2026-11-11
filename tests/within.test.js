@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Activity, Fragment, Profiler, StrictMode, Suspense, act, createContext, createElement, useState } from "react";
+import { createPortal } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { renderToStaticMarkup, renderToString } from "react-dom/server";
 import { adopt, reconcile, render } from "../src/core/adapters/dom.js";
@@ -7,7 +8,9 @@ import { renderElement } from "../src/core/adapters/html.js";
 import { createRuntime } from "../src/core/adapters/react.js";
 import { idScope } from "../src/core/ids.js";
 import { CONTROLLED } from "../src/core/marks.js";
+import { control, h } from "../src/core/template.js";
 import { expand } from "../src/server/index.js";
+import { templates } from "../src/templates.js";
 import { boxTemplate, itemTemplate, withinTemplates } from "./fixtures/within.js";
 import { normalise } from "./fixtures/template-cases.js";
 
@@ -127,6 +130,12 @@ const WRAPPERS = [
   ["in a fragment in a <span>", `<span><x-item>One</x-item></span>`, (create) => create.jsx("span", { children: create.jsx(Fragment, { children: reader(create) }) }), ["size=m"]],
   ["in another Neuwo element", `<x-wrap><x-item>One</x-item></x-wrap>`, (create) => create.jsx("x-wrap", { children: reader(create) }), ["size=m"]],
   [
+    "in a fragment in another Neuwo element",
+    `<x-wrap><x-item>One</x-item></x-wrap>`,
+    (create) => create.jsx("x-wrap", { children: create.jsx(Fragment, { children: reader(create) }) }),
+    ["size=m"],
+  ],
+  [
     "in a <label> in another Neuwo element in a <Suspense>",
     `<x-wrap><label><x-item>One</x-item></label></x-wrap>`,
     (create) => create.jsx(Suspense, { children: create.jsx("x-wrap", { children: create.jsx("label", { children: reader(create) }) }) }),
@@ -167,13 +176,6 @@ function spy(template, { withChildren = false } = {}) {
 
 /** @param {Element} el */
 const fiberOf = (el) => el[/** @type {string} */ (Object.keys(el).find((key) => key.startsWith("__reactFiber$")))];
-
-/** @param {Element} el */
-function componentProps(el) {
-  let fiber = fiberOf(el);
-  while (fiber && typeof fiber.type !== "function") fiber = fiber.return;
-  return fiber.memoizedProps;
-}
 
 describe("enclosing-element attributes (within) across the HTML, React and DOM adapters", () => {
   for (const [name, spec] of CASES) {
@@ -280,7 +282,7 @@ describe("within in the React adapter", () => {
   const group = (/** @type {Record<string, unknown>} */ props, /** @type {unknown[]} */ children = [runtime.jsx("x-item", { children: "One" }, "1"), runtime.jsx("x-item", { children: "Two" }, "2")]) =>
     runtime.jsxs("x-group", { name: "size", ...props, children });
 
-  it("never passes the internal prop to the DOM, on the server or the client", async () => {
+  it("never puts what it lends on the DOM, on the server or the client", async () => {
     const errors = vi.spyOn(console, "error");
     for (const create of [runtime, server]) {
       const html = renderToString(create.jsxs("x-group", { name: "size", value: "m", children: [create.jsx("x-item", { children: "One" }, "1")] }));
@@ -297,18 +299,36 @@ describe("within in the React adapter", () => {
   });
 
   it("lends each direct item the group's attributes, whether it is controlled, and whether it has onChange", async () => {
+    /** @type {import("../src/core/template.js").Template} */
+    const pickTemplate = (attrs, ctx) => {
+      const input = { class: "x-pick__input", type: "radio", name: ctx.within?.name, value: attrs.value, checked: ctx.within?.value === attrs.value };
+      return h("label", { class: "x-pick" }, control(h("input", input)));
+    };
+    pickTemplate.within = "x-group";
+    const { seen, wrapped } = spy(pickTemplate);
+    const create = createRuntime({ ...withinTemplates, "x-pick": wrapped });
+    // React warns about a controlled radio with no onChange, as it does for its own.
+    vi.spyOn(console, "error").mockImplementation(() => {});
     const onChange = () => {};
     const cases = [
-      [{ value: "m", onChange }, { attrs: { name: "size", value: "m" }, controlled: true, hasOnChange: true }],
-      [{ value: "m" }, { attrs: { name: "size", value: "m" }, controlled: true, hasOnChange: false }],
-      [{ defaultValue: "m", onChange }, { attrs: { name: "size", value: "m" }, controlled: false, hasOnChange: true }],
-      [{}, { attrs: { name: "size" }, controlled: false, hasOnChange: false }],
+      [{ value: "m", onChange }, { name: "size", value: "m" }, true, true],
+      [{ value: "m" }, { name: "size", value: "m" }, true, false],
+      [{ defaultValue: "m", onChange }, { name: "size", value: "m" }, false, false],
+      [{}, { name: "size" }, false, false],
     ];
-    for (const [props, lent] of cases) {
-      const { container } = await renderClient(group(props));
-      const items = Array.from(container.querySelectorAll("x-item"));
-      expect(items.length).toBe(2);
-      for (const host of items) expect(componentProps(host).__neuwoWithin, JSON.stringify(props)).toEqual(lent);
+    for (const [props, attrs, controlled, handled] of cases) {
+      seen.length = 0;
+      const picks = ["m", "l"].map((value) => create.jsx("x-pick", { value }, value));
+      const { container } = await renderClient(create.jsxs("x-group", { name: "size", ...props, children: picks }));
+      const hosts = Array.from(container.querySelectorAll("x-pick"));
+      const label = JSON.stringify(props);
+      expect(hosts.length).toBe(2);
+      expect(seen.length, label).toBeGreaterThan(0);
+      for (const within of seen) expect(within, label).toEqual(attrs);
+      for (const host of hosts) {
+        expect(host[CONTROLLED], label).toBe(controlled);
+        expect(typeof fiberOf(host.querySelector(".x-pick__input")).memoizedProps.onChange, label).toBe(handled ? "function" : "undefined");
+      }
     }
   });
 
@@ -366,7 +386,7 @@ describe("within in the React adapter", () => {
     expect(errors.mock.calls.filter(([message]) => String(message).includes('"key"'))).toHaveLength(1);
   });
 
-  it("lends nothing to a reader of another tag, and keeps the internal prop out of the children a Neuwo element describes", () => {
+  it("lends nothing to a reader of another tag, and keeps what it lends out of the children a Neuwo element describes", () => {
     /** @type {unknown[]} */
     const described = [];
     const { jsx, jsxs } = createRuntime({
@@ -403,6 +423,40 @@ describe("within in the React adapter", () => {
     expect(message).toMatch(/component/);
   });
 
+  it("lends the group's attributes to a radio in a Suspense fallback", async () => {
+    const never = new Promise(() => {});
+    const Wait = () => {
+      throw never;
+    };
+    const { jsx } = createRuntime(templates);
+    const fallback = jsx("neuwo-radio", { value: "a", children: "A" });
+    const plan = () => jsx("neuwo-radio-group", { name: "plan", children: jsx(Suspense, { fallback, children: jsx(Wait, {}) }) });
+    const served = mount(renderToString(plan())).querySelector("neuwo-radio input");
+    expect([served.name, served.value]).toEqual(["plan", "a"]);
+    const { container } = await renderClient(plan());
+    const input = container.querySelector("neuwo-radio input");
+    expect([input.name, input.value]).toEqual(["plan", "a"]);
+  });
+
+  it("warns in development, naming a component of the app's own, a portal and another React root, when a portal puts a reader in a group", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const dev = createRuntime(withinTemplates, { dev: true });
+    function Page() {
+      const [target, setTarget] = useState(/** @type {Element | null} */ (null));
+      return dev.jsxs(Fragment, { children: [groupOf(dev, dev.jsx("div", { ref: setTarget })), target && createPortal(reader(dev), target)] });
+    }
+    const { container } = await renderClient(dev.jsx(Page, {}));
+    expect(container.querySelector("x-group x-item .x-item__group").textContent).toBe("none");
+    expect(warn).toHaveBeenCalledTimes(1);
+    const [message] = warn.mock.calls[0];
+    expect(message).toContain("<x-item>");
+    expect(message).toContain("<x-group>");
+    expect(message).toMatch(/component of your own/);
+    expect(message).toMatch(/portal/);
+    expect(message).toMatch(/another React root/);
+    expect(message).not.toMatch(/Suspense/);
+  });
+
   it("warns once in development, naming the cause and the fix, when a group is handed readers already rendered", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const dev = createRuntime(withinTemplates, { dev: true });
@@ -433,11 +487,5 @@ describe("within in the React adapter", () => {
     await renderClient(groupOf(runtime, runtime.jsx(Row, { children: reader(runtime) })));
     expect(warn).not.toHaveBeenCalled();
     expect(errors).not.toHaveBeenCalled();
-  });
-
-  it("strips the internal prop from a host it was handed to directly", () => {
-    const html = renderToStaticMarkup(runtime.jsx("x-item", { __neuwoWithin: { attrs: { name: "n", value: "v" }, controlled: false, hasOnChange: false }, children: "x" }));
-    expect(html.toLowerCase()).not.toContain("neuwowithin");
-    expect(mount(html).querySelector(".x-item__group").textContent).toBe("n=v");
   });
 });

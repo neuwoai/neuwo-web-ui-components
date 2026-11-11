@@ -109,9 +109,10 @@
 - Through the JSX runtime, `<neuwo-radio-group>` behaves like a group of React's own radios: `value`
   makes every radio controlled, so a pick the `onChange` handler ignores is undone, `defaultValue` starts
   an uncontrolled group, and `onChange` fires once per pick with the radio's input as `event.target`.
-  The radios get the group's attributes inside elements, fragments, context providers, `Suspense`,
-  `StrictMode`, `Profiler`, `Activity` and other Neuwo elements, but not inside a component of your
-  own. Radios a Server Component passes to a Client Component that renders the group arrive already
+  The radios get the group's attributes inside elements, fragments, context providers, `Suspense` and
+  its fallback, `StrictMode`, `Profiler`, `Activity` and other Neuwo elements, but not inside a
+  component of your own, through a portal or in another React root, which development builds warn
+  about. Radios a Server Component passes to a Client Component that renders the group arrive already
   rendered, outside the group, so they get none of its attributes; development builds warn about it.
   React Hook Form's `register` goes on the group, which it reads through `value` and resets by setting
   it. The JSX types give `<neuwo-radio>` `name`, `value`, `checked`, `defaultChecked`, `disabled`,
@@ -272,7 +273,9 @@
   enabled option marked `selected`, else to nothing, which shows the placeholder and submits an empty value;
   picking the option it resolved to fires no `change`. `defaultValue`, and `value` from a Server Component,
   give an uncontrolled combobox that keeps the user's pick across re-renders, including ones that change its
-  placeholder or an option's label.
+  placeholder or an option's label. Options a component of your own renders inside the combobox are never
+  listed, as the JSX runtime reads the options before that component renders; development builds warn about
+  it, for `<neuwo-segmented>` too.
 - Breaking: `<neuwo-cta>` renders into its own light DOM from one template, so a server-rendered band
   is styled from the first paint. Its classes are prefixed: `.cta` is now `.neuwo-cta` (with
   `.neuwo-cta--{banner|spotlight}`), and `.cta__body`, `.cta__glow`, `.cta__inner`, `.cta__headline`,
@@ -403,12 +406,12 @@
   `updated()` hook, which runs after every reconcile in the page and after every reconnect, but not after
   the first render or adoption, nor after a write out of the page, to re-apply live state the template
   cannot know.
-- A component template can name an enclosing tag as its `within` to read the attributes of the nearest such
-  element: in `expand`, in the browser, and through the JSX runtime, which reaches it through elements,
-  fragments, context providers, `Suspense`, `StrictMode`, `Profiler`, `Activity` and other Neuwo elements
-  but not inside a component of your own, and warns about that in development. `renderElement` takes
-  them as an optional last argument, and an element refreshes the descendants that read it when it
-  changes.
+- A component template can name an enclosing tag as its `within` to read the attributes of the nearest
+  such element: in `expand`, in the browser, and through the JSX runtime, which reaches it through
+  elements, fragments, context providers, `Suspense` and its fallback, `StrictMode`, `Profiler`,
+  `Activity` and other Neuwo elements but not inside a component of your own, through a portal or in
+  another React root, and warns about that in development. `renderElement` takes them as an optional last
+  argument, and an element refreshes the descendants that read it when it changes.
 - `components/reset.css`, the reset for the light DOM components, is published and leads the component
   styles in `neuwo-components.css`.
 - Page element rules such as `button { text-transform: uppercase }`, `span { line-height: 3 }` or
@@ -421,14 +424,16 @@
 - `neuwo-standalone.js` is for pages that can only add a script: it embeds `neuwo-components.css`, applies
   it only when the page has not linked it, and loads the fonts from beside itself.
 - New entries: `./server` exports `expand(html)`, `renderElement` and the Eleventy plugin, with its HTML
-  parser bundled; `./jsx-runtime` and `./jsx-dev-runtime` wrap React's runtime for `jsxImportSource`,
-  with a `react-server` build for Server Components. Elements recognise markup React rendered, from
-  Client or Server Components, and leave it to React, so children passed in keep their state and DOM
-  nodes across re-renders. Markup React served but has not hydrated yet is adopted as it is when the
-  script defines the elements, and left as it is when React moves it into place, as revealing a Suspense
-  boundary does, so a field keeps the starting value that `value` in a Server Component, or `defaultValue`,
-  put on its native control, and hydration finds the markup it sent. A moved element fits its markup to
-  its attributes and children only when they changed while it was out of the document.
+  parser bundled; `./jsx-runtime` and `./jsx-dev-runtime` wrap React's runtime for `jsxImportSource`, with
+  a `react-server` build for Server Components. React DevTools and development Server Component payloads
+  name each element's component after its tag and show only the props you passed. Elements recognise
+  markup React rendered, from Client or Server Components, and leave it to React, so children passed in
+  keep their state and DOM nodes across re-renders. Markup React served but has not hydrated yet is
+  adopted as it is when the script defines the elements, and left as it is when React moves it into place,
+  as revealing a Suspense boundary does, so a field keeps the starting value that `value` in a Server
+  Component, or `defaultValue`, put on its native control, and hydration finds the markup it sent. A moved
+  element fits its markup to its attributes and children only when they changed while it was out of the
+  document.
 - Served markup keeps its formatting and its ids. Whitespace and comments around an element's markup stay
   where they are when a script appends a child, where they used to move into the content and show as a
   stray space; indentation inside the markup is no longer removed on the first change; and an element the
@@ -439,11 +444,13 @@
   wraps a component on a line of its own, or a run of them on consecutive lines, in a paragraph, and the
   browser used to move the components' markup out of it, so a form of such fields submitted every value
   twice.
-- Through the JSX runtime, the native control inside a light DOM component behaves like React's own
-  input: `value` and `checked` are controlled, `onChange` on the element fires on every keystroke with
-  the native control as `event.target`, and `defaultValue` and `defaultChecked` start an uncontrolled
-  control. The Server Components build takes `value` and `checked` as starting values. The JSX types
-  give every element with a `value` and a `change` event `value` and `defaultValue` as a string or a
+- Through the JSX runtime, the native control inside a light DOM component behaves like React's own input:
+  `value` and `checked` are controlled, `onChange` on the element fires on every keystroke with the native
+  control as `event.target`, a controlled `value` with only `onInput` draws no missing-`onChange` warning,
+  and `defaultValue` and `defaultChecked` start an uncontrolled control. The Server Components build takes
+  `value` and `checked` as starting values, and keeps `value` on a radio, checkbox or toggle, where it
+  names the control, so a selector such as `neuwo-radio[value="pro"]` matches its markup too. The JSX
+  types give every element with a `value` and a `change` event `value` and `defaultValue` as a string or a
   number, and an `onChange` whose target is typed as the element. `min`, `max`, `step`, `minlength`,
   `maxlength` and `rows` on the fields take a string or a number too, so React Hook Form's
   `{...register("name")}` spreads onto every field.

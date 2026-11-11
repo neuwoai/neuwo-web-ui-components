@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { Activity, act, startTransition, useState } from "react";
+import { Activity, Fragment, act, startTransition, useState } from "react";
 import { createRoot, hydrateRoot } from "react-dom/client";
 import { renderToString } from "react-dom/server";
 import "../src/index.js";
@@ -615,5 +615,24 @@ describe("<neuwo-combobox> rendered by a Server Component", () => {
     expect(shownOf(host)).toBe("Sweden");
     expect(formValueOf(host).value).toBe("se");
     expect(errors).not.toHaveBeenCalled();
+  });
+});
+
+describe("<neuwo-combobox> with options from a component", () => {
+  it("warns once when a combobox's options come from a component", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const dev = createRuntime(templates, { dev: true });
+    const option = (create, value) => create("option", { value, children: value.toUpperCase() }, value);
+    const Options = () => [option(dev.jsx, "a"), option(dev.jsx, "b")];
+    const direct = [option(dev.jsx, "a"), dev.jsx(Fragment, { children: dev.jsx("optgroup", { label: "G", children: option(dev.jsx, "b") }) }, "g")];
+    expect(renderToString(dev.jsxs("neuwo-combobox", { name: "p", children: direct }))).toContain('data-value="b"');
+    renderToString(jsx("neuwo-combobox", { name: "p", children: jsx(Options, {}) }));
+    expect(warn).not.toHaveBeenCalled();
+    for (const name of ["p", "q"]) expect(renderToString(dev.jsx("neuwo-combobox", { name, children: dev.jsx(Options, {}) }))).not.toContain("data-value");
+    expect(warn).toHaveBeenCalledTimes(1);
+    const [message] = warn.mock.calls[0];
+    expect(message).toContain("<neuwo-combobox>");
+    expect(message).toContain("<option>");
+    expect(message).toMatch(/component of your own/);
   });
 });

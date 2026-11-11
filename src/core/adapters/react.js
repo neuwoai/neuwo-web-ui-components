@@ -52,6 +52,8 @@ const noop = () => {};
 const hostTags = new WeakMap();
 /** @type {WeakMap<Function, string>} */
 const hostWithin = new WeakMap();
+/** @type {WeakMap<object, Within>} */
+const lentTo = new WeakMap();
 
 /**
  * @param {ReactNode} item
@@ -64,6 +66,20 @@ const asElement = (item) => (isValidElement(item) ? /** @type {AnyElement} */ (i
  * @returns {string | null}
  */
 const tagOf = (el) => (typeof el.type === "string" ? el.type : (hostTags.get(/** @type {Function} */ (el.type)) ?? null));
+
+/**
+ * React's `cloneElement`, keeping what was lent to the element, which is held by its props object.
+ * @param {AnyElement} el
+ * @param {Record<string, unknown> | null} config
+ * @param {...ReactNode} children
+ * @returns {AnyElement}
+ */
+function clone(el, config, ...children) {
+  const copy = cloneElement(el, config, ...children);
+  const within = lentTo.get(el.props);
+  if (within) lentTo.set(copy.props, within);
+  return copy;
+}
 
 /**
  * @param {ReactNode} item
@@ -84,7 +100,7 @@ function flatten(children, prefix = "", out = []) {
   for (const item of Children.toArray(children)) {
     const el = asElement(item);
     if (el?.type === Fragment) flatten(/** @type {ReactNode} */ (el.props.children), `${prefix}${el.key}:`, out);
-    else out.push(el && prefix ? cloneElement(el, { key: prefix + el.key }) : item);
+    else out.push(el && prefix ? clone(el, { key: prefix + el.key }) : item);
   }
   return out;
 }
@@ -120,10 +136,27 @@ function lend(node, tag, within, rendered) {
   const reads = typeof el.type === "function" && hostWithin.get(el.type) === tag;
   const own = /** @type {ReactNode} */ (el.props.children);
   const children = tagOf(el) !== tag && isTransparent(el) ? lend(own, tag, within, rendered) : own;
+  const ownFallback = /** @type {ReactNode} */ (el.props.fallback);
+  const fallback = el.type === React.Suspense ? lend(ownFallback, tag, within, rendered) : ownFallback;
+  if (!reads && children === own && fallback === ownFallback) return node;
   // React freezes a static children array in development; spread, it keeps its exemption from the key check.
   const spread = Array.isArray(children) && Object.isFrozen(own);
-  if (children !== own) return cloneElement(el, reads ? { __neuwoWithin: within } : null, ...(spread ? children : [children]));
-  return reads ? cloneElement(el, { __neuwoWithin: within }) : node;
+  const copy = clone(el, fallback === ownFallback ? null : { fallback }, ...(children === own ? [] : spread ? children : [children]));
+  if (reads) lentTo.set(copy.props, within);
+  return copy;
+}
+
+/**
+ * Whether the items hold, at any depth, something a template cannot read, such as a component of the app's own.
+ * @param {ReactNode[]} items
+ * @returns {boolean}
+ */
+function hasOpaque(items) {
+  return items.some((item) => {
+    if (typeof item !== "object" || item === null) return false;
+    const el = asElement(item);
+    return !el || tagOf(el) === null || hasOpaque(flatten(/** @type {ReactNode} */ (el.props.children)));
+  });
 }
 
 /**
@@ -212,6 +245,22 @@ function controlOf(node) {
 }
 
 /**
+ * The element that holds the region, its wrapper.
+ * @param {TemplateNode} node
+ * @param {string} name
+ * @returns {TemplateNode | undefined}
+ */
+function wrapperOf(node, name) {
+  for (const child of node.children) {
+    if (typeof child !== "object") continue;
+    if ("region" in child && child.region === name) return node;
+    const found = "tag" in child ? wrapperOf(child, name) : undefined;
+    if (found) return found;
+  }
+  return undefined;
+}
+
+/**
  * Whether React holds the state, decided as React decides for its own inputs: a checkbox or radio by `checked`,
  * any other control by `value`.
  * @param {Record<string, unknown>} props
@@ -247,7 +296,8 @@ const heldState = (control, hasOnChange) => ({
  */
 function bindForm(node, props, children, form) {
   const live = node.control === true && form.controlled;
-  if (isCheckable(node)) {
+  const checkable = isCheckable(node);
+  if (checkable) {
     delete props.checked;
     if (live) props.checked = Boolean(form.host.checked);
     else if (Object.hasOwn(node.props, "checked")) props.defaultChecked = true;
@@ -257,7 +307,8 @@ function bindForm(node, props, children, form) {
     if (live) props.value = value === undefined || String(value) === String(form.host.value) ? form.host.value : value;
     else if (value !== undefined) props.defaultValue = value;
   }
-  if (live && typeof form.host.onChange === "function") props.onChange = noop;
+  const handled = typeof form.host.onChange === "function" || (!checkable && typeof form.host.onInput === "function");
+  if (live && handled) props.onChange = noop;
 }
 
 /**
@@ -380,9 +431,9 @@ function hostFor(tag, template, { markHost, server, readers, dev, warned }) {
     if (warned.has(tag) || !el.parentElement?.closest(enclosing)) return;
     warned.add(tag);
     console.warn(
-      `<${tag}> is inside <${enclosing}> but was rendered without its attributes: a component of your own stands between ` +
-        `them, and the JSX runtime cannot see into it. Render <${tag}> inside <${enclosing}> through elements, fragments, ` +
-        `context providers, Suspense, StrictMode, Profiler or Activity.`,
+      `<${tag}> is inside <${enclosing}> in the page but was rendered without its attributes, as the JSX runtime found no ` +
+        `<${enclosing}> around it in React's tree. That happens inside a component of your own, which the runtime cannot ` +
+        `see into, through a portal, and in another React root. Render <${tag}> inside <${enclosing}> in the same component.`,
     );
   };
   /** @param {string} reader */
@@ -397,14 +448,30 @@ function hostFor(tag, template, { markHost, server, readers, dev, warned }) {
         `Render <${tag}> and its <${reader}> elements in the same component, or create them with this library's JSX runtime.`,
     );
   };
+  /**
+   * @param {TemplateNode} node
+   * @param {ReactNode[]} items
+   */
+  const unlisted = (node, items) => {
+    const key = `options in ${tag}`;
+    if (warned.has(key) || wrapperOf(node, DEFAULT_REGION)?.tag !== "select") return;
+    if (!hasOpaque(items.filter((item) => slotOf(item) === DEFAULT_REGION))) return;
+    warned.add(key);
+    console.warn(
+      `<${tag}> lists the <option> and <optgroup> elements written inside it, but a component of your own renders ` +
+        `some of its content after <${tag}> has read it, so the options that component renders are not listed. Write ` +
+        `the options inside <${tag}> in the same component, with only elements and fragments around them.`,
+    );
+  };
   /** @param {Record<string, unknown>} props */
   function NeuwoHost(props) {
-    const { __neuwoWithin, defaultValue, defaultChecked, ...host } = props;
-    const within = /** @type {Within | undefined} */ (__neuwoWithin);
+    const { defaultValue, defaultChecked, ...host } = props;
+    const within = lentTo.get(props);
     const scope = `neuwo${useId().replace(/[^\w-]/g, "")}-`;
     const items = flatten(/** @type {ReactNode} */ (props.children));
     const attrs = normalizeProps({ ...host, value: props.value ?? defaultValue, checked: props.checked ?? defaultChecked });
     const node = template(attrs, { id: (suffix) => scope + suffix, children: describe(items), within: within?.attrs ?? null });
+    if (dev) unlisted(node, items);
     const control = controlOf(node);
     const held = !server && within?.controlled === true && control ? control : null;
     // An enclosing element such as a radio group holds a value its template has no control for.
@@ -415,11 +482,13 @@ function hostFor(tag, template, { markHost, server, readers, dev, warned }) {
     const placed = lent ? /** @type {ReactNode[]} */ (lend(items, tag, lent, dev ? expanded : null)) : items;
     const form = held ? { host: heldState(held, within?.hasOnChange === true || typeof props.onChange === "function"), controlled } : { host: props, controlled };
     const root = toReact(node, distribute(node, placed, slotOf), blocks, keyOf(node, blocks, 0), form);
+    const fixed = control?.tag === "input" && FIXED_VALUE.has(inputTypeOf(control));
     // A field assigns a value it is handed to its live control, which would overwrite what the user typed.
-    if (server || host.value == null) delete host.value;
+    if ((server && !fixed) || host.value == null) delete host.value;
     if (server || host.checked == null) delete host.checked;
     return reactJsx(/** @type {ElementType} */ (tag), { ...host, ...mark, children: root });
   }
+  NeuwoHost.displayName = tag;
   hostTags.set(NeuwoHost, tag);
   if (template.within) hostWithin.set(NeuwoHost, template.within);
   return NeuwoHost;
@@ -428,9 +497,11 @@ function hostFor(tag, template, { markHost, server, readers, dev, warned }) {
 /**
  * @param {Record<string, Template>} registry
  * @param {{ markHost?: boolean, server?: boolean, dev?: boolean }} [options] `server` renders for React Server
- *   Components: no form control is controlled, the element itself gets no `value` or `checked`, and the adapter adds
- *   no function prop. `dev` warns once per tag when a reader mounts inside its `within` element without its attributes,
- *   and once per reader and enclosing tag when that element is handed the reader already rendered.
+ *   Components: no form control is controlled, the element itself gets no `checked`, and no `value` unless its control
+ *   is an input whose value names it, such as a radio, and the adapter adds no function prop. `dev` warns once per tag
+ *   when a reader mounts inside its `within` element without its attributes, once per reader and enclosing tag when
+ *   that element is handed the reader already rendered, and once per tag when an element that keeps its options in a
+ *   `<select>` is given something there it cannot read, such as a component of the app's own.
  * @returns {{ jsx: typeof reactJsx, jsxs: typeof reactJsxs, jsxDEV: typeof reactJsxDEV }}
  */
 export function createRuntime(registry, { markHost = true, server = false, dev = false } = {}) {

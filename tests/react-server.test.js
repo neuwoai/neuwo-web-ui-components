@@ -110,7 +110,7 @@ describe("JSX runtime in React Server Components", () => {
     expect(found.form).toEqual({ jsx: expected, jsxDEV: expected });
   });
 
-  it.runIf(built)("gives an item its group's attributes through the server runtime, with no element given the internal prop and no function", () => {
+  it.runIf(built)("gives an item its group's attributes through the server runtime, with nothing lent showing on an element and no function", () => {
     const expected = { shown: ["size=m", "size=m", "none"], values: ["m", "m", null], leaked: false, functions: [] };
     expect(found.within).toEqual({ jsx: expected, jsxDEV: expected });
   });
@@ -128,6 +128,24 @@ describe("JSX runtime in React Server Components", () => {
       functions: [],
     };
     expect(found.radio).toEqual({ jsx: expected, jsxDEV: expected });
+  });
+
+  it.runIf(built)("keeps a radio's own value on the host", () => {
+    const expected = { "neuwo-radio": ["pro", null], "neuwo-checkbox": ["yes", null], "neuwo-input": [null, null] };
+    for (const name of ["jsx", "jsxDEV"]) expect(found.fixed[name], name).toMatchObject(expected);
+  });
+
+  it.runIf(built)("keeps what a group lends its items out of the development Flight payload", () => {
+    for (const name of ["jsx", "jsxDEV"]) {
+      const { named, components } = found.lent[name];
+      expect(named, name).toBe(false);
+      expect(components.map(([, props]) => props).sort(), name).toEqual([[], ["children"], ["children"], ["children"], ["name", "value", "children"]]);
+    }
+  });
+
+  it.runIf(built)("names each element's component after its tag in the development Flight payload", () => {
+    expect(found.lent.jsx.components.map(([component]) => component).sort()).toEqual(["Page", "x-group", "x-item", "x-item", "x-item"]);
+    for (const name of ["jsx", "jsxDEV"]) expect(found.fixed[name].components.sort(), name).toEqual(["Page", "neuwo-checkbox", "neuwo-input", "neuwo-radio"]);
   });
 
   it.runIf(built)("warns once in development when a client radio group meets radios a Server Component rendered outside it", async () => {
