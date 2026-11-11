@@ -1,13 +1,25 @@
+// @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { LIGHT_COMPONENT_CSS } from "../scripts/light-css.js";
+import { expand } from "../src/server/index.js";
+import { splitTopLevel, weight } from "./fixtures/specificity.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const read = (path) => readFileSync(join(__dirname, path), "utf8");
 const css = read("../src/components/selection/radio/radio-group.css");
 const reset = read("../src/components/reset.css");
+const recipes = ["../src/components/selection/form-check.css", "../src/components/selection/toggle/toggle.css", "../src/components/selection/radio/radio-group.css"]
+  .map((path) => read(path).replace(/\/\*[\s\S]*?\*\//g, "").replace(/@media[^{]*\{[\s\S]*?\}\s*\}/g, ""))
+  .join("\n");
+const accents = Array.from(recipes.matchAll(/([^{}]+)\{([^{}]*)\}/g))
+  .filter(([, , body]) => body.includes("border-color: var(--neuwo-color-red)"))
+  .flatMap(([, selectors]) => splitTopLevel(selectors.trim()));
+const accentedBy = (el) => accents.filter((selector) => el.matches(selector));
+
+const radio = (id) => `<neuwo-radio id="${id}" value="${id}">${id}</neuwo-radio>`;
 
 describe("radio-group.css recipe", () => {
   it("lays out the legend and the options from tokens, in a row only under the horizontal modifier", () => {
@@ -30,9 +42,29 @@ describe("radio-group.css recipe", () => {
   });
 
   it("rings the group's radios on an error, never the legend, with no hex colour literals", () => {
-    expect(css).toMatch(/\.neuwo-radio-group--error \.neuwo-form-check__input\s*\{[^}]*border-color: var\(--neuwo-color-red\);[^}]*box-shadow: var\(--neuwo-shadow-danger\);/);
+    expect(css).toMatch(/\.neuwo-radio-group--error :where\(neuwo-radio > \.neuwo-form-check\) > \.neuwo-form-check__input:not\([^{]*\)\s*\{[^}]*border-color: var\(--neuwo-color-red\);[^}]*box-shadow: var\(--neuwo-shadow-danger\);/);
     expect(css).not.toMatch(/__legend[^{}]*\{[^}]*--neuwo-color-red/);
     expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+  });
+
+  it("accents only the group's own radios, at two classes of weight, so a nested checkbox, toggle or group keeps its own colour", () => {
+    document.body.innerHTML = expand(
+      `<neuwo-radio-group name="g" error="Pick one">${radio("own")}<div>${radio("deep")}</div>` +
+        `<neuwo-checkbox id="checkbox" name="c">C</neuwo-checkbox><neuwo-toggle id="toggle" name="t">T</neuwo-toggle>` +
+        `<neuwo-radio-group name="n">${radio("nested")}</neuwo-radio-group>` +
+        `<neuwo-radio-group name="m" error="Also">${radio("both")}</neuwo-radio-group></neuwo-radio-group>` +
+        `<neuwo-radio-group name="o"><neuwo-radio-group name="p" error="Inner">${radio("inner")}</neuwo-radio-group>${radio("outer")}</neuwo-radio-group>` +
+        `<neuwo-radio-group name="q" error="Muted" error-muted>${radio("muted")}</neuwo-radio-group>`,
+    );
+    const input = (id) => document.querySelector(`#${id} .neuwo-form-check__input, #${id} .neuwo-form-toggle__input`);
+    for (const id of ["own", "deep", "both", "inner"]) {
+      const by = accentedBy(input(id));
+      expect(by, id).toHaveLength(1);
+      expect(weight(by[0]), id).toEqual([0, 2, 0]);
+    }
+    for (const id of ["checkbox", "toggle", "nested", "outer", "muted"]) expect(accentedBy(input(id)), id).toEqual([]);
+    expect(accentedBy(document.querySelector("#toggle .neuwo-form-toggle__track"))).toEqual([]);
+    document.body.innerHTML = "";
   });
 
   it("lays both elements out as boxes unless they are hidden", () => {

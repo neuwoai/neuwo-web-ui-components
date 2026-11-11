@@ -81,7 +81,7 @@ neuwo-checkbox:not([hidden]) {
   cursor: not-allowed;
 }
 
-.neuwo-form-check--error .neuwo-form-check__input {
+.neuwo-form-check--error > .neuwo-form-check__input {
   border-color: var(--neuwo-color-red);
   box-shadow: var(--neuwo-shadow-danger);
 }

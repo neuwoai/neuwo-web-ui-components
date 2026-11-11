@@ -67,7 +67,7 @@ describe("toggle.css recipe", () => {
   it("uses tokens for focus/disabled/error and guards reduced motion", () => {
     expect(css).toContain("var(--neuwo-shadow-focus)");
     expect(css).toContain("var(--neuwo-opacity-disabled)");
-    expect(css).toContain(".neuwo-form-toggle--error .neuwo-form-toggle__track");
+    expect(css).toContain(".neuwo-form-toggle--error > .neuwo-form-toggle__track");
     expect(css).toContain("var(--neuwo-shadow-danger)");
     expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*\.neuwo-form-toggle__track,\s*\.neuwo-form-toggle__track::after\s*\{\s*transition: none;/);
     expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);

@@ -14,13 +14,13 @@ const RADIO = "neuwo-radio > .neuwo-form-check > .neuwo-form-check__input";
  *
  * @summary Neuwo radio group. Public classes: `.neuwo-choice` on the wrapper; `.neuwo-radio-group` on the radiogroup, with `--horizontal` and `--error`; `.neuwo-radio-group__legend` on the legend; `.neuwo-radio-group__options` around the radios; `.neuwo-choice__error` on the error line.
  * @customElement neuwo-radio-group
- * @attr name - form field name, carried onto every radio, which is what groups them; a group without one warns in the console.
+ * @attr name - form field name, carried onto every radio, which is what groups them; a group without one warns in the console unless every radio has its own.
  * @attr {boolean} disabled - disables every radio and removes the group from submission.
  * @attr value - the value of the radio that starts checked, carried onto the radios as their default; the live value is the `value` property.
  * @attr {boolean} required - a radio must be checked for the group to be valid.
  * @attr label - visible legend that names the group.
  * @attr {horizontal|vertical} orientation - lays the radios out in a row or a column (default: a column).
- * @attr error - error message; shows the red accent on every radio, the message, and aria-invalid on the group.
+ * @attr error - error message; shows the red accent on each of the group's own radios, the message, and aria-invalid on the group.
  * @attr {boolean} error-muted - softens a shown error: drops the accent while the red message and invalid state stay.
  * @attr {boolean} no-error-line - drop the reserved error message row (for a non-validated group); setting `error` alongside it is a misconfiguration.
  * @fires {Event} input - the user picked a radio; the radio's own `input`, bubbling through the group.
@@ -111,7 +111,7 @@ export class NeuwoRadioGroup extends NeuwoControlElement {
 
   connect() {
     super.connect();
-    if (!this.#warned && !this.getAttribute("name") && this.#holdsRadios()) {
+    if (!this.#warned && !this.getAttribute("name") && this.#holdsNamelessRadio()) {
       this.#warned = true;
       console.warn(
         "<neuwo-radio-group> has no name, so the browser does not group its radios: more than one can be checked, " +
@@ -127,8 +127,8 @@ export class NeuwoRadioGroup extends NeuwoControlElement {
     }
   }
 
-  #holdsRadios() {
-    return Array.from(this.querySelectorAll("neuwo-radio")).some((radio) => radio.closest("neuwo-radio-group") === this);
+  #holdsNamelessRadio() {
+    return Array.from(this.querySelectorAll("neuwo-radio")).some((radio) => radio.closest("neuwo-radio-group") === this && !radio.getAttribute("name"));
   }
 
   /** @returns {HTMLInputElement[]} */

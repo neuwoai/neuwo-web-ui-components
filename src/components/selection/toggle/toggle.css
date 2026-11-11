@@ -88,7 +88,7 @@ neuwo-toggle:not([hidden]) {
   cursor: not-allowed;
 }
 
-.neuwo-form-toggle--error .neuwo-form-toggle__track {
+.neuwo-form-toggle--error > .neuwo-form-toggle__track {
   border-color: var(--neuwo-color-red);
   box-shadow: var(--neuwo-shadow-danger);
 }

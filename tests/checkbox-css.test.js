@@ -22,7 +22,7 @@ describe("form-check.css recipe", () => {
 
   it("uses the disabled token and a red error accent, with no hex colour literals", () => {
     expect(css).toContain("var(--neuwo-opacity-disabled)");
-    expect(css).toContain(".neuwo-form-check--error .neuwo-form-check__input");
+    expect(css).toContain(".neuwo-form-check--error > .neuwo-form-check__input");
     expect(css).toContain("var(--neuwo-color-red)");
     expect(css).toContain("var(--neuwo-shadow-danger)");
     expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);

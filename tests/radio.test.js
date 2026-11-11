@@ -332,6 +332,19 @@ describe("<neuwo-radio-group> and <neuwo-radio>", () => {
     expect(warn).toHaveBeenCalledTimes(1);
   });
 
+  it("does not warn when every radio has its own name", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    make(`<neuwo-radio-group label="Plan"><neuwo-radio name="pick" value="a">A</neuwo-radio><div><neuwo-radio name="pick" value="b">B</neuwo-radio></div></neuwo-radio-group>`);
+    expect(warn).not.toHaveBeenCalled();
+    make(`<neuwo-radio-group label="Plan"><neuwo-radio name="pick" value="a">A</neuwo-radio><neuwo-radio name="" value="b">B</neuwo-radio></neuwo-radio-group>`);
+    expect(warn).toHaveBeenCalledTimes(1);
+    make(
+      `<neuwo-radio-group label="Plan"><neuwo-radio name="pick" value="a">A</neuwo-radio>` +
+        `<neuwo-radio-group name="inner"><neuwo-radio value="b">B</neuwo-radio></neuwo-radio-group></neuwo-radio-group>`,
+    );
+    expect(warn).toHaveBeenCalledTimes(1);
+  });
+
   it("groups radios that carry a name of their own in a group that has none", () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
     const form = make(`<form><neuwo-radio-group value="b"><neuwo-radio name="pick" value="a">A</neuwo-radio><neuwo-radio name="pick" value="b">B</neuwo-radio></neuwo-radio-group></form>`);

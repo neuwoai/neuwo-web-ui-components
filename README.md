@@ -848,7 +848,7 @@ properties, or target the children you passed in.
 | `.neuwo-form-check__label` | the wrapper around the checkbox's or radio's children; it was `::part(label)` |
 | `.neuwo-radio-group` | the radio group's `role="radiogroup"` `<div>`, around the legend and the radios; it was `.radio-group` and `::part(group)` |
 | `.neuwo-radio-group--horizontal` | the radiogroup, by `orientation="horizontal"`, which lays the radios out in a row |
-| `.neuwo-radio-group--error` | the radiogroup, by `error` unless `error-muted` or `no-error-line` is set; it rings every radio's box |
+| `.neuwo-radio-group--error` | the radiogroup, by `error` unless `error-muted` or `no-error-line` is set; it rings the box of each of its own radios, not those of a group nested in it |
 | `.neuwo-radio-group__legend` | the visible label, `hidden` while `label` is not set; it was `::part(legend)` |
 | `.neuwo-radio-group__options` | the wrapper around the group's children, the radios; it was `::part(options)` |
 | `.neuwo-form-toggle` | the toggle's `<label>`, around the switch, the track and the label content; it was `::part(field)` |
@@ -859,7 +859,7 @@ properties, or target the children you passed in.
 | `.neuwo-segmented` | the segmented control's `role="radiogroup"` pill, around the indicator, the options and the form value; it was `.segmented` and `::part(group)` |
 | `.neuwo-segmented--error` | the pill, by `error` unless `error-muted` or `no-error-line` is set |
 | `.neuwo-segmented__indicator` | the sliding pill behind the selected option, shown once a pick gives it `data-neuwo-placed`; it was `::part(indicator)` |
-| `.neuwo-segmented__option` | each option's `<button>`, the selected one with `aria-checked="true"`; it was `::part(option)` |
+| `.neuwo-segmented__option` | each option's `<button>`, the selected one with `aria-checked="true"`, which keeps its label on one line; it was `::part(option)` |
 | `.neuwo-segmented__options` | the hidden `<select>` that keeps your `<option>` children |
 | `.neuwo-segmented__form-value` | the visually hidden native input that submits the value |
 
@@ -1002,7 +1002,7 @@ the choice, `required` is checked natively, and the checked radio submits its
 `value` under the group's `name`, in server-rendered markup before the script
 has loaded too. The group needs a `name` to group its radios, as native radios
 do: without one, each radio stands alone unless it carries a `name` of its own,
-and the group warns in the console once. The group renders the
+and the group warns in the console once when a radio has neither. The group renders the
 `role="radiogroup"` box, its legend and the error line, and has no form control
 of its own.
 

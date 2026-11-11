@@ -42,6 +42,7 @@ neuwo-segmented:not([hidden]) {
   color: var(--neuwo-color-text-muted);
   cursor: pointer;
   transition: color var(--neuwo-transition-fast);
+  white-space: nowrap;
   /* A button's own text defaults, which the light reset would hand over to the page's. */
   text-align: center;
   text-transform: none;
@@ -52,7 +53,6 @@ neuwo-segmented:not([hidden]) {
   font-style: normal;
   font-variant: normal;
   line-height: normal;
-  white-space: normal;
 }
 
 .neuwo-segmented__option:not([aria-checked="true"]):not(:disabled):hover {

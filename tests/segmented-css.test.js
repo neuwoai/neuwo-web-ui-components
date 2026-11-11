@@ -118,10 +118,14 @@ describe("segmented.css recipe", () => {
         "font-variant": "normal",
         "font-weight": "var(--neuwo-font-weight-semibold)",
         "line-height": "normal",
-        "white-space": "normal",
       }))
         expect(winner(option, property), property).toBe(value);
     }
+  });
+
+  it("keeps every option on one line, as the button recipe does", () => {
+    const { other, selected } = mount(false);
+    for (const option of [other, selected]) expect(winner(option, "white-space")).toBe("nowrap");
   });
 
   it("lays the element out as an inline box unless it is hidden", () => {
