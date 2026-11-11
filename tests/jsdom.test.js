@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { NeuwoElement, define } from "../src/core/element.js";
 import { expand } from "../src/server/index.js";
 import { templates } from "../src/templates.js";
 import { cases, markup } from "./fixtures/template-cases.js";
+import { groupTemplate, itemTemplate, withinTemplates } from "./fixtures/within.js";
 
 const REFERENCES = ["for", "aria-describedby", "aria-controls", "aria-labelledby", "aria-activedescendant"];
 const FIELDS =
@@ -137,5 +139,78 @@ describe("adoption with no CSS global, in jsdom", () => {
     } finally {
       if (css) Object.defineProperty(globalThis, "CSS", css);
     }
+  });
+});
+
+describe("readers of an enclosing element (within), upgraded and copied in jsdom", () => {
+  const container = document.createElement("div");
+  const seen = [];
+  /** @param {ParentNode} root */
+  const shown = (root) => Array.from(root.querySelectorAll(".x-item__group"), (el) => el.textContent);
+  /** @param {Element} host */
+  const watchCopy = (host) => {
+    const observer = new MutationObserver(() => {});
+    observer.observe(container, { subtree: true, childList: true, attributes: true, characterData: true });
+    return () => observer.takeRecords().filter((record) => host.contains(record.target));
+  };
+
+  beforeAll(() => {
+    container.innerHTML = expand(
+      `<x-group name="size" value="m"><x-item>Medium</x-item><x-item>Large</x-item></x-group><x-group name="colour" value="red"><x-item>Red</x-item></x-group>`,
+      withinTemplates,
+    );
+    document.body.append(container);
+    const observer = new MutationObserver((records) => void seen.push(...records));
+    observer.observe(container, { subtree: true, childList: true, attributes: true, attributeOldValue: true, characterData: true, characterDataOldValue: true });
+    define("x-group", class extends NeuwoElement {
+      static template = groupTemplate;
+      static observedAttributes = ["name", "value", "tone"];
+    });
+    define("x-item", class extends NeuwoElement {
+      static template = itemTemplate;
+      static observedAttributes = [];
+    });
+    seen.push(...observer.takeRecords());
+    observer.disconnect();
+  });
+
+  afterAll(() => container.remove());
+
+  /** @param {Element} copy */
+  const track = (copy) => cleanup.push(() => copy.remove());
+
+  it("upgrades served groups and their items at definition and writes nothing", () => {
+    expect(container.querySelector("x-item")).toBeInstanceOf(customElements.get("x-item"));
+    expect(seen.map(describeRecord)).toEqual([]);
+    expect(shown(container)).toEqual(["size=m", "size=m", "colour=red"]);
+  });
+
+  it("gives a copy of an item appended to another group that group's attributes", () => {
+    const [size, colour] = Array.from(container.querySelectorAll(".x-group"));
+    const copy = /** @type {Element} */ (size.querySelector("x-item").cloneNode(true));
+    track(copy);
+    colour.append(copy);
+    expect(shown(copy)).toEqual(["colour=red"]);
+    expect(copy.querySelector(".x-item").getAttribute("data-value")).toBe("red");
+  });
+
+  it("writes nothing in a copy of an item appended to its own group", () => {
+    const size = container.querySelector(".x-group");
+    const copy = /** @type {Element} */ (size.querySelector("x-item").cloneNode(true));
+    track(copy);
+    const written = watchCopy(copy);
+    size.append(copy);
+    expect(written().map(describeRecord)).toEqual([]);
+    expect(shown(copy)).toEqual(["size=m"]);
+  });
+
+  it("gives a copy the change its group made between the copy and its insertion", () => {
+    const group = container.querySelector("x-group");
+    const copy = /** @type {Element} */ (group.querySelector("x-item").cloneNode(true));
+    track(copy);
+    group.setAttribute("value", "l");
+    group.querySelector(".x-group").append(copy);
+    expect(shown(group)).toEqual(["size=l", "size=l", "size=l"]);
+    group.setAttribute("value", "m");
   });
 });
