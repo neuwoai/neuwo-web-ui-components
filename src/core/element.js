@@ -76,6 +76,8 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
     if (!owned) {
       // A move such as React's Suspense reveal reconnects served markup its attributes alone would not render.
       if (!restart || this.#changedWhileAway()) this.#write(isRendered(this, template) ? adopt : render);
+      // A child a script appended before the element was defined sits beside the adopted markup.
+      if (!restart && hasLooseContent(this)) this.#write(reconcile);
       this.#dirty = false;
       this.#away = null;
       this.#observer ??= new MutationObserver((records) => this.#changed(records));
@@ -126,6 +128,8 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
   }
 
   disconnectedCallback() {
+    // Disconnecting the observer drops a change made just before the move, so it is kept as a dirty mark.
+    if (this.#observer?.takeRecords().some(relevant)) this.#dirty = true;
     if (this.#started) this.#away = relevantAttributes(this);
     this.#observer?.disconnect();
     this.#observer = null;

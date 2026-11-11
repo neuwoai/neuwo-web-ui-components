@@ -109,6 +109,38 @@ describe("NeuwoElement (light DOM)", () => {
     expect(host.querySelectorAll(".neuwo-t").length).toBe(1);
   });
 
+  it("places a child a script appended to served markup before the element was defined, in one reconcile", () => {
+    const tag = "test-late-child";
+    const host = document.createElement("div");
+    host.innerHTML = `<${tag} tone="b"><span class="neuwo-t neuwo-t--b"><span class="neuwo-t__start"></span><span class="neuwo-t__body">hi</span></span></${tag}>`;
+    document.body.appendChild(host);
+    cleanup.push(host);
+    const icon = document.createElement("i");
+    icon.slot = "start";
+    host.firstElementChild.append(icon);
+    const observer = new MutationObserver(() => {});
+    observer.observe(host, { subtree: true, childList: true, attributes: true, characterData: true });
+    define(tag, class extends TestLight {});
+    const el = host.firstElementChild;
+    expect(icon.parentElement.className).toBe("neuwo-t__start");
+    expect(el.children).toHaveLength(1);
+    expect(el.querySelector(".neuwo-t__body").textContent).toBe("hi");
+    expect(observer.takeRecords().filter((record) => record.type !== "childList").length).toBe(0);
+  });
+
+  it("adopts served markup with whitespace and a comment beside its root, defined later, without mutations", () => {
+    const tag = "test-late-spaced";
+    const host = document.createElement("div");
+    host.innerHTML = `<${tag} tone="b">\n  <!-- served --><span class="neuwo-t neuwo-t--b"><span class="neuwo-t__start"></span><span class="neuwo-t__body">hi</span></span>\n</${tag}>`;
+    document.body.appendChild(host);
+    cleanup.push(host);
+    const observer = new MutationObserver(() => {});
+    observer.observe(host, { subtree: true, childList: true, attributes: true, characterData: true });
+    define(tag, class extends TestLight {});
+    expect(observer.takeRecords()).toHaveLength(0);
+    expect(host.querySelectorAll(".neuwo-t")).toHaveLength(1);
+  });
+
   it("adopts when attributeChangedCallback runs before connect logic, as the browser upgrade does", () => {
     const tag = "test-order";
     class Order extends TestLight {
@@ -242,7 +274,6 @@ describe("NeuwoElement (light DOM)", () => {
   });
 
   describe("when moved", () => {
-    // Served for tone a on a host that says b: only a change while it was away may rewrite it.
     const mismatched = () => mount(`<test-light tone="b">${server().replace(/^<test-light>|<\/test-light>$/g, "")}</test-light>`).firstElementChild;
     const moveWatched = (el, between = () => {}) => {
       const observer = new MutationObserver(() => {});
@@ -300,6 +331,16 @@ describe("NeuwoElement (light DOM)", () => {
       move(el, icon);
       expect(icon.parentElement.className).toBe("neuwo-t__start");
       expect(el.children).toHaveLength(1);
+      expect(el.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--b");
+    });
+
+    it.each([
+      ["aria-label", "x"],
+      ["title", "x"],
+    ])("reconciles when %s changed just before the move, in the same task", (name, value) => {
+      const el = mismatched();
+      el.setAttribute(name, value);
+      moveWatched(el);
       expect(el.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--b");
     });
 
@@ -533,7 +574,7 @@ describe("updated() and refresh()", () => {
     expect(adopted.updates).toBe(0);
   });
 
-  it("does not run updated when an attribute callback adopts before the connect logic, as an upgrade does", () => {
+  it("does not run updated when an upgrade's attribute callbacks come before its first connect", () => {
     class Upgrading extends Updating {
       connectedCallback() {}
       run() {

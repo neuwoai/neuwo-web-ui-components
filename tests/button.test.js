@@ -276,6 +276,23 @@ describe("<neuwo-button> content set by script", () => {
     expect(el.children).toHaveLength(1);
   });
 
+  it("forwards an aria-label set in the same task the button is moved", () => {
+    const el = make(`<neuwo-button>Delete</neuwo-button>`);
+    const other = attach(document.createElement("div"));
+    el.setAttribute("aria-label", "Delete row 2");
+    other.append(el);
+    expect(control(el).getAttribute("aria-label")).toBe("Delete row 2");
+  });
+
+  it("forwards a title set in the same task the button is removed, once it is back", () => {
+    const el = make(`<neuwo-button>Go</neuwo-button>`);
+    const parent = el.parentNode;
+    el.title = "Later";
+    el.remove();
+    parent.append(el);
+    expect(control(el).getAttribute("title")).toBe("Later");
+  });
+
   it("places an end icon appended while the button was out of the document", async () => {
     const el = make(`<neuwo-button>Go</neuwo-button>`);
     const other = attach(document.createElement("div"));
