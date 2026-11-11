@@ -137,7 +137,7 @@ describe("comboboxTemplate()", () => {
 
   it("keeps the author's options in a hidden select, the default region's wrapper", () => {
     const select = find(comboboxTemplate({}, ctx(FRUIT)), "neuwo-combobox__options");
-    expect(select.props).toEqual({ class: "neuwo-combobox__options", hidden: true, tabindex: "-1", "aria-hidden": "true" });
+    expect(select.props).toEqual({ class: "neuwo-combobox__options", multiple: true, hidden: true, tabindex: "-1", "aria-hidden": "true" });
     expect(select.children).toEqual([{ region: "default" }]);
   });
 

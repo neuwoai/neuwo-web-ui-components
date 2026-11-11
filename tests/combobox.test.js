@@ -188,6 +188,17 @@ describe("<neuwo-combobox> form", () => {
     expect([...new FormData(form)]).toEqual([["fruit", "b"]]);
   });
 
+  it("submits and reports validity natively, with no option selected by the hidden select", () => {
+    const form = make(`<form><neuwo-combobox name="f" required>${OPTS}</neuwo-combobox></form>`);
+    const el = form.querySelector("neuwo-combobox");
+    expect([...new FormData(form)]).toEqual([["f", ""]]);
+    expect(el.reportValidity()).toBe(false);
+    el.value = "b";
+    expect([...new FormData(form)]).toEqual([["f", el.value]]);
+    expect(el.value).not.toBe("");
+    expect(el.reportValidity()).toBe(true);
+  });
+
   it("is invalid while required and empty, natively, and valid once a value is set", () => {
     const form = make(`<form><neuwo-combobox name="fruit" required>${OPTS}</neuwo-combobox></form>`);
     const el = form.querySelector("neuwo-combobox");

@@ -681,3 +681,24 @@ describe("<neuwo-combobox> with options from a component", () => {
     expect(message).not.toMatch(/not listed/);
   });
 });
+
+describe("<neuwo-combobox> options and validity under React", () => {
+  it("reports the selected option from options after a client render", () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const picked = (selected) => render(combobox({ value: "fi", onChange() {} }, { selected })).host.options.map((option) => [option.value, option.selected]);
+    expect(picked("se")).toEqual([["fi", false], ["fr", false], ["se", true], ["no", false]]);
+    expect(picked(undefined)).toEqual([["fi", false], ["fr", false], ["se", false], ["no", false]]);
+  });
+
+  it("submits and validates as it did, in a form", () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const { container, host } = render(jsx("form", { children: combobox({ name: "f", required: true, onChange() {} }, { selected: "se" }) }));
+    const form = container.querySelector("form");
+    expect([...new FormData(form)]).toEqual([["f", "se"]]);
+    expect(host.reportValidity()).toBe(true);
+    const empty = render(jsx("form", { children: combobox({ name: "f", required: true, onChange() {} }) }));
+    expect([...new FormData(empty.container.querySelector("form"))]).toEqual([["f", ""]]);
+    expect(empty.host.reportValidity()).toBe(false);
+    expect(empty.host.validity.valueMissing).toBe(true);
+  });
+});

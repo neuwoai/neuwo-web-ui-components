@@ -313,3 +313,24 @@ describe("<neuwo-segmented> with options from a component", () => {
     expect(errors).not.toHaveBeenCalled();
   });
 });
+
+describe("<neuwo-segmented> options and validity under React", () => {
+  it("reports the selected option from options after a client render", () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const picked = (selected) => render(segmented({ value: "visual", onChange() {} }, { selected })).host.options.map((option) => [option.value, option.selected]);
+    expect(picked("table")).toEqual([["visual", false], ["json", false], ["raw", false], ["table", true]]);
+    expect(picked(undefined)).toEqual([["visual", false], ["json", false], ["raw", false], ["table", false]]);
+  });
+
+  it("submits and validates as it did, in a form", () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const { container, host } = render(jsx("form", { children: segmented({ name: "f", required: true, onChange() {} }, { selected: "table" }) }));
+    const form = container.querySelector("form");
+    expect([...new FormData(form)]).toEqual([["f", "table"]]);
+    expect(host.reportValidity()).toBe(true);
+    const empty = render(jsx("form", { children: segmented({ name: "f", required: true, onChange() {} }) }));
+    expect([...new FormData(empty.container.querySelector("form"))]).toEqual([["f", ""]]);
+    expect(empty.host.reportValidity()).toBe(false);
+    expect(empty.host.validity.valueMissing).toBe(true);
+  });
+});

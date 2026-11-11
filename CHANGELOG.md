@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed: under React, `options` on `<neuwo-combobox>` and `<neuwo-segmented>` reports `selected` for an option React marked selected, and the hidden `<select>` that keeps the options is now `multiple`, so the browser no longer selects its first option by itself. Forms submit and validate as before, as that select has no name.
 - Internal: the Shadow DOM base (`NeuwoShadowElement`), its shared reset and its error helper are gone, as every component renders in light DOM.
 - Breaking: `<neuwo-segmented>` renders into its own light DOM from one template, so a server-rendered
   segmented control is styled from the first paint, and its recipe,

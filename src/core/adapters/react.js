@@ -20,7 +20,7 @@ import { CONTROLLED, REACT } from "../marks.js";
 const BOOLEAN = [
   "allowFullScreen", "async", "autoPlay", "controls", "credentialless", "default", "defer", "disabled",
   "disablePictureInPicture", "disableRemotePlayback", "formNoValidate", "hidden", "inert", "itemScope", "loop",
-  "noModule", "noValidate", "open", "playsInline", "readOnly", "required", "reversed", "scoped", "seamless",
+  "multiple", "noModule", "noValidate", "open", "playsInline", "readOnly", "required", "reversed", "scoped", "seamless",
 ];
 const BOOLEANS = new Set(BOOLEAN);
 const NAMES = new Map([
@@ -216,13 +216,41 @@ const classesOf = (node) => (typeof node.props.class === "string" ? node.props.c
 const keyOf = (node, blocks, index) => keyClassOf(node, blocks) ?? classesOf(node)[0] ?? String(index);
 
 /**
+ * Splits at the semicolons outside parentheses and quotes.
+ * @param {string} css
+ * @returns {string[]}
+ */
+function declarationsOf(css) {
+  /** @type {string[]} */
+  const parts = [];
+  let depth = 0;
+  let quote = "";
+  let start = 0;
+  for (let index = 0; index < css.length; index++) {
+    const char = css[index];
+    if (quote) {
+      if (char === "\\") index++;
+      else if (char === quote) quote = "";
+    } else if (char === '"' || char === "'") quote = char;
+    else if (char === "(") depth++;
+    else if (char === ")") depth = Math.max(0, depth - 1);
+    else if (char === ";" && depth === 0) {
+      parts.push(css.slice(start, index));
+      start = index + 1;
+    }
+  }
+  parts.push(css.slice(start));
+  return parts;
+}
+
+/**
  * @param {string} css
  * @returns {Record<string, string>}
  */
 function styleOf(css) {
   /** @type {Record<string, string>} */
   const style = {};
-  for (const declaration of css.split(";")) {
+  for (const declaration of declarationsOf(css)) {
     const colon = declaration.indexOf(":");
     const name = colon < 0 ? "" : declaration.slice(0, colon).trim();
     if (!name) continue;

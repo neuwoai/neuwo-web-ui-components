@@ -356,6 +356,17 @@ describe("<neuwo-segmented> form", () => {
     expect([...new FormData(form)]).toEqual([["view", "table"]]);
   });
 
+  it("submits and reports validity natively, with no option selected by the hidden select", () => {
+    const form = make(`<form><neuwo-segmented name="f" required>${OPTS}</neuwo-segmented></form>`);
+    const el = form.querySelector("neuwo-segmented");
+    expect([...new FormData(form)]).toEqual([["f", ""]]);
+    expect(el.reportValidity()).toBe(false);
+    buttonOf(el, "json").click();
+    expect([...new FormData(form)]).toEqual([["f", el.value]]);
+    expect(el.value).not.toBe("");
+    expect(el.reportValidity()).toBe(true);
+  });
+
   it("is invalid while required and empty, natively, and valid once a value is picked", () => {
     const form = make(`<form><neuwo-segmented name="view" required>${OPTS}</neuwo-segmented></form>`);
     const el = form.querySelector("neuwo-segmented");

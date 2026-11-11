@@ -48,6 +48,18 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+describe("createRuntime() template styles", () => {
+  it("keeps semicolons inside url() and quotes in a template style", () => {
+    const styled = (css) => createRuntime({ "neuwo-s": () => h("span", { class: "neuwo-s", style: css }) }).jsx;
+    const html = (css) => renderToStaticMarkup(styled(css)("neuwo-s", {}));
+    expect(html("background:url(data:image/png;base64,AAAA);color:red")).toContain('style="background:url(data:image/png;base64,AAAA);color:red"');
+    expect(html('content: ";"; color: red')).toContain('style="content:&quot;;&quot;;color:red"');
+    expect(html("content: ';'; color: red")).toContain("color:red");
+    expect(html("color: red !important; width: 1px")).toContain("width:1px");
+    expect(html("background: url('a;b.png'); color: red")).toContain("color:red");
+  });
+});
+
 describe("createRuntime()", () => {
   it("expands a registered tag around its children, placed by slot", () => {
     expect(renderToStaticMarkup(jsx("neuwo-t", { tone: "b", children: [jsx("i", { slot: "start" }), "x"] }))).toBe(

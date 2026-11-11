@@ -51,7 +51,7 @@ export function segmentedTemplate(attrs, ctx) {
           option.label,
         ),
       ),
-      h("select", { class: "neuwo-segmented__options", hidden: true, tabindex: "-1", "aria-hidden": "true" }, region()),
+      h("select", { class: "neuwo-segmented__options", multiple: true, hidden: true, tabindex: "-1", "aria-hidden": "true" }, region()),
       control(
         h("input", {
           class: "neuwo-segmented__form-value",

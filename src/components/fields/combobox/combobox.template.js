@@ -89,7 +89,7 @@ export function comboboxTemplate(attrs, ctx) {
         h("li", { class: "neuwo-combobox__empty", role: "presentation", hidden: true }, "No matches"),
       ),
     ),
-    h("select", { class: "neuwo-combobox__options", hidden: true, tabindex: "-1", "aria-hidden": "true" }, region()),
+    h("select", { class: "neuwo-combobox__options", multiple: true, hidden: true, tabindex: "-1", "aria-hidden": "true" }, region()),
     control(
       h("input", {
         class: "neuwo-combobox__form-value",
