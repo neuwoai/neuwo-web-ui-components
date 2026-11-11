@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { flushSync } from "react-dom";
-import { createRoot } from "react-dom/client";
+import { createRoot, hydrateRoot } from "react-dom/client";
+import { renderToString } from "react-dom/server";
 import "../src/index.js";
 import { NeuwoCopy } from "../src/components/copy/neuwo-copy.js";
 import { copyTemplate } from "../src/components/copy/copy.template.js";
@@ -371,6 +372,29 @@ describe("<neuwo-copy> under React", () => {
     expect(part(el, "status").textContent).toBe("");
     show({});
     expect(part(el, "button").getAttribute("aria-label")).toBe("Copy");
+    expect(error).not.toHaveBeenCalled();
+  });
+
+  it("runs oncopied on markup React hydrates, from the first copy", async () => {
+    const error = vi.spyOn(console, "error");
+    const onCopied = vi.fn();
+    const tree = () => jsx("neuwo-copy", { oncopied: onCopied, children: jsx("pre", { children: "npm install" }) });
+    const parsed = document.createElement("div");
+    parsed.innerHTML = renderToString(tree());
+    const container = attach(document.createElement("div"));
+    container.append(...parsed.childNodes);
+    const el = container.firstElementChild;
+    expect(el).toBeInstanceOf(NeuwoCopy);
+    let root;
+    flushSync(() => {
+      root = hydrateRoot(container, tree());
+    });
+    cleanup.push(() => root.unmount());
+    await vi.waitFor(() => expect(Object.keys(el).some((key) => key.startsWith("__reactFiber$"))).toBe(true));
+    part(el, "button").click();
+    await vi.waitFor(() => expect(el.getAttribute("data-neuwo-state")).toBe("copied"));
+    expect(onCopied).toHaveBeenCalledOnce();
+    expect(onCopied.mock.calls[0][0].detail.text).toBe("npm install");
     expect(error).not.toHaveBeenCalled();
   });
 

@@ -1,4 +1,6 @@
 import { Children, Fragment, cloneElement, isValidElement, useCallback, useId } from "react";
+// Server Components' React has no useRef or useLayoutEffect, so naming them in an import would fail to link there.
+import * as React from "react";
 import { jsx as reactJsx, jsxs as reactJsxs } from "react/jsx-runtime";
 import { jsxDEV as reactJsxDEV } from "react/jsx-dev-runtime";
 import { DEFAULT_REGION, blocksOf, distribute, keyClassOf, normalizeProps } from "../template.js";
@@ -35,6 +37,9 @@ const FIXED_VALUE = new Set(["button", "checkbox", "hidden", "image", "radio", "
 
 const REACT = Symbol.for("neuwo.react");
 const CONTROLLED = Symbol.for("neuwo.controlled");
+// React's own event props are camel case, so an `on` prop in lower case names one of the element's events.
+const OWN_EVENT = /^on[a-z]/;
+const CAPTURE = "Capture";
 
 const noop = () => {};
 
@@ -247,20 +252,58 @@ function pass(ref, el) {
 }
 
 /**
+ * Takes the element's own event handlers, such as `oncopied` or `oncopiedCapture`, out of the props.
+ * @param {Record<string, unknown>} props
+ * @returns {Record<string, (event: Event) => void>}
+ */
+function takeHandlers(props) {
+  /** @type {Record<string, (event: Event) => void>} */
+  const handlers = {};
+  for (const [name, value] of Object.entries(props)) {
+    if (!OWN_EVENT.test(name) || typeof value !== "function") continue;
+    handlers[name] = /** @type {(event: Event) => void} */ (value);
+    delete props[name];
+  }
+  return handlers;
+}
+
+/**
+ * Marks the element as React's and binds its own event handlers, which React's hydration leaves unbound until the
+ * next update.
  * @param {unknown} authorRef
  * @param {boolean} controlled
+ * @param {Record<string, (event: Event) => void>} handlers
  */
-function useMark(authorRef, controlled) {
+function useMark(authorRef, controlled, handlers) {
+  const latest = React.useRef(handlers);
+  React.useLayoutEffect(() => {
+    latest.current = handlers;
+  });
+  const names = Object.keys(handlers).join(" ");
   return useCallback(
-    /** @param {Element | null} el */
+    /** @param {Element} el */
     (el) => {
-      if (el) {
-        Reflect.set(el, REACT, true);
-        Reflect.set(el, CONTROLLED, controlled);
-      }
-      return pass(authorRef, el);
+      Reflect.set(el, REACT, true);
+      Reflect.set(el, CONTROLLED, controlled);
+      const unbind = names
+        .split(" ")
+        .filter(Boolean)
+        .map((name) => {
+          const capture = name.endsWith(CAPTURE);
+          const type = name.slice(2, capture ? -CAPTURE.length : undefined);
+          /** @param {Event} event */
+          const listener = (event) => latest.current[name]?.call(el, event);
+          el.addEventListener(type, listener, capture);
+          return () => el.removeEventListener(type, listener, capture);
+        });
+      const release = pass(authorRef, el);
+      return () => {
+        for (const each of unbind) each();
+        if (typeof release === "function") release();
+        else pass(authorRef, null);
+      };
     },
-    [authorRef, controlled],
+    [authorRef, controlled, names],
   );
 }
 
@@ -278,7 +321,7 @@ function hostFor(tag, template, { markHost, server }) {
     const attrs = normalizeProps({ ...host, value: props.value ?? defaultValue, checked: props.checked ?? defaultChecked });
     const node = template(attrs, { id: (suffix) => scope + suffix, children: describe(items) });
     const controlled = !server && isControlled(props, controlOf(node));
-    const mark = markHost && { ref: useMark(props.ref, controlled) };
+    const mark = markHost && { ref: useMark(props.ref, controlled, takeHandlers(host)) };
     const blocks = blocksOf(node);
     const root = toReact(node, distribute(node, items, slotOf), blocks, keyOf(node, blocks, 0), { host: props, controlled });
     // A field assigns a value it is handed to its live control, which would overwrite what the user typed.

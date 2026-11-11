@@ -237,6 +237,10 @@
   number, and an `onChange` whose target is typed as the element. `min`, `max`, `step`, `minlength`,
   `maxlength` and `rows` on the fields take a string or a number too, so React Hook Form's
   `{...register("name")}` spreads onto every field.
+- Through the JSX runtime, a light DOM element's own event handlers, such as `oncopied` on `<neuwo-copy>`
+  and `ondismiss` on `<neuwo-notice>`, run from the first event on markup React hydrated. React's
+  hydration binds none of them, so they used to stay silent until the component re-rendered, and a
+  notice whose dismissal the handler should cancel hid itself instead.
 - `neuwo.js` can be imported on a server, where it registers nothing, and loading it twice no longer throws.
 - `neuwo-components.css` and `foundation/fonts.css` are now published, and `neuwo.css` carries the font faces.
 - The metric-adjusted fallback faces also use Liberation Sans or Arimo where Arial is missing, as on most

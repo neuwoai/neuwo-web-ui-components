@@ -358,6 +358,123 @@ describe("<neuwo-notice> under React", () => {
     expect(error).not.toHaveBeenCalled();
   });
 
+  it("runs ondismiss on markup React hydrates, from the first dismiss, so cancelling it keeps the card shown", async () => {
+    const error = vi.spyOn(console, "error");
+    const calls = [];
+    const tree = () =>
+      jsx("neuwo-notice", {
+        dismissible: true,
+        ondismiss: (event) => {
+          event.preventDefault();
+          calls.push(event.type);
+        },
+        children: "Hint",
+      });
+    const parsed = document.createElement("div");
+    parsed.innerHTML = renderToString(tree());
+    const container = attach(document.createElement("div"));
+    container.append(...parsed.childNodes);
+    const el = container.firstElementChild;
+    expect(el).toBeInstanceOf(NeuwoNotice);
+    const recoverable = [];
+    let root;
+    flushSync(() => {
+      root = hydrateRoot(container, tree(), { onRecoverableError: (thrown) => void recoverable.push(String(thrown?.message ?? thrown)) });
+    });
+    cleanup.push(() => root.unmount());
+    await vi.waitFor(() => expect(Object.keys(el).some((key) => key.startsWith("__reactFiber$"))).toBe(true));
+    part(el, "dismiss").click();
+    expect(calls).toEqual(["dismiss"]);
+    expect(el.hidden).toBe(false);
+    expect(el.dismiss()).toBe(false);
+    expect(calls).toEqual(["dismiss", "dismiss"]);
+    expect(recoverable).toEqual([]);
+    expect(error).not.toHaveBeenCalled();
+  });
+
+  it("closes and reopens through state on markup React hydrates, as the documented pattern does", async () => {
+    const error = vi.spyOn(console, "error");
+    let reopen = () => {};
+    function Hint() {
+      const [open, setOpen] = useState(true);
+      reopen = () => setOpen(true);
+      return jsx("neuwo-notice", {
+        dismissible: true,
+        hidden: !open,
+        ondismiss: (event) => {
+          event.preventDefault();
+          setOpen(false);
+        },
+        children: "Hint",
+      });
+    }
+    const parsed = document.createElement("div");
+    parsed.innerHTML = renderToString(jsx(Hint, {}));
+    const container = attach(document.createElement("div"));
+    container.append(...parsed.childNodes);
+    const el = container.firstElementChild;
+    let root;
+    flushSync(() => {
+      root = hydrateRoot(container, jsx(Hint, {}));
+    });
+    cleanup.push(() => root.unmount());
+    await vi.waitFor(() => expect(Object.keys(el).some((key) => key.startsWith("__reactFiber$"))).toBe(true));
+    for (let round = 0; round < 2; round++) {
+      part(el, "dismiss").click();
+      await vi.waitFor(() => expect(el.hidden).toBe(true));
+      flushSync(() => reopen());
+      expect(el.hidden).toBe(false);
+    }
+    expect(error).not.toHaveBeenCalled();
+  });
+
+  it("calls an ondismiss swapped on a re-render and not the old one, and stops when it goes", () => {
+    const error = vi.spyOn(console, "error");
+    const container = attach(document.createElement("div"));
+    const root = createRoot(container);
+    cleanup.push(() => root.unmount());
+    const first = vi.fn((event) => event.preventDefault());
+    const second = vi.fn((event) => event.preventDefault());
+    const show = (ondismiss) => flushSync(() => root.render(jsx("neuwo-notice", { dismissible: true, ondismiss, children: "Hint" })));
+    show(first);
+    const el = container.firstElementChild;
+    show(second);
+    expect(el.dismiss()).toBe(false);
+    expect(first).not.toHaveBeenCalled();
+    expect(second).toHaveBeenCalledOnce();
+    show(undefined);
+    expect(el.dismiss()).toBe(true);
+    expect(second).toHaveBeenCalledOnce();
+    expect(error).not.toHaveBeenCalled();
+  });
+
+  it("calls ondismiss, and a capture handler, exactly once per dismiss on a client render", () => {
+    const error = vi.spyOn(console, "error");
+    const container = attach(document.createElement("div"));
+    const root = createRoot(container);
+    cleanup.push(() => root.unmount());
+    const calls = [];
+    flushSync(() =>
+      root.render(
+        jsx("neuwo-notice", {
+          dismissible: true,
+          ondismiss: (event) => {
+            event.preventDefault();
+            calls.push("bubble");
+          },
+          ondismissCapture: () => calls.push("capture"),
+          children: "Hint",
+        }),
+      ),
+    );
+    const el = container.firstElementChild;
+    part(el, "dismiss").click();
+    expect(calls).toEqual(["capture", "bubble"]);
+    expect(el.dismiss()).toBe(false);
+    expect(calls).toEqual(["capture", "bubble", "capture", "bubble"]);
+    expect(error).not.toHaveBeenCalled();
+  });
+
   it("closes and reopens through state when ondismiss cancels and hidden follows it", async () => {
     const error = vi.spyOn(console, "error");
     const container = attach(document.createElement("div"));
