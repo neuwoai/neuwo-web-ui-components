@@ -107,8 +107,9 @@ function lend(node, tag, within) {
   const reads = typeof el.type === "function" && hostWithin.get(el.type) === tag;
   const own = /** @type {ReactNode} */ (el.props.children);
   const children = tagOf(el) !== tag && isTransparent(el) ? lend(own, tag, within) : own;
-  // Passed as arguments, the children keep the key check their static array had, which a clone would reset.
-  if (children !== own) return cloneElement(el, reads ? { __neuwoWithin: within } : null, ...(Array.isArray(children) ? children : [children]));
+  // React freezes a static children array in development; spread, it keeps its exemption from the key check.
+  const spread = Array.isArray(children) && Object.isFrozen(own);
+  if (children !== own) return cloneElement(el, reads ? { __neuwoWithin: within } : null, ...(spread ? children : [children]));
   return reads ? cloneElement(el, { __neuwoWithin: within }) : node;
 }
 

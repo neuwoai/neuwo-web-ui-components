@@ -4,6 +4,9 @@ import { REACT } from "./marks.js";
 /** @type {Map<string, Set<string>>} */
 const readers = new Map();
 
+// Never the JSON of an enclosing element's attributes or of null, so it differs from wherever the copy lands.
+const UNPLACED = "unplaced";
+
 /** @param {string} name */
 const relevantName = (name) => name === "title" || name === "role" || name.startsWith("aria-");
 
@@ -60,7 +63,8 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
    */
   #initial = null;
 
-  // The enclosing element's attributes the markup was last known to match, as JSON; null while that is unknown.
+  // The enclosing element's attributes the markup was last known to match, as JSON, UNPLACED for a copy built
+  // before it had a parent; null when built empty.
   /** @type {string | null} */
   #within = null;
 
@@ -72,7 +76,7 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
     const observed = /** @type {{ observedAttributes?: string[] }} */ (this.constructor).observedAttributes ?? [];
     this.#initial = new Map(observed.filter((name) => this.hasAttribute(name)).map((name) => [name, /** @type {string} */ (this.getAttribute(name))]));
     this.#away = relevantAttributes(this);
-    this.#within = this.#enclosing();
+    this.#within = within && !this.parentNode ? UNPLACED : this.#enclosing();
   }
 
   connectedCallback() {

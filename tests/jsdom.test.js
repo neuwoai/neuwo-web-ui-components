@@ -194,6 +194,14 @@ describe("readers of an enclosing element (within), upgraded and copied in jsdom
     expect(copy.querySelector(".x-item").getAttribute("data-value")).toBe("red");
   });
 
+  it("drops the group from a copy of an item appended outside any group", () => {
+    const copy = /** @type {Element} */ (container.querySelector("x-item").cloneNode(true));
+    track(copy);
+    container.append(copy);
+    expect(shown(copy)).toEqual(["none"]);
+    expect(copy.querySelector(".x-item").hasAttribute("data-value")).toBe(false);
+  });
+
   it("writes nothing in a copy of an item appended to its own group", () => {
     const size = container.querySelector(".x-group");
     const copy = /** @type {Element} */ (size.querySelector("x-item").cloneNode(true));

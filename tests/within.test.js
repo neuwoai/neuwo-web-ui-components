@@ -333,6 +333,32 @@ describe("within in the React adapter", () => {
     expect(errors).not.toHaveBeenCalled();
   });
 
+  it("keeps a row the app maps to an array of nodes when the list grows, though a reader in it is lent", async () => {
+    const errors = vi.spyOn(console, "error");
+    const rows = (/** @type {number} */ count) =>
+      runtime.jsx("dl", {
+        children: Array.from({ length: count }, (_, index) => [
+          runtime.jsx("dt", { children: `Term ${index}` }, "t"),
+          runtime.jsx("dd", { children: reader(runtime, `Item ${index}`) }, "d"),
+        ]),
+      });
+    const { container, rerender } = await renderClient(groupOf(runtime, rows(1)));
+    const term = container.querySelector("dt");
+    const first = container.querySelector("x-item");
+    await rerender(groupOf(runtime, rows(2)));
+    expect(container.querySelector("dt")).toBe(term);
+    expect(container.querySelector("x-item")).toBe(first);
+    expect(Array.from(container.querySelectorAll(".x-item__group"), (el) => el.textContent)).toEqual(["size=m", "size=m"]);
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it("keeps React's missing-key warning for an unkeyed list in an element under a group", async () => {
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    const list = ["A", "B"].map((label) => reader(runtime, label));
+    await renderClient(groupOf(runtime, runtime.jsx("menu", { children: list })));
+    expect(errors.mock.calls.filter(([message]) => String(message).includes('"key"'))).toHaveLength(1);
+  });
+
   it("lends nothing to a reader of another tag, and keeps the internal prop out of the children a Neuwo element describes", () => {
     /** @type {unknown[]} */
     const described = [];
