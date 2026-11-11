@@ -37,7 +37,9 @@
   when the script loads. While the pill is shown, the selected option's own background gives way to it.
   In a disabled control the selected option dims with the others, as a checked disabled checkbox does,
   where the old pill stayed at full strength. The options keep a button's own text defaults, so a page's
-  `text-transform` or `letter-spacing` still does not reach them.
+  `text-transform` or `letter-spacing` still does not reach them, and its `font-style`, `line-height` or
+  `white-space` no longer does: in a shadow root those reached the options, so a container with a tall line
+  height made the pill taller.
 - `<neuwo-segmented>` now dispatches `input` just before `change`, once each per pick, with the
   element as `event.target`; setting `value` still fires nothing, and the new `commit(value)` picks as
   the user does. Home and End now move to the first and last enabled option, beside the arrow keys
@@ -169,12 +171,14 @@
   `.neuwo-input--sm` and `.neuwo-input--error`. The label holds two new spans: `.neuwo-field__label-content`
   around the `slot="label"` children, `display: contents`, and `.neuwo-field__label-text` around the
   `label` text.
-- A native control that a light DOM component renders, such as the `<input>` in `<neuwo-input>` or the
-  trigger of `<neuwo-combobox>`, keeps its own text defaults (alignment, casing, spacing, weight, style,
-  line height and white space) instead of taking them from the host, so a centred or uppercase container
-  does not restyle what the user types. In a shadow root the combobox trigger took its weight, style, line
-  height and white space from the page, so a container with a tall line height made it taller than the
-  input beside it; it no longer does.
+- A native control that a light DOM component renders for the user to type into or pick from, such as the
+  `<input>` in `<neuwo-input>`, the trigger of `<neuwo-combobox>` or an option of `<neuwo-segmented>`, keeps
+  its own text defaults (alignment, casing, spacing, weight, style, line height and white space) instead of
+  taking them from the host, so a centred or uppercase container does not restyle what the user types or
+  picks. In a shadow root the combobox trigger took its weight, style, line height and white space from the
+  page, so a container with a tall line height made it taller than the input beside it; it no longer does.
+  The `<button>` that `<neuwo-button>` renders is the exception: its label is your content, so it takes its
+  line height, style, casing and spacing from the host, as the link it renders for `href` does.
 - Breaking: `::part(field)`, `::part(label)`, `::part(input)` and `::part(error)` on `<neuwo-input>` are
   gone. Restyle through the classes, with the element name in front for weight:
   `neuwo-input .neuwo-input { border-radius: 0; }`.

@@ -49,6 +49,10 @@ neuwo-segmented:not([hidden]) {
   word-spacing: normal;
   text-indent: 0;
   text-shadow: none;
+  font-style: normal;
+  font-variant: normal;
+  line-height: normal;
+  white-space: normal;
 }
 
 .neuwo-segmented__option:not([aria-checked="true"]):not(:disabled):hover {

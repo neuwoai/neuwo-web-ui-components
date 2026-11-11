@@ -105,17 +105,23 @@ describe("segmented.css recipe", () => {
   });
 
   it("keeps a button's own text defaults on the options, over the page's that the reset would hand them", () => {
-    const { selected } = mount(false);
-    for (const [property, value] of Object.entries({
-      "text-align": "center",
-      "text-transform": "none",
-      "letter-spacing": "normal",
-      "word-spacing": "normal",
-      "text-indent": "0",
-      "text-shadow": "none",
-    }))
-      expect(winner(selected, property), property).toBe(value);
-    expect(winner(selected, "line-height")).toBe("inherit");
+    const { other, selected } = mount(false);
+    for (const option of [other, selected]) {
+      for (const [property, value] of Object.entries({
+        "text-align": "center",
+        "text-transform": "none",
+        "letter-spacing": "normal",
+        "word-spacing": "normal",
+        "text-indent": "0",
+        "text-shadow": "none",
+        "font-style": "normal",
+        "font-variant": "normal",
+        "font-weight": "var(--neuwo-font-weight-semibold)",
+        "line-height": "normal",
+        "white-space": "normal",
+      }))
+        expect(winner(option, property), property).toBe(value);
+    }
   });
 
   it("lays the element out as an inline box unless it is hidden", () => {
