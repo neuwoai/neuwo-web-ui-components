@@ -386,6 +386,40 @@ describe("<neuwo-combobox> under React, uncontrolled", () => {
   });
 });
 
+describe("<neuwo-combobox> under React Hook Form's register", () => {
+  /** Props as `register(name)` returns them; its blur handler finds the field by `event.target.name`. */
+  function registerer() {
+    const fields = new Map();
+    const touched = {};
+    const register = (name) => ({
+      name,
+      ref: (el) => void (el && fields.set(name, el)),
+      onChange: () => {},
+      onBlur: (event) => {
+        const field = fields.get(event.target.name);
+        if (field) touched[event.target.name] = field.value;
+      },
+    });
+    return { register, touched };
+  }
+
+  it.each([
+    ["button", {}],
+    ["searchable", { searchable: true }],
+  ])("marks the field touched when its %s trigger loses focus", (_, extra) => {
+    const errors = vi.spyOn(console, "error");
+    const { register, touched } = registerer();
+    const { host } = render(combobox({ placeholder: "Pick", defaultValue: "fi", ...extra, ...register("plan") }));
+    const trigger = triggerOf(host);
+    act(() => trigger.focus());
+    act(() => trigger.blur());
+    expect(touched).toEqual({ plan: "fi" });
+    expect(trigger.hasAttribute("name")).toBe(false);
+    expect(trigger.name).toBe("");
+    expect(errors).not.toHaveBeenCalled();
+  });
+});
+
 describe("<neuwo-combobox searchable> under React", () => {
   it("never calls onInput or onChange while the user types into the filter", () => {
     const errors = vi.spyOn(console, "error");

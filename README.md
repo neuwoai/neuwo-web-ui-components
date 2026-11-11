@@ -556,6 +556,10 @@ value props:
 - `onInput` and `onChange` fire once each when the user picks a different value, never while
   they type into a `searchable` filter. `event.target` is the combobox itself: its `value` is the
   picked value and its `name` is the field's, as form libraries expect.
+- `onBlur` gets the trigger as `event.target`, and while the blur is dispatched the trigger's
+  `name` reads as the field's, so React Hook Form's `register` marks the combobox touched and
+  validates it in `mode: "onBlur"`, as it does a native `<select>`. The trigger has no `name`
+  attribute and submits nothing.
 - `value` makes it controlled: it shows whatever your state says, so a pick your handler ignores
   is never shown. A `value` that names no enabled option resolves as the `value` attribute does:
   to the first enabled option marked `selected`, else to nothing, which shows the placeholder and

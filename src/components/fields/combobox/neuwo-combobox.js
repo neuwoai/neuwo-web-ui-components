@@ -197,6 +197,8 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     this.addEventListener("toggle", this.#onToggle, true);
     this.addEventListener("focus", this.#onFocus, true);
     this.addEventListener("blur", this.#onBlur, true);
+    this.addEventListener("blur", this.#lendName, true);
+    this.addEventListener("focusout", this.#lendName, true);
     this.#bindForm();
     this.#watchOptions();
     // Every host watches, since React can hydrate one after it connected and then rewrite what the element showed.
@@ -216,6 +218,8 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     this.removeEventListener("toggle", this.#onToggle, true);
     this.removeEventListener("focus", this.#onFocus, true);
     this.removeEventListener("blur", this.#onBlur, true);
+    this.removeEventListener("blur", this.#lendName, true);
+    this.removeEventListener("focusout", this.#lendName, true);
     this.#form?.removeEventListener("reset", this.#onReset);
     this.#form = null;
     this.#observer?.disconnect();
@@ -532,6 +536,23 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   /** @param {FocusEvent} event */
   #onBlur = (event) => {
     if (event.target === this.trigger && !this.#open) this.#revertText();
+  };
+
+  /**
+   * Lends the trigger the field's `name` while a blur or focusout from it is dispatched, so a form library that
+   * finds the field by `event.target.name`, as React Hook Form's `register` does, finds this one. The trigger
+   * gains no `name` attribute and reads as nameless at any other time, so a script that serialises a form from
+   * its controls' `name` properties never counts the searchable trigger.
+   * @param {FocusEvent} event
+   */
+  #lendName = (event) => {
+    const trigger = this.trigger;
+    if (!trigger || event.target !== trigger) return;
+    Object.defineProperty(trigger, "name", {
+      configurable: true,
+      get: () => (event.eventPhase === Event.NONE ? (trigger.getAttribute("name") ?? "") : this.name),
+      set: (value) => trigger.setAttribute("name", value),
+    });
   };
 }
 

@@ -89,6 +89,9 @@
   no enabled option; it used to clear the selection. A reset no longer removes `error`.
 - Typing into the filter of a `searchable` `<neuwo-combobox>` no longer fires `input` or `change` on the
   element, so `onInput` and `onChange` in React fire only when the user picks a value.
+- A blur from the trigger of `<neuwo-combobox>` reads the field's `name` on `event.target` while it is
+  dispatched, so React Hook Form's `register` marks the combobox touched and validates it on blur. The
+  trigger gains no `name` attribute and still submits nothing.
 - The rows a `searchable` `<neuwo-combobox>` filters out are hidden; the row's `display: block` used to keep
   them on screen. The chevron turns while the list is open, which its rule never matched before.
 - Breaking: in React, `value` on `<neuwo-combobox>` makes it controlled, as on React's own `<select>`. A pick

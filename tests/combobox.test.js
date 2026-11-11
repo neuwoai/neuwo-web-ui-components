@@ -276,6 +276,44 @@ describe("<neuwo-combobox> form", () => {
   });
 });
 
+describe("<neuwo-combobox> blur", () => {
+  it.each([
+    ["button", ""],
+    ["searchable", " searchable"],
+  ])("names its %s trigger after the field while a blur from it is dispatched, once per listener, and only then", (_, extra) => {
+    const form = make(`<form><neuwo-combobox name="plan" value="b"${extra}>${OPTS}</neuwo-combobox></form>`);
+    const el = form.querySelector("neuwo-combobox");
+    const trigger = triggerOf(el);
+    const seen = [];
+    const read = (event) => void seen.push([event.type, event.target === trigger, event.target.name]);
+    el.addEventListener("focusout", read);
+    el.addEventListener("blur", read, true);
+    form.addEventListener("focusout", read);
+    trigger.focus();
+    trigger.blur();
+    expect(seen).toEqual([
+      ["blur", true, "plan"],
+      ["focusout", true, "plan"],
+      ["focusout", true, "plan"],
+    ]);
+    expect(trigger.name).toBe("");
+    expect(trigger.hasAttribute("name")).toBe(false);
+    expect([...new FormData(form)]).toEqual([["plan", "b"]]);
+  });
+
+  it("names a trigger the template replaced, after the field's current name", () => {
+    const el = make(`<neuwo-combobox name="plan">${OPTS}</neuwo-combobox>`);
+    el.setAttribute("searchable", "");
+    el.name = "tier";
+    const names = [];
+    el.addEventListener("focusout", (event) => void names.push(event.target.name));
+    triggerOf(el).focus();
+    triggerOf(el).blur();
+    expect(triggerOf(el)).toBeInstanceOf(HTMLInputElement);
+    expect(names).toEqual(["tier"]);
+  });
+});
+
 describe("<neuwo-combobox> options as they change", () => {
   it("renders a row for an option appended to the element, in one reconcile", async () => {
     const el = make(`<neuwo-combobox>${OPTS}</neuwo-combobox>`);
