@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import "../src/index.js";
 import { NeuwoLogo } from "../src/components/logo/neuwo-logo.js";
+import { DEFAULT_LABEL, DEFAULT_VARIANT } from "../src/components/logo/logo.template.js";
 
 function make(html) {
   const host = document.createElement("div");
@@ -64,6 +65,15 @@ describe("<neuwo-logo>", () => {
     const el = make(`<neuwo-logo></neuwo-logo>`);
     expect(el.variant).toBe("bg-dark");
     expect(inkOf(el)).toEqual(INK["bg-dark"]);
+  });
+
+  it("reads its property defaults from the template's own", () => {
+    const el = make(`<neuwo-logo></neuwo-logo>`);
+    expect([DEFAULT_VARIANT, DEFAULT_LABEL]).toEqual(["bg-dark", "Neuwo"]);
+    expect(el.variant).toBe(DEFAULT_VARIANT);
+    expect(el.label).toBe(DEFAULT_LABEL);
+    expect(svgOf(el).classList.contains(`neuwo-logo--${DEFAULT_VARIANT}`)).toBe(true);
+    expect(svgOf(el).getAttribute("aria-label")).toBe(DEFAULT_LABEL);
   });
 
   it("falls back to bg-dark on an unknown variant", () => {

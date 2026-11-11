@@ -453,7 +453,7 @@ There is deliberately no helper that walks the page and wraps every `<pre>` for 
 element keeps the markup in the shipped HTML and keeps the library declarative, and a DOM-walking
 pass would be a second way to do the same thing.
 
-Three details worth knowing:
+Four details worth knowing:
 
 - **The control is always rendered.** The markup cannot know whether the clipboard is reachable,
   so where it is not (an insecure context leaves `navigator.clipboard` undefined) a click announces
@@ -461,7 +461,12 @@ Three details worth knowing:
 - **The outcome goes to a live region**, not to the button's label. Relabelling a control the user
   has just activated is announced inconsistently; a `role="status"` region is announced reliably.
   `label`, `copied-label` and `failed-label` are all yours to translate. For 1.2 s after a copy the
-  host carries `data-neuwo-state`: `"copied"`, which draws the tick, or `"failed"`.
+  host carries `data-neuwo-state`: `"copied"`, which draws the tick, or `"failed"`, which draws a
+  cross in the error colour in its place. `slot="status"` is reserved for that region: a child given
+  it is read out with every outcome.
+- **`aria-*` and `title` on the element are copied onto the control**, as on the other elements, so
+  an `aria-label` names it when `label` is not set. `label` wins over both `aria-label` and
+  `aria-labelledby`.
 - **The corner overlay assumes a panel with room.** `.neuwo-markdown neuwo-copy pre` widens the panel's
   right padding so a long first line scrolls rather than running underneath. Around something
   small, a chip say, give the element its own clearance and pull the control in with

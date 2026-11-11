@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Fixed: `<neuwo-copy>` copies `aria-*` and `title` from the element onto its control, as the other elements do, so an `aria-label` on the element names the control when `label` is not set. `label` still wins, over `aria-labelledby` too. `slot="status"` is documented as reserved for the outcome announcement.
+- Fixed: a failed `<neuwo-copy>` draws a cross in the error colour, where a successful one draws the tick, instead of nothing; only a screen reader learned of the failure before.
+- Fixed: `<neuwo-cta>` warns about a band authored with no headline or no action even when it is empty, where an empty `<neuwo-cta></neuwo-cta>` in the page said nothing. A band a script builds is checked once a change adds to its children, so one that connects with its headline and gets its buttons after an `await` no longer draws a false warning.
+- Internal: `<neuwo-cta>` no longer registers `--neuwo-cta-angle` from script as well; the `@property` rule in `cta.css` registers it.
 - Internal: `error`, `error-muted`, `no-error-line` and `noErrorLine` are documented once, on `NeuwoErrorMixin`, which the field base, the checkbox and toggle base, the radio group and the segmented control apply, and `defaultValue` once, on `NeuwoDefaultValueMixin`, which the field base, the radio group and the segmented control apply. The manifest records both mixins and lists those attributes and properties as inherited from them, with one wording for every control, and the generated `.d.ts` types each base as extending them. No attribute, property or JSX type changed.
 - Fixed: an errored `<neuwo-radio-group>` rings only its own radios: a `<neuwo-checkbox>` placed among them, and the radios of a group nested in it that has no error of its own, keep their own colour. The rule still weighs two classes. The error rules of the checkbox and the toggle likewise reach only their own box and track.
 - Fixed: `<neuwo-radio-group>` warns about a missing `name` only when one of its radios has no `name` either, since radios that each carry one are grouped by the browser.

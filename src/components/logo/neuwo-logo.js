@@ -1,5 +1,5 @@
 import { NeuwoElement, define } from "../../core/element.js";
-import { logoTemplate } from "./logo.template.js";
+import { DEFAULT_LABEL, DEFAULT_VARIANT, logoTemplate } from "./logo.template.js";
 
 /**
  * The Neuwo wordmark. Draws one of the brand's four ink pairs, each named for
@@ -22,12 +22,12 @@ export class NeuwoLogo extends NeuwoElement {
   static template = logoTemplate;
   static observedAttributes = ["variant", "label"];
 
-  get variant() { return this.getAttribute("variant") || "bg-dark"; }
+  get variant() { return this.getAttribute("variant") || DEFAULT_VARIANT; }
   set variant(value) {
     if (value == null || value === "") this.removeAttribute("variant");
     else this.setAttribute("variant", String(value));
   }
-  get label() { return this.getAttribute("label") ?? "Neuwo"; }
+  get label() { return this.getAttribute("label") ?? DEFAULT_LABEL; }
   set label(value) {
     // Unlike the other string attributes, an empty label is meaningful (it marks
     // the logo decorative), so only null removes the attribute.

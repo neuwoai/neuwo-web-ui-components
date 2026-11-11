@@ -1,16 +1,7 @@
 import { childInfo } from "../../core/adapters/dom.js";
-import { NeuwoElement, define } from "../../core/element.js";
+import { NeuwoElement, define, ownedByReact } from "../../core/element.js";
 import { DEFAULT_REGION } from "../../core/template.js";
 import { ctaTemplate } from "./cta.template.js";
-
-// cta.css registers this too, but a page may never load the sheet.
-if (typeof CSS !== "undefined" && CSS.registerProperty) {
-  try {
-    CSS.registerProperty({ name: "--neuwo-cta-angle", syntax: "<angle>", inherits: false, initialValue: "0deg" });
-  } catch {
-    // Already registered, as when the module evaluates twice.
-  }
-}
 
 /**
  * Call-to-action band: a headline, a supporting line, and one or two action
@@ -44,6 +35,12 @@ if (typeof CSS !== "undefined" && CSS.registerProperty) {
 export class NeuwoCta extends NeuwoElement {
   static template = ctaTemplate;
   static observedAttributes = ["variant", "pulse", "intensity", "heading-level", "status", "status-state"];
+
+  // Upgraded in place, built by the parser or parsed with its children, so its content is complete when it starts.
+  #authored = this.isConnected || this.ownerDocument.readyState === "loading" || this.hasChildNodes();
+
+  /** @type {number | null} */
+  #startedWith = null;
 
   get variant() { return this.getAttribute("variant") || "banner"; }
   set variant(value) {
@@ -79,8 +76,14 @@ export class NeuwoCta extends NeuwoElement {
   }
 
   connect() {
-    // A host that connects empty is being built by script, which may add its content in any later task.
-    if (childInfo(this, ctaTemplate).length) queueMicrotask(() => this.#validate());
+    if (this.#authored || ownedByReact(this)) queueMicrotask(() => this.#validate());
+    else this.#startedWith = childInfo(this, ctaTemplate).length;
+  }
+
+  updated() {
+    if (this.#startedWith === null || childInfo(this, ctaTemplate).length <= this.#startedWith) return;
+    this.#startedWith = null;
+    queueMicrotask(() => this.#validate());
   }
 
   #validate() {

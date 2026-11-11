@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { useEffect } from "react";
 import { flushSync } from "react-dom";
@@ -365,6 +366,60 @@ describe("<neuwo-cta>", () => {
     expect(headline.parentElement).toBe(part(el, "headline"));
     expect(button.parentElement).toBe(part(el, "actions"));
     expect(warn).not.toHaveBeenCalled();
+  });
+
+  it("warns about an authored empty band, upgraded in place or parsed while the document loads", async () => {
+    const warn = quiet();
+    const tag = "late-cta";
+    const holder = attach(document.createElement("div"));
+    holder.innerHTML = `<${tag}></${tag}>`;
+    customElements.define(tag, class extends NeuwoCta {});
+    await settled();
+    expect(card(holder.firstElementChild)).not.toBeNull();
+    expect(warn.mock.calls.map(([message]) => message)).toEqual([expect.stringContaining("headline"), expect.stringContaining('"actions"')]);
+
+    warn.mockClear();
+    Object.defineProperty(document, "readyState", { configurable: true, get: () => "loading" });
+    cleanup.push(() => delete document.readyState);
+    const parsed = attach(document.createElement("neuwo-cta"));
+    await settled();
+    expect(card(parsed)).toBeNull();
+    delete document.readyState;
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+    await settled();
+    expect(card(parsed)).not.toBeNull();
+    expect(warn).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not warn about a band a script fills after an await", async () => {
+    const warn = quiet();
+    const el = document.createElement("neuwo-cta");
+    const headline = document.createElement("span");
+    headline.textContent = "Ready?";
+    el.append(headline);
+    attach(el);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const button = document.createElement("neuwo-button");
+    button.slot = "actions";
+    button.textContent = "Go";
+    el.append(button);
+    await settled();
+    expect(button.parentElement).toBe(part(el, "actions"));
+    el.status = "Sent";
+    await settled();
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it("warns about a band a script fills without an action, once its content changes", async () => {
+    const warn = quiet();
+    const el = attach(document.createElement("neuwo-cta"));
+    el.status = "Sending";
+    await settled();
+    expect(warn).not.toHaveBeenCalled();
+    el.append("Ready?");
+    await settled();
+    expect(warn).toHaveBeenCalledOnce();
+    expect(warn.mock.calls[0][0]).toContain('"actions"');
   });
 
   it("warns about served markup that has a headline but no action", async () => {

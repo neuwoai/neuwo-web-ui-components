@@ -43,6 +43,19 @@ describe("copyTemplate()", () => {
     expect(content.children).toEqual([{ region: "default" }]);
     expect(live.children).toEqual([{ region: "status" }]);
     expect(control.children).toEqual([]);
-    expect(control.props).toEqual({ class: "neuwo-copy__button", type: "button", "aria-label": "Copy" });
+    expect(control.props).toEqual({ class: "neuwo-copy__button", type: "button", title: "t", "aria-describedby": "d", "aria-label": "Copy" });
+  });
+
+  it("forwards the host's aria-* and title to the control, with label winning the accessible name", () => {
+    const control = (attrs) => render(attrs).children[1].props;
+    expect(control({ "aria-label": "Copy the code", title: "Copy to clipboard", "aria-describedby": "hint" })).toMatchObject({
+      "aria-label": "Copy the code",
+      title: "Copy to clipboard",
+      "aria-describedby": "hint",
+    });
+    expect(control({ label: "Kopioi", "aria-label": "Copy the code" })["aria-label"]).toBe("Kopioi");
+    expect(control({ "aria-labelledby": "caption" })).toMatchObject({ "aria-labelledby": "caption", "aria-label": "Copy" });
+    expect(control({ label: "Kopioi", "aria-labelledby": "caption" })).not.toHaveProperty("aria-labelledby");
+    expect(control({ label: "", "aria-label": "Copy the code" })["aria-label"]).toBe("Copy the code");
   });
 });

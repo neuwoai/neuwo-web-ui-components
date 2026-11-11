@@ -40,11 +40,12 @@ async function written(text) {
  *
  * @summary Neuwo copy-to-clipboard wrapper. Public classes: `.neuwo-copy` on the root `<div>` (`display: contents`), `.neuwo-copy__content` around the wrapped content, `.neuwo-copy__button` on the control and `.neuwo-copy__status` on the visually hidden live region. For 1.2 s after a copy the host carries `data-neuwo-state="copied"`, or `"failed"` when the clipboard refused.
  * @customElement neuwo-copy
- * @attr label - accessible name for the control (default "Copy"); set it to the visitor's language.
+ * @attr label - accessible name for the control (default "Copy"); set it to the visitor's language. It wins over an `aria-label` or `aria-labelledby` on the element, which the control otherwise takes, with `title` and every other `aria-*`.
  * @attr copied-label - what a screen reader hears after a successful copy (default "Copied").
  * @attr failed-label - what a screen reader hears when the clipboard refuses or is unavailable, or there is no text to copy (default "Copying failed").
  * @prop {string} text - read-only; the text the control writes, trimmed.
  * @slot - the content to copy.
+ * @slot status - reserved for the outcome the element announces; a child given this slot is read out with every announcement.
  * @cssprop --neuwo-copy-inset - distance from the top and end edges (default `--neuwo-space-3`).
  * @fires {CustomEvent<{ text: string }>} copied - after the text reaches the clipboard; `detail.text` is what was written.
  */

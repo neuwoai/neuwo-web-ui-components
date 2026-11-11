@@ -12,6 +12,8 @@ const markdownCss = readFileSync(join(__dirname, "../src/foundation/markdown.css
 // Declarations only: the comments name hover, colour literals and !important.
 const declarations = css.replace(/\/\*[\s\S]*?\*\//g, "");
 const COPIED = 'neuwo-copy[data-neuwo-state="copied"] > .neuwo-copy > .neuwo-copy__button';
+const FAILED = 'neuwo-copy[data-neuwo-state="failed"] > .neuwo-copy > .neuwo-copy__button';
+const fieldCss = readFileSync(join(__dirname, "../src/components/fields/field.css"), "utf8");
 const ruleFor = (selector) => {
   const found = declarations
     .split("}")
@@ -81,6 +83,20 @@ describe("copy.css recipe", () => {
     expect(rule).toMatch(/opacity:\s*1/);
     expect(rule).toMatch(/color:\s*var\(--neuwo-color-green\)/);
     expect(declarations).not.toContain("--done");
+  });
+
+  it("draws a failure as a cross in the tick's place, held solid in the error line's colour from the host state", () => {
+    const rule = ruleFor(FAILED);
+    expect(rule).toMatch(/opacity:\s*1/);
+    const [, red] = fieldCss.match(/\.neuwo-field__error \{[^}]*color:\s*(var\(--neuwo-color-[\w-]+\))/);
+    expect(rule).toContain(`color: ${red}`);
+    expect(rule).toMatch(/border-color:\s*var\(--neuwo-tint-red-20\)/);
+    const glyph = ruleFor(`${FAILED}::before`);
+    expect(glyph).toContain("mask-image:");
+    expect(glyph).toContain("-webkit-mask-image:");
+    const properties = (body) => Array.from(body.matchAll(/^\s*([\w-]+):/gm), ([, name]) => name);
+    expect(properties(glyph)).toEqual(properties(ruleFor(`${COPIED}::before`)));
+    expect(glyph).not.toBe(ruleFor(`${COPIED}::before`));
   });
 
   it("hides the status line visually while leaving it to a screen reader", () => {

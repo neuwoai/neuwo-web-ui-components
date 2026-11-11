@@ -62,8 +62,7 @@ neuwo-copy {
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='9' y='9' width='11' height='11' rx='2'/%3E%3Cpath d='M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
-/* Confirmation: the tick replaces the sheets, and the button is held solid and
-   green so the state reads without hovering. */
+/* The outcome glyph replaces the sheets and the button is held solid, so the state reads without hovering. */
 neuwo-copy[data-neuwo-state="copied"] > .neuwo-copy > .neuwo-copy__button {
   opacity: 1;
   color: var(--neuwo-color-green);
@@ -73,6 +72,17 @@ neuwo-copy[data-neuwo-state="copied"] > .neuwo-copy > .neuwo-copy__button {
 neuwo-copy[data-neuwo-state="copied"] > .neuwo-copy > .neuwo-copy__button::before {
   mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E");
   -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E");
+}
+
+neuwo-copy[data-neuwo-state="failed"] > .neuwo-copy > .neuwo-copy__button {
+  opacity: 1;
+  color: var(--neuwo-color-red);
+  border-color: var(--neuwo-tint-red-20);
+}
+
+neuwo-copy[data-neuwo-state="failed"] > .neuwo-copy > .neuwo-copy__button::before {
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 6L6 18M6 6l12 12'/%3E%3C/svg%3E");
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 6L6 18M6 6l12 12'/%3E%3C/svg%3E");
 }
 
 /* The outcome, for a screen reader only. The button's own name stays put:

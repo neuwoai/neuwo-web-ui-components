@@ -4,8 +4,8 @@ import bgDark from "../../foundation/logos/neuwo-logo--bg-dark.svg?raw";
 import bgDarkAlt from "../../foundation/logos/neuwo-logo--bg-dark-alt.svg?raw";
 import bgColour from "../../foundation/logos/neuwo-logo--bg-colour.svg?raw";
 
-const DEFAULT_VARIANT = "bg-dark";
-const DEFAULT_LABEL = "Neuwo";
+export const DEFAULT_VARIANT = "bg-dark";
+export const DEFAULT_LABEL = "Neuwo";
 
 /**
  * @param {string} svg

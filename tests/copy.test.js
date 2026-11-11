@@ -47,6 +47,19 @@ describe("<neuwo-copy>", () => {
     expect(customElements.get("neuwo-copy")).toBe(NeuwoCopy);
   });
 
+  it("forwards a host aria-label and title to the control, and follows a change to them", async () => {
+    const el = make('<neuwo-copy aria-label="Copy the code" title="Copy to clipboard"><pre>x</pre></neuwo-copy>');
+    const button = part(el, "button");
+    expect(button.getAttribute("aria-label")).toBe("Copy the code");
+    expect(button.getAttribute("title")).toBe("Copy to clipboard");
+    el.setAttribute("label", "Kopioi");
+    expect(part(el, "button")).toBe(button);
+    expect(button.getAttribute("aria-label")).toBe("Kopioi");
+    el.removeAttribute("title");
+    for (let turn = 0; turn < 3; turn++) await Promise.resolve();
+    expect(button.hasAttribute("title")).toBe(false);
+  });
+
   // Reading and tab order follow the visual order, so the control comes after
   // the content it acts on.
   it("renders into its light DOM, the content wrapper before the control and the live region", () => {
