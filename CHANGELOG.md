@@ -211,10 +211,12 @@
   the copy's label focuses the copy's control instead of the original's. Any light DOM element that adopts
   markup whose ids another element in the same document or shadow root already has does the same, for the ids
   `expand` and the elements write (`neuwo-s1-...`, `neuwo-c1-...`). Ids React's `useId` made are left as React
-  wrote them, so hydration still finds them.
+  wrote them, so hydration still finds them, and a copy a script makes of markup React rendered keeps React's
+  ids too: only the ids the library made are renamed.
 - An attribute a script sets on, or removes from, a copy of a light DOM element made with `cloneNode(true)`
-  before inserting it, such as a new `name` or a cleared `error` on an "add another" row, reaches the copy's
-  markup when it is inserted; it used to be lost until the next change.
+  before inserting it, such as a new `name`, a cleared `error` on an "add another" row, or an `aria-*`, `title`
+  or `role` the element carries onto its control, reaches the copy's markup when it is inserted; it used to be
+  lost until the next change.
 - Light DOM elements have a `refresh()` method, which fits the markup to the current attributes and
   children at once instead of in that microtask, and an `updated()` hook for component classes, which
   runs after every reconcile and after every reconnect, but not after the first render or adoption, to

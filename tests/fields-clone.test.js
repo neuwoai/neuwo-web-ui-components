@@ -101,6 +101,22 @@ describe("fields copied with cloneNode(true)", () => {
     }
   }
 
+  it("adopts and separates the ids of served fields and their copies where the page has no CSS global, as in jsdom", () => {
+    const css = Object.getOwnPropertyDescriptor(globalThis, "CSS");
+    delete globalThis.CSS;
+    try {
+      expect(globalThis.CSS).toBeUndefined();
+      const holder = form(expand(FIELDS));
+      const originals = Array.from(holder.children);
+      holder.prepend(...originals.map((host) => /** @type {Element} */ (host.cloneNode(true))));
+      holder.append(...originals.map((host) => /** @type {Element} */ (host.cloneNode(true))));
+      expectOwnIds(Array.from(holder.children));
+    } finally {
+      if (css) Object.defineProperty(globalThis, "CSS", css);
+    }
+    expect(globalThis.CSS).toBeDefined();
+  });
+
   it("keeps the copy's ids through a later change", async () => {
     const holder = form(FIELDS);
     const copies = Array.from(holder.children, (host) => /** @type {Element} */ (host.cloneNode(true)));

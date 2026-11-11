@@ -47,23 +47,22 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
 
   #dirty = false;
 
+  // The relevant attributes the markup was last known to match: at a disconnect, or at construction with content.
   /** @type {string | null} */
   #away = null;
 
   /**
-   * The observed attributes the element had when it was constructed, which an upgrade then reports one by one; null
-   * when it was constructed empty, as the parser and `createElement` construct it before adding any attribute.
+   * Null when built empty, as the parser builds it, so its first attribute callbacks are not changes.
    * @type {Map<string, string> | null}
    */
-  #initial;
+  #initial = null;
 
   constructor() {
     super();
+    if (!this.hasAttributes() && !this.hasChildNodes()) return;
     const observed = /** @type {{ observedAttributes?: string[] }} */ (this.constructor).observedAttributes ?? [];
-    this.#initial =
-      this.hasAttributes() || this.hasChildNodes()
-        ? new Map(observed.filter((name) => this.hasAttribute(name)).map((name) => [name, /** @type {string} */ (this.getAttribute(name))]))
-        : null;
+    this.#initial = new Map(observed.filter((name) => this.hasAttribute(name)).map((name) => [name, /** @type {string} */ (this.getAttribute(name))]));
+    this.#away = relevantAttributes(this);
   }
 
   connectedCallback() {
@@ -91,8 +90,8 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
     if (!owned) {
       // A move such as React's Suspense reveal reconnects served markup its attributes alone would not render.
       if (!restart || this.#changedWhileAway()) this.#write(isRendered(this, template) ? adopt : render);
-      // A change made while it waited for the parser, or a child appended before definition, is not in the adopted markup.
-      if (!restart && (this.#dirty || hasLooseContent(this))) this.#write(reconcile);
+      // A change made before the first start, or a child appended before definition, is not in the adopted markup.
+      if (!restart && this.#changedWhileAway()) this.#write(reconcile);
       this.#dirty = false;
       this.#away = null;
       this.#initial = null;

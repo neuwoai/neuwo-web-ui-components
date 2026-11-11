@@ -298,7 +298,7 @@ function separateIds(host, state) {
   const fresh = new Map();
   for (const [issued, existing] of state.ids) {
     // getElementById finds only the first, which is the host's own when a copy goes before its original.
-    if (!MINTED.test(existing) || scope.querySelectorAll(`#${CSS.escape(existing)}`).length < 2) continue;
+    if (!MINTED.test(existing) || scope.querySelectorAll(`#${existing}`).length < 2) continue;
     fresh.set(existing, issued);
     state.ids.delete(issued);
   }
