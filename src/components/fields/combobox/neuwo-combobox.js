@@ -16,6 +16,12 @@ const enabled = (row) => row.getAttribute("aria-disabled") !== "true";
 const indexOf = (row) => Number(row.getAttribute("data-index"));
 
 /**
+ * @param {HTMLElement} popup
+ * @returns {boolean | null} null where there is no popover API
+ */
+const popoverOpen = (popup) => (typeof popup.showPopover === "function" ? popup.matches(":popover-open") : null);
+
+/**
  * Fully styled dropdown that renders its list in the top layer, with optional type-to-filter. The template renders
  * the trigger, the listbox and a visually hidden native input that carries `name`, the starting value, `required`
  * and `disabled`, so the combobox submits, resets and validates with its form, before the script has loaded too.
@@ -41,6 +47,7 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   /** @type {ReturnType<typeof setTimeout> | undefined} */
   #typeaheadTimer;
   #labelClicked = false;
+  #quiet = false;
   /** @type {Node | null} */
   #labelRoot = null;
 
@@ -132,7 +139,10 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   open() {
     const trigger = this.trigger;
     const popup = this.popup;
-    if (this.#open || !trigger || !popup || this.disabled || !this.#rows().length) return;
+    if (!trigger || !popup || this.disabled || !this.#rows().length) return;
+    // Light dismiss hides the popup at the pointerup of a click on the trigger, before the click that keeps it open.
+    if (this.#open && popoverOpen(popup) !== false) return;
+    const opening = !this.#open;
     this.#open = true;
     trigger.setAttribute("aria-expanded", "true");
     if (typeof popup.showPopover === "function") {
@@ -143,6 +153,7 @@ export class NeuwoCombobox extends NeuwoFieldElement {
       }
     }
     this.#position();
+    if (!opening) return;
     if (this.#active < 0) this.#activeStart();
     window.addEventListener("scroll", this.#reposition, true);
     window.addEventListener("resize", this.#reposition);
@@ -374,7 +385,7 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     if (trigger && trigger.contains(target)) {
       if (this.#labelClicked) {
         this.#labelClicked = false;
-        trigger.focus();
+        this.#focusQuietly();
       } else if (trigger instanceof HTMLInputElement) this.open();
       else if (this.#open) this.close();
       else this.open();
@@ -384,8 +395,18 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     if (!row || !this.listbox?.contains(row) || !enabled(row)) return;
     this.commit(row.getAttribute("data-value") ?? "");
     this.close();
-    trigger?.focus();
+    this.#focusQuietly();
   };
+
+  /** Focuses the trigger without the opening that focus gives a searchable one. */
+  #focusQuietly() {
+    this.#quiet = true;
+    try {
+      this.trigger?.focus();
+    } finally {
+      this.#quiet = false;
+    }
+  }
 
   /** @param {KeyboardEvent} event */
   #onKeydown = (event) => {
@@ -469,14 +490,17 @@ export class NeuwoCombobox extends NeuwoFieldElement {
 
   /** @param {Event} event */
   #onToggle = (event) => {
-    if (event.target === this.popup && /** @type {ToggleEvent} */ (event).newState === "closed" && this.#open) this.close();
+    const popup = this.popup;
+    if (event.target !== popup || /** @type {ToggleEvent} */ (event).newState !== "closed" || !this.#open) return;
+    // The toggle of a light dismiss comes a task later, after a click on the trigger may have shown the popup again.
+    if (popoverOpen(popup) !== true) this.close();
   };
 
   /** @param {FocusEvent} event */
   #onFocus = (event) => {
     const trigger = this.trigger;
     if (event.target === this.control) trigger?.focus();
-    else if (trigger instanceof HTMLInputElement && event.target === trigger && !this.#open) {
+    else if (trigger instanceof HTMLInputElement && event.target === trigger && !this.#open && !this.#labelClicked && !this.#quiet) {
       this.#filter = "";
       this.open();
     }

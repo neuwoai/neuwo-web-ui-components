@@ -517,11 +517,11 @@ describe("<neuwo-combobox> open and close", () => {
     expect(el.isOpen).toBe(false);
   });
 
-  it("opens a searchable combobox on a label click, as focusing it does", () => {
+  it("focuses a searchable combobox without opening on a label click", () => {
     const el = make(`<neuwo-combobox searchable label="Fruit">${OPTS}</neuwo-combobox>`);
     labelOf(el).click();
     expect(document.activeElement).toBe(triggerOf(el));
-    expect(el.isOpen).toBe(true);
+    expect(el.isOpen).toBe(false);
   });
 
   it("does not open when disabled", () => {
@@ -685,6 +685,102 @@ describe("<neuwo-combobox searchable>", () => {
     const el = make(`<neuwo-combobox searchable>${FRUIT}</neuwo-combobox>`);
     triggerOf(el).dispatchEvent(new Event("focus"));
     expect(el.isOpen).toBe(true);
+  });
+
+  // The popover API a browser gives the popup: light dismiss at a pointerup outside it, each toggle event a task later.
+  function popover(el) {
+    const popup = el.popup;
+    let shown = false;
+    const toggle = (newState) =>
+      setTimeout(() => {
+        const event = new Event("toggle");
+        event.newState = newState;
+        popup.dispatchEvent(event);
+      });
+    popup.showPopover = () => {
+      if (shown) throw new DOMException("Already shown", "InvalidStateError");
+      shown = true;
+      toggle("open");
+    };
+    popup.hidePopover = () => {
+      if (!shown) throw new DOMException("Already hidden", "InvalidStateError");
+      shown = false;
+      toggle("closed");
+    };
+    popup.matches = (selector) => (selector === ":popover-open" ? shown : Element.prototype.matches.call(popup, selector));
+    const dismiss = (event) => {
+      if (shown && !popup.contains(event.target)) popup.hidePopover();
+    };
+    document.addEventListener("pointerup", dismiss, true);
+    cleanup.push(() => document.removeEventListener("pointerup", dismiss, true));
+  }
+
+  const pointer = (target, type, pointerType) => target.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, pointerType }));
+  const mouse = (target, type) => target.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, detail: 1 }));
+
+  function click(target) {
+    pointer(target, "pointerdown", "mouse");
+    mouse(target, "mousedown");
+    target.focus();
+    pointer(target, "pointerup", "mouse");
+    mouse(target, "mouseup");
+    mouse(target, "click");
+  }
+
+  function tap(target) {
+    pointer(target, "pointerdown", "touch");
+    pointer(target, "pointerup", "touch");
+    mouse(target, "mousedown");
+    target.focus();
+    mouse(target, "mouseup");
+    mouse(target, "click");
+  }
+
+  it("opens on a click on its text field and stays open, unfocused or already open", async () => {
+    const el = make(`<neuwo-combobox searchable>${FRUIT}</neuwo-combobox>`);
+    popover(el);
+    click(triggerOf(el));
+    await nextTask();
+    expect(el.isOpen).toBe(true);
+    expect(el.popup.matches(":popover-open")).toBe(true);
+    click(triggerOf(el));
+    await nextTask();
+    expect(el.isOpen).toBe(true);
+    expect(el.popup.matches(":popover-open")).toBe(true);
+  });
+
+  it("opens on a tap on its text field and stays open, unfocused or already open", async () => {
+    const el = make(`<neuwo-combobox searchable>${FRUIT}</neuwo-combobox>`);
+    popover(el);
+    tap(triggerOf(el));
+    await nextTask();
+    expect(el.isOpen).toBe(true);
+    tap(triggerOf(el));
+    await nextTask();
+    expect(el.isOpen).toBe(true);
+    expect(el.popup.matches(":popover-open")).toBe(true);
+  });
+
+  it("stays closed after a click on an option, which returns focus to its text field", async () => {
+    const el = make(`<neuwo-combobox searchable>${FRUIT}</neuwo-combobox>`);
+    popover(el);
+    click(triggerOf(el));
+    await nextTask();
+    click(rowOf(el, "banana"));
+    await nextTask();
+    expect(el.value).toBe("banana");
+    expect(document.activeElement).toBe(triggerOf(el));
+    expect(el.isOpen).toBe(false);
+  });
+
+  it("still closes when light dismiss hides the popup for a click elsewhere", async () => {
+    const el = make(`<neuwo-combobox searchable>${FRUIT}</neuwo-combobox>`);
+    popover(el);
+    click(triggerOf(el));
+    await nextTask();
+    click(document.body);
+    await nextTask();
+    expect(el.isOpen).toBe(false);
   });
 
   it("filters options as you type", () => {
