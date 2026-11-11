@@ -129,6 +129,9 @@
 - The gradient frame of the spotlight `<neuwo-cta>` now paints on hover before the script runs.
 - The spotlight `<neuwo-cta>` isolates its stacking context, so the hover glow stays behind the card
   instead of disappearing behind a page section's background.
+- `<neuwo-cta>` warns about a missing headline or action only when it connects with content, as
+  server-rendered or authored markup does. A band a script connects empty and fills later, in any task,
+  no longer logs both warnings.
 - Breaking: `<neuwo-notice>` renders into its own light DOM from one template, so a server-rendered
   notice is styled from the first paint. Its classes are prefixed: `.notice` is now `.neuwo-notice`
   (with `.neuwo-notice--{fixed|top|bottom|start|end|center|row|dismissible}`), and `.notice__content`,

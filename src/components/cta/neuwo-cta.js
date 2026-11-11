@@ -79,7 +79,8 @@ export class NeuwoCta extends NeuwoElement {
   }
 
   connect() {
-    queueMicrotask(() => this.#validate());
+    // A host that connects empty is being built by script, which may add its content in any later task.
+    if (childInfo(this, ctaTemplate).length) queueMicrotask(() => this.#validate());
   }
 
   #validate() {

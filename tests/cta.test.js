@@ -344,6 +344,30 @@ describe("<neuwo-cta>", () => {
     expect(warn).not.toHaveBeenCalled();
   });
 
+  it("does not warn about a host that connects empty and gets its content after the check would have run", async () => {
+    const warn = quiet();
+    const el = attach(document.createElement("neuwo-cta"));
+    await settled();
+    const headline = document.createElement("span");
+    headline.textContent = "Ready?";
+    const button = document.createElement("neuwo-button");
+    button.slot = "actions";
+    button.textContent = "Go";
+    el.append(headline, button);
+    await settled();
+    expect(headline.parentElement).toBe(part(el, "headline"));
+    expect(button.parentElement).toBe(part(el, "actions"));
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it("warns about served markup that has a headline but no action", async () => {
+    const warn = quiet();
+    make(renderElement("neuwo-cta", {}, [serverChild(null, "default", "Ready?", "Ready?")], ctaTemplate, idScope("neuwo-s")));
+    await settled();
+    expect(warn).toHaveBeenCalledOnce();
+    expect(warn.mock.calls[0][0]).toContain('"actions"');
+  });
+
   it("does not warn about a complete CTA, and writes nothing while it checks", async () => {
     const warn = quiet();
     const holder = document.createElement("div");
