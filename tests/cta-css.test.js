@@ -45,7 +45,15 @@ describe("cta.css recipe", () => {
     expect(ruleFor(".neuwo-cta--banner")).toContain("var(--neuwo-color-surface-solid)");
     expect(ruleFor(".neuwo-cta--banner")).toContain("var(--neuwo-radius-lg)");
     expect(ruleFor(".neuwo-cta--spotlight")).toContain("var(--neuwo-radius-2xl)");
-    expect(ruleFor(".neuwo-cta__inner")).toContain("var(--neuwo-color-surface-solid)");
+    expect(ruleFor(":where(.neuwo-cta--spotlight) .neuwo-cta__inner")).toContain("var(--neuwo-color-surface-solid)");
+  });
+
+  it("lays out the shared inner panel per variant at one class's weight: a grid in the banner, the framed card in the spotlight", () => {
+    expect(ruleFor(".neuwo-cta--banner")).not.toMatch(/display:\s*grid/);
+    expect(ruleFor(":where(.neuwo-cta--banner) .neuwo-cta__inner")).toMatch(/display: grid;[\s\S]*grid-template-columns: 1fr auto/);
+    expect(ruleFor(":where(.neuwo-cta--spotlight) .neuwo-cta__inner")).toMatch(/overflow: hidden/);
+    expect(rules.flatMap((rule) => rule.selectors).filter((selector) => /^\.neuwo-cta__(inner|body)\b/.test(selector))).toEqual([]);
+    expect(blocks("max-width: 40rem")[0]).toMatch(/:where\(\.neuwo-cta--banner\) \.neuwo-cta__inner\s*\{[^}]*grid-template-columns: 1fr;/);
   });
 
   it("isolates the spotlight, so the glow's negative z-index stays inside the card", () => {
@@ -66,7 +74,7 @@ describe("cta.css recipe", () => {
     }
     expect(declarations).not.toMatch(/@keyframes cta-|animation: cta-/);
     expect(ruleFor(".neuwo-cta--banner::after")).toContain("animation: neuwo-cta-scan 5.5s");
-    expect(ruleFor(".neuwo-cta__inner::before")).toContain("animation: neuwo-cta-scan 5.5s");
+    expect(ruleFor(":where(.neuwo-cta--spotlight) .neuwo-cta__inner::before")).toContain("animation: neuwo-cta-scan 5.5s");
     expect(declarations).toContain("var(--neuwo-cta-angle)");
     expect(declarations).toContain("conic-gradient");
   });
@@ -112,7 +120,7 @@ describe("cta.css recipe", () => {
 
   it("stills every animation, the pulse included, under reduced motion", () => {
     const [block] = blocks("prefers-reduced-motion: reduce");
-    for (const selector of [".neuwo-cta--banner::after", ".neuwo-cta__inner::before", ".neuwo-cta--spotlight:hover", ".neuwo-cta--spotlight:hover .neuwo-cta__glow", PULSE]) {
+    for (const selector of [".neuwo-cta--banner::after", ":where(.neuwo-cta--spotlight) .neuwo-cta__inner::before", ".neuwo-cta--spotlight:hover", ".neuwo-cta--spotlight:hover .neuwo-cta__glow", PULSE]) {
       expect(block, selector).toContain(selector);
     }
     expect(block).toMatch(/\{\s*animation: none;\s*\}/);

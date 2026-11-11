@@ -21,14 +21,11 @@ export function ctaTemplate(attrs, ctx) {
     attrs.status,
   );
   const actions = h("div", { class: "neuwo-cta__actions" }, region("actions"));
+  // Both variants share this ancestry, so a variant switch moves no author content and React remounts none of it.
+  const inner = h("div", { class: "neuwo-cta__inner" }, h("div", { class: "neuwo-cta__body" }, headline, sub, field, status), actions);
 
   if (attrs.variant === "spotlight") {
-    return h(
-      "div",
-      { class: "neuwo-cta neuwo-cta--spotlight" },
-      h("div", { class: "neuwo-cta__glow", "aria-hidden": "true" }),
-      h("div", { class: "neuwo-cta__inner" }, headline, sub, field, status, actions),
-    );
+    return h("div", { class: "neuwo-cta neuwo-cta--spotlight" }, h("div", { class: "neuwo-cta__glow", "aria-hidden": "true" }), inner);
   }
-  return h("div", { class: "neuwo-cta neuwo-cta--banner" }, h("div", { class: "neuwo-cta__body" }, headline, sub, field, status), actions);
+  return h("div", { class: "neuwo-cta neuwo-cta--banner" }, inner);
 }

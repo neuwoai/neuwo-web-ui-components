@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { useEffect } from "react";
 import { flushSync } from "react-dom";
 import { createRoot, hydrateRoot } from "react-dom/client";
 import { renderToStaticMarkup, renderToString } from "react-dom/server";
@@ -73,7 +74,8 @@ describe("<neuwo-cta>", () => {
     expect(el.shadowRoot).toBeNull();
     expect(el.children).toHaveLength(1);
     expect([...card(el).classList]).toEqual(["neuwo-cta", "neuwo-cta--banner"]);
-    expect(Array.from(card(el).children, (node) => node.className)).toEqual(["neuwo-cta__body", "neuwo-cta__actions"]);
+    expect(Array.from(card(el).children, (node) => node.className)).toEqual(["neuwo-cta__inner"]);
+    expect(Array.from(part(el, "inner").children, (node) => node.className)).toEqual(["neuwo-cta__body", "neuwo-cta__actions"]);
     expect(Array.from(part(el, "body").children, (node) => node.className)).toEqual([
       "neuwo-cta__headline",
       "neuwo-cta__sub",
@@ -88,8 +90,8 @@ describe("<neuwo-cta>", () => {
     expect([...card(el).classList]).toEqual(["neuwo-cta", "neuwo-cta--spotlight"]);
     expect(Array.from(card(el).children, (node) => node.className)).toEqual(["neuwo-cta__glow", "neuwo-cta__inner"]);
     expect(part(el, "glow").getAttribute("aria-hidden")).toBe("true");
-    expect(part(el, "actions").parentElement).toBe(part(el, "inner"));
-    expect(part(el, "body")).toBeNull();
+    expect(Array.from(part(el, "inner").children, (node) => node.className)).toEqual(["neuwo-cta__body", "neuwo-cta__actions"]);
+    expect(part(el, "headline").parentElement).toBe(part(el, "body"));
   });
 
   it("puts the headline, sub, field and actions in their wrappers", () => {
@@ -105,23 +107,28 @@ describe("<neuwo-cta>", () => {
     expect(isEmpty(el)).toBe(false);
   });
 
-  it("keeps the author's nodes, in their new wrappers, when the variant changes and changes back", () => {
+  it("keeps the author's nodes and their wrappers in place when the variant changes and changes back", () => {
     const el = make(FULL());
     const accent = el.querySelector("[data-accent]");
     const sub = el.querySelector('[slot="sub"]');
     const button = el.querySelector('[slot="actions"]');
+    const inner = part(el, "inner");
+    const wrappers = ["headline", "sub", "actions"].map((name) => part(el, name));
     el.variant = "spotlight";
-    expect(part(el, "inner")).not.toBeNull();
+    expect([...card(el).classList]).toEqual(["neuwo-cta", "neuwo-cta--spotlight"]);
+    expect(part(el, "inner")).toBe(inner);
+    same(["headline", "sub", "actions"].map((name) => part(el, name)), wrappers);
     expect(accent.parentElement).toBe(part(el, "headline"));
     expect(sub.parentElement).toBe(part(el, "sub"));
     expect(button.parentElement).toBe(part(el, "actions"));
-    expect(part(el, "actions").parentElement).toBe(part(el, "inner"));
     el.variant = "";
     expect(el.hasAttribute("variant")).toBe(false);
     expect([...card(el).classList]).toEqual(["neuwo-cta", "neuwo-cta--banner"]);
+    expect(part(el, "glow")).toBeNull();
+    expect(part(el, "inner")).toBe(inner);
+    same(["headline", "sub", "actions"].map((name) => part(el, name)), wrappers);
     expect(accent.parentElement).toBe(part(el, "headline"));
     expect(button.parentElement).toBe(part(el, "actions"));
-    expect(part(el, "actions").parentElement).toBe(card(el));
     expect(part(el, "headline").textContent).toBe("Ready to go?");
   });
 
@@ -289,7 +296,7 @@ describe("<neuwo-cta>", () => {
     await settled();
     expect(sub.isConnected).toBe(true);
     expect(sub.parentElement).toBe(part(el, "sub"));
-    expect(part(el, "inner").children).toHaveLength(5);
+    expect(part(el, "body").children).toHaveLength(4);
     expect(el.querySelectorAll("p:not([slot])")).toHaveLength(1);
   });
 
@@ -423,6 +430,44 @@ describe("<neuwo-cta> under React", () => {
     expect(card(el)).toBe(first);
     expect(error).not.toHaveBeenCalled();
     expect(warn).not.toHaveBeenCalled();
+  });
+
+  it("keeps author children mounted across a variant switch", () => {
+    quiet();
+    let mounts = 0;
+    let unmounts = 0;
+    const Headline = () => {
+      useEffect(() => {
+        mounts++;
+        return () => void unmounts++;
+      }, []);
+      return jsx("span", { children: "Ready?" });
+    };
+    const container = attach(document.createElement("div"));
+    const root = createRoot(container);
+    cleanup.push(() => root.unmount());
+    const tree = (variant) =>
+      jsxs("neuwo-cta", {
+        variant,
+        children: [
+          jsx(Headline, {}, "headline"),
+          jsx("span", { slot: "sub", children: "Sub" }, "sub"),
+          jsx("input", { slot: "field", type: "email", name: "email" }, "field"),
+          jsx("neuwo-button", { slot: "actions", children: "Go" }, "go"),
+        ],
+      });
+    flushSync(() => root.render(tree("banner")));
+    const el = container.firstElementChild;
+    const authored = () => [part(el, "headline").firstElementChild, ...el.querySelectorAll("[slot]")];
+    const before = authored();
+    expect(before).toHaveLength(4);
+    for (const variant of ["spotlight", "banner", "spotlight"]) {
+      flushSync(() => root.render(tree(variant)));
+      expect([...card(el).classList]).toEqual(["neuwo-cta", `neuwo-cta--${variant}`]);
+      same(authored(), before);
+    }
+    expect(mounts).toBe(1);
+    expect(unmounts).toBe(0);
   });
 
   it("renders and hydrates a block-level sub inside its wrapper with no nesting or hydration error", async () => {

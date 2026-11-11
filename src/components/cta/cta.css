@@ -127,14 +127,17 @@ neuwo-cta[pulse][intensity="l"] .neuwo-cta__actions > neuwo-button:first-of-type
 .neuwo-cta--banner {
   position: relative;
   overflow: hidden;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: var(--neuwo-space-8);
-  align-items: center;
   padding: var(--neuwo-space-8) var(--neuwo-space-10);
   background: var(--neuwo-color-surface-solid);
   border-radius: var(--neuwo-radius-lg);
   transition: box-shadow var(--neuwo-transition-base);
+}
+
+:where(.neuwo-cta--banner) .neuwo-cta__inner {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--neuwo-space-8);
+  align-items: center;
 }
 
 .neuwo-cta--banner::after {
@@ -171,9 +174,11 @@ neuwo-cta[pulse][intensity="l"] .neuwo-cta__actions > neuwo-button:first-of-type
 
 @media (max-width: 40rem) {
   .neuwo-cta--banner {
-    grid-template-columns: 1fr;
     text-align: center;
     padding: var(--neuwo-space-6);
+  }
+  :where(.neuwo-cta--banner) .neuwo-cta__inner {
+    grid-template-columns: 1fr;
     gap: var(--neuwo-space-5);
   }
   .neuwo-cta--banner .neuwo-cta__actions {
@@ -243,7 +248,8 @@ neuwo-cta[pulse][intensity="l"] .neuwo-cta__actions > neuwo-button:first-of-type
   }
 }
 
-.neuwo-cta__inner {
+/* :where() keeps the panel at one class's weight, so `neuwo-cta .neuwo-cta__inner` restyles it. */
+:where(.neuwo-cta--spotlight) .neuwo-cta__inner {
   position: relative;
   overflow: hidden;
   padding: var(--neuwo-space-20) var(--neuwo-space-8) var(--neuwo-space-16);
@@ -252,7 +258,7 @@ neuwo-cta[pulse][intensity="l"] .neuwo-cta__actions > neuwo-button:first-of-type
   border-radius: calc(var(--neuwo-radius-2xl) - 1px);
 }
 
-.neuwo-cta__inner::before {
+:where(.neuwo-cta--spotlight) .neuwo-cta__inner::before {
   content: "";
   position: absolute;
   top: 0;
@@ -286,7 +292,7 @@ neuwo-cta[pulse][intensity="l"] .neuwo-cta__actions > neuwo-button:first-of-type
 }
 
 @media (min-width: 48rem) {
-  .neuwo-cta__inner {
+  :where(.neuwo-cta--spotlight) .neuwo-cta__inner {
     padding: var(--neuwo-space-24) var(--neuwo-space-12) var(--neuwo-space-20);
   }
   .neuwo-cta--spotlight .neuwo-cta__headline {
@@ -296,7 +302,7 @@ neuwo-cta[pulse][intensity="l"] .neuwo-cta__actions > neuwo-button:first-of-type
 
 @media (prefers-reduced-motion: reduce) {
   .neuwo-cta--banner::after,
-  .neuwo-cta__inner::before,
+  :where(.neuwo-cta--spotlight) .neuwo-cta__inner::before,
   .neuwo-cta--spotlight:hover,
   .neuwo-cta--spotlight:hover .neuwo-cta__glow,
   neuwo-cta[pulse] .neuwo-cta__actions > neuwo-button:first-of-type {

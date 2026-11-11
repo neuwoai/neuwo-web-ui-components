@@ -26,28 +26,28 @@ const COLUMN =
   '<div class="neuwo-cta__sub"></div>' +
   '<div class="neuwo-cta__field neuwo-cta__field--empty"></div>' +
   STATUS;
+const INNER = `<div class="neuwo-cta__inner"><div class="neuwo-cta__body">${COLUMN}</div><div class="neuwo-cta__actions"></div></div>`;
 
 describe("ctaTemplate()", () => {
   it("is registered for neuwo-cta", () => {
     expect(templates["neuwo-cta"]).toBe(ctaTemplate);
   });
 
-  it("renders the banner by default: the text column in a body, then the actions beside it", () => {
-    expect(toHTML(render())).toBe(
-      '<div class="neuwo-cta neuwo-cta--banner">' +
-        `<div class="neuwo-cta__body">${COLUMN}</div>` +
-        '<div class="neuwo-cta__actions"></div>' +
-        "</div>",
+  it("renders the banner by default: an inner panel with the text column in a body, then the actions beside it", () => {
+    expect(toHTML(render())).toBe(`<div class="neuwo-cta neuwo-cta--banner">${INNER}</div>`);
+  });
+
+  it("renders the spotlight as a hidden glow and the same inner panel", () => {
+    expect(toHTML(render({ variant: "spotlight" }))).toBe(
+      `<div class="neuwo-cta neuwo-cta--spotlight"><div class="neuwo-cta__glow" aria-hidden="true"></div>${INNER}</div>`,
     );
   });
 
-  it("renders the spotlight as a hidden glow and an inner panel that holds the actions too", () => {
-    expect(toHTML(render({ variant: "spotlight" }))).toBe(
-      '<div class="neuwo-cta neuwo-cta--spotlight">' +
-        '<div class="neuwo-cta__glow" aria-hidden="true"></div>' +
-        `<div class="neuwo-cta__inner">${COLUMN}<div class="neuwo-cta__actions"></div></div>` +
-        "</div>",
-    );
+  it("gives both variants the same inner panel, so a variant switch moves no wrapper", () => {
+    const children = [text("x"), child("sub"), child("field"), child("actions")];
+    for (const attrs of [{}, { status: "Sent", "status-state": "error", "heading-level": "3" }]) {
+      expect(find(render({ ...attrs, variant: "spotlight" }, children), "neuwo-cta__inner")).toEqual(find(render(attrs, children), "neuwo-cta__inner"));
+    }
   });
 
   it.each([
@@ -133,6 +133,7 @@ describe("ctaTemplate()", () => {
     expect(html).toBe(
       "<neuwo-cta>" +
         '<div class="neuwo-cta neuwo-cta--banner">' +
+        '<div class="neuwo-cta__inner">' +
         '<div class="neuwo-cta__body">' +
         '<h2 class="neuwo-cta__headline">\n  Ready?\n  \n</h2>' +
         '<div class="neuwo-cta__sub"></div>' +
@@ -140,6 +141,7 @@ describe("ctaTemplate()", () => {
         STATUS +
         "</div>" +
         '<div class="neuwo-cta__actions"><button slot="actions">Go</button></div>' +
+        "</div>" +
         "</div>" +
         "</neuwo-cta>",
     );

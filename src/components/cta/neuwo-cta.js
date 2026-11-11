@@ -25,7 +25,7 @@ if (typeof CSS !== "undefined" && CSS.registerProperty) {
  * Submission stays with the consumer: wrap the band in a `<form>` and a
  * `<neuwo-button type="submit">` among the actions drives it.
  *
- * @summary Neuwo call-to-action band. Public classes: `.neuwo-cta` on the band, with `--banner` or `--spotlight`; `.neuwo-cta__body` (banner) or `.neuwo-cta__glow` and `.neuwo-cta__inner` (spotlight) inside it; `.neuwo-cta__headline`, `.neuwo-cta__sub`, `.neuwo-cta__field` and `.neuwo-cta__actions` around the author's content, with `.neuwo-cta__field--empty` on a field wrapper nothing fills; `.neuwo-cta__status` on the status line, with `--success` or `--error`.
+ * @summary Neuwo call-to-action band. Public classes: `.neuwo-cta` on the band, with `--banner` or `--spotlight`; `.neuwo-cta__inner` inside it in both variants, after `.neuwo-cta__glow` in the spotlight, holding `.neuwo-cta__body` and then `.neuwo-cta__actions`; `.neuwo-cta__headline`, `.neuwo-cta__sub`, `.neuwo-cta__field` and `.neuwo-cta__actions` around the author's content, with `.neuwo-cta__field--empty` on a field wrapper nothing fills; `.neuwo-cta__status` on the status line, with `--success` or `--error`.
  * @customElement neuwo-cta
  * @attr {banner|spotlight} variant - layout and chrome (default banner).
  * @attr {boolean} pulse - radiate a synchronised pulse ring on the first action button, any variant; honours prefers-reduced-motion.

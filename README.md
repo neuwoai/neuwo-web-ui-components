@@ -814,8 +814,9 @@ properties, or target the children you passed in.
 | `.neuwo-notice__dismiss` | the close button, while `dismissible` |
 | `.neuwo-cta` | the band's root `<div>` |
 | `.neuwo-cta--banner`, `.neuwo-cta--spotlight` | the band, by `variant` |
-| `.neuwo-cta__body` | the banner's text column, beside the actions |
-| `.neuwo-cta__glow`, `.neuwo-cta__inner` | the spotlight's blurred halo and the panel that holds everything else |
+| `.neuwo-cta__inner` | the panel inside the band in both variants, which holds the text column and then the actions; the banner lays them out side by side |
+| `.neuwo-cta__body` | the text column, around the headline, sub, field and status |
+| `.neuwo-cta__glow` | the spotlight's blurred halo, before the panel |
 | `.neuwo-cta__headline` | the `<h2>` (or the `heading-level` tag) around the headline |
 | `.neuwo-cta__sub`, `.neuwo-cta__field`, `.neuwo-cta__actions` | the wrappers around the `slot="sub"`, `slot="field"` and `slot="actions"` children |
 | `.neuwo-cta__field--empty` | the field wrapper while nothing fills it, taken out of the flow |
