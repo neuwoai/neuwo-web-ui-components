@@ -307,8 +307,7 @@ describe("within in the React adapter", () => {
     pickTemplate.within = "x-group";
     const { seen, wrapped } = spy(pickTemplate);
     const create = createRuntime({ ...withinTemplates, "x-pick": wrapped });
-    // React warns about a controlled radio with no onChange, as it does for its own.
-    vi.spyOn(console, "error").mockImplementation(() => {});
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
     const onChange = () => {};
     const cases = [
       [{ value: "m", onChange }, { name: "size", value: "m" }, true, true],
@@ -330,6 +329,9 @@ describe("within in the React adapter", () => {
         expect(typeof fiberOf(host.querySelector(".x-pick__input")).memoizedProps.onChange, label).toBe(handled ? "function" : "undefined");
       }
     }
+    const messages = errors.mock.calls.map(([message]) => String(message));
+    expect(messages.length).toBeGreaterThan(0);
+    expect(messages.filter((message) => !message.startsWith("You provided a `checked` prop to a form field without an `onChange` handler"))).toEqual([]);
   });
 
   it("marks a group host controlled by its value alone, though its template has no form control", async () => {
@@ -451,9 +453,7 @@ describe("within in the React adapter", () => {
     const [message] = warn.mock.calls[0];
     expect(message).toContain("<x-item>");
     expect(message).toContain("<x-group>");
-    expect(message).toMatch(/component of your own/);
-    expect(message).toMatch(/portal/);
-    expect(message).toMatch(/another React root/);
+    expect(message).toMatch(/a component of your own, which the runtime cannot see into, through a portal, or in another React root/);
     expect(message).not.toMatch(/Suspense/);
   });
 

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { act, useState } from "react";
+import { Activity, Profiler, StrictMode, Suspense, act, createContext, useState } from "react";
 import { createRoot, hydrateRoot } from "react-dom/client";
 import { renderToString } from "react-dom/server";
 import "../src/index.js";
@@ -289,5 +289,27 @@ describe("<neuwo-segmented> with options from a component", () => {
     for (const name of ["a", "b"]) renderToString(dev.jsx("neuwo-segmented", { label: "View", name, children: dev.jsx(Options, {}) }));
     expect(warn).toHaveBeenCalledTimes(1);
     expect(warn.mock.calls[0][0]).toContain("<neuwo-segmented>");
+  });
+
+  it("lists options inside React's own wrappers and context providers and warns nothing", () => {
+    const warn = vi.spyOn(console, "warn");
+    const errors = vi.spyOn(console, "error");
+    const dev = createRuntime(templates, { dev: true });
+    const Theme = createContext("light");
+    /** @type {Array<[string, (children: unknown) => unknown]>} */
+    const wrappers = [
+      ["StrictMode", (children) => dev.jsx(StrictMode, { children })],
+      ["Suspense", (children) => dev.jsx(Suspense, { fallback: null, children })],
+      ["Profiler", (children) => dev.jsx(Profiler, { id: "p", onRender() {}, children })],
+      ["Activity", (children) => dev.jsx(Activity, { mode: "visible", children })],
+      ["a context provider", (children) => dev.jsx(Theme, { value: "dark", children })],
+    ];
+    for (const [name, wrap] of wrappers) {
+      const options = VIEWS.slice(0, 2).map(({ value, label }) => dev.jsx("option", { value, children: label }, value));
+      const { host } = render(dev.jsx("neuwo-segmented", { label: "View", name: "view", children: wrap(options) }));
+      expect(buttonsOf(host).map((button) => `${button.dataset.value}:${button.textContent}`), name).toEqual(["visual:Visual", "json:JSON"]);
+    }
+    expect(warn).not.toHaveBeenCalled();
+    expect(errors).not.toHaveBeenCalled();
   });
 });

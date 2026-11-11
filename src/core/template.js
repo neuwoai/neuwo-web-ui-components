@@ -2,6 +2,7 @@
 /** @typedef {TemplateNode | string | { region: string } | { raw: string }} TemplateChild */
 /**
  * An author child. An element's `children` describe its own child nodes the same way, whitespace-only text left out.
+ * Through React, a wrapper that renders its children as they are, such as `Suspense`, is described by its children.
  * @typedef {{ tag: string | null, attrs: Record<string, string>, text: string, slot: string, children?: ChildInfo[] }} ChildInfo
  */
 /** @typedef {{ id: (suffix: string) => string, children: ChildInfo[], within: Record<string, string> | null }} TemplateContext */

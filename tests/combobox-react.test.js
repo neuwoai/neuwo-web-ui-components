@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { Activity, Fragment, act, startTransition, useState } from "react";
+import { Activity, Fragment, Profiler, StrictMode, Suspense, act, createContext, startTransition, useState } from "react";
 import { createRoot, hydrateRoot } from "react-dom/client";
 import { renderToString } from "react-dom/server";
 import "../src/index.js";
@@ -633,6 +633,51 @@ describe("<neuwo-combobox> with options from a component", () => {
     const [message] = warn.mock.calls[0];
     expect(message).toContain("<neuwo-combobox>");
     expect(message).toContain("<option>");
+    expect(message).toContain("<optgroup>");
     expect(message).toMatch(/component of your own/);
+    expect(message).toMatch(/only fragments, context providers and React's own wrappers/);
+    expect(message).not.toMatch(/elements and fragments/);
+  });
+
+  it("lists options inside React's own wrappers and context providers, opens, and warns nothing", () => {
+    const warn = vi.spyOn(console, "warn");
+    const errors = vi.spyOn(console, "error");
+    const dev = createRuntime(templates, { dev: true });
+    const Theme = createContext("light");
+    /** @type {Array<[string, (children: unknown) => unknown]>} */
+    const wrappers = [
+      ["StrictMode", (children) => dev.jsx(StrictMode, { children })],
+      ["Suspense", (children) => dev.jsx(Suspense, { fallback: null, children })],
+      ["Profiler", (children) => dev.jsx(Profiler, { id: "p", onRender() {}, children })],
+      ["Activity", (children) => dev.jsx(Activity, { mode: "visible", children })],
+      ["a context provider", (children) => dev.jsx(Theme, { value: "dark", children })],
+    ];
+    for (const [name, wrap] of wrappers) {
+      const options = COUNTRIES.slice(0, 2).map(({ value, label }) => dev.jsx("option", { value, children: label }, value));
+      const { host } = render(dev.jsx("neuwo-combobox", { name: "p", children: wrap(options) }));
+      expect(Array.from(host.querySelectorAll(".neuwo-combobox__option"), (row) => `${row.dataset.value}:${row.textContent}`), name).toEqual(["fi:Finland", "fr:France"]);
+      act(() => host.open());
+      expect(host.isOpen, name).toBe(true);
+      act(() => host.close());
+    }
+    expect(warn).not.toHaveBeenCalled();
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it("warns once, about the label, when an option's label comes from a component, and still lists the option", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const dev = createRuntime(templates, { dev: true });
+    const Label = ({ text }) => text;
+    const options = ["a", "b"].map((value) => dev.jsx("option", { value, children: dev.jsx(Label, { text: value.toUpperCase() }) }, value));
+    for (const name of ["p", "q"]) {
+      const { host } = render(dev.jsx("neuwo-combobox", { name, children: options }));
+      expect(Array.from(host.querySelectorAll(".neuwo-combobox__option"), (row) => `${row.dataset.value}:${row.textContent}`)).toEqual(["a:", "b:"]);
+    }
+    expect(warn).toHaveBeenCalledTimes(1);
+    const [message] = warn.mock.calls[0];
+    expect(message).toContain("<neuwo-combobox>");
+    expect(message).toMatch(/label/);
+    expect(message).toMatch(/no text/);
+    expect(message).not.toMatch(/not listed/);
   });
 });

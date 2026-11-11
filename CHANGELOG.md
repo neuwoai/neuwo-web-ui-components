@@ -111,8 +111,8 @@
   an uncontrolled group, and `onChange` fires once per pick with the radio's input as `event.target`.
   The radios get the group's attributes inside elements, fragments, context providers, `Suspense` and
   its fallback, `StrictMode`, `Profiler`, `Activity` and other Neuwo elements, but not inside a
-  component of your own, through a portal or in another React root, which development builds warn
-  about. Radios a Server Component passes to a Client Component that renders the group arrive already
+  component of your own, through a portal or in another React root, which client development builds
+  warn about. Radios a Server Component passes to a Client Component that renders the group arrive already
   rendered, outside the group, so they get none of its attributes; development builds warn about it.
   React Hook Form's `register` goes on the group, which it reads through `value` and resets by setting
   it. The JSX types give `<neuwo-radio>` `name`, `value`, `checked`, `defaultChecked`, `disabled`,
@@ -274,8 +274,10 @@
   picking the option it resolved to fires no `change`. `defaultValue`, and `value` from a Server Component,
   give an uncontrolled combobox that keeps the user's pick across re-renders, including ones that change its
   placeholder or an option's label. Options a component of your own renders inside the combobox are never
-  listed, as the JSX runtime reads the options before that component renders; development builds warn about
-  it, for `<neuwo-segmented>` too.
+  listed, as the JSX runtime reads the options before that component renders, while options inside
+  fragments, context providers and React's own wrappers such as `Suspense` are; an option whose label a
+  component renders shows an empty row. Client development builds warn about both, for `<neuwo-segmented>`
+  too.
 - Breaking: `<neuwo-cta>` renders into its own light DOM from one template, so a server-rendered band
   is styled from the first paint. Its classes are prefixed: `.cta` is now `.neuwo-cta` (with
   `.neuwo-cta--{banner|spotlight}`), and `.cta__body`, `.cta__glow`, `.cta__inner`, `.cta__headline`,
@@ -410,8 +412,8 @@
   such element: in `expand`, in the browser, and through the JSX runtime, which reaches it through
   elements, fragments, context providers, `Suspense` and its fallback, `StrictMode`, `Profiler`,
   `Activity` and other Neuwo elements but not inside a component of your own, through a portal or in
-  another React root, and warns about that in development. `renderElement` takes them as an optional last
-  argument, and an element refreshes the descendants that read it when it changes.
+  another React root, and warns about that in client development builds. `renderElement` takes them as an
+  optional last argument, and an element refreshes the descendants that read it when it changes.
 - `components/reset.css`, the reset for the light DOM components, is published and leads the component
   styles in `neuwo-components.css`.
 - Page element rules such as `button { text-transform: uppercase }`, `span { line-height: 3 }` or

@@ -147,16 +147,23 @@ function lend(node, tag, within, rendered) {
 }
 
 /**
- * Whether the items hold, at any depth, something a template cannot read, such as a component of the app's own.
+ * What a list of options holds that its template cannot read, such as a component of the app's own: among the
+ * options or in an `<optgroup>`, where it hides options, or in an `<option>`, where it hides the label.
  * @param {ReactNode[]} items
- * @returns {boolean}
+ * @param {{ options: boolean, labels: boolean }} [found]
+ * @param {boolean} [label] whether the items are an option's content
+ * @returns {{ options: boolean, labels: boolean }}
  */
-function hasOpaque(items) {
-  return items.some((item) => {
-    if (typeof item !== "object" || item === null) return false;
+function unreadIn(items, found = { options: false, labels: false }, label = false) {
+  for (const item of items) {
+    if (typeof item !== "object" || item === null) continue;
     const el = asElement(item);
-    return !el || tagOf(el) === null || hasOpaque(flatten(/** @type {ReactNode} */ (el.props.children)));
-  });
+    if (!el || !isTransparent(el)) found[label ? "labels" : "options"] = true;
+    else if (label || tagOf(el) === null || el.type === "optgroup" || el.type === "option") {
+      unreadIn(flatten(/** @type {ReactNode} */ (el.props.children)), found, label || el.type === "option");
+    }
+  }
+  return found;
 }
 
 /**
@@ -167,10 +174,12 @@ function textOf(node) {
   if (Array.isArray(node)) return node.map(textOf).join("");
   if (typeof node === "string" || typeof node === "number" || typeof node === "bigint") return String(node);
   const el = asElement(node);
-  return el && (el.type === Fragment || tagOf(el) !== null) ? textOf(/** @type {ReactNode} */ (el.props.children)) : "";
+  return el && isTransparent(el) ? textOf(/** @type {ReactNode} */ (el.props.children)) : "";
 }
 
 /**
+ * Describes the items as a template sees them, through the wrappers `lend()` passes through, whose children are
+ * placed where the wrapper is.
  * @param {ReactNode[]} items
  * @returns {ChildInfo[]}
  */
@@ -183,6 +192,9 @@ function describe(items) {
     if (tag) {
       const children = /** @type {ReactNode} */ (el.props.children);
       info.push({ tag, attrs: normalizeProps(el.props), text: textOf(children), slot: slotOf(el), children: describe(flatten(children)) });
+    } else if (el && isTransparent(el)) {
+      const slot = slotOf(el);
+      for (const child of describe(flatten(/** @type {ReactNode} */ (el.props.children)))) info.push({ ...child, slot });
     } else if (typeof item === "object") info.push({ tag: null, attrs: {}, text: "", slot: slotOf(item) });
     else if (String(item).trim() !== "") info.push({ tag: null, attrs: {}, text: String(item), slot: DEFAULT_REGION });
   }
@@ -433,7 +445,7 @@ function hostFor(tag, template, { markHost, server, readers, dev, warned }) {
     console.warn(
       `<${tag}> is inside <${enclosing}> in the page but was rendered without its attributes, as the JSX runtime found no ` +
         `<${enclosing}> around it in React's tree. That happens inside a component of your own, which the runtime cannot ` +
-        `see into, through a portal, and in another React root. Render <${tag}> inside <${enclosing}> in the same component.`,
+        `see into, through a portal, or in another React root. Render <${tag}> inside <${enclosing}> in the same component.`,
     );
   };
   /** @param {string} reader */
@@ -453,15 +465,25 @@ function hostFor(tag, template, { markHost, server, readers, dev, warned }) {
    * @param {ReactNode[]} items
    */
   const unlisted = (node, items) => {
-    const key = `options in ${tag}`;
-    if (warned.has(key) || wrapperOf(node, DEFAULT_REGION)?.tag !== "select") return;
-    if (!hasOpaque(items.filter((item) => slotOf(item) === DEFAULT_REGION))) return;
-    warned.add(key);
-    console.warn(
-      `<${tag}> lists the <option> and <optgroup> elements written inside it, but a component of your own renders ` +
-        `some of its content after <${tag}> has read it, so the options that component renders are not listed. Write ` +
-        `the options inside <${tag}> in the same component, with only elements and fragments around them.`,
-    );
+    const options = `options in ${tag}`;
+    const labels = `option labels in ${tag}`;
+    if ((warned.has(options) && warned.has(labels)) || wrapperOf(node, DEFAULT_REGION)?.tag !== "select") return;
+    const unread = unreadIn(items.filter((item) => slotOf(item) === DEFAULT_REGION));
+    if (unread.options && !warned.has(options)) {
+      warned.add(options);
+      console.warn(
+        `<${tag}> lists the <option> and <optgroup> elements written inside it, with only fragments, context providers ` +
+          `and React's own wrappers, such as Suspense, around them. A component of your own renders its options after ` +
+          `<${tag}> has read them, so they are not listed. Write the options in place inside <${tag}>, in the same component.`,
+      );
+    }
+    if (unread.labels && !warned.has(labels)) {
+      warned.add(labels);
+      console.warn(
+        `An <option> in <${tag}> takes its label from a component of your own, which renders after <${tag}> has read ` +
+          `the label, so the option's row shows no text. Write the option's label as text.`,
+      );
+    }
   };
   /** @param {Record<string, unknown>} props */
   function NeuwoHost(props) {
@@ -500,8 +522,8 @@ function hostFor(tag, template, { markHost, server, readers, dev, warned }) {
  *   Components: no form control is controlled, the element itself gets no `checked`, and no `value` unless its control
  *   is an input whose value names it, such as a radio, and the adapter adds no function prop. `dev` warns once per tag
  *   when a reader mounts inside its `within` element without its attributes, once per reader and enclosing tag when
- *   that element is handed the reader already rendered, and once per tag when an element that keeps its options in a
- *   `<select>` is given something there it cannot read, such as a component of the app's own.
+ *   that element is handed the reader already rendered, and once per tag each when an element that keeps its options
+ *   in a `<select>` is given options, or an option's label, that a component of the app's own renders.
  * @returns {{ jsx: typeof reactJsx, jsxs: typeof reactJsxs, jsxDEV: typeof reactJsxDEV }}
  */
 export function createRuntime(registry, { markHost = true, server = false, dev = false } = {}) {
