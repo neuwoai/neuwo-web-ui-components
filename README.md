@@ -587,12 +587,13 @@ value props:
   `event.target.value` is the new value and `event.target.name` the group's.
 - `defaultValue` gives an uncontrolled group with a starting value, which keeps the user's pick
   across re-renders. In Server Components `value` is the starting value.
-- The radios may sit in your markup inside the group, in elements, fragments, `Suspense` or
-  other Neuwo elements, and get the group's `name` and value there. A radio inside a component of
-  your own is out of the group's reach, since the JSX runtime cannot see into it: it renders on
-  its own, and development builds warn about it, so write the radios in place inside the group.
-  One edge remains: a radio inside your own component, inside `Suspense`, inside a group, can
-  mismatch on hydration when it is revealed.
+- The radios may sit in your markup inside the group, in elements, fragments, context
+  providers, `Suspense`, `StrictMode`, `Profiler`, `Activity` or other Neuwo elements, and get the
+  group's `name` and value there. A radio inside a component of your own is out of the group's
+  reach, since the JSX runtime cannot see into it: it renders on its own, and development builds
+  warn about it, so write the radios in place inside the group. One edge remains: a radio inside
+  your own component, inside `Suspense`, inside a group, can mismatch on hydration when it is
+  revealed.
 - In Next.js, radios a Server Component passes as `children` to a Client Component that renders
   the group are rendered on the server, outside the group, so they get none of its attributes: no
   `name`, value, `required` or `form`, and the browser does not group them. Development builds

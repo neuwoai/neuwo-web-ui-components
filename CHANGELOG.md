@@ -109,8 +109,8 @@
 - Through the JSX runtime, `<neuwo-radio-group>` behaves like a group of React's own radios: `value`
   makes every radio controlled, so a pick the `onChange` handler ignores is undone, `defaultValue` starts
   an uncontrolled group, and `onChange` fires once per pick with the radio's input as `event.target`.
-  The radios get the group's attributes inside elements, fragments, `Suspense` and other Neuwo elements,
-  but not inside a component of your own. Radios a Server Component passes to a Client Component that
+  The radios get the group's attributes inside elements, fragments, context providers, `Suspense`,
+  `StrictMode`, `Profiler`, `Activity` and other Neuwo elements, but not inside a component of your own. Radios a Server Component passes to a Client Component that
   renders the group arrive already rendered, outside the group, so they get none of its attributes;
   development builds warn about it. React Hook Form's `register` goes on the group, which it reads
   through `value` and resets by setting it. The JSX types give `<neuwo-radio>` `name`, `value`,
@@ -395,8 +395,8 @@
   cannot know.
 - A component template can name an enclosing tag as its `within` to read the attributes of the nearest such
   element: in `expand`, in the browser, and through the JSX runtime, which reaches it through elements,
-  fragments, `Suspense` and other Neuwo elements but not inside a component of your own, and warns about
-  that in development. `renderElement` takes them as an optional last argument, and an element refreshes
+  fragments, context providers, `Suspense`, `StrictMode`, `Profiler`, `Activity` and other Neuwo elements
+  but not inside a component of your own, and warns about that in development. `renderElement` takes them as an optional last argument, and an element refreshes
   the descendants that read it when it changes.
 - `components/reset.css`, the reset for the light DOM components, is published and leads the component
   styles in `neuwo-components.css`.

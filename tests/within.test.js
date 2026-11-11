@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { Fragment, Suspense, act, createElement, useState } from "react";
+import { Activity, Fragment, Profiler, StrictMode, Suspense, act, createContext, createElement, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { renderToStaticMarkup, renderToString } from "react-dom/server";
 import { adopt, reconcile, render } from "../src/core/adapters/dom.js";
@@ -95,6 +95,8 @@ function viaDom(html) {
  */
 const reader = (create, label = "One", key = undefined) => create.jsx("x-item", { children: label }, key);
 
+const Theme = createContext("light");
+
 /**
  * Where a reader sits inside `<x-group name="size" value="m">`, as markup and as React children, with what each
  * reader shows.
@@ -111,6 +113,11 @@ const WRAPPERS = [
     ["size=m", "size=m"],
   ],
   ["in a <Suspense>", `<x-item>One</x-item>`, (create) => create.jsx(Suspense, { children: reader(create) }), ["size=m"]],
+  ["in a context provider", `<x-item>One</x-item>`, (create) => create.jsx(Theme, { value: "dark", children: reader(create) }), ["size=m"]],
+  ["in a context's <Provider>", `<x-item>One</x-item>`, (create) => create.jsx(Theme.Provider, { value: "dark", children: reader(create) }), ["size=m"]],
+  ["in a <StrictMode>", `<x-item>One</x-item>`, (create) => create.jsx(StrictMode, { children: reader(create) }), ["size=m"]],
+  ["in a <Profiler>", `<x-item>One</x-item>`, (create) => create.jsx(Profiler, { id: "plan", onRender() {}, children: reader(create) }), ["size=m"]],
+  ["in an <Activity>", `<x-item>One</x-item>`, (create) => create.jsx(Activity, { mode: "visible", children: reader(create) }), ["size=m"]],
   [
     "in a nested array in a <div>",
     `<div><x-item>A</x-item><x-item>B</x-item><x-item>C</x-item></div>`,

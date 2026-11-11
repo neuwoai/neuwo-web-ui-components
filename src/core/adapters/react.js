@@ -37,6 +37,11 @@ const FIELDS = new Set(["input", "select", "textarea"]);
 // React DOM's hasReadOnlyValue: an <input> of these types takes `value` as an attribute, never as state.
 const FIXED_VALUE = new Set(["button", "checkbox", "hidden", "image", "radio", "reset", "submit"]);
 
+// React's own components that render their children as they are; React 19.0 and 19.1 name no Activity.
+/** @type {Set<unknown>} */
+const PASS_THROUGH = new Set([Fragment, React.Suspense, React.StrictMode, React.Profiler, React.Activity].filter((type) => type !== undefined));
+const CONTEXT = Symbol.for("react.context");
+
 // React's own event props are camel case, so an `on` prop in lower case names one of the element's events.
 const OWN_EVENT = /^on[a-z]/;
 const CAPTURE = "Capture";
@@ -85,11 +90,16 @@ function flatten(children, prefix = "", out = []) {
 }
 
 /**
+ * Whether the element passes its children through to the DOM: an element, one of React's own wrappers, a context
+ * provider or a Neuwo element.
  * @param {AnyElement} el
  * @returns {boolean}
  */
 const isTransparent = (el) =>
-  typeof el.type === "string" || el.type === Fragment || el.type === React.Suspense || (typeof el.type === "function" && hostTags.has(el.type));
+  typeof el.type === "string" ||
+  PASS_THROUGH.has(el.type) ||
+  (typeof el.type === "object" && el.type !== null && /** @type {{ $$typeof?: symbol }} */ (el.type).$$typeof === CONTEXT) ||
+  (typeof el.type === "function" && hostTags.has(el.type));
 
 /**
  * @param {ReactNode} node
@@ -371,7 +381,8 @@ function hostFor(tag, template, { markHost, server, readers, dev, warned }) {
     warned.add(tag);
     console.warn(
       `<${tag}> is inside <${enclosing}> but was rendered without its attributes: a component of your own stands between ` +
-        `them, and the JSX runtime cannot see into it. Render <${tag}> inside <${enclosing}> through elements, fragments or Suspense.`,
+        `them, and the JSX runtime cannot see into it. Render <${tag}> inside <${enclosing}> through elements, fragments, ` +
+        `context providers, Suspense, StrictMode, Profiler or Activity.`,
     );
   };
   /** @param {string} reader */
