@@ -14,6 +14,7 @@ import { CONTROLLED, REACT } from "../marks.js";
 /** @typedef {import("../template.js").ChildInfo} ChildInfo */
 /** @typedef {import("../template.js").Template} Template */
 /** @typedef {{ host: Record<string, unknown>, controlled: boolean }} Form */
+/** @typedef {{ attrs: Record<string, string>, controlled: boolean, hasOnChange: boolean }} Within */
 
 // React DOM's boolean props, copied from its setProp: it reads "" as false for these.
 const BOOLEAN = [
@@ -44,6 +45,8 @@ const noop = () => {};
 
 /** @type {WeakMap<Function, string>} */
 const hostTags = new WeakMap();
+/** @type {WeakMap<Function, string>} */
+const hostWithin = new WeakMap();
 
 /**
  * @param {ReactNode} item
@@ -79,6 +82,17 @@ function flatten(children, prefix = "", out = []) {
     else out.push(el && prefix ? cloneElement(el, { key: prefix + el.key }) : item);
   }
   return out;
+}
+
+/**
+ * @param {ReactNode} item
+ * @param {string} tag
+ * @param {Within} within
+ * @returns {ReactNode}
+ */
+function lend(item, tag, within) {
+  const el = asElement(item);
+  return el && typeof el.type === "function" && hostWithin.get(el.type) === tag ? cloneElement(el, { __neuwoWithin: within }) : item;
 }
 
 /**
@@ -309,26 +323,32 @@ function useMark(authorRef, controlled, handlers) {
 /**
  * @param {string} tag
  * @param {Template} template
- * @param {{ markHost: boolean, server: boolean }} options
+ * @param {{ markHost: boolean, server: boolean, provider: boolean }} options `provider` when another template names
+ *   this tag as its `within`.
  */
-function hostFor(tag, template, { markHost, server }) {
+function hostFor(tag, template, { markHost, server, provider }) {
   /** @param {Record<string, unknown>} props */
   function NeuwoHost(props) {
-    const { defaultValue, defaultChecked, ...host } = props;
+    const { __neuwoWithin, defaultValue, defaultChecked, ...host } = props;
+    const within = /** @type {Within | undefined} */ (__neuwoWithin);
     const scope = `neuwo${useId().replace(/[^\w-]/g, "")}-`;
     const items = flatten(/** @type {ReactNode} */ (props.children));
     const attrs = normalizeProps({ ...host, value: props.value ?? defaultValue, checked: props.checked ?? defaultChecked });
-    const node = template(attrs, { id: (suffix) => scope + suffix, children: describe(items) });
-    const controlled = !server && isControlled(props, controlOf(node));
+    const node = template(attrs, { id: (suffix) => scope + suffix, children: describe(items), within: within?.attrs ?? null });
+    // An enclosing element such as a radio group holds a value its template has no control for.
+    const controlled = !server && (provider ? props.value != null : isControlled(props, controlOf(node)));
     const mark = markHost && { ref: useMark(props.ref, controlled, takeHandlers(host)) };
     const blocks = blocksOf(node);
-    const root = toReact(node, distribute(node, items, slotOf), blocks, keyOf(node, blocks, 0), { host: props, controlled });
+    const lent = provider && { attrs, controlled, hasOnChange: typeof props.onChange === "function" };
+    const placed = lent ? items.map((item) => lend(item, tag, lent)) : items;
+    const root = toReact(node, distribute(node, placed, slotOf), blocks, keyOf(node, blocks, 0), { host: props, controlled });
     // A field assigns a value it is handed to its live control, which would overwrite what the user typed.
     if (server || host.value == null) delete host.value;
     if (server || host.checked == null) delete host.checked;
     return reactJsx(/** @type {ElementType} */ (tag), { ...host, ...mark, children: root });
   }
   hostTags.set(NeuwoHost, tag);
+  if (template.within) hostWithin.set(NeuwoHost, template.within);
   return NeuwoHost;
 }
 
@@ -341,11 +361,12 @@ function hostFor(tag, template, { markHost, server }) {
 export function createRuntime(registry, { markHost = true, server = false } = {}) {
   /** @type {Map<string, ReturnType<typeof hostFor>>} */
   const hosts = new Map();
+  const providers = new Set(Object.values(registry).flatMap((template) => template.within ?? []));
   /** @param {ElementType} type */
   const resolve = (type) => {
     if (typeof type !== "string" || !Object.hasOwn(registry, type)) return type;
     let host = hosts.get(type);
-    if (!host) hosts.set(type, (host = hostFor(type, registry[type], { markHost, server })));
+    if (!host) hosts.set(type, (host = hostFor(type, registry[type], { markHost, server, provider: providers.has(type) })));
     return host;
   };
   return {

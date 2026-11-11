@@ -78,6 +78,26 @@ function attrsOf(el) {
   return attrs;
 }
 
+/**
+ * The attributes of the nearest element enclosing the host whose tag the template names as its `within`.
+ * @param {Element} host
+ * @param {Template} template
+ * @returns {Record<string, string> | null}
+ */
+export function withinOf(host, template) {
+  const outer = template.within ? host.parentElement?.closest(template.within) : null;
+  return outer ? attrsOf(outer) : null;
+}
+
+/**
+ * @param {Element} host
+ * @param {Template} template
+ * @param {(suffix: string) => string} id
+ * @param {ChildInfo[]} children
+ * @returns {TemplateNode}
+ */
+const applyTemplate = (host, template, id, children) => template(attrsOf(host), { id, children, within: withinOf(host, template) });
+
 /** @param {Node} node */
 const slotOf = (node) => (node.nodeType === ELEMENT && /** @type {Element} */ (node).getAttribute("slot")) || DEFAULT_REGION;
 
@@ -444,7 +464,7 @@ function commit(state, next, placeable, run) {
  * @returns {HostState | null}
  */
 function view(host, template) {
-  const probe = template(attrsOf(host), { id: (suffix) => suffix, children: [] });
+  const probe = applyTemplate(host, template, (suffix) => suffix, []);
   const root = locate(host, probe);
   if (!root) return null;
   return { id: (suffix) => suffix, issued: new Set(), ids: new Map(), wrappers: wrappersOf(probe), root, dropped: [] };
@@ -470,7 +490,7 @@ export function render(host, template) {
   const state = stateFor(host);
   state.ids = new Map();
   const nodes = Array.from(host.childNodes);
-  const next = template(attrsOf(host), { id: state.id, children: describe(nodes, slotOf) });
+  const next = applyTemplate(host, template, state.id, describe(nodes, slotOf));
   /** @type {Run} */
   const run = { state, blocks: blocksOf(next), groups: distribute(next, nodes, slotOf), writes: [], arranges: [], records: [], replace: true };
   state.root = build(next, run);
@@ -486,7 +506,7 @@ export function render(host, template) {
 export function isRendered(host, template) {
   if (live(host)) return true;
   const state = stateFor(host);
-  return locate(host, template(attrsOf(host), { id: state.id, children: [] })) !== null;
+  return locate(host, applyTemplate(host, template, state.id, [])) !== null;
 }
 
 /**
@@ -508,14 +528,13 @@ export function hasLooseContent(host) {
 export function adopt(host, template) {
   if (live(host)) return reconcile(host, template);
   const state = stateFor(host);
-  const attrs = attrsOf(host);
-  const probe = template(attrs, { id: state.id, children: [] });
+  const probe = applyTemplate(host, template, state.id, []);
   const root = locate(host, probe);
   if (!root) return;
   Object.assign(state, { root, dropped: [], ids: new Map(), wrappers: wrappersOf(probe) });
   snapshot(state, root);
   const { nodes, regionIn } = authorNodes(host, state);
-  const full = template(attrs, { id: state.id, children: describe(nodes, regionIn(state.wrappers)) });
+  const full = applyTemplate(host, template, state.id, describe(nodes, regionIn(state.wrappers)));
   mapIds(state, blocksOf(full), root, full);
   separateIds(host, state);
 }
@@ -531,7 +550,7 @@ export function reconcile(host, template) {
   }
   const state = states.get(host);
   const { nodes, loose, regionIn } = authorNodes(host, state);
-  const next = template(attrsOf(host), { id: state.id, children: describe(nodes, regionIn(state.wrappers)) });
+  const next = applyTemplate(host, template, state.id, describe(nodes, regionIn(state.wrappers)));
   const regionOf = regionIn(wrappersOf(next));
   const placed = nodes.filter((node) => !loose.has(node) || isContent(node));
   const run = prepare(state, next, placed, regionOf);

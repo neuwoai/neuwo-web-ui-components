@@ -108,6 +108,11 @@ describe("JSX runtime in React Server Components", () => {
     };
     expect(found.form).toEqual({ jsx: expected, jsxDEV: expected });
   });
+
+  it.runIf(built)("gives an item its group's attributes through the server runtime, with no element given the internal prop and no function", () => {
+    const expected = { shown: ["size=m", "size=m", "none"], values: ["m", "m", null], leaked: false, functions: [] };
+    expect(found.within).toEqual({ jsx: expected, jsxDEV: expected });
+  });
 });
 
 describe("Server Component output reconciled in the browser", () => {

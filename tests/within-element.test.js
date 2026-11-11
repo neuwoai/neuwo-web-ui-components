@@ -1,0 +1,177 @@
+import { afterEach, describe, expect, it } from "vitest";
+import { NeuwoElement, define } from "../src/core/element.js";
+import { expand } from "../src/server/index.js";
+import { boxTemplate, groupTemplate, itemTemplate, withinTemplates } from "./fixtures/within.js";
+
+class XGroup extends NeuwoElement {
+  static template = groupTemplate;
+  static observedAttributes = ["name", "value", "tone"];
+}
+
+class XItem extends NeuwoElement {
+  static template = itemTemplate;
+  static observedAttributes = [];
+  updates = 0;
+  updated() {
+    this.updates++;
+  }
+}
+
+class XBox extends NeuwoElement {
+  static template = boxTemplate;
+  static observedAttributes = ["label"];
+}
+
+define("x-group", XGroup);
+define("x-item", XItem);
+define("x-box", XBox);
+
+/** @type {Array<() => void>} */
+const cleanup = [];
+afterEach(() => {
+  while (cleanup.length) cleanup.pop()();
+});
+
+/** @param {string} html */
+function mount(html) {
+  const container = document.createElement("div");
+  container.innerHTML = html;
+  document.body.append(container);
+  cleanup.push(() => container.remove());
+  return container;
+}
+
+/** @param {Node} root */
+function watch(root) {
+  const observer = new MutationObserver(() => {});
+  observer.observe(root, { subtree: true, attributes: true, attributeOldValue: true, childList: true, characterData: true });
+  cleanup.push(() => observer.disconnect());
+  return observer;
+}
+
+/** @param {MutationRecord} record */
+function describeRecord(record) {
+  const target = record.target.nodeType === 1 ? `${record.target.localName}.${record.target.className}` : `text in ${record.target.parentElement?.className}`;
+  if (record.type === "attributes") return `${target} ${record.attributeName}`;
+  if (record.type === "characterData") return `${target} text`;
+  return `${target} children: +${record.addedNodes.length} -${record.removedNodes.length}`;
+}
+
+/** @param {ParentNode} root */
+const shown = (root) => Array.from(root.querySelectorAll(".x-item__group"), (el) => el.textContent);
+
+const GROUP = `<x-group name="size" value="m"><x-item>Medium</x-item><x-item>Large</x-item></x-group>`;
+
+describe("an element whose template reads its enclosing element (within)", () => {
+  for (const [source, html] of [
+    ["rendered by the elements", GROUP],
+    ["served", expand(GROUP, withinTemplates)],
+  ]) {
+    describe(source, () => {
+      it("renders each item with its group's name and value", () => {
+        expect(shown(mount(html))).toEqual(["size=m", "size=m"]);
+      });
+
+      it("refreshes the items when the group's value changes, and writes nothing else", () => {
+        const holder = mount(html);
+        const group = holder.querySelector("x-group");
+        const updates = () => Array.from(holder.querySelectorAll("x-item"), (el) => /** @type {XItem} */ (el).updates);
+        const before = updates();
+        const observer = watch(holder);
+        group.setAttribute("value", "l");
+        expect(observer.takeRecords().map(describeRecord)).toEqual([
+          "x-group. value",
+          "span.x-item data-value",
+          "text in x-item__group text",
+          "span.x-item data-value",
+          "text in x-item__group text",
+        ]);
+        expect(shown(holder)).toEqual(["size=l", "size=l"]);
+        expect(updates()).toEqual(before.map((count) => count + 1));
+      });
+
+      it("refreshes the items but writes nothing in them when the group changes an attribute they do not read", () => {
+        const holder = mount(html);
+        const observer = watch(holder);
+        holder.querySelector("x-group").setAttribute("tone", "b");
+        expect(observer.takeRecords().map(describeRecord)).toEqual(["x-group. tone", "div.x-group x-group--b class"]);
+        expect(shown(holder)).toEqual(["size=m", "size=m"]);
+      });
+    });
+  }
+
+  it("renders an item outside any group with no group, and reads its group once it is moved into one", () => {
+    const holder = mount(`<x-item>Alone</x-item>${GROUP}`);
+    const lone = holder.querySelector("x-item");
+    expect(shown(lone)).toEqual(["none"]);
+    holder.querySelector(".x-group").append(lone);
+    expect(shown(lone)).toEqual(["size=m"]);
+  });
+
+  it("reads the new group after a move from one group to another, and writes nothing on a move within one", () => {
+    const holder = mount(`${GROUP}<x-group name="colour" value="red"><x-item>Red</x-item></x-group>`);
+    const [first, second] = Array.from(holder.querySelectorAll(".x-group"));
+    const moved = first.querySelector("x-item");
+    second.append(moved);
+    expect(shown(moved)).toEqual(["colour=red"]);
+    const observer = watch(moved);
+    second.prepend(moved);
+    expect(observer.takeRecords()).toEqual([]);
+    expect(shown(moved)).toEqual(["colour=red"]);
+  });
+
+  it("reads the group's change made while the item was away", () => {
+    const holder = mount(GROUP);
+    const group = holder.querySelector("x-group");
+    group.remove();
+    group.setAttribute("value", "s");
+    holder.append(group);
+    expect(shown(holder)).toEqual(["size=s", "size=s"]);
+  });
+
+  it("refreshes only the items whose nearest group changed", () => {
+    const holder = mount(`<x-group name="outer" value="1"><x-item>A</x-item><x-group name="inner" value="2"><x-item>B</x-item></x-group></x-group>`);
+    expect(shown(holder)).toEqual(["outer=1", "inner=2"]);
+    const [, inner] = /** @type {XItem[]} */ (Array.from(holder.querySelectorAll("x-item")));
+    const before = inner.updates;
+    const observer = watch(inner);
+    holder.querySelector("x-group").setAttribute("value", "9");
+    expect(shown(holder)).toEqual(["outer=9", "inner=2"]);
+    expect(observer.takeRecords()).toEqual([]);
+    expect(inner.updates).toBe(before);
+  });
+
+  it("refreshes a nested box from the box around it, never from itself", () => {
+    const holder = mount(`<x-box label="outer"><x-box label="inner">x</x-box></x-box>`);
+    const outer = holder.querySelector("x-box");
+    expect(Array.from(holder.querySelectorAll(".x-box"), (el) => el.getAttribute("data-outer"))).toEqual(["none", "outer"]);
+    outer.setAttribute("label", "changed");
+    expect(Array.from(holder.querySelectorAll(".x-box"), (el) => el.getAttribute("data-outer"))).toEqual(["none", "changed"]);
+  });
+
+  describe("while the document is still parsing", () => {
+    afterEach(() => delete document.readyState);
+
+    it("applies a group change made while the served items wait for the document", () => {
+      Object.defineProperty(document, "readyState", { configurable: true, get: () => "loading" });
+      const served = document.createElement("template");
+      served.innerHTML = expand(`<x-group name="size" value="m"><x-item>Medium</x-item></x-group>`, withinTemplates);
+      const root = served.content.querySelector(".x-group");
+      const itemMarkup = served.content.querySelector("x-item").innerHTML;
+      const holder = mount("");
+      const group = document.createElement("x-group");
+      group.setAttribute("name", "size");
+      group.setAttribute("value", "m");
+      holder.append(group);
+      group.append(/** @type {Element} */ (root.cloneNode(false)));
+      const item = document.createElement("x-item");
+      group.firstElementChild.append(item);
+      item.innerHTML = itemMarkup;
+      group.setAttribute("value", "l");
+      expect(shown(holder)).toEqual(["size=m"]);
+      delete document.readyState;
+      document.dispatchEvent(new Event("DOMContentLoaded"));
+      expect(shown(holder)).toEqual(["size=l"]);
+    });
+  });
+});

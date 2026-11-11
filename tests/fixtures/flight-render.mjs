@@ -6,6 +6,7 @@ import * as runtime from "@neuwo/web-ui-library--demo/jsx-runtime";
 import * as devRuntime from "@neuwo/web-ui-library--demo/jsx-dev-runtime";
 import { createRuntime } from "../../src/core/adapters/react.js";
 import { formTemplates } from "./form-fields.js";
+import { withinTemplates } from "./within.js";
 
 /** @type {Record<string, string>} */
 const blocks = JSON.parse(process.argv[2]);
@@ -17,6 +18,8 @@ const factoriesOf = (prod, dev) => ({
 const factories = factoriesOf(runtime, devRuntime);
 const form = createRuntime(formTemplates, { markHost: false, server: true });
 const formFactories = factoriesOf(form, form);
+const within = createRuntime(withinTemplates, { markHost: false, server: true });
+const withinFactories = factoriesOf(within, within);
 
 function flight(element) {
   return new Promise((resolve, reject) => {
@@ -49,6 +52,15 @@ function find(node, match) {
   if (Array.isArray(node)) return node.reduce((hit, child) => hit ?? find(child, match), null);
   if (!node || typeof node !== "object" || !("props" in node)) return null;
   return match(node) ? node : find(node.props.children, match);
+}
+
+function findAll(node, match, out = []) {
+  if (Array.isArray(node)) node.forEach((child) => findAll(child, match, out));
+  else if (node && typeof node === "object" && "props" in node) {
+    if (match(node)) out.push(node);
+    findAll(node.props.children, match, out);
+  }
+  return out;
 }
 
 function functionsIn(node, path = "", out = []) {
@@ -112,5 +124,19 @@ for (const [name, create] of Object.entries(formFactories)) {
   const tree = await decode(payload);
   const props = (className) => find(tree, (el) => el.props.className === className)?.props;
   found.form[name] = { input: props("x-field__input"), textarea: props("x-notes__input"), functions: functionsIn(tree) };
+}
+found.within = {};
+for (const [name, create] of Object.entries(withinFactories)) {
+  const items = [create("x-item", { children: "Medium" }, "m"), create("x-item", { children: "Large" }, "l")];
+  const Page = () => create("main", { children: [create("x-group", { name: "size", value: "m", children: items }), create("x-item", { children: "Alone" })] });
+  const { errors, payload } = await flight(create(Page, {}));
+  assert.deepEqual(errors, [], `${name}: the within Flight render reported errors`);
+  const tree = await decode(payload);
+  found.within[name] = {
+    shown: findAll(tree, (el) => el.props.className === "x-item__group").map((el) => el.props.children),
+    values: findAll(tree, (el) => el.props.className === "x-item").map((el) => el.props["data-value"] ?? null),
+    leaked: findAll(tree, (el) => Object.keys(el.props).some((prop) => /within/i.test(prop))).length > 0,
+    functions: functionsIn(tree),
+  };
 }
 console.log(JSON.stringify(found));

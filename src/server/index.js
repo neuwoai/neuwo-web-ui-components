@@ -71,10 +71,27 @@ function span(html, node, limit) {
 /**
  * @param {Element} el
  * @param {Template} template
+ * @returns {Record<string, string> | null}
+ */
+function withinOf(el, template) {
+  if (!template.within) return null;
+  for (let node = el.parent; node; node = node.parent) if ("attribs" in node && node.name === template.within) return { ...node.attribs };
+  return null;
+}
+
+/**
+ * @param {Element} el
+ * @param {Template} template
+ */
+const probe = (el, template) => template({ ...el.attribs }, { id: (suffix) => suffix, children: [], within: withinOf(el, template) });
+
+/**
+ * @param {Element} el
+ * @param {Template} template
  * @returns {boolean}
  */
 function isRendered(el, template) {
-  const root = template({ ...el.attribs }, { id: (suffix) => suffix, children: [] });
+  const root = probe(el, template);
   const [block] = classesOf(root.props.class);
   return el.children.some(
     (child) => isElement(child) && (block ? classesOf(child.attribs.class).includes(block) : child.name === root.tag),
@@ -89,7 +106,7 @@ function isRendered(el, template) {
 function isBlockElement(page, node) {
   if (!isElement(node) || !Object.hasOwn(page.registry, node.name)) return false;
   const template = page.registry[node.name];
-  return !isRendered(node, template) && !PHRASING.has(template({ ...node.attribs }, { id: (suffix) => suffix, children: [] }).tag);
+  return !isRendered(node, template) && !PHRASING.has(probe(node, template).tag);
 }
 
 /**
@@ -127,7 +144,8 @@ function expandElement(page, el, contentEnd) {
     const { start, end } = span(page.html, child, next);
     return { ...describe(child), html: rewrite(page, [child], start, end) };
   });
-  return renderElement(el.name, { ...el.attribs }, children, page.registry[el.name], () => id);
+  const template = page.registry[el.name];
+  return renderElement(el.name, { ...el.attribs }, children, template, () => id, withinOf(el, template));
 }
 
 /**

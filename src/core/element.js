@@ -1,5 +1,8 @@
-import { adopt, hasLooseContent, isRendered, reconcile, render } from "./adapters/dom.js";
+import { adopt, hasLooseContent, isRendered, reconcile, render, withinOf } from "./adapters/dom.js";
 import { REACT } from "./marks.js";
+
+/** @type {Map<string, Set<string>>} */
+const readers = new Map();
 
 /** @param {string} name */
 const relevantName = (name) => name === "title" || name === "role" || name.startsWith("aria-");
@@ -57,12 +60,19 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
    */
   #initial = null;
 
+  // The enclosing element's attributes the markup was last known to match, as JSON; null while that is unknown.
+  /** @type {string | null} */
+  #within = null;
+
   constructor() {
     super();
+    const within = /** @type {typeof NeuwoElement} */ (this.constructor).template?.within;
+    if (within) readers.set(within, (readers.get(within) ?? new Set()).add(this.localName));
     if (!this.hasAttributes() && !this.hasChildNodes()) return;
     const observed = /** @type {{ observedAttributes?: string[] }} */ (this.constructor).observedAttributes ?? [];
     this.#initial = new Map(observed.filter((name) => this.hasAttribute(name)).map((name) => [name, /** @type {string} */ (this.getAttribute(name))]));
     this.#away = relevantAttributes(this);
+    this.#within = this.#enclosing();
   }
 
   connectedCallback() {
@@ -91,10 +101,14 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
       // A move such as React's Suspense reveal reconnects served markup its attributes alone would not render.
       if (!restart || this.#changedWhileAway()) this.#write(isRendered(this, template) ? adopt : render);
       // A change made before the first start, or a child appended before definition, is not in the adopted markup.
-      if (!restart && this.#changedWhileAway()) this.#write(reconcile);
+      if (!restart && this.#changedWhileAway()) {
+        this.#write(reconcile);
+        this.#refreshReaders();
+      }
       this.#dirty = false;
       this.#away = null;
       this.#initial = null;
+      this.#within = this.#enclosing();
       this.#observer ??= new MutationObserver((records) => this.#changed(records));
       this.#observer.observe(this, { childList: true, attributes: true });
       this.#started = true;
@@ -104,7 +118,16 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
   }
 
   #changedWhileAway() {
-    return this.#dirty || hasLooseContent(this) || (this.#away !== null && this.#away !== relevantAttributes(this));
+    return (
+      this.#dirty ||
+      hasLooseContent(this) ||
+      (this.#away !== null && this.#away !== relevantAttributes(this)) ||
+      (this.#within !== null && this.#within !== this.#enclosing())
+    );
+  }
+
+  #enclosing() {
+    return JSON.stringify(withinOf(this, /** @type {typeof NeuwoElement} */ (this.constructor).template));
   }
 
   /** @param {(host: Element, template: import("./template.js").Template) => void} update */
@@ -115,7 +138,20 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
 
   #reconcile() {
     this.#write(reconcile);
+    this.#within = this.#enclosing();
+    this.#refreshReaders();
     if (this.#started) this.updated();
+  }
+
+  #refreshReaders() {
+    const tags = readers.get(this.localName);
+    if (!tags) return;
+    for (const el of Array.from(this.querySelectorAll(Array.from(tags).join(",")))) {
+      if (!(el instanceof NeuwoElement) || el.parentElement?.closest(this.localName) !== this) continue;
+      // refresh() skips a host waiting for the document; marked dirty, it reconciles when it starts.
+      if (el.#started && !el.#waiting) el.refresh();
+      else el.#dirty = true;
+    }
   }
 
   /** @param {MutationRecord[]} records */

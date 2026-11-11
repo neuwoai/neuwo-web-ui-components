@@ -4,7 +4,7 @@
  * An author child. An element's `children` describe its own child nodes the same way, whitespace-only text left out.
  * @typedef {{ tag: string | null, attrs: Record<string, string>, text: string, slot: string, children?: ChildInfo[] }} ChildInfo
  */
-/** @typedef {{ id: (suffix: string) => string, children: ChildInfo[] }} TemplateContext */
+/** @typedef {{ id: (suffix: string) => string, children: ChildInfo[], within: Record<string, string> | null }} TemplateContext */
 /**
  * A template's blocks are the classes in its output that contain neither `__` nor `--`; the root's first class
  * is the root block. Every element it renders carries a class owned by one of its blocks: the block itself,
@@ -13,8 +13,9 @@
  * combination and carries a class unique within the template that is one of its blocks or a `<block>__<name>`
  * class, never a `--` modifier. Template text and elements appear only in elements that hold no region. The
  * adapters rely on this to tell template markup from author content: a wrapper's children are the author's,
- * every other node under the root is the template's.
- * @typedef {(attrs: Record<string, string>, ctx: TemplateContext) => TemplateNode} Template
+ * every other node under the root is the template's. A template may name a tag as its `within`: every adapter then
+ * hands it, as `ctx.within`, the attributes of the nearest enclosing element of that tag, never the host, or null.
+ * @typedef {((attrs: Record<string, string>, ctx: TemplateContext) => TemplateNode) & { within?: string }} Template
  */
 
 export const DEFAULT_REGION = "default";

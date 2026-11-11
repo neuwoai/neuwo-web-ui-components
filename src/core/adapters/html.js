@@ -61,10 +61,11 @@ function describe(children) {
  * @param {RenderChild[]} children
  * @param {Template} template
  * @param {() => (suffix: string) => string} newIds
+ * @param {Record<string, string> | null} [within] - the attributes of the nearest enclosing element of the template's `within` tag.
  * @returns {string}
  */
-export function renderElement(tag, attrs, children, template, newIds) {
-  const node = template(attrs, { id: newIds(), children: describe(children) });
+export function renderElement(tag, attrs, children, template, newIds, within = null) {
+  const node = template(attrs, { id: newIds(), children: describe(children), within });
   /** @type {Record<string, string>} */
   const regions = {};
   for (const [name, list] of Object.entries(distribute(node, children, (child) => child.slot))) {
