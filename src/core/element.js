@@ -65,6 +65,9 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
   /** @type {(() => void) | null} */
   #waiting = null;
 
+  /** @type {(() => void) | null} */
+  #loaded = null;
+
   /** @type {MutationObserver | null} */
   #observer = null;
 
@@ -235,17 +238,30 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
    * @param {MutationRecord[]} records
    */
   #take(records) {
-    const changes = records.filter((record) => {
-      if (record.target === this) return relevant(record);
-      // The parser is still filling the wrappers of markup adopted before the document finished loading.
-      if (this.ownerDocument.readyState === "loading") return false;
-      if (record.type === "childList") return this.#wrappers.has(record.target);
+    let own = false;
+    let wrapped = false;
+    for (const record of records) {
       const parent = record.target.parentNode;
-      if (!parent || !this.#wrappers.has(parent)) return false;
-      reslot(this, record.target);
-      return true;
-    });
-    return changes.length > 0;
+      if (record.target === this) own ||= relevant(record);
+      else if (record.type === "childList") wrapped ||= this.#wrappers.has(record.target);
+      else if (parent && this.#wrappers.has(parent)) {
+        reslot(this, record.target);
+        wrapped = true;
+      }
+    }
+    if (!wrapped || this.ownerDocument.readyState !== "loading") return own || wrapped;
+    // The parser may still be filling the wrappers of markup adopted mid-stream, so their change waits for it.
+    this.#afterLoad();
+    return own;
+  }
+
+  #afterLoad() {
+    if (this.#loaded) return;
+    this.#loaded = () => {
+      this.#loaded = null;
+      if (this.#writable()) this.#reconcile();
+    };
+    this.ownerDocument.addEventListener("DOMContentLoaded", this.#loaded, { once: true });
   }
 
   #reconcile() {

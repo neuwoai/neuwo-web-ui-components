@@ -391,7 +391,8 @@
   button or `checked` on a checkbox from an inline script on a page whose module is deferred, now reaches
   the element when it is defined, through the element's own setter; it used to hide that property and
   never reach the markup or the control. A value written through the property after the element is
-  defined wins over the early one, and one set on a read-only property, such as a radio's `type`, is
+  defined wins over the early one, while an attribute written after a detached upgrade but before the
+  element starts does not override it. One set on a read-only property, such as a radio's `type`, is
   dropped, so the element's own value shows.
 - Setting an observed attribute to the value it already has no longer makes a light DOM element fit its
   markup again, and a `<neuwo-radio-group>` refreshes its radios only when its own attributes change, so a

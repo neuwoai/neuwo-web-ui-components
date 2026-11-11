@@ -70,7 +70,7 @@ async function settled() {
 }
 
 /** @param {ParentNode} root */
-const shown =(root) => Array.from(root.querySelectorAll(".x-item__group"), (el) => el.textContent);
+const shown = (root) => Array.from(root.querySelectorAll(".x-item__group"), (el) => el.textContent);
 
 const GROUP = `<x-group name="size" value="m"><x-item>Medium</x-item><x-item>Large</x-item></x-group>`;
 

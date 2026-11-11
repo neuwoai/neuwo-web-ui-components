@@ -245,6 +245,51 @@ describe("<neuwo-notice>", () => {
     expect(isEmpty(el, "title")).toBe(true);
   });
 
+  describe("on served markup adopted while the document is still loading", () => {
+    afterEach(() => delete document.readyState);
+    const loading = () => Object.defineProperty(document, "readyState", { configurable: true, get: () => "loading" });
+    const parsed = () => {
+      delete document.readyState;
+      document.dispatchEvent(new Event("DOMContentLoaded"));
+    };
+    const served = () => {
+      loading();
+      return make(
+        renderElement(
+          "neuwo-notice",
+          {},
+          [
+            { tag: "span", attrs: { slot: "title" }, text: "T", slot: "title", html: '<span slot="title">T</span>' },
+            { tag: null, attrs: {}, text: "Body", slot: "default", html: "Body" },
+            { tag: "button", attrs: { slot: "actions" }, text: "Go", slot: "actions", html: '<button slot="actions">Go</button>' },
+          ],
+          noticeTemplate,
+          idScope("neuwo-s"),
+        ),
+      );
+    };
+
+    it("moves a child whose slot changed while it loads, once it has loaded", async () => {
+      const el = served();
+      const title = el.querySelector('[slot="title"]');
+      title.slot = "actions";
+      await settled();
+      expect(title.parentElement).toBe(part(el, "title"));
+      parsed();
+      expect(title.parentElement).toBe(part(el, "actions"));
+      expect(isEmpty(el, "title")).toBe(true);
+    });
+
+    it("restores --empty on a wrapper a script emptied while it loads, once it has loaded", async () => {
+      const el = served();
+      part(el, "actions").replaceChildren();
+      await settled();
+      expect(isEmpty(el, "actions")).toBe(false);
+      parsed();
+      expect(isEmpty(el, "actions")).toBe(true);
+    });
+  });
+
   it("restores --empty when a script empties a wrapper", async () => {
     const el = make(`<neuwo-notice><span slot="title">T</span>Body<button slot="actions">Go</button></neuwo-notice>`);
     const root = card(el);

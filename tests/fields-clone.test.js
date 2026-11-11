@@ -132,6 +132,22 @@ describe("fields copied with cloneNode(true)", () => {
       expectOwnIds(hosts);
       for (const host of hosts) expect(host.querySelector("label").control, host.localName).toBe(controlOf(host));
     });
+
+    it(`keeps fresh ids on a field ${source} re-inserted after its clone through a full re-render`, async () => {
+      const holder = form(html);
+      const originals = Array.from(holder.children);
+      const copies = originals.map((host) => /** @type {Element} */ (host.cloneNode(true)));
+      for (const host of originals) host.remove();
+      holder.append(...copies);
+      holder.prepend(...originals);
+      const [input, combobox] = originals;
+      input.textContent = "";
+      combobox.innerHTML = "<option>C</option><option>D</option>";
+      for (let turn = 0; turn < 3; turn++) await Promise.resolve();
+      const hosts = [...originals, ...copies];
+      expectOwnIds(hosts);
+      for (const host of hosts) expect(host.querySelector("label").control, host.localName).toBe(controlOf(host));
+    });
   }
 
   it("keeps the copy's ids through a later change", async () => {

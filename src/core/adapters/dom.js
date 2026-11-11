@@ -10,11 +10,13 @@ import { idScope } from "../ids.js";
  *   id: (suffix: string) => string,
  *   issued: Set<string>,
  *   ids: Map<string, string>,
+ *   renamed: Map<string, string>,
  *   wrappers: Map<string, string>,
  *   root: Element | null,
  *   dropped: Node[],
  *   loading: boolean,
  *   reslotted: Set<Node>,
+ *   formatting: Set<Node>,
  * }} HostState
  */
 /** @typedef {{ attrs: Record<string, string>, raw: string | null }} Seen */
@@ -60,7 +62,7 @@ function stateFor(host) {
       issued.add(value);
       return value;
     };
-    state = { id, issued, ids: new Map(), wrappers: new Map(), root: null, dropped: [], loading: false, reslotted: new Set() };
+    state = { id, issued, ids: new Map(), renamed: new Map(), wrappers: new Map(), root: null, dropped: [], loading: false, reslotted: new Set(), formatting: new Set() };
     states.set(host, state);
   }
   return state;
@@ -68,6 +70,12 @@ function stateFor(host) {
 
 /** @param {Element} host */
 const live = (host) => states.get(host)?.root?.parentNode === host;
+
+/**
+ * @param {Element} host
+ * @param {HostState} state
+ */
+const besideRoot = (host, state) => new Set(Array.from(host.childNodes).filter((node) => node !== state.root && !isContent(node)));
 
 /**
  * @param {Element} el
@@ -329,6 +337,7 @@ function separateIds(host, state) {
     const next = mint(existing.replace(MINTED, ""));
     fresh.set(existing, next);
     state.ids.set(issued, next);
+    state.renamed.set(issued, next);
   }
   if (fresh.size) rename(state, state.root, fresh);
 }
@@ -478,7 +487,7 @@ function view(host, template) {
   const probe = applyTemplate(host, template, (suffix) => suffix, []);
   const root = locate(host, probe);
   if (!root) return null;
-  return { id: (suffix) => suffix, issued: new Set(), ids: new Map(), wrappers: wrappersOf(probe), root, dropped: [], loading: false, reslotted: new Set() };
+  return { id: (suffix) => suffix, issued: new Set(), ids: new Map(), renamed: new Map(), wrappers: wrappersOf(probe), root, dropped: [], loading: false, reslotted: new Set(), formatting: new Set() };
 }
 
 /**
@@ -499,7 +508,7 @@ export function childInfo(host, template) {
  */
 export function render(host, template) {
   const state = stateFor(host);
-  state.ids = new Map();
+  state.ids = new Map(state.renamed);
   const nodes = Array.from(host.childNodes);
   const next = applyTemplate(host, template, state.id, describe(nodes, slotOf));
   /** @type {Run} */
@@ -507,6 +516,7 @@ export function render(host, template) {
   state.root = build(next, run);
   host.replaceChildren(state.root);
   settle(state, next, nodes, run.groups);
+  state.formatting = new Set();
 }
 
 /**
@@ -545,7 +555,8 @@ export function adopt(host, template) {
   const probe = applyTemplate(host, template, state.id, []);
   const root = locate(host, probe);
   if (!root) return;
-  Object.assign(state, { root, dropped: [], ids: new Map(), wrappers: wrappersOf(probe), loading: host.ownerDocument.readyState === "loading" });
+  Object.assign(state, { root, dropped: [], ids: new Map(state.renamed), wrappers: wrappersOf(probe), loading: host.ownerDocument.readyState === "loading" });
+  state.formatting = besideRoot(host, state);
   snapshot(state, root);
   const { nodes, regionIn } = authorNodes(host, state);
   const full = applyTemplate(host, template, state.id, describe(nodes, regionIn(state.wrappers)));
@@ -570,9 +581,15 @@ export function reconcile(host, template) {
     mapIds(state, blocksOf(next), state.root, next);
     state.loading = host.ownerDocument.readyState === "loading";
   }
-  // Whitespace and comments beside the root are the served markup's formatting, never content to place.
+  const regionOf = regionIn(wrappersOf(next));
   const placed = nodes.filter((node) => !loose.has(node) || isContent(node));
-  commit(state, next, placed, prepare(state, next, placed, regionIn(wrappersOf(next))));
+  const run = prepare(state, next, placed, regionOf);
+  if (run.replace || run.arranges.length) {
+    // Whitespace and comments left beside the root by the adoption or the last reconcile are formatting, never placed.
+    const arranged = nodes.filter((node) => !state.formatting.has(node));
+    commit(state, next, arranged, prepare(state, next, arranged, regionOf));
+  } else commit(state, next, placed, run);
+  state.formatting = besideRoot(host, state);
 }
 
 /**

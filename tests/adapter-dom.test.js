@@ -887,6 +887,36 @@ describe("reconcile()", () => {
     expect(host.querySelector(".neuwo-t").textContent).toBe("Live!");
   });
 
+  it("places whitespace between appended author nodes with them", () => {
+    const appended = () => {
+      const b = document.createElement("b");
+      b.textContent = "Bold";
+      const i = document.createElement("i");
+      i.textContent = "italic";
+      return [b, " ", i];
+    };
+    const rendered = make(`<neuwo-t></neuwo-t>`);
+    render(rendered, badge);
+    rendered.append(...appended());
+    reconcile(rendered, badge);
+    expect(rendered.querySelector(".neuwo-t").textContent).toBe("Bold italic");
+    expect(rendered.childNodes).toHaveLength(1);
+
+    const button = make(`<neuwo-t>Save</neuwo-t>`);
+    render(button, testTemplate);
+    button.insertAdjacentHTML("beforeend", " <b>now</b> <i>please</i>");
+    reconcile(button, testTemplate);
+    expect(button.querySelector(".neuwo-t__label").textContent).toBe("Save now please");
+    expect(button.childNodes).toHaveLength(1);
+
+    const served = make(`<neuwo-t>\n  <span class="neuwo-t neuwo-t--a">Live</span>\n</neuwo-t>`);
+    adopt(served, badge);
+    served.append(...appended());
+    reconcile(served, badge);
+    expect(served.querySelector(".neuwo-t").textContent).toBe("LiveBold italic");
+    expect(Array.from(served.childNodes, (node) => node.nodeType === 3 && node.data)).toEqual(["\n  ", false, "\n"]);
+  });
+
   it("writes only the changed attribute on pretty-printed served markup", () => {
     const host = make(`<neuwo-t>
   <span class="neuwo-t neuwo-t--a">
