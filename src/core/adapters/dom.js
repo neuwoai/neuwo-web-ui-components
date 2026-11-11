@@ -449,6 +449,18 @@ export function isRendered(host, template) {
 }
 
 /**
+ * Whether the host holds content its rendered markup does not account for: a direct child other than the rendered
+ * root, whitespace-only text and comments aside, or no rendered root at all.
+ * @param {Element} host
+ * @returns {boolean}
+ */
+export function hasLooseContent(host) {
+  if (!live(host)) return true;
+  const { root } = /** @type {HostState} */ (states.get(host));
+  return Array.from(host.childNodes).some((node) => node !== root && isContent(node));
+}
+
+/**
  * @param {Element} host
  * @param {Template} template
  */

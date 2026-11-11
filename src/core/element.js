@@ -1,9 +1,19 @@
-import { adopt, isRendered, reconcile, render } from "./adapters/dom.js";
+import { adopt, hasLooseContent, isRendered, reconcile, render } from "./adapters/dom.js";
 
 const REACT = Symbol.for("neuwo.react");
 
+/** @param {string} name */
+const relevantName = (name) => name === "title" || name === "role" || name.startsWith("aria-");
+
 /** @param {MutationRecord} record */
-const relevant = (record) => record.type === "childList" || record.attributeName === "title" || record.attributeName === "role" || record.attributeName.startsWith("aria-");
+const relevant = (record) => record.type === "childList" || relevantName(/** @type {string} */ (record.attributeName));
+
+/** @param {Element} el */
+const relevantAttributes = (el) =>
+  Array.from(el.attributes)
+    .filter(({ name }) => relevantName(name))
+    .map(({ name, value }) => `${name}=${value}`)
+    .join("\n");
 
 /**
  * Whether React rendered or hydrated the element, so its markup is React's to write.
@@ -36,6 +46,11 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
   // Unlike the observer it survives a disconnect, so a reconnect runs updated() and an upgrade's first adoption does not.
   #started = false;
 
+  #dirty = false;
+
+  /** @type {string | null} */
+  #away = null;
+
   connectedCallback() {
     if (this.#tooEarly()) {
       if (this.#waiting) return;
@@ -59,13 +74,20 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
     const owned = ownedByReact(this);
     const restart = this.#started && !owned;
     if (!owned) {
-      this.#write(isRendered(this, template) ? adopt : render);
+      // A move such as React's Suspense reveal reconnects served markup its attributes alone would not render.
+      if (!restart || this.#changedWhileAway()) this.#write(isRendered(this, template) ? adopt : render);
+      this.#dirty = false;
+      this.#away = null;
       this.#observer ??= new MutationObserver((records) => this.#changed(records));
       this.#observer.observe(this, { childList: true, attributes: true });
       this.#started = true;
     }
     this.connect();
     if (restart) this.updated();
+  }
+
+  #changedWhileAway() {
+    return this.#dirty || hasLooseContent(this) || (this.#away !== null && this.#away !== relevantAttributes(this));
   }
 
   /** @param {(host: Element, template: import("./template.js").Template) => void} update */
@@ -89,7 +111,9 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
 
   attributeChangedCallback() {
     // An upgrade calls this for every attribute before the first connect, which adopts; those are not changes.
-    if (this.#started && this.isConnected && !this.#waiting && !ownedByReact(this)) this.#reconcile();
+    if (!this.#started || ownedByReact(this)) return;
+    if (this.isConnected && !this.#waiting) this.#reconcile();
+    else this.#dirty = true;
   }
 
   /**
@@ -102,6 +126,7 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
   }
 
   disconnectedCallback() {
+    if (this.#started) this.#away = relevantAttributes(this);
     this.#observer?.disconnect();
     this.#observer = null;
     if (this.#waiting) {

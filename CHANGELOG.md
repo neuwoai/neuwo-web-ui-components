@@ -215,8 +215,10 @@
   with a `react-server` build for Server Components. Elements recognise markup React rendered, from
   Client or Server Components, and leave it to React, so children passed in keep their state and DOM
   nodes across re-renders. Markup React served but has not hydrated yet is adopted as it is when the
-  script defines the elements, so a field keeps the starting value that `value` in a Server Component, or
-  `defaultValue`, put on its native control, and hydration finds the markup it sent.
+  script defines the elements, and left as it is when React moves it into place, as revealing a Suspense
+  boundary does, so a field keeps the starting value that `value` in a Server Component, or `defaultValue`,
+  put on its native control, and hydration finds the markup it sent. A moved element fits its markup to
+  its attributes and children only when they changed while it was out of the document.
 - `expand` replaces a `<p>` that holds nothing but a block component, such as a field, `<neuwo-copy>`,
   `<neuwo-cta>` or `<neuwo-notice>`, with the expanded component. Markdown wraps a component on a line of
   its own in a paragraph, and the browser used to move the component's markup out of it, so a form of

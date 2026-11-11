@@ -241,6 +241,82 @@ describe("NeuwoElement (light DOM)", () => {
     expect(el.connected).toBe(2);
   });
 
+  describe("when moved", () => {
+    // Served for tone a on a host that says b: only a change while it was away may rewrite it.
+    const mismatched = () => mount(`<test-light tone="b">${server().replace(/^<test-light>|<\/test-light>$/g, "")}</test-light>`).firstElementChild;
+    const moveWatched = (el, between = () => {}) => {
+      const observer = new MutationObserver(() => {});
+      observer.observe(el, { subtree: true, childList: true, attributes: true, characterData: true });
+      el.remove();
+      between();
+      mount("").appendChild(el);
+      return observer.takeRecords().filter((record) => record.target !== el);
+    };
+
+    it("writes nothing when nothing changed while it was away, keeping markup its attributes would not render", () => {
+      const el = mismatched();
+      expect(moveWatched(el)).toHaveLength(0);
+      expect(el.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--a");
+      expect(el.connected).toBe(2);
+    });
+
+    it("writes nothing on a move by insertBefore of a rendered element", () => {
+      const el = document.createElement("test-light");
+      el.textContent = "hi";
+      mount("").appendChild(el);
+      const observer = new MutationObserver(() => {});
+      observer.observe(el, { subtree: true, childList: true, attributes: true, characterData: true });
+      const target = mount("<p></p>");
+      target.insertBefore(el, target.firstChild);
+      expect(observer.takeRecords()).toHaveLength(0);
+      expect(el.querySelector(".neuwo-t__body").textContent).toBe("hi");
+    });
+
+    it("reconciles when an observed attribute changed while it was away", () => {
+      const el = mismatched();
+      moveWatched(el, () => el.setAttribute("tone", "c"));
+      expect(el.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--c");
+    });
+
+    it("reconciles when an aria-* or title attribute changed while it was away", () => {
+      const el = mismatched();
+      moveWatched(el, () => el.setAttribute("aria-label", "x"));
+      expect(el.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--b");
+    });
+
+    it.each([
+      ["while it was away", (el, icon) => moveWatched(el, () => el.append(icon))],
+      [
+        "just before the move",
+        (el, icon) => {
+          el.append(icon);
+          moveWatched(el);
+        },
+      ],
+    ])("reconciles when a loose child was appended %s", (_, move) => {
+      const el = mismatched();
+      const icon = document.createElement("i");
+      icon.slot = "start";
+      move(el, icon);
+      expect(icon.parentElement.className).toBe("neuwo-t__start");
+      expect(el.children).toHaveLength(1);
+      expect(el.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--b");
+    });
+
+    it("ignores whitespace and comments appended while it was away", () => {
+      const el = mismatched();
+      expect(moveWatched(el, () => el.append(" \n", document.createComment("c")))).toHaveLength(0);
+      expect(el.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--a");
+    });
+
+    it("renders again when its markup was removed while it was away", () => {
+      const el = mismatched();
+      moveWatched(el, () => (el.textContent = "y"));
+      expect(el.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--b");
+      expect(el.querySelector(".neuwo-t__body").textContent).toBe("y");
+    });
+  });
+
   it("does not nest when re-inserted through outerHTML", () => {
     const host = mount(server());
     const el = host.firstElementChild;
@@ -438,6 +514,13 @@ describe("updated() and refresh()", () => {
     expect(el.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--b");
     expect(el.updates).toBe(1);
     expect(el.classes).toEqual(["neuwo-t neuwo-t--b"]);
+    expect(el.connectedAtUpdate).toEqual([2]);
+  });
+
+  it("runs updated once, after connect, on a move that writes nothing", () => {
+    const el = mount(served()).firstElementChild;
+    mount("").appendChild(el);
+    expect(el.updates).toBe(1);
     expect(el.connectedAtUpdate).toEqual([2]);
   });
 
