@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
+import { blocksOf, classesOf, keyClassOf } from "../src/core/template.js";
 import { templates } from "../src/templates.js";
 import { cases, renderChildren } from "./fixtures/template-cases.js";
 
 const isNode = (child) => typeof child === "object" && "tag" in child;
 const isRegion = (child) => typeof child === "object" && "region" in child;
-const classesOf = (node) => (typeof node.props.class === "string" ? node.props.class.trim().split(/\s+/) : []);
 
 function elements(node, out = []) {
   out.push(node);
@@ -21,7 +21,7 @@ function output(tag, testCase) {
   const keyed = (name) => !name.includes("--") && blocks.some((each) => name === each || name.startsWith(`${each}__`));
   const ownedByABlock = (name) => blocks.some((each) => name === each || name.startsWith(`${each}__`) || name.startsWith(`${each}--`));
   const wrappers = all.filter((node) => node.children.some(isRegion)).map((node) => classesOf(node).find(keyed));
-  return { block, blocks, ownedByABlock, all, wrappers };
+  return { root, block, blocks, ownedByABlock, all, wrappers };
 }
 
 describe("template contract", () => {
@@ -52,6 +52,12 @@ describe("template contract", () => {
           it("marks every element with a class owned by one of the output's blocks", () => {
             const { all, ownedByABlock } = output(tag, testCase);
             for (const node of all) expect(classesOf(node).some(ownedByABlock), `<${node.tag} class="${node.props.class ?? ""}">`).toBe(true);
+          });
+
+          it("gives every rendered element a key class", () => {
+            const { root } = output(tag, testCase);
+            const blocks = blocksOf(root);
+            for (const node of elements(root)) expect(keyClassOf(node, blocks), `<${node.tag} class="${node.props.class ?? ""}">`).toEqual(expect.any(String));
           });
 
           it("marks at most one control", () => {

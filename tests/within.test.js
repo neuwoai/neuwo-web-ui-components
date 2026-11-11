@@ -5,7 +5,7 @@ import { createRoot } from "react-dom/client";
 import { renderToStaticMarkup, renderToString } from "react-dom/server";
 import { adopt, reconcile, render } from "../src/core/adapters/dom.js";
 import { renderElement } from "../src/core/adapters/html.js";
-import { createRuntime } from "../src/core/adapters/react.js";
+import { createRuntime } from "./fixtures/runtime.js";
 import { idScope } from "../src/core/ids.js";
 import { CONTROLLED } from "../src/core/marks.js";
 import { control, h } from "../src/core/template.js";

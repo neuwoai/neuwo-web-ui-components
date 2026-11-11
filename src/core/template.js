@@ -94,7 +94,7 @@ export function control(node) {
  * @param {TemplateNode} node
  * @returns {string[]}
  */
-const classesOf = (node) => (typeof node.props.class === "string" ? node.props.class.split(/\s+/).filter(Boolean) : []);
+export const classesOf = (node) => (typeof node.props.class === "string" ? node.props.class.split(/\s+/).filter(Boolean) : []);
 
 /**
  * The blocks of a template's output: every class in it that contains neither `__` nor `--`.

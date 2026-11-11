@@ -127,7 +127,8 @@ function liftable(page, p) {
 function describe(node) {
   if (!isElement(node)) return { tag: null, attrs: {}, text: isText(node) ? node.data : "", slot: DEFAULT_REGION };
   const attrs = { ...node.attribs };
-  return { tag: node.name, attrs, text: DomUtils.textContent(node), slot: attrs.slot || DEFAULT_REGION, children: node.children.map(describe) };
+  const inert = node.name === "template";
+  return { tag: node.name, attrs, text: inert ? "" : DomUtils.textContent(node), slot: attrs.slot || DEFAULT_REGION, children: inert ? [] : node.children.map(describe) };
 }
 
 /**

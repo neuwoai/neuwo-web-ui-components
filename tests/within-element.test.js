@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { Suspense, act } from "react";
 import { hydrateRoot } from "react-dom/client";
 import { renderToString } from "react-dom/server";
-import { createRuntime } from "../src/core/adapters/react.js";
+import { createRuntime } from "./fixtures/runtime.js";
 import { NeuwoElement, define } from "../src/core/element.js";
 import { expand } from "../src/server/index.js";
 import { boxTemplate, groupTemplate, itemTemplate, withinTemplates } from "./fixtures/within.js";

@@ -3,7 +3,7 @@ import { act, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { renderToString } from "react-dom/server";
 import { control, h } from "../src/core/template.js";
-import { createRuntime } from "../src/core/adapters/react.js";
+import { createRuntime } from "./fixtures/runtime.js";
 import { CONTROLLED } from "../src/core/marks.js";
 import { formTemplates } from "./fixtures/form-fields.js";
 

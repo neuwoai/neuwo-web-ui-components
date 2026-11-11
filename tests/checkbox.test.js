@@ -9,7 +9,7 @@ import { NeuwoChoiceElement } from "../src/components/selection/choice-element.j
 import { CONTROLLED } from "../src/core/marks.js";
 import { expand } from "../src/server/index.js";
 import { jsx } from "../src/react/jsx-runtime.js";
-import { createRuntime } from "../src/core/adapters/react.js";
+import { createRuntime } from "./fixtures/runtime.js";
 import { templates } from "../src/templates.js";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;

@@ -1,8 +1,6 @@
 import { Children, Fragment, cloneElement, isValidElement, useCallback, useId } from "react";
 // Server Components' React has no useRef or useLayoutEffect, so naming them in an import would fail to link there.
 import * as React from "react";
-import { jsx as reactJsx, jsxs as reactJsxs } from "react/jsx-runtime";
-import { jsxDEV as reactJsxDEV } from "react/jsx-dev-runtime";
 import { DEFAULT_REGION, blocksOf, distribute, keyClassOf, normalizeProps } from "../template.js";
 import { CONTROLLED, REACT } from "../marks.js";
 
@@ -13,6 +11,11 @@ import { CONTROLLED, REACT } from "../marks.js";
 /** @typedef {import("../template.js").TemplateNode} TemplateNode */
 /** @typedef {import("../template.js").ChildInfo} ChildInfo */
 /** @typedef {import("../template.js").Template} Template */
+/** @typedef {typeof import("react/jsx-runtime").jsx} Jsx */
+/** @typedef {typeof import("react/jsx-runtime").jsxs} Jsxs */
+/** @typedef {typeof import("react/jsx-dev-runtime").jsxDEV} JsxDEV */
+/** @typedef {{ jsx: Jsx, jsxs: Jsxs } | { jsxDEV: JsxDEV }} Factory */
+/** @typedef {(type: ElementType, props: Parameters<Jsx>[1], key: Parameters<Jsx>[2], isStatic: boolean, source?: unknown, self?: unknown) => ReactElement} Create */
 /** @typedef {{ host: Record<string, unknown>, controlled: boolean }} Form */
 /** @typedef {{ attrs: Record<string, string>, controlled: boolean, hasOnChange: boolean }} Within */
 
@@ -32,6 +35,11 @@ const NAMES = new Map([
   ["autocomplete", "autoComplete"],
   ["inputmode", "inputMode"],
   ...BOOLEAN.map((name) => /** @type {[string, string]} */ ([name.toLowerCase(), name])),
+]);
+const ATTRIBUTES = new Map([
+  ...Array.from(NAMES, ([attribute, prop]) => /** @type {[string, string]} */ ([prop, attribute])),
+  ["defaultChecked", "checked"],
+  ["defaultValue", "value"],
 ]);
 const FIELDS = new Set(["input", "select", "textarea"]);
 // React DOM's hasReadOnlyValue: an <input> of these types takes `value` as an attribute, never as state.
@@ -178,6 +186,13 @@ function textOf(node) {
 }
 
 /**
+ * The attributes React props stand for, named as the markup names them, as the other adapters report them.
+ * @param {Record<string, unknown>} props
+ * @returns {Record<string, string>}
+ */
+const attributesOf = (props) => normalizeProps(Object.fromEntries(Object.entries(props).map(([name, value]) => [ATTRIBUTES.get(name) ?? name, value])));
+
+/**
  * Describes the items as a template sees them, through the wrappers `lend()` passes through, whose children are
  * placed where the wrapper is.
  * @param {ReactNode[]} items
@@ -191,7 +206,8 @@ function describe(items) {
     const tag = el && tagOf(el);
     if (tag) {
       const children = /** @type {ReactNode} */ (el.props.children);
-      info.push({ tag, attrs: normalizeProps(el.props), text: textOf(children), slot: slotOf(el), children: describe(flatten(children)) });
+      const inert = tag === "template";
+      info.push({ tag, attrs: attributesOf(el.props), text: inert ? "" : textOf(children), slot: slotOf(el), children: inert ? [] : describe(flatten(children)) });
     } else if (el && isTransparent(el)) {
       const slot = slotOf(el);
       for (const child of describe(flatten(/** @type {ReactNode} */ (el.props.children)))) info.push({ ...child, slot });
@@ -202,18 +218,12 @@ function describe(items) {
 }
 
 /**
- * @param {TemplateNode} node
- * @returns {string[]}
- */
-const classesOf = (node) => (typeof node.props.class === "string" ? node.props.class.split(/\s+/).filter(Boolean) : []);
-
-/**
+ * Every element a template renders has a key class, which the contract test requires.
  * @param {TemplateNode} node
  * @param {Set<string>} blocks
- * @param {number} index
  * @returns {string}
  */
-const keyOf = (node, blocks, index) => keyClassOf(node, blocks) ?? classesOf(node)[0] ?? String(index);
+const keyOf = (node, blocks) => /** @type {string} */ (keyClassOf(node, blocks));
 
 /**
  * Splits at the semicolons outside parentheses and quotes.
@@ -357,9 +367,10 @@ function bindForm(node, props, children, form) {
  * @param {Set<string>} blocks
  * @param {string} key
  * @param {Form} form
+ * @param {Create} create
  * @returns {ReactElement}
  */
-function toReact(node, regions, blocks, key, form) {
+function toReact(node, regions, blocks, key, form, create) {
   /** @type {Record<string, unknown>} */
   const props = {};
   for (const [name, value] of Object.entries(node.props)) {
@@ -372,21 +383,21 @@ function toReact(node, regions, blocks, key, form) {
   const children = [];
   /** @type {Map<string, number>} */
   const seen = new Map();
-  for (const [index, child] of node.children.entries()) {
+  for (const child of node.children) {
     if (typeof child === "string") children.push(child);
     else if ("region" in child) children.push(...(regions[child.region] ?? []));
     else if ("raw" in child) props.dangerouslySetInnerHTML = { __html: child.raw };
     else {
-      const base = keyOf(child, blocks, index);
+      const base = keyOf(child, blocks);
       const count = seen.get(base) ?? 0;
       seen.set(base, count + 1);
-      children.push(toReact(child, regions, blocks, count ? `${base}:${count}` : base, form));
+      children.push(toReact(child, regions, blocks, count ? `${base}:${count}` : base, form, create));
     }
   }
   if (FIELDS.has(node.tag)) bindForm(node, props, children, form);
-  if (children.length > 1) return reactJsxs(type, { ...props, children }, key);
+  if (children.length > 1) return create(type, { ...props, children }, key, true);
   if (children.length === 1) props.children = children[0];
-  return reactJsx(type, props, key);
+  return create(type, props, key, false);
 }
 
 /**
@@ -460,10 +471,10 @@ function useMark(authorRef, controlled, handlers, mounted) {
 /**
  * @param {string} tag
  * @param {Template} template
- * @param {{ markHost: boolean, server: boolean, readers: Set<string>, dev: boolean, warned: Set<string> }} options
+ * @param {{ markHost: boolean, server: boolean, readers: Set<string>, dev: boolean, warned: Set<string>, create: Create }} options
  *   `readers` holds the tags whose templates name this tag as their `within`; `warned` holds the warnings given once.
  */
-function hostFor(tag, template, { markHost, server, readers, dev, warned }) {
+function hostFor(tag, template, { markHost, server, readers, dev, warned, create }) {
   const { within: enclosing } = template;
   const provider = readers.size > 0;
   /** @param {Element} el */
@@ -531,12 +542,12 @@ function hostFor(tag, template, { markHost, server, readers, dev, warned }) {
     const lent = provider && { attrs, controlled, hasOnChange: typeof props.onChange === "function" };
     const placed = lent ? /** @type {ReactNode[]} */ (lend(items, tag, lent, dev ? expanded : null)) : items;
     const form = held ? { host: heldState(held, within?.hasOnChange === true || typeof props.onChange === "function"), controlled } : { host: props, controlled };
-    const root = toReact(node, distribute(node, placed, slotOf), blocks, keyOf(node, blocks, 0), form);
+    const root = toReact(node, distribute(node, placed, slotOf), blocks, keyOf(node, blocks), form, create);
     const fixed = control?.tag === "input" && FIXED_VALUE.has(inputTypeOf(control));
     // A field assigns a value it is handed to its live control, which would overwrite what the user typed.
     if ((server && !fixed) || host.value == null) delete host.value;
     if (server || host.checked == null) delete host.checked;
-    return reactJsx(/** @type {ElementType} */ (tag), { ...host, ...mark, children: root });
+    return create(/** @type {ElementType} */ (tag), { ...host, ...mark, children: root }, undefined, false);
   }
   NeuwoHost.displayName = tag;
   hostTags.set(NeuwoHost, tag);
@@ -546,15 +557,20 @@ function hostFor(tag, template, { markHost, server, readers, dev, warned }) {
 
 /**
  * @param {Record<string, Template>} registry
- * @param {{ markHost?: boolean, server?: boolean, dev?: boolean }} [options] `server` renders for React Server
+ * @param {{ factory: Factory, markHost?: boolean, server?: boolean, dev?: boolean }} options `factory` is React's own
+ *   runtime, handed in by each entry so that it imports only the one it needs: `jsx` and `jsxs`, or `jsxDEV`. `server` renders for React Server
  *   Components: no form control is controlled, the element itself gets no `checked`, and no `value` unless its control
  *   is an input whose value names it, such as a radio, and the adapter adds no function prop. `dev` warns once per tag
  *   when a reader mounts inside its `within` element without its attributes, once per reader and enclosing tag when
  *   that element is handed the reader already rendered, and once per tag each when an element that keeps its options
  *   in a `<select>` is given options, or an option's label, that a component of the app's own renders.
- * @returns {{ jsx: typeof reactJsx, jsxs: typeof reactJsxs, jsxDEV: typeof reactJsxDEV }}
+ * @returns {{ jsx: Jsx, jsxs: Jsxs, jsxDEV: JsxDEV }}
  */
-export function createRuntime(registry, { markHost = true, server = false, dev = false } = {}) {
+export function createRuntime(registry, { factory, markHost = true, server = false, dev = false }) {
+  /** @type {Create} */
+  const create = "jsxDEV" in factory
+    ? (type, props, key, isStatic, source, self) => factory.jsxDEV(type, props, key, isStatic, source, self)
+    : (type, props, key, isStatic) => (isStatic ? factory.jsxs : factory.jsx)(type, props, key);
   /** @type {Map<string, ReturnType<typeof hostFor>>} */
   const hosts = new Map();
   /** @type {Map<string, Set<string>>} */
@@ -566,12 +582,12 @@ export function createRuntime(registry, { markHost = true, server = false, dev =
   const resolve = (type) => {
     if (typeof type !== "string" || !Object.hasOwn(registry, type)) return type;
     let host = hosts.get(type);
-    if (!host) hosts.set(type, (host = hostFor(type, registry[type], { markHost, server, readers: readers.get(type) ?? new Set(), dev, warned })));
+    if (!host) hosts.set(type, (host = hostFor(type, registry[type], { markHost, server, readers: readers.get(type) ?? new Set(), dev, warned, create })));
     return host;
   };
   return {
-    jsx: (type, props, key) => reactJsx(resolve(type), props, key),
-    jsxs: (type, props, key) => reactJsxs(resolve(type), props, key),
-    jsxDEV: (type, props, key, isStatic, source, self) => reactJsxDEV(resolve(type), props, key, isStatic, source, self),
+    jsx: (type, props, key) => create(resolve(type), props, key, false),
+    jsxs: (type, props, key) => create(resolve(type), props, key, true),
+    jsxDEV: (type, props, key, isStatic, source, self) => create(resolve(type), props, key, isStatic, source, self),
   };
 }

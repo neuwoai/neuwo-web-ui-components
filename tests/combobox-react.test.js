@@ -3,7 +3,7 @@ import { Activity, Fragment, Profiler, StrictMode, Suspense, act, createContext,
 import { createRoot, hydrateRoot } from "react-dom/client";
 import { renderToString } from "react-dom/server";
 import "../src/index.js";
-import { createRuntime } from "../src/core/adapters/react.js";
+import { createRuntime } from "./fixtures/runtime.js";
 import { CONTROLLED } from "../src/core/marks.js";
 import { jsx, jsxs } from "../src/react/jsx-runtime.js";
 import { templates } from "../src/templates.js";

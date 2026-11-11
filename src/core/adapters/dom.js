@@ -1,4 +1,4 @@
-import { DEFAULT_REGION, blocksOf, distribute, keyClassOf } from "../template.js";
+import { DEFAULT_REGION, blocksOf, classesOf, distribute, keyClassOf } from "../template.js";
 import { idScope } from "../ids.js";
 
 /** @typedef {import("../template.js").TemplateNode} TemplateNode */
@@ -108,21 +108,19 @@ const slotOf = (node) => (node.nodeType === ELEMENT && /** @type {Element} */ (n
 /** @param {Node} node */
 const isContent = (node) => node.nodeType === ELEMENT || (node.nodeType === TEXT && /** @type {Text} */ (node).data.trim() !== "");
 
-/** @param {TemplateNode} node */
-const classesOf = (node) => (typeof node.props.class === "string" ? node.props.class.trim().split(/\s+/) : []);
-
 /**
+ * Every element a template renders has a key class, which the contract test requires.
  * @param {TemplateNode} node
  * @param {Set<string>} blocks
  */
-const keyOf = (node, blocks) => keyClassOf(node, blocks) ?? "";
+const keyOf = (node, blocks) => /** @type {string} */ (keyClassOf(node, blocks));
 
 /**
  * @param {Element} el
  * @param {TemplateNode} node
  * @param {Set<string>} blocks
  */
-const matches = (el, node, blocks) => el.localName === node.tag && (!keyOf(node, blocks) || el.classList.contains(keyOf(node, blocks)));
+const matches = (el, node, blocks) => el.localName === node.tag && el.classList.contains(keyOf(node, blocks));
 
 /**
  * @param {TemplateNode} node

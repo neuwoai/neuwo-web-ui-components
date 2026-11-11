@@ -5,7 +5,7 @@ import { renderToStaticMarkup, renderToString } from "react-dom/server";
 import { h, has, raw, region } from "../src/core/template.js";
 import { idScope } from "../src/core/ids.js";
 import { renderElement } from "../src/core/adapters/html.js";
-import { createRuntime } from "../src/core/adapters/react.js";
+import { createRuntime } from "./fixtures/runtime.js";
 import { NESTED, described, nestedBlocks } from "./fixtures/nested-children.js";
 import * as runtime from "../src/react/jsx-runtime.js";
 import * as devRuntime from "../src/react/jsx-dev-runtime.js";
@@ -140,7 +140,7 @@ describe("createRuntime()", () => {
       { tag: null, attrs: {}, text: "2", slot: "default" },
       {
         tag: "b",
-        attrs: { slot: "start", title: "t", hidden: "" },
+        attrs: { slot: "start", title: "t", hidden: "", class: "c" },
         text: "ab",
         slot: "start",
         children: [

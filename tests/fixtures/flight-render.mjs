@@ -4,7 +4,7 @@ import { renderToPipeableStream } from "react-server-dom-webpack/server";
 import { createFromReadableStream } from "react-server-dom-webpack/client.edge";
 import * as runtime from "@neuwo/web-ui-library--demo/jsx-runtime";
 import * as devRuntime from "@neuwo/web-ui-library--demo/jsx-dev-runtime";
-import { createRuntime } from "../../src/core/adapters/react.js";
+import { createRuntime } from "./runtime.js";
 import { formTemplates } from "./form-fields.js";
 import { withinTemplates } from "./within.js";
 
