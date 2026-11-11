@@ -68,6 +68,12 @@ describe("rangeValue", () => {
     expect(rangeValue({ min: "0", value: "0.3", step: "0.1" })).toBe(0.3);
   });
 
+  it("keeps an on-step maximum with a fractional step", () => {
+    expect(rangeValue({ min: "0", max: "0.3", step: "0.1", value: "0.3" })).toBe(0.3);
+    expect(rangeValue({ min: "0.1", max: "0.7", step: "0.2", value: "0.7" })).toBe(0.7);
+    expect(fillPercent(rangeValue({ min: "0", max: "0.3", step: "0.1", value: "0.3" }), "0", "0.3")).toBe(100);
+  });
+
   it("rounds decimal ties up despite binary floats", () => {
     expect(rangeValue({ min: "0", value: "0.35", step: "0.1" })).toBe(0.4);
     expect(rangeValue({ min: "0", value: "0.15", step: "0.1" })).toBe(0.2);
@@ -122,5 +128,10 @@ describe("rangeTemplate", () => {
 
   it("is in the server markup, so the first paint is filled", () => {
     expect(expand(`<neuwo-range min="0" max="200" value="50"></neuwo-range>`)).toContain('style="--neuwo-range-fill:25%"');
+  });
+
+  it("serves a full fill for an on-step maximum with a fractional step", () => {
+    expect(expand(`<neuwo-range min="0" max="0.3" step="0.1" value="0.3"></neuwo-range>`)).toContain('style="--neuwo-range-fill:100%"');
+    expect(expand(`<neuwo-range min="0.1" max="0.7" step="0.2" value="0.7"></neuwo-range>`)).toContain('style="--neuwo-range-fill:100%"');
   });
 });

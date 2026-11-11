@@ -33,10 +33,11 @@ export function rangeValue(attrs) {
   if (!(step > 0)) return value;
   const authored = Number(attrs.value);
   const base = isNumber(attrs.min) ? min : isNumber(attrs.value) ? authored : 0;
+  const at = (/** @type {number} */ count) => Number((base + count * step).toPrecision(12));
   let count = Math.floor(Number(((value - base) / step).toPrecision(12)) + 0.5);
-  if (base + count * step > max) count -= 1;
-  else if (base + count * step < min) count += 1;
-  return Number((base + count * step).toPrecision(12));
+  if (at(count) > max) count -= 1;
+  else if (at(count) < min) count += 1;
+  return at(count);
 }
 
 /**
