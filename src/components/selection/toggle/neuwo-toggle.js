@@ -1,64 +1,36 @@
-import { NeuwoBooleanControl } from "../boolean-control.js";
 import { define } from "../../../core/element.js";
-import { sheet } from "../../../core/sheet.js";
-import { controlsSheet } from "../controls.js";
-import toggleCss from "./toggle.css?raw";
+import { NeuwoChoiceElement } from "../choice-element.js";
+import { toggleTemplate } from "./toggle.template.js";
 
 /**
- * On/off switch backed by a hidden native checkbox.
+ * On/off switch backed by a visually hidden native checkbox with `role="switch"`, which is the form control.
  *
  * With `pulse`, a switch that is still off rings in the brand accent to invite
  * the visitor to flip it, and stops the moment it is on. The stopping is done
  * by the recipe's selector, not by JavaScript, so switching back and forth
  * never restarts the ring mid-cycle.
  *
- * @summary Neuwo toggle / switch.
+ * @summary Neuwo toggle / switch. Public classes: `.neuwo-choice` on the wrapper; `.neuwo-form-toggle` on the `<label>`, with `--pulse` and `--error`; `.neuwo-form-toggle__input` on the visually hidden native switch; `.neuwo-form-toggle__track` on the switch track, whose `::after` is the thumb; `.neuwo-form-toggle__label` around the label content; `.neuwo-choice__error` on the error line.
  * @customElement neuwo-toggle
  * @attr {boolean} pulse - ring the track while the switch is off, to draw attention to it; honours prefers-reduced-motion.
- * @csspart field - the track/label row.
- * @csspart track - the switch track (its ::after is the thumb).
- * @csspart label - the toggle label text.
+ * @slot - the label content, inside the `<label>` that wraps the switch.
  * @cssprop --neuwo-toggle-pulse-spread - how far the pulse ring travels (default 12px). No effect without `pulse`.
  * @cssprop --neuwo-toggle-pulse-alpha - opacity the pulse ring starts from (default 40%). No effect without `pulse`.
  */
-export class NeuwoToggle extends NeuwoBooleanControl {
-  static formAssociated = true;
-  static styles = [sheet(toggleCss), controlsSheet];
-  static observedAttributes = [...NeuwoBooleanControl.observedAttributes, "pulse"];
+export class NeuwoToggle extends NeuwoChoiceElement {
+  static template = toggleTemplate;
+  static observedAttributes = [...NeuwoChoiceElement.observedAttributes, "pulse"];
 
-  get accentClass() { return "form-toggle--error"; }
-
-  get pulse() { return this.hasAttribute("pulse"); }
-  set pulse(value) { this.toggleAttribute("pulse", Boolean(value)); }
-
-  // Runs at the end of every patch. The class only says the axis is on; the
-  // recipe decides when the ring actually runs.
-  syncControl() {
-    this.row?.classList.toggle("form-toggle--pulse", this.hasAttribute("pulse"));
+  /** @returns {HTMLInputElement | null} */
+  get control() {
+    return this.querySelector(":scope > .neuwo-choice > .neuwo-form-toggle > .neuwo-form-toggle__input");
   }
 
-  createControl() {
-    const input = document.createElement("input");
-    input.type = "checkbox";
-    input.setAttribute("role", "switch");
-    input.className = "form-toggle__input";
-    return input;
+  get pulse() {
+    return this.hasAttribute("pulse");
   }
-
-  renderRow(input) {
-    const label = document.createElement("label");
-    label.className = "form-toggle";
-    label.setAttribute("part", "field");
-    const track = document.createElement("span");
-    track.className = "form-toggle__track";
-    track.setAttribute("part", "track");
-    track.setAttribute("aria-hidden", "true");
-    const text = document.createElement("span");
-    text.className = "form-toggle__label";
-    text.setAttribute("part", "label");
-    text.append(document.createElement("slot"));
-    label.append(input, track, text);
-    return label;
+  set pulse(value) {
+    this.toggleAttribute("pulse", Boolean(value));
   }
 }
 

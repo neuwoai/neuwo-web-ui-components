@@ -1,6 +1,12 @@
-/* Shared, reserved error line for the selection controls. Always present and
-   reserving one line, so showing or hiding the message never shifts layout. */
-.control-error {
+.neuwo-choice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--neuwo-space-1);
+  align-items: flex-start;
+}
+
+/* Reserves its line even when empty, so an error appearing never shifts layout. */
+.neuwo-choice__error {
   display: block;
   min-height: 1lh;
   font-size: var(--neuwo-font-size-sm);

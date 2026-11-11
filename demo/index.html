@@ -48,6 +48,18 @@
         color: black !important;
         border-radius: 0 !important;
       }
+      /* Hostile rule: the old unprefixed classes no longer reach the checkboxes and switches. */
+      .form-check,
+      .form-check__input,
+      .form-check__label,
+      .form-toggle,
+      .form-toggle__track,
+      .control-error {
+        background: hotpink !important;
+        color: black !important;
+        border-radius: 0 !important;
+        outline: 4px solid black !important;
+      }
       /* Hostile rule: the old unprefixed class no longer reaches the sliders. */
       .range {
         background: hotpink !important;
@@ -629,6 +641,10 @@
     </script>
 
     <h2>Selection: checkbox</h2>
+    <p>
+      The page defines a hostile <code>.form-check</code> rule. The classes are prefixed
+      <code>.neuwo-form-check</code>, so it does not reach them.
+    </p>
     <form id="checkbox-form" class="row">
       <neuwo-checkbox name="news" value="weekly">Weekly newsletter</neuwo-checkbox>
       <neuwo-checkbox checked>Pre-checked</neuwo-checkbox>
@@ -637,7 +653,10 @@
       <neuwo-checkbox id="parent-cb">Select all (indeterminate)</neuwo-checkbox>
     </form>
     <script>
-      document.getElementById("parent-cb").indeterminate = true;
+      // Set before the deferred module defines the element, the property would shadow its accessor.
+      customElements.whenDefined("neuwo-checkbox").then(() => {
+        document.getElementById("parent-cb").indeterminate = true;
+      });
     </script>
 
     <h2>Selection: toggle / switch</h2>
@@ -657,7 +676,7 @@
       <neuwo-toggle pulse>Bid Enrichment</neuwo-toggle>
       <neuwo-toggle pulse checked>Already on, so no ring</neuwo-toggle>
       <neuwo-toggle pulse disabled>Disabled</neuwo-toggle>
-      <!-- The ring's two knobs inherit through the shadow boundary. -->
+      <!-- The ring's two knobs are custom properties, set here on the element. -->
       <neuwo-toggle pulse style="--neuwo-toggle-pulse-spread: 20px; --neuwo-toggle-pulse-alpha: 60%">Louder ring</neuwo-toggle>
     </div>
 

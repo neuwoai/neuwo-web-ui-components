@@ -14,20 +14,33 @@ function attributeType(text) {
   return members.map((value) => (/^\d+$/.test(value) ? `${value} | "${value}"` : JSON.stringify(value))).join(" | ");
 }
 
+function isCheckable(declaration) {
+  return (declaration.attributes ?? []).some(({ name }) => name === "checked");
+}
+
 function isFormControl(declaration) {
   return (declaration.attributes ?? []).some(({ name }) => name === "value") && (declaration.events ?? []).some(({ name }) => name === "change");
 }
 
+function propType(name, type, { checkable, form }) {
+  if (checkable && name === "checked") return "boolean";
+  if ((checkable || form) && name === "value") return "string | number";
+  return attributeType(type);
+}
+
 function elementProps(declaration) {
+  const checkable = isCheckable(declaration);
   const form = isFormControl(declaration);
   const lines = [];
   const seen = new Set();
   for (const { name, type } of declaration.attributes ?? []) {
     if (seen.has(name)) continue;
     seen.add(name);
-    lines.push(`${propKey(name)}?: ${form && name === "value" ? "string | number" : attributeType(type?.text)};`);
+    lines.push(`${propKey(name)}?: ${propType(name, type?.text, { checkable, form })};`);
   }
-  if (form) lines.push("defaultValue?: string | number;", `onChange?: React.ChangeEventHandler<${declaration.name}>;`);
+  // React's own HTML props allow defaultValue on every element, so a checkable one refuses it explicitly.
+  if (checkable) lines.push("defaultChecked?: boolean;", "defaultValue?: never;", `onChange?: React.ChangeEventHandler<${declaration.name}>;`);
+  else if (form) lines.push("defaultValue?: string | number;", `onChange?: React.ChangeEventHandler<${declaration.name}>;`);
   // React 19 binds an on* prop on a custom element to the event of exactly that name, case and all.
   for (const { name, type } of declaration.events ?? []) {
     if (!name || !type?.text.startsWith("CustomEvent")) continue;

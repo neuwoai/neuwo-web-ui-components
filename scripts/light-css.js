@@ -11,5 +11,8 @@ export const LIGHT_COMPONENT_CSS = [
   "src/components/fields/textarea/textarea.css",
   "src/components/logo/logo.css",
   "src/components/notice/notice.css",
+  "src/components/selection/controls.css",
+  "src/components/selection/form-check.css",
+  "src/components/selection/toggle/toggle.css",
   "src/components/status-dot/status-dot.css",
 ];

@@ -110,6 +110,20 @@ export const cases = {
       children: ["Plain headline", { tag: "neuwo-button", attrs: { slot: "actions" }, text: "Go" }],
     },
   ],
+  "neuwo-checkbox": [
+    { name: "checked", attrs: { name: "terms", checked: "" }, children: ["I accept the terms"] },
+    { name: "unchecked with a custom value", attrs: { name: "news", value: "weekly", form: "signup" }, children: ["Weekly newsletter"] },
+    {
+      name: "required with an error",
+      attrs: { name: "terms", required: "", error: "You must accept the terms" },
+      children: ["I accept the ", { tag: "a", attrs: { href: "/terms" }, text: "terms" }],
+    },
+    { name: "no error line", attrs: { "no-error-line": "", "aria-label": "Select all", title: "Select all", "data-x": "1" }, children: ["All"] },
+  ],
+  "neuwo-toggle": [
+    { name: "pulse", attrs: { name: "enrich", pulse: "" }, children: ["Bid Enrichment"] },
+    { name: "checked, disabled and a muted error", attrs: { checked: "", disabled: "", error: "Unavailable", "error-muted": "" }, children: ["On by default"] },
+  ],
   "neuwo-deal-id": [
     { name: "default", attrs: {}, children: ["NW-CA-2026-04-8A3F"] },
     { name: "small", attrs: { size: "s" }, children: ["NW-1"] },

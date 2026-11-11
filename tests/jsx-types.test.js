@@ -96,6 +96,37 @@ describe("JSX types", () => {
     expect(generated).not.toContain("React.ChangeEventHandler<Plain>");
   });
 
+  it("gives a checkable element React's checkbox props, typing the target as the element, and refuses defaultValue", () => {
+    for (const [tag, name] of [["neuwo-checkbox", "NeuwoCheckbox"], ["neuwo-toggle", "NeuwoToggle"]]) {
+      const props = block(tag);
+      expect(props).toContain("checked?: boolean;");
+      expect(props).toContain("defaultChecked?: boolean;");
+      expect(props).toContain(`onChange?: React.ChangeEventHandler<${name}>;`);
+      expect(props).toContain("defaultValue?: never;");
+      expect(props).not.toMatch(/defaultValue\?: string/);
+      expect(props.match(/\bchecked\?:/g)).toHaveLength(1);
+      expect(props.match(/\bonChange\?:/g)).toHaveLength(1);
+    }
+  });
+
+  it("reads a checked attribute whatever its declared type, with or without a change event", () => {
+    const generated = jsxElementsTypes({
+      modules: [
+        {
+          declarations: [
+            { kind: "class", name: "Check", tagName: "x-check", attributes: [{ name: "checked" }, { name: "value" }], events: [{ name: "change", type: { text: "Event" } }] },
+            { kind: "class", name: "Lone", tagName: "x-lone", attributes: [{ name: "checked", type: { text: "boolean" } }] },
+          ],
+        },
+      ],
+    });
+    expect(generated).toContain("checked?: boolean;");
+    expect(generated).not.toContain("checked?: string;");
+    expect(generated).toContain("onChange?: React.ChangeEventHandler<Check>;");
+    expect(generated).toContain("onChange?: React.ChangeEventHandler<Lone>;");
+    expect(generated).not.toContain("defaultValue?: string | number;");
+  });
+
   it("leaves an element with a value but no change event to React's own props", () => {
     const button = block("neuwo-button");
     expect(button).toContain("value?: string;");

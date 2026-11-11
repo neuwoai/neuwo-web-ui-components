@@ -82,10 +82,15 @@ describe("custom-elements.json", () => {
       expect(attrs).toContain(a);
   });
 
-  it("documents the shared boolean attributes on the checkbox", () => {
-    const attrs = attributesFor(manifest, "neuwo-checkbox");
-    for (const a of ["name", "value", "checked", "disabled", "required", "error", "error-muted", "no-error-line"])
-      expect(attrs).toContain(a);
+  it("documents the shared checkable attributes, the native events and no parts on the checkbox and the toggle", () => {
+    for (const tag of ["neuwo-checkbox", "neuwo-toggle"]) {
+      const attrs = attributesFor(manifest, tag);
+      for (const a of ["name", "value", "checked", "disabled", "form", "required", "error", "error-muted", "no-error-line"])
+        expect(attrs, tag).toContain(a);
+      expect(declByTag(manifest, tag).events.map((e) => e.name), tag).toEqual(expect.arrayContaining(["input", "change"]));
+      expect(partsFor(manifest, tag).size, tag).toBe(0);
+    }
+    expect(attributesFor(manifest, "neuwo-toggle").has("pulse")).toBe(true);
   });
 
   it("documents the shared single-select attributes on the radio group", () => {
@@ -122,10 +127,7 @@ describe("custom-elements.json", () => {
     expect(partsFor(manifest, "neuwo-combobox").size).toBe(0);
   });
 
-  it("documents the selection-control parts", () => {
-    for (const p of ["field", "label"]) expect(partsFor(manifest, "neuwo-checkbox").has(p)).toBe(true);
-    for (const p of ["field", "track", "label"]) expect(partsFor(manifest, "neuwo-toggle").has(p)).toBe(true);
-    expect(attributesFor(manifest, "neuwo-toggle").has("pulse")).toBe(true);
+  it("documents the Shadow DOM selection-control parts", () => {
     for (const p of ["field", "input", "label"]) expect(partsFor(manifest, "neuwo-radio").has(p)).toBe(true);
     for (const p of ["legend", "options"]) expect(partsFor(manifest, "neuwo-radio-group").has(p)).toBe(true);
     for (const p of ["indicator", "option"]) expect(partsFor(manifest, "neuwo-segmented").has(p)).toBe(true);

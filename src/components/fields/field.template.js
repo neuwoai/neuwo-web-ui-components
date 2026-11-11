@@ -17,8 +17,28 @@ export function controlClass(attrs) {
 }
 
 /**
+ * The host attributes a native control carries for assistive technology: every `aria-*` and `title`, and the
+ * error's `aria-invalid` and `aria-describedby`, which `no-error-line` leaves off.
+ * @param {Record<string, string>} attrs
+ * @param {TemplateContext} ctx
+ * @returns {Record<string, string>}
+ */
+export function ariaAttrs(attrs, ctx) {
+  /** @type {Record<string, string>} */
+  const props = {};
+  for (const [name, value] of Object.entries(attrs)) {
+    if (name === "title" || name.startsWith("aria-")) props[name] = value;
+  }
+  if (!has(attrs, "no-error-line")) {
+    if (has(attrs, "error")) props["aria-invalid"] = "true";
+    if (attrs.error) props["aria-describedby"] = ctx.id("error");
+  }
+  return props;
+}
+
+/**
  * The attributes of a field's control: its id, the host attributes in `names` that are present, `disabled`,
- * `form`, every host `aria-*` and `title`, and the error's `aria-invalid` and `aria-describedby`.
+ * `form`, and the `ariaAttrs`.
  * @param {Record<string, string>} attrs
  * @param {TemplateContext} ctx
  * @param {string[]} names
@@ -30,14 +50,7 @@ export function controlAttrs(attrs, ctx, names) {
   for (const name of names) if (has(attrs, name)) props[name] = attrs[name];
   if (has(attrs, "disabled")) props.disabled = true;
   if (has(attrs, "form")) props.form = attrs.form;
-  for (const [name, value] of Object.entries(attrs)) {
-    if (name === "title" || name.startsWith("aria-")) props[name] = value;
-  }
-  if (!has(attrs, "no-error-line")) {
-    if (has(attrs, "error")) props["aria-invalid"] = "true";
-    if (attrs.error) props["aria-describedby"] = ctx.id("error");
-  }
-  return props;
+  return Object.assign(props, ariaAttrs(attrs, ctx));
 }
 
 /**

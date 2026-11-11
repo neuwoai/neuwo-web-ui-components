@@ -2,6 +2,46 @@
 
 ## Unreleased
 
+- Breaking: `<neuwo-checkbox>` and `<neuwo-toggle>` render into their own light DOM from one template
+  each, so a server-rendered checkbox or toggle is styled from the first paint, and their recipes,
+  `components/selection/controls.css`, `components/selection/form-check.css` and
+  `components/selection/toggle/toggle.css`, join `neuwo-components.css`. Both render a new root,
+  `.neuwo-choice`, around their row and the error line. Their classes are prefixed: `.form-check` is now
+  `.neuwo-form-check` (with `.neuwo-form-check--error`), `.form-check__input` and `.form-check__label` are
+  now `.neuwo-form-check__input` and `.neuwo-form-check__label`, `.form-toggle` is now `.neuwo-form-toggle`
+  (with `.neuwo-form-toggle--pulse` and `.neuwo-form-toggle--error`), `.form-toggle__input`,
+  `.form-toggle__track` and `.form-toggle__label` are now `.neuwo-form-toggle__input`,
+  `.neuwo-form-toggle__track` and `.neuwo-form-toggle__label`, and the error line's `.control-error` is now
+  `.neuwo-choice__error`. The `toggle-pulse` keyframes are now `neuwo-toggle-pulse`.
+- Breaking: `::part(field)`, `::part(input)`, `::part(label)` and `::part(error)` on `<neuwo-checkbox>`
+  and `<neuwo-toggle>`, and `::part(track)` on the toggle, are gone. Restyle through the classes, with the
+  element name in front for weight: `neuwo-checkbox .neuwo-form-check__label { font-weight: 500; }`.
+- Breaking: `<neuwo-checkbox>` and `<neuwo-toggle>` are no longer form-associated. Their native checkbox
+  sits inside your form and carries `name`, `value`, `checked`, `required`, `disabled` and `form`, so they
+  submit, reset and validate natively, in server-rendered markup before the script has loaded too, and
+  `form="id"` now ties one outside its form to that form. The `checked` attribute is the starting state,
+  as on a native checkbox: it no longer follows a click or the `checked` property, changing it moves only
+  a checkbox the user has not clicked, and a form reset returns to it and no longer clears `error`. A
+  required one left unchecked reports the browser's own message instead of "Please tick this box.".
+  `form`, `validity`, `validationMessage`, `checkValidity()`, `reportValidity()`, `setCustomValidity()`,
+  `focus()` and `blur()` act on the inner checkbox, and `name`, `form` and `defaultChecked` are now
+  properties too.
+- Breaking: `<neuwo-checkbox>` and `<neuwo-toggle>` no longer dispatch their own `change`. The inner
+  checkbox's own `change` bubbles through the element, once, and its `input` now does too, so listeners
+  get the inner `<input>` as `event.target`, not the element; use `event.currentTarget` for the element.
+- Breaking: an indeterminate `<neuwo-checkbox>` no longer writes `aria-checked="mixed"` onto its checkbox,
+  since the native indeterminate state is already announced as mixed. `indeterminate` is the inner
+  checkbox's own property, which a click clears.
+- Breaking: `data-*` on `<neuwo-checkbox>` and `<neuwo-toggle>` stays on the element and is no longer
+  copied onto the inner checkbox, so a query such as `[data-testid="terms"]` matches one node. `aria-*`
+  and `title` are still copied, and a later change or removal now reaches the inner checkbox too.
+- The transition on the box of `<neuwo-checkbox>` now stops under `prefers-reduced-motion: reduce`, as
+  the toggle's already did.
+- Through the JSX runtime, `<neuwo-checkbox>` and `<neuwo-toggle>` behave like React's own checkbox:
+  `checked` makes one controlled, `defaultChecked` starts an uncontrolled one, and `onChange` fires on
+  every click with the inner checkbox as `event.target`. The JSX types give an element with a `checked`
+  attribute `checked` and `defaultChecked` as booleans, `value` as a string or a number and an `onChange`
+  whose target is typed as the element, and refuse `defaultValue` on it.
 - Breaking: `<neuwo-input>` renders into its own light DOM from one template, so a server-rendered
   input is styled from the first paint, and its recipe, `components/fields/field.css`, joins
   `neuwo-components.css`. Its classes are prefixed: `.field` is now `.neuwo-field` (with

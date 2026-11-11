@@ -1,23 +1,20 @@
 /* ==========================================================================
    Selection: Toggle / Switch -- hidden native checkbox drives the state,
-   the .form-toggle__track is the visible control, its ::after is the thumb.
+   the .neuwo-form-toggle__track is the visible control, its ::after is the thumb.
    ========================================================================== */
 
-:host {
+neuwo-toggle:not([hidden]) {
   display: inline-flex;
-  flex-direction: column;
-  gap: var(--neuwo-space-1);
-  align-items: flex-start;
 }
 
-.form-toggle {
+.neuwo-form-toggle {
   display: inline-flex;
   align-items: center;
   gap: var(--neuwo-space-3);
   cursor: pointer;
 }
 
-.form-toggle__input {
+.neuwo-form-toggle__input {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -29,7 +26,7 @@
   border: 0;
 }
 
-.form-toggle__track {
+.neuwo-form-toggle__track {
   position: relative;
   display: block;
   flex-shrink: 0;
@@ -43,7 +40,7 @@
     box-shadow var(--neuwo-transition-fast);
 }
 
-.form-toggle__track::after {
+.neuwo-form-toggle__track::after {
   content: "";
   position: absolute;
   top: 50%;
@@ -59,25 +56,25 @@
 /* Checked: the track fills solid --neuwo-color-blue and the thumb stays
    --neuwo-color-heading in both states, just sliding across (matches the
    design-system reference recipe). */
-.form-toggle__input:checked + .form-toggle__track {
+.neuwo-form-toggle__input:checked + .neuwo-form-toggle__track {
   background: var(--neuwo-color-blue);
 }
 
-.form-toggle__input:checked + .form-toggle__track::after {
+.neuwo-form-toggle__input:checked + .neuwo-form-toggle__track::after {
   transform: translateY(-50%) translateX(1.5rem);
 }
 
-.form-toggle__input:focus-visible + .form-toggle__track {
+.neuwo-form-toggle__input:focus-visible + .neuwo-form-toggle__track {
   outline: none;
   box-shadow: var(--neuwo-shadow-focus);
 }
 
-.form-toggle__input:disabled + .form-toggle__track {
+.neuwo-form-toggle__input:disabled + .neuwo-form-toggle__track {
   opacity: var(--neuwo-opacity-disabled);
   cursor: not-allowed;
 }
 
-.form-toggle__label {
+.neuwo-form-toggle__label {
   font-family: var(--neuwo-font-text);
   font-size: var(--neuwo-font-size-base);
   color: var(--neuwo-color-text);
@@ -86,12 +83,12 @@
   line-height: 1.5;
 }
 
-.form-toggle:has(.form-toggle__input:disabled) .form-toggle__label {
+.neuwo-form-toggle:has(.neuwo-form-toggle__input:disabled) .neuwo-form-toggle__label {
   opacity: var(--neuwo-opacity-disabled);
   cursor: not-allowed;
 }
 
-.form-toggle--error .form-toggle__track {
+.neuwo-form-toggle--error .neuwo-form-toggle__track {
   border-color: var(--neuwo-color-red);
   box-shadow: var(--neuwo-shadow-danger);
 }
@@ -103,19 +100,19 @@
    it never competes with the track's focus and error box-shadows.
 
    Shaped like the CTA button's ring and parameterised the same way, but with a
-   keyframe of its own: a shadow root cannot inherit keyframes, and a published
-   recipe has to be complete on its own. The two knobs are read with a fallback
-   rather than declared, so a consumer can set either from :root or the host. */
-.form-toggle--pulse .form-toggle__input:not(:checked) + .form-toggle__track::before {
+   keyframe of its own, since a published recipe has to be complete on its own.
+   The two knobs are read with a fallback rather than declared, so a consumer can
+   set either from :root or the host. */
+.neuwo-form-toggle--pulse .neuwo-form-toggle__input:not(:checked) + .neuwo-form-toggle__track::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  animation: toggle-pulse 3s ease-in-out infinite;
+  animation: neuwo-toggle-pulse 3s ease-in-out infinite;
 }
 
-@keyframes toggle-pulse {
+@keyframes neuwo-toggle-pulse {
   0% {
     box-shadow: 0 0 0 0 color-mix(in srgb, var(--neuwo-color-blue) var(--neuwo-toggle-pulse-alpha, 40%), transparent);
   }
@@ -128,12 +125,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .form-toggle__track,
-  .form-toggle__track::after {
+  .neuwo-form-toggle__track,
+  .neuwo-form-toggle__track::after {
     transition: none;
   }
 
-  .form-toggle--pulse .form-toggle__input:not(:checked) + .form-toggle__track::before {
+  .neuwo-form-toggle--pulse .neuwo-form-toggle__input:not(:checked) + .neuwo-form-toggle__track::before {
     animation: none;
   }
 }

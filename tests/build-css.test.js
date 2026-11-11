@@ -13,10 +13,13 @@ const COMPONENTS = "src/components";
 const folders = readdirSync(join(root, COMPONENTS), { recursive: true })
   .map((path) => posix.join(COMPONENTS, path))
   .filter((path) => statSync(join(root, path)).isDirectory());
+// Adopted by the selection controls still on Shadow DOM, so they never join the light stylesheets.
+const SHADOW_ONLY = new Set(["src/components/selection/shadow-controls.css", "src/components/selection/shadow-form-check.css"]);
 const cssIn = (folder) =>
   readdirSync(join(root, folder))
     .filter((file) => file.endsWith(".css"))
-    .map((file) => posix.join(folder, file));
+    .map((file) => posix.join(folder, file))
+    .filter((file) => !SHADOW_ONLY.has(file));
 
 function recipesOf(tag) {
   const name = tag.replace(/^neuwo-/, "");

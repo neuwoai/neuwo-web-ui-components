@@ -20,11 +20,13 @@ function toReact(child) {
   return jsx(child.tag, { ...props, children: child.text });
 }
 
-// React warns about a value without onChange, and a fixture's value is only the starting value.
-const handlers = (attrs) => (Object.hasOwn(attrs, "value") ? { onChange() {} } : {});
+// React warns about a value or checked without onChange, and a fixture's are only the starting state.
+const handlers = (attrs) => (Object.hasOwn(attrs, "value") || Object.hasOwn(attrs, "checked") ? { onChange() {} } : {});
+// A JSX `checked` is a boolean, and the adapter reads an empty string as unchecked.
+const checked = (attrs) => (Object.hasOwn(attrs, "checked") ? { checked: true } : {});
 
 const viaReact = (tag, testCase) =>
-  renderToStaticMarkup(jsxs(tag, { ...testCase.attrs, ...handlers(testCase.attrs), children: testCase.children.map(toReact) }));
+  renderToStaticMarkup(jsxs(tag, { ...testCase.attrs, ...checked(testCase.attrs), ...handlers(testCase.attrs), children: testCase.children.map(toReact) }));
 
 const mounted = [];
 afterEach(() => {

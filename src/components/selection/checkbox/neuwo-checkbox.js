@@ -1,66 +1,44 @@
-import { NeuwoBooleanControl } from "../boolean-control.js";
 import { define } from "../../../core/element.js";
-import { formCheckSheet } from "../form-check.js";
-import { controlsSheet } from "../controls.js";
+import { NeuwoChoiceElement } from "../choice-element.js";
+import { checkboxTemplate } from "./checkbox.template.js";
 
 /**
- * Checkbox with an optional indeterminate state.
+ * Checkbox with an optional indeterminate state. The native checkbox inside is the form control, so it submits
+ * with its form and validates natively.
  *
- * @summary Neuwo checkbox.
+ * @summary Neuwo checkbox. Public classes: `.neuwo-choice` on the wrapper; `.neuwo-form-check` on the `<label>`, with `--error`; `.neuwo-form-check__input` on the native checkbox; `.neuwo-form-check__label` around the label content; `.neuwo-choice__error` on the error line.
  * @customElement neuwo-checkbox
- * @prop {boolean} indeterminate - the mixed/partial state (property only, like the native checkbox).
- * @csspart field - the label/box/text row.
- * @csspart label - the checkbox label text.
+ * @prop {boolean} indeterminate - the mixed state of the native checkbox, which a click clears: a property only, like the native one.
+ * @slot - the label content, inside the `<label>` that wraps the checkbox.
  */
-export class NeuwoCheckbox extends NeuwoBooleanControl {
-  static formAssociated = true;
-  static styles = [formCheckSheet, controlsSheet];
-  static observedAttributes = NeuwoBooleanControl.observedAttributes;
+export class NeuwoCheckbox extends NeuwoChoiceElement {
+  static template = checkboxTemplate;
 
   #indeterminate = false;
 
-  get accentClass() { return "form-check--error"; }
-
-  // Property-only, like native: no content attribute, independent of the value.
-  get indeterminate() { return this.#indeterminate; }
-  set indeterminate(v) {
-    this.#indeterminate = Boolean(v);
-    this.#applyIndeterminate();
+  /** @returns {HTMLInputElement | null} */
+  get control() {
+    return this.querySelector(":scope > .neuwo-choice > .neuwo-form-check > .neuwo-form-check__input");
   }
 
-  createControl() {
-    const input = document.createElement("input");
-    input.type = "checkbox";
-    input.className = "form-check__input";
-    return input;
+  /** @returns {boolean} */
+  get indeterminate() {
+    return this.control?.indeterminate ?? this.#indeterminate;
+  }
+  /** @param {boolean} value */
+  set indeterminate(value) {
+    const control = this.control;
+    if (control) control.indeterminate = Boolean(value);
+    else this.#indeterminate = Boolean(value);
   }
 
-  renderRow(input) {
-    const label = document.createElement("label");
-    label.className = "form-check";
-    label.setAttribute("part", "field");
-    const text = document.createElement("span");
-    text.className = "form-check__label";
-    text.setAttribute("part", "label");
-    text.append(document.createElement("slot"));
-    label.append(input, text);
-    return label;
-  }
-
-  // A user toggle resolves the ambiguity, so it clears indeterminate (native parity).
-  onToggle() {
-    if (this.#indeterminate) {
+  connect() {
+    super.connect();
+    const control = this.control;
+    if (control && this.#indeterminate) {
+      control.indeterminate = true;
       this.#indeterminate = false;
-      this.#applyIndeterminate();
     }
-  }
-  syncControl() { this.#applyIndeterminate(); }
-
-  #applyIndeterminate() {
-    if (!this.control) return;
-    this.control.indeterminate = this.#indeterminate;
-    if (this.#indeterminate) this.control.setAttribute("aria-checked", "mixed");
-    else this.control.removeAttribute("aria-checked");
   }
 }
 

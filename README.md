@@ -1,8 +1,9 @@
 # Neuwo Web UI Library
 
 Neuwo design-language web components: vanilla custom elements, zero runtime deps. The button,
-badge, deal-ID chip, status dot, logo, copy wrapper, notice card, CTA band and form fields render
-into light DOM and can be server-rendered; the selection controls still use Shadow DOM while they migrate.
+badge, deal-ID chip, status dot, logo, copy wrapper, notice card, CTA band, form fields, checkbox and
+toggle render into light DOM and can be server-rendered; the radio group and segmented control still
+use Shadow DOM while they migrate.
 The single source for reusable Neuwo UI and its styling (tokens, component recipes, typography).
 
 ## Install
@@ -496,15 +497,15 @@ createRoot(document.getElementById("root")!).render(<App />);
 `jsxImportSource` points JSX at the library's runtime, which wraps React's own and expands the
 light DOM elements (`<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuwo-status-dot>`,
 `<neuwo-logo>`, `<neuwo-copy>`, `<neuwo-notice>`, `<neuwo-cta>`, `<neuwo-input>`, `<neuwo-textarea>`,
-`<neuwo-range>` and `<neuwo-combobox>`) into their markup; MDX reads its own `jsxImportSource` option, not tsconfig's, so set it there too (in
+`<neuwo-range>`, `<neuwo-combobox>`, `<neuwo-checkbox>` and `<neuwo-toggle>`) into their markup; MDX reads its own `jsxImportSource` option, not tsconfig's, so set it there too (in
 `@mdx-js/*` or Next's MDX config). Elements recognise markup React rendered, from Client or Server
 Components, and leave it to React, so without the setting a light DOM tag React renders stays bare.
 The same setting adds every element to JSX with each attribute's allowed values and each custom
 event's `detail`, so a misspelt variant fails the type check. React stays an optional peer
 dependency.
 
-React renders the markup of the twelve light DOM elements itself, so they show from the first paint.
-The Shadow DOM components (the selection controls) render when they register,
+React renders the markup of the fourteen light DOM elements itself, so they show from the first paint.
+The Shadow DOM components (the radio group and the segmented control) render when they register,
 which the first import does in the same pass, before the browser paints. Registering later, from an
 effect or a script that runs after the app, shows those as bare tags first and the components a
 moment after.
@@ -514,13 +515,13 @@ native controls:
 
 ```tsx
 <neuwo-button disabled={saving}>Save</neuwo-button>
-<neuwo-checkbox checked={agreed} onChange={(e) => setAgreed(e.currentTarget.checked)} />
+<neuwo-checkbox checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
 <neuwo-copy oncopied={(e) => toast(e.detail.text)}><pre>npm install</pre></neuwo-copy>
 <neuwo-notice dismissible hidden={!open} ondismiss={(e) => { e.preventDefault(); setOpen(false); }}>...</neuwo-notice>
 ```
 
-- `onChange` fires as it does on native fields. On the form fields that means React's own
-  controlled and uncontrolled models, in [Form fields in React](#form-fields-in-react).
+- `onChange` fires as it does on native fields. On the form fields, the checkbox and the toggle
+  that means React's own controlled and uncontrolled models, in [Form fields in React](#form-fields-in-react).
 - A custom event binds by its exact name, so it is lower case: `oncopied`, `ondismiss`.
   `onCopied` listens for an event called `Copied`, which never fires; the types reject it.
 - Cancel the notice's `dismiss` and drive `hidden` from state. Left alone, the element hides
@@ -554,6 +555,22 @@ value props:
   too, or pass the values to `reset(values)` once it has mounted. `defaultValues` alone leaves a
   range that has no value at its midpoint, which React Hook Form takes for the user's edit, and a
   bare `reset()` returns it there through the form's native reset. A native range behaves the same.
+
+`<neuwo-checkbox>` and `<neuwo-toggle>` behave like React's own checkbox:
+
+```tsx
+<neuwo-checkbox checked={agreed} onChange={(e) => setAgreed(e.target.checked)}>I agree</neuwo-checkbox>
+<neuwo-toggle defaultChecked name="notify">Notifications</neuwo-toggle>
+```
+
+- `checked` makes it controlled: it shows whatever your state says, and a click your handler
+  ignores is undone.
+- `onChange` fires on every click, with the inner checkbox as `event.target`, so
+  `event.target.checked` is the new state.
+- `defaultChecked` gives an uncontrolled one with a starting state, which keeps the user's choice
+  across re-renders. `value` is the value submitted while it is checked, as on a native checkbox,
+  and `defaultValue` is a type error.
+- In Server Components `checked` is the starting state.
 
 `<neuwo-combobox>` follows the same two models:
 
@@ -607,10 +624,10 @@ export function Neuwo() {
 }
 ```
 
-Render `<Neuwo />` once in the root layout. Because the JSX runtime expands the twelve light DOM
+Render `<Neuwo />` once in the root layout. Because the JSX runtime expands the fourteen light DOM
 elements, the server-rendered HTML carries their full markup and they are on-brand from the first
-paint, before the bundle has run. The Shadow DOM components arrive as bare tags and render when
-the bundle registers them. Import `neuwo.css` instead of `neuwo-components.css` to add the
+paint, before the bundle has run. The radio group and the segmented control, still on Shadow DOM,
+arrive as bare tags and render when the bundle registers them. Import `neuwo.css` instead of `neuwo-components.css` to add the
 typography and page surface.
 
 ## Components
@@ -651,13 +668,16 @@ Published styling files, for direct linking or non-web use:
 | Component reset (before any recipe) | `@neuwo/web-ui-library--demo/components/reset.css` |
 | Button recipe | `@neuwo/web-ui-library--demo/components/button/button.css` |
 | Field chrome | `@neuwo/web-ui-library--demo/components/fields/field.css` |
+| Selection shell (checkbox, toggle) | `@neuwo/web-ui-library--demo/components/selection/controls.css` |
+| Checkbox recipe | `@neuwo/web-ui-library--demo/components/selection/form-check.css` |
+| Toggle recipe | `@neuwo/web-ui-library--demo/components/selection/toggle/toggle.css` |
 | Logo files | `@neuwo/web-ui-library--demo/logos/neuwo-logo--bg-dark.svg` |
 
 ## Restyling from the host
 
 `<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuwo-status-dot>`, `<neuwo-logo>`,
-`<neuwo-copy>`, `<neuwo-notice>`, `<neuwo-cta>` and the form fields render their markup into their
-own light DOM, so they have no parts. Their prefixed classes are the public hooks instead. Put the element name in
+`<neuwo-copy>`, `<neuwo-notice>`, `<neuwo-cta>`, the form fields, `<neuwo-checkbox>` and
+`<neuwo-toggle>` render their markup into their own light DOM, so they have no parts. Their prefixed classes are the public hooks instead. Put the element name in
 front for weight, so a rule wins without `!important`:
 
 ```css
@@ -736,6 +756,17 @@ properties, or target the children you passed in.
 | `.neuwo-combobox__listbox`, `.neuwo-combobox__option`, `.neuwo-combobox__option--active` | the list, each option row, and the row the keyboard highlights |
 | `.neuwo-combobox__group-item`, `.neuwo-combobox__group` | the row around an `<optgroup>`'s options and its label |
 | `.neuwo-combobox__empty` | the "No matches" row, hidden until a filter matches nothing |
+| `.neuwo-choice` | the checkbox's or toggle's wrapper `<div>`, which stacks the row and the error line |
+| `.neuwo-choice__error` | the reserved error line; it was `.control-error` and `::part(error)` |
+| `.neuwo-form-check` | the checkbox's `<label>`, around the box and the label content; it was `::part(field)` |
+| `.neuwo-form-check--error` | the checkbox's label, by `error` unless `error-muted` or `no-error-line` is set |
+| `.neuwo-form-check__input` | the native checkbox; it was `::part(input)` |
+| `.neuwo-form-check__label` | the wrapper around the checkbox's children; it was `::part(label)` |
+| `.neuwo-form-toggle` | the toggle's `<label>`, around the switch, the track and the label content; it was `::part(field)` |
+| `.neuwo-form-toggle--pulse`, `.neuwo-form-toggle--error` | the toggle's label, by `pulse`, and by `error` unless `error-muted` or `no-error-line` is set |
+| `.neuwo-form-toggle__input` | the visually hidden native switch, `role="switch"`; it was `::part(input)` |
+| `.neuwo-form-toggle__track` | the visible track, whose `::after` is the thumb; it was `::part(track)` |
+| `.neuwo-form-toggle__label` | the wrapper around the toggle's children; it was `::part(label)` |
 
 The badge and deal-id render their text as authored, so casing is yours:
 
@@ -761,12 +792,12 @@ CSS out, but two channels are deliberately open, and together they reach almost
 every visual detail without forking a component:
 
 - **`::part(...)`** is the intended restyling hook. Every element exposes its
-  internals as parts (the checkbox `label` and `error`, the toggle `track`, and
-  more, listed per component in the manifest). Adjust size, weight, colour, font
-  or spacing from the host:
+  internals as parts (the radio `label`, the radio group `legend`, the segmented
+  `option`, and more, listed per component in the manifest). Adjust size, weight,
+  colour, font or spacing from the host:
 
   ```css
-  .my-checkbox::part(label) { font-weight: 500; }
+  .my-radio::part(label) { font-weight: 500; }
   ```
 
 - **Inherited CSS properties** cross the boundary into slotted content, so a
@@ -780,8 +811,9 @@ share the same attributes (`name`, `value`, `label`, `disabled`, `required`,
 `size` and `noErrorLine` properties, and the same `change` event. The
 selection controls (`<neuwo-checkbox>`, `<neuwo-toggle>`,
 `<neuwo-radio-group>`, `<neuwo-segmented>`) share the error and
-`no-error-line` behaviour below. The generated `.d.ts` shows these on the base
-class each control `extends`.
+`no-error-line` behaviour below, and the checkbox and the toggle share the
+checkable API under [Checkbox and toggle](#checkbox-and-toggle). The generated
+`.d.ts` shows these on the base class each control `extends`.
 
 `<neuwo-input>`, `<neuwo-textarea>` and `<neuwo-range>` render a native `<input>`
 or `<textarea>` into their own light DOM, and that control is the form control. The element carries `name`, `value`, `required`,
@@ -843,15 +875,47 @@ or `.neuwo-range` added on the textarea and the range, and
 `.neuwo-combobox__trigger` on the combobox's trigger), `.neuwo-field__label` and
 `.neuwo-field__error`, listed under restyling above.
 
+### Checkbox and toggle
+
+`<neuwo-checkbox>` and `<neuwo-toggle>` render a native `<input type="checkbox">`
+into their own light DOM, inside a `<label>` that also holds your children, and
+that input is the form control. The toggle's input carries `role="switch"` and
+is visually hidden behind its track. The element carries `name`, `value`,
+`checked`, `required`, `disabled` and `form` onto it, so a form of them submits,
+resets and validates natively, in server-rendered markup before the script has
+loaded too: a checked one submits its `value`, or `on`, and an unchecked one
+submits nothing.
+
+- **`checked` is the starting state**, as on a native checkbox. Changing the
+  attribute moves a checkbox the user has not clicked yet, and `form.reset()`
+  returns to it. The `checked` property reads and writes the state shown now and
+  never touches the attribute; `defaultChecked` reflects the attribute.
+- **The checkbox's own events** reach your listeners: `input` and `change` on
+  every click, both bubbling through the element, with the inner `<input>` as
+  `event.target`. The element dispatches none of its own.
+- **`indeterminate`** on `<neuwo-checkbox>` is the inner checkbox's own property,
+  which a click clears, and which assistive technology already announces as
+  mixed.
+- **The native form API** answers for the inner input: `form`, `validity`,
+  `validationMessage`, `checkValidity()`, `reportValidity()` and
+  `setCustomValidity()`. `focus()` and `blur()` move focus to it.
+- **`aria-*` and `title`** on the element are copied onto the inner input;
+  `data-*` stays on the element only.
+
+What were the parts `field`, `input`, `label`, `track` and `error` are the
+classes `.neuwo-form-check` or `.neuwo-form-toggle`, their `__input`, `__label`
+and `__track` elements, and `.neuwo-choice__error`, listed under restyling above.
+
 ## Form errors
 
 Every form control (fields and selection controls) shows an error from the consumer-set
 `error` attribute: the message text, a red accent, and `aria-invalid` on the control. The
 component owns no error text of its own, so the consumer decides when the error appears and
 clears (`required` validity is reported natively and separately, not as this message). On
-the four fields (`<neuwo-input>`, `<neuwo-textarea>`, `<neuwo-range>` and `<neuwo-combobox>`) the
-message line is part of the rendered markup, so an error the server sets shows in the first paint,
-and a form reset leaves `error` alone: the page set it, so the page clears it.
+the four fields (`<neuwo-input>`, `<neuwo-textarea>`, `<neuwo-range>` and `<neuwo-combobox>`),
+`<neuwo-checkbox>` and `<neuwo-toggle>` the message line is part of the rendered markup, so an error
+the server sets shows in the first paint, and a form reset leaves `error` alone: the page set it, so
+the page clears it.
 
 Add `error-muted` alongside `error` to drop the heavy control chrome without losing the note: the
 red border and box-shadow ring come off the instant the user acts, while the red message and the
