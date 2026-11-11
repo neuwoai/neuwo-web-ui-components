@@ -612,8 +612,8 @@ value props:
   `defaultChecked`.
 - Markup React renders once and never hydrates, such as an Astro component with no client
   directive, gives the group element no `value` attribute when only `defaultValue` is set, as it
-  does a field. Change an attribute of such a group later, from a script, and its radios lose
-  that starting value; set `value` there instead.
+  does a field. The radios still keep that starting value when a script changes an attribute
+  later, and `form.reset()` returns to it, for as long as the group has no `value` attribute.
 
 `<neuwo-combobox>` follows the same two models:
 
@@ -651,10 +651,9 @@ value props:
   `value`. Uncontrolled, a pick whose option goes away is cleared without a `change`, so your
   state never hears of it.
 - Markup React renders once and never hydrates, such as an Astro component with no client
-  directive, gives the element no `value` attribute when only `defaultValue` is set. Change an
-  attribute of such a combobox later, from a script, and it renders again without that starting
-  value: a later `form.reset()`, and a combobox the user has not picked in yet, fall back to the
-  option marked `selected` or to nothing. Set `value` there instead.
+  directive, gives the element no `value` attribute when only `defaultValue` is set. The combobox
+  still keeps that starting value when a script changes an attribute later, and `form.reset()`
+  returns to it, until the `value` attribute itself is set or removed.
 
 `<neuwo-segmented>` follows the combobox's models, with the same `value`, `defaultValue`, `onInput`
 and `onChange`:
@@ -680,10 +679,7 @@ and `onChange`:
   nothing. A script that reads `name` properties during that blur, such as jQuery's
   `serializeArray()` in a `focusout` handler, sees the field twice; `FormData` does not. Moving
   between the options with the arrow keys blurs each one, as it does native radios.
-- Never-hydrated markup with only `defaultValue` behaves as the combobox's does: an attribute
-  changed later, from a script, renders it again without that starting value, so a later
-  `form.reset()`, and a control the user has not picked in yet, fall back to the option marked
-  `selected` or to none. Set `value` there instead.
+- Never-hydrated markup with only `defaultValue` keeps its starting value as the combobox's does.
 
 ### Next.js and server rendering
 

@@ -471,6 +471,31 @@ describe("<neuwo-combobox> open and close", () => {
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
   });
 
+  it("focuses without opening on a label click", () => {
+    const el = make(`<neuwo-combobox label="Fruit">${OPTS}</neuwo-combobox>`);
+    labelOf(el).click();
+    expect(el.isOpen).toBe(false);
+    expect(document.activeElement).toBe(triggerOf(el));
+    triggerOf(el).click();
+    expect(el.isOpen).toBe(true);
+  });
+
+  it("opens on a later trigger click after a label click that was cancelled", async () => {
+    const el = make(`<neuwo-combobox label="Fruit">${OPTS}</neuwo-combobox>`);
+    labelOf(el).addEventListener("click", (event) => event.preventDefault(), { once: true });
+    labelOf(el).click();
+    await nextTask();
+    triggerOf(el).click();
+    expect(el.isOpen).toBe(true);
+  });
+
+  it("opens a searchable combobox on a label click, as focusing it does", () => {
+    const el = make(`<neuwo-combobox searchable label="Fruit">${OPTS}</neuwo-combobox>`);
+    labelOf(el).click();
+    expect(document.activeElement).toBe(triggerOf(el));
+    expect(el.isOpen).toBe(true);
+  });
+
   it("does not open when disabled", () => {
     const el = make(`<neuwo-combobox disabled>${OPTS}</neuwo-combobox>`);
     triggerOf(el).click();

@@ -40,6 +40,7 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   #typeahead = "";
   /** @type {ReturnType<typeof setTimeout> | undefined} */
   #typeaheadTimer;
+  #labelClicked = false;
 
   #widget = new OptionWidget(this, {
     options: () => this.querySelector(`${BOX} > .neuwo-combobox__options`),
@@ -169,6 +170,7 @@ export class NeuwoCombobox extends NeuwoFieldElement {
 
   connect() {
     super.connect();
+    this.addEventListener("click", this.#onLabelClick, true);
     this.addEventListener("click", this.#onClick);
     this.addEventListener("keydown", this.#onKeydown);
     this.addEventListener("input", this.#onInputOrChange, true);
@@ -182,6 +184,7 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   disconnect() {
     super.disconnect();
     this.close();
+    this.removeEventListener("click", this.#onLabelClick, true);
     this.removeEventListener("click", this.#onClick);
     this.removeEventListener("keydown", this.#onKeydown);
     this.removeEventListener("input", this.#onInputOrChange, true);
@@ -351,11 +354,23 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   }
 
   /** @param {MouseEvent} event */
+  #onLabelClick = (event) => {
+    const label = this.querySelector(":scope > .neuwo-field > .neuwo-field__label");
+    if (!label?.contains(/** @type {Node} */ (event.target))) return;
+    this.#labelClicked = true;
+    // Label activation clicks the trigger later in this task, if at all, so the mark must not outlive the task.
+    setTimeout(() => (this.#labelClicked = false));
+  };
+
+  /** @param {MouseEvent} event */
   #onClick = (event) => {
     const target = /** @type {Element} */ (event.target);
     const trigger = this.trigger;
     if (trigger && trigger.contains(target)) {
-      if (trigger instanceof HTMLInputElement) this.open();
+      if (this.#labelClicked) {
+        this.#labelClicked = false;
+        trigger.focus();
+      } else if (trigger instanceof HTMLInputElement) this.open();
       else if (this.#open) this.close();
       else this.open();
       return;

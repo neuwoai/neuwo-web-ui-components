@@ -264,6 +264,32 @@ describe("a copy of a wrapper around a rendered <neuwo-radio>, in jsdom", () => 
   });
 });
 
+describe("never-hydrated React markup upgraded when the elements are defined, in jsdom", () => {
+  it("keeps the starting values React left off the elements when an attribute changes later", async () => {
+    await import("../src/index.js");
+    const { renderToStaticMarkup } = await import("react-dom/server");
+    const { jsx, jsxs } = await import("../src/react/jsx-runtime.js");
+    const radios = ["free", "pro"].map((value) => jsx("neuwo-radio", { value, children: value }));
+    const html = renderToStaticMarkup(
+      jsxs("div", {
+        children: [
+          jsx("neuwo-input", { name: "email", defaultValue: "typed" }),
+          jsxs("neuwo-radio-group", { name: "plan", defaultValue: "pro", children: radios }),
+          jsx("neuwo-checkbox", { name: "terms", defaultChecked: true, children: "Accept" }),
+        ],
+      }),
+    );
+    const holder = form(html);
+    for (const host of Array.from(holder.querySelectorAll("neuwo-input, neuwo-radio-group, neuwo-checkbox"))) host.setAttribute("error", "Wrong");
+    holder.reset();
+    const input = /** @type {HTMLInputElement} */ (holder.querySelector("neuwo-input input"));
+    expect(input.getAttribute("aria-invalid")).toBe("true");
+    expect(input.value).toBe("typed");
+    expect(Array.from(holder.querySelectorAll("neuwo-radio input"), (input) => /** @type {HTMLInputElement} */ (input).checked)).toEqual([false, true]);
+    expect(/** @type {HTMLInputElement} */ (holder.querySelector("neuwo-checkbox input")).checked).toBe(true);
+  });
+});
+
 describe("a renamed copy of a rendered radio appended to the same form, in jsdom", () => {
   const ROW = `<div class="row"><neuwo-radio-group name="tier-0" label="Tier" value="pro"><neuwo-radio value="free">Free</neuwo-radio><neuwo-radio value="pro">Pro</neuwo-radio></neuwo-radio-group></div>`;
   const LONE = `<div class="row"><neuwo-radio name="agree-0" value="yes" checked>Agree</neuwo-radio></div>`;

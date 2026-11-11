@@ -17,6 +17,7 @@ import { idScope } from "../ids.js";
  *   loading: boolean,
  *   reslotted: Set<Node>,
  *   formatting: Set<Node>,
+ *   defaults: Record<string, string>,
  * }} HostState
  */
 /** @typedef {{ attrs: Record<string, string>, raw: string | null }} Seen */
@@ -62,7 +63,7 @@ function stateFor(host) {
       issued.add(value);
       return value;
     };
-    state = { id, issued, ids: new Map(), renamed: new Map(), wrappers: new Map(), root: null, dropped: [], loading: false, reslotted: new Set(), formatting: new Set() };
+    state = { id, issued, ids: new Map(), renamed: new Map(), wrappers: new Map(), root: null, dropped: [], loading: false, reslotted: new Set(), formatting: new Set(), defaults: {} };
     states.set(host, state);
   }
   return state;
@@ -100,7 +101,8 @@ export function withinOf(host, template) {
  * @param {ChildInfo[]} children
  * @returns {TemplateNode}
  */
-const applyTemplate = (host, template, id, children) => template(attrsOf(host), { id, children, within: withinOf(host, template) });
+const applyTemplate = (host, template, id, children) =>
+  template({ ...states.get(host)?.defaults, ...attrsOf(host) }, { id, children, within: withinOf(host, template) });
 
 /** @param {Node} node */
 const slotOf = (node) => (node.nodeType === ELEMENT && /** @type {Element} */ (node).getAttribute("slot")) || DEFAULT_REGION;
@@ -289,6 +291,56 @@ function mapIds(state, blocks, el, node) {
   if (typeof id === "string" && state.issued.has(id) && el.hasAttribute("id")) state.ids.set(id, el.getAttribute("id"));
   if (only(node, "region") !== null || only(node, "raw") !== null) return;
   pairs(blocks, el, node).forEach((match, index) => match && mapIds(state, blocks, match, /** @type {TemplateNode} */ (node.children[index])));
+}
+
+/**
+ * @param {Set<string>} blocks
+ * @param {Element} el
+ * @param {TemplateNode} node
+ * @returns {[Element, TemplateNode] | null}
+ */
+function controlIn(blocks, el, node) {
+  if (node.control) return [el, node];
+  if (only(node, "region") !== null || only(node, "raw") !== null) return null;
+  const matched = pairs(blocks, el, node);
+  for (const [index, match] of matched.entries()) {
+    const found = match && controlIn(blocks, match, /** @type {TemplateNode} */ (node.children[index]));
+    if (found) return found;
+  }
+  return null;
+}
+
+/**
+ * The attributes React's runtime leaves off the host when it serves `defaultValue` or `defaultChecked` on the
+ * control: `value` or `checked`, when the host lacks it, the served control carries a starting state the template
+ * does not render, and the template given it renders the served control exactly, so it is not a copy's stale state.
+ * @param {Element} host
+ * @param {Template} template
+ * @param {HostState} state
+ * @param {ChildInfo[]} children
+ * @param {TemplateNode} full
+ * @returns {Record<string, string>}
+ */
+function servedDefaults(host, template, state, children, full) {
+  const root = /** @type {Element} */ (state.root);
+  const found = controlIn(blocksOf(full), root, full);
+  /** @type {Record<string, string>} */
+  const defaults = {};
+  if (!found) return defaults;
+  const [el, control] = found;
+  if (!host.hasAttribute("value")) {
+    const served = el.localName === "textarea" ? el.textContent : el.getAttribute("value");
+    const rendered = control.tag === "textarea" ? control.children.join("") : (control.props.value ?? null);
+    if (served !== null && served !== rendered) defaults.value = served;
+  }
+  if (!host.hasAttribute("checked") && el.hasAttribute("checked") && control.props.checked !== true) defaults.checked = "";
+  if (!Object.keys(defaults).length) return defaults;
+  state.defaults = defaults;
+  const next = applyTemplate(host, template, state.id, children);
+  const again = controlIn(blocksOf(next), root, next);
+  const wanted = again?.[0] === el ? Object.entries(propsOf(state, again[1])) : [];
+  const exact = wanted.length === el.attributes.length && wanted.every(([name, value]) => el.getAttribute(name) === value);
+  return exact ? defaults : {};
 }
 
 /**
@@ -481,7 +533,7 @@ function view(host, template) {
   const probe = applyTemplate(host, template, (suffix) => suffix, []);
   const root = locate(host, probe);
   if (!root) return null;
-  return { id: (suffix) => suffix, issued: new Set(), ids: new Map(), renamed: new Map(), wrappers: wrappersOf(probe), root, dropped: [], loading: false, reslotted: new Set(), formatting: new Set() };
+  return { id: (suffix) => suffix, issued: new Set(), ids: new Map(), renamed: new Map(), wrappers: wrappersOf(probe), root, dropped: [], loading: false, reslotted: new Set(), formatting: new Set(), defaults: {} };
 }
 
 /**
@@ -546,6 +598,7 @@ export function adopt(host, template) {
     separateIds(host, state);
     return reconcile(host, template);
   }
+  state.defaults = {};
   const probe = applyTemplate(host, template, state.id, []);
   const root = locate(host, probe);
   if (!root) return;
@@ -553,9 +606,21 @@ export function adopt(host, template) {
   state.formatting = new Set(Array.from(host.childNodes).filter((node) => node !== root && !isContent(node)));
   snapshot(state, root);
   const { nodes, regionIn } = authorNodes(host, state);
-  const full = applyTemplate(host, template, state.id, describe(nodes, regionIn(state.wrappers)));
+  const children = describe(nodes, regionIn(state.wrappers));
+  const full = applyTemplate(host, template, state.id, children);
   mapIds(state, blocksOf(full), root, full);
+  state.defaults = servedDefaults(host, template, state, children, full);
   separateIds(host, state);
+}
+
+/**
+ * Drops the starting state adoption kept for the attribute `name`, once the host's own attribute is set or removed.
+ * @param {Element} host
+ * @param {string} name
+ */
+export function forget(host, name) {
+  const defaults = states.get(host)?.defaults;
+  if (defaults) delete defaults[name];
 }
 
 /**

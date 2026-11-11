@@ -1,4 +1,4 @@
-import { adopt, hasLooseContent, isRendered, reconcile, regions, render, reslot, separate, withinOf } from "./adapters/dom.js";
+import { adopt, forget, hasLooseContent, isRendered, reconcile, regions, render, reslot, separate, withinOf } from "./adapters/dom.js";
 import { REACT } from "./marks.js";
 
 /** @type {Map<string, Set<string>>} */
@@ -315,6 +315,7 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
    */
   attributeChangedCallback(name, oldValue, value) {
     if (ownedByReact(this)) return;
+    forget(this, name);
     // An upgrade reporting an attribute the element had, or the parser filling one it just created, is not a change.
     if (!this.#started && !this.#waiting && oldValue === null && (this.#initial === null || this.#initial.get(name) === value)) {
       this.#initial?.delete(name);
