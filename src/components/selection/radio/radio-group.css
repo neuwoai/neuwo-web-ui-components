@@ -6,9 +6,8 @@ neuwo-radio:not([hidden]) {
   display: inline-flex;
 }
 
-.neuwo-choice:has(> .neuwo-radio-group) {
-  gap: 0;
-  align-items: stretch;
+neuwo-radio > .neuwo-form-check {
+  flex: 1 1 auto;
 }
 
 .neuwo-radio-group {

@@ -795,6 +795,7 @@ properties, or target the children you passed in.
 | `.neuwo-combobox__group-item`, `.neuwo-combobox__group` | the row around an `<optgroup>`'s options and its label |
 | `.neuwo-combobox__empty` | the "No matches" row, hidden until a filter matches nothing |
 | `.neuwo-choice` | the checkbox's, toggle's or radio group's wrapper `<div>`, which stacks the row (or the radiogroup) and the error line |
+| `.neuwo-choice--flush` | the radio group's wrapper, which keeps the error line right under the full-width radiogroup |
 | `.neuwo-choice__error` | the reserved error line; it was `.control-error` and `::part(error)` |
 | `.neuwo-form-check` | the checkbox's or radio's `<label>`, around the box and the label content; it was `::part(field)` |
 | `.neuwo-form-check--error` | the checkbox's label, by `error` unless `error-muted` or `no-error-line` is set |
@@ -961,15 +962,20 @@ that also holds its children, and that input takes the group's `name`,
 one is checked at a time, Tab reaches the checked one and the arrow keys move
 the choice, `required` is checked natively, and the checked radio submits its
 `value` under the group's `name`, in server-rendered markup before the script
-has loaded too. Give the group a `name`: radios with none are not grouped, as
-native radios are not. The group renders the `role="radiogroup"` box, its
-legend and the error line, and has no form control of its own.
+has loaded too. The group needs a `name` to group its radios, as native radios
+do: without one, each radio stands alone unless it carries a `name` of its own,
+and the group warns in the console once. The group renders the
+`role="radiogroup"` box, its legend and the error line, and has no form control
+of its own.
 
 - **`value` on the group is the starting value**: the radio of that value
   starts checked, whatever its own `checked` says; without a group `value`, a
-  radio's `checked` attribute decides. Changing the attribute moves a group the
-  user has not picked in yet, and `form.reset()` returns to it and leaves
-  `error` alone. The group's `value` property reads the checked radio's value,
+  radio's `checked` attribute decides. Changing the attribute moves the `checked`
+  attribute to the radio of the new value, which then becomes checked, as a
+  native radio does, unless a click or a script has already checked or
+  unchecked that radio itself; a pick changes the picked radio and the one it
+  unchecked. `form.reset()` returns to the starting value and leaves `error`
+  alone. The group's `value` property reads the checked radio's value,
   or an empty string, and setting it checks the radio of that value, or none;
   `defaultValue` reads the starting value and sets the attribute.
 - **The picked radio's own events** reach your listeners on the group: `input`
@@ -977,13 +983,14 @@ legend and the error line, and has no form control of its own.
   The group dispatches none of its own, and setting `value` fires nothing.
 - **The native form API** answers for the radios: `form`, `validity`,
   `validationMessage`, `checkValidity()`, `reportValidity()` and
-  `setCustomValidity()` act on the first radio, which shares the group's
-  validity. `focus()` moves to the checked radio, else the first enabled one.
+  `setCustomValidity()` act on the first enabled radio, which shares the
+  group's validity. `focus()` moves to the checked radio, else the first enabled one.
 - **Changing the group** reaches every radio: its `name`, `value`, `disabled`,
   `required` and `form`. An `error` change touches no radio, so the user's pick
   stays.
 - **A lone `<neuwo-radio>`**, outside any group, is a radio of its own, with its
-  own `name`, `value`, `checked`, `required`, `disabled` and `form`. Its
+  own `name`, `value`, `checked`, `required`, `disabled` and `form`; in a group
+  without a `name`, its own `name` still applies. Its
   `checked` property is live on the input, `defaultChecked` reads the starting
   state, and `type` reads `radio`.
 - **`aria-*` and `title`** on a radio are copied onto its input, and on the

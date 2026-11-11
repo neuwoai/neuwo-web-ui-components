@@ -21,6 +21,7 @@ export function radioGroupTemplate(attrs, ctx) {
       {
         class: classes.join(" "),
         role: "radiogroup",
+        "aria-orientation": attrs.orientation === "horizontal" ? "horizontal" : "vertical",
         "aria-required": has(attrs, "required") && "true",
         "aria-labelledby": attrs.label ? ctx.id("legend") : null,
         ...ariaAttrs(attrs, ctx),
@@ -28,5 +29,6 @@ export function radioGroupTemplate(attrs, ctx) {
       h("span", { class: "neuwo-radio-group__legend", id: ctx.id("legend"), hidden: !attrs.label }, attrs.label),
       h("div", { class: "neuwo-radio-group__options" }, region()),
     ),
+    { flush: true },
   );
 }

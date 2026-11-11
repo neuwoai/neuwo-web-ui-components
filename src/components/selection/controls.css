@@ -5,6 +5,11 @@
   align-items: flex-start;
 }
 
+.neuwo-choice--flush {
+  gap: 0;
+  align-items: stretch;
+}
+
 /* Reserves its line even when empty, so an error appearing never shifts layout. */
 .neuwo-choice__error {
   display: block;

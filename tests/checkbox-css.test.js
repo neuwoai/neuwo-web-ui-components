@@ -49,6 +49,11 @@ describe("controls.css, the selection shell", () => {
     expect(controls).toMatch(/\.neuwo-choice\s*\{[^}]*display: flex;[^}]*flex-direction: column;[^}]*gap: var\(--neuwo-space-1\);[^}]*align-items: flex-start;/);
   });
 
+  it("has a flush modifier that drops the gap and stretches the block, at one class of weight", () => {
+    expect(controls).toMatch(/\.neuwo-choice--flush\s*\{\s*gap: 0;\s*align-items: stretch;\s*\}/);
+    expect(controls.indexOf(".neuwo-choice--flush")).toBeGreaterThan(controls.indexOf(".neuwo-choice {"));
+  });
+
   it("reserves one line for the error message in red", () => {
     expect(controls).toMatch(/\.neuwo-choice__error\s*\{[^}]*display: block;[^}]*min-height: 1lh;[^}]*var\(--neuwo-font-size-sm\)[^}]*var\(--neuwo-color-red\)/);
     expect(controls).not.toContain(".control-error");

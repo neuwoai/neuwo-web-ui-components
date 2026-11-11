@@ -51,13 +51,18 @@ describe("radioTemplate()", () => {
     expect(inputOf({ name: "agree", checked: "" }, undefined)).toMatchObject({ name: "agree", checked: true });
   });
 
-  it("takes the group's name, required and form in a group, never its own", () => {
+  it("takes the group's name, required and form in a group, never its own required and form", () => {
     const props = inputOf({ value: "a", name: "own", required: "", form: "own-form" }, { name: "plan", required: "", form: "signup" });
     expect(props).toMatchObject({ name: "plan", value: "a", required: true, form: "signup" });
-    const bare = inputOf({ value: "a", name: "own", required: "", form: "own-form" }, {});
+    const bare = inputOf({ value: "a", required: "", form: "own-form" }, {});
     expect(bare).not.toHaveProperty("name");
     expect(bare).not.toHaveProperty("required");
     expect(bare).not.toHaveProperty("form");
+  });
+
+  it("falls back to its own name in a group that has none, so a radio that carries one still groups", () => {
+    expect(inputOf({ value: "a", name: "own" }, { value: "a" })).toMatchObject({ name: "own", checked: true });
+    expect(inputOf({ value: "a", name: "own" }, { name: "" })).toHaveProperty("name", "own");
   });
 
   it("starts checked when the group's value is its own, whatever its own checked says", () => {
@@ -103,7 +108,7 @@ describe("radioGroupTemplate()", () => {
 
   it("renders the choice shell around the radiogroup, its legend and the options region", () => {
     expect(toHTML(radioGroupTemplate({ label: "Plan" }, ctx()))).toBe(
-      '<div class="neuwo-choice"><div class="neuwo-radio-group" role="radiogroup" aria-labelledby="c-legend">' +
+      '<div class="neuwo-choice neuwo-choice--flush"><div class="neuwo-radio-group" role="radiogroup" aria-orientation="vertical" aria-labelledby="c-legend">' +
         '<span class="neuwo-radio-group__legend" id="c-legend">Plan</span><div class="neuwo-radio-group__options"></div></div>' +
         '<span class="neuwo-choice__error" id="c-error"></span></div>',
     );
@@ -117,10 +122,18 @@ describe("radioGroupTemplate()", () => {
     }
   });
 
-  it("lays the radios out in a row only for orientation horizontal", () => {
+  it("lays the radios out in a row only for orientation horizontal, and states the orientation", () => {
     expect(classesOf(groupOf({ orientation: "horizontal" }))).toEqual(["neuwo-radio-group", "neuwo-radio-group--horizontal"]);
-    for (const orientation of ["vertical", "row", ""]) expect(classesOf(groupOf({ orientation }))).toEqual(["neuwo-radio-group"]);
-    expect(groupOf({ orientation: "horizontal" }).props).not.toHaveProperty("aria-orientation");
+    expect(groupOf({ orientation: "horizontal" }).props["aria-orientation"]).toBe("horizontal");
+    for (const orientation of ["vertical", "row", "", undefined]) {
+      const group = groupOf(orientation === undefined ? {} : { orientation });
+      expect(classesOf(group)).toEqual(["neuwo-radio-group"]);
+      expect(group.props["aria-orientation"]).toBe("vertical");
+    }
+  });
+
+  it("keeps the error line flush under the radiogroup with the shell's flush modifier", () => {
+    expect(classesOf(radioGroupTemplate({}, ctx()))).toEqual(["neuwo-choice", "neuwo-choice--flush"]);
   });
 
   it("states required to assistive technology", () => {

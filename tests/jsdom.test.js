@@ -202,6 +202,14 @@ describe("readers of an enclosing element (within), upgraded and copied in jsdom
     expect(copy.querySelector(".x-item").hasAttribute("data-value")).toBe(false);
   });
 
+  it("drops the group from the items in a copy of a wrapper appended outside any group", () => {
+    const copy = /** @type {Element} */ (container.querySelector(".x-group").cloneNode(true));
+    track(copy);
+    container.append(copy);
+    expect(shown(copy)).toEqual(["none", "none"]);
+    expect(Array.from(copy.querySelectorAll(".x-item"), (el) => el.hasAttribute("data-value"))).toEqual([false, false]);
+  });
+
   it("writes nothing in a copy of an item appended to its own group", () => {
     const size = container.querySelector(".x-group");
     const copy = /** @type {Element} */ (size.querySelector("x-item").cloneNode(true));
@@ -220,5 +228,20 @@ describe("readers of an enclosing element (within), upgraded and copied in jsdom
     group.querySelector(".x-group").append(copy);
     expect(shown(group)).toEqual(["size=l", "size=l", "size=l"]);
     group.setAttribute("value", "m");
+  });
+});
+
+describe("a copy of a wrapper around a rendered <neuwo-radio>, in jsdom", () => {
+  it("drops the group's name and starting value once the copy is appended outside any group", async () => {
+    await import("../src/index.js");
+    const holder = form(
+      expand(`<neuwo-radio-group name="plan" value="a"><div class="pair"><neuwo-radio value="a">A</neuwo-radio></div></neuwo-radio-group><section></section>`),
+    );
+    expect(holder.querySelector(".pair input").name).toBe("plan");
+    const copy = /** @type {Element} */ (holder.querySelector(".pair").cloneNode(true));
+    holder.querySelector("section").append(copy);
+    const input = /** @type {HTMLInputElement} */ (copy.querySelector("input"));
+    expect(input.hasAttribute("name")).toBe(false);
+    expect(input.hasAttribute("checked")).toBe(false);
   });
 });

@@ -267,6 +267,48 @@ describe("<neuwo-radio-group> and <neuwo-radio>", () => {
     expect(groupOf(el).classList.contains("neuwo-radio-group--horizontal")).toBe(false);
   });
 
+  it("warns once, naming the problem and the fix, when a group with radios has no name, and stays silent with one", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const nameless = make(`<neuwo-radio-group label="Plan">${RADIOS}</neuwo-radio-group>`);
+    expect(warn).toHaveBeenCalledTimes(1);
+    const [message, element] = warn.mock.calls[0];
+    expect(message).toContain("<neuwo-radio-group>");
+    expect(message).toMatch(/no name/);
+    expect(message).toMatch(/Give the group a name/);
+    expect(element).toBe(nameless);
+    document.body.append(nameless);
+    cleanup.push(() => nameless.remove());
+    nameless.setAttribute("label", "Tier");
+    expect(warn).toHaveBeenCalledTimes(1);
+    make(`<neuwo-radio-group name="plan">${RADIOS}</neuwo-radio-group>`);
+    make(`<neuwo-radio-group></neuwo-radio-group>`);
+    expect(warn).toHaveBeenCalledTimes(1);
+  });
+
+  it("groups radios that carry a name of their own in a group that has none", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const form = make(`<form><neuwo-radio-group value="b"><neuwo-radio name="pick" value="a">A</neuwo-radio><neuwo-radio name="pick" value="b">B</neuwo-radio></neuwo-radio-group></form>`);
+    const el = form.querySelector("neuwo-radio-group");
+    expect(inputsOf(el).map((input) => input.name)).toEqual(["pick", "pick"]);
+    inputOf(radiosOf(el)[0]).click();
+    expect(checkedOf(el)).toEqual([true, false]);
+    expect([...new FormData(form)]).toEqual([["pick", "a"]]);
+  });
+
+  it("answers validity from the first enabled radio, since a disabled one is barred from validation", () => {
+    const el = make(
+      `<neuwo-radio-group name="tier" required><neuwo-radio value="a" disabled>A</neuwo-radio><neuwo-radio value="b">B</neuwo-radio><neuwo-radio value="c">C</neuwo-radio></neuwo-radio-group>`,
+    );
+    expect(el.control).toBe(inputOf(radiosOf(el)[1]));
+    expect(el.checkValidity()).toBe(false);
+    expect(el.reportValidity()).toBe(false);
+    expect(el.validity.valueMissing).toBe(true);
+    inputOf(radiosOf(el)[2]).click();
+    expect(el.checkValidity()).toBe(true);
+    const off = make(`<neuwo-radio-group name="off" disabled><neuwo-radio value="a">A</neuwo-radio></neuwo-radio-group>`);
+    expect(off.control).toBe(inputOf(radiosOf(off)[0]));
+  });
+
   it("validates required natively, through the group's validity API", () => {
     const el = make(`<neuwo-radio-group name="tier" required>${RADIOS}</neuwo-radio-group>`);
     expect(inputsOf(el).every((input) => input.required)).toBe(true);

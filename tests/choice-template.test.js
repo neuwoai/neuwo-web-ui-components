@@ -39,6 +39,11 @@ describe("choiceTemplate()", () => {
     );
   });
 
+  it("adds the flush modifier to the root when asked", () => {
+    expect(choiceTemplate({}, ctx(), block(), { flush: true }).props.class).toBe("neuwo-choice neuwo-choice--flush");
+    expect(choiceTemplate({}, ctx(), block(), { flush: false }).props.class).toBe("neuwo-choice");
+  });
+
   it("places the given block itself", () => {
     const given = block();
     expect(choiceTemplate({}, ctx(), given).children[0]).toBe(given);

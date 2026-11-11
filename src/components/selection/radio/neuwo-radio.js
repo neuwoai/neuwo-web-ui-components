@@ -10,7 +10,7 @@ import { radioTemplate } from "./radio.template.js";
  *
  * @summary Neuwo radio. Public classes: `.neuwo-form-check` on the `<label>`; `.neuwo-form-check__input` on the native radio; `.neuwo-form-check__label` around the label content.
  * @customElement neuwo-radio
- * @attr name - outside a group, the form field name carried onto the native radio; inside one, the group's applies.
+ * @attr name - the form field name carried onto the native radio outside a group, or in a group with no `name`; a group's `name` applies otherwise.
  * @attr {boolean} checked - the starting state, outside a group or in one with no `value`; a group's `value` decides it otherwise. The live state is the `checked` property.
  * @attr {boolean} disabled - disables this radio; a disabled group disables all of its radios.
  * @attr form - outside a group, the id of the form the radio submits with; inside one, the group's applies.

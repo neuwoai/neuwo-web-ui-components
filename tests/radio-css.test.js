@@ -20,8 +20,13 @@ describe("radio-group.css recipe", () => {
     expect(css).not.toMatch(/:host|\[orientation/);
   });
 
-  it("keeps the shell's error line flush under a full-width group, as the Shadow DOM group had it", () => {
-    expect(css).toMatch(/\.neuwo-choice:has\(> \.neuwo-radio-group\)\s*\{\s*gap: 0;\s*align-items: stretch;\s*\}/);
+  it("leaves the shell's spacing to the shell's own modifier, at one class of weight", () => {
+    expect(css).not.toContain(":has(");
+    expect(css).not.toMatch(/\.neuwo-choice\b/);
+  });
+
+  it("lets a radio's label fill its row, so a click anywhere on the row picks it", () => {
+    expect(css).toMatch(/neuwo-radio > \.neuwo-form-check\s*\{\s*flex: 1 1 auto;\s*\}/);
   });
 
   it("rings the group's radios on an error, never the legend, with no hex colour literals", () => {

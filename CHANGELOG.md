@@ -5,8 +5,9 @@
 - Breaking: `<neuwo-radio>` and `<neuwo-radio-group>` render into their own light DOM from one template
   each, so a server-rendered radio group is styled from the first paint, and the group's recipe,
   `components/selection/radio/radio-group.css`, joins `neuwo-components.css`. The group renders the
-  `.neuwo-choice` root around the radiogroup and the error line, as the checkbox does. The classes are
-  prefixed: `.radio-group` is now `.neuwo-radio-group`, `.radio-group__legend` and
+  `.neuwo-choice` root around the radiogroup and the error line, as the checkbox does, with
+  `.neuwo-choice--flush`, which keeps the error line right under the full-width radiogroup as before.
+  The classes are prefixed: `.radio-group` is now `.neuwo-radio-group`, `.radio-group__legend` and
   `.radio-group__options` are now `.neuwo-radio-group__legend` and `.neuwo-radio-group__options`, a
   radio's `.form-check`, `.form-check__input` and `.form-check__label` are now `.neuwo-form-check`,
   `.neuwo-form-check__input` and `.neuwo-form-check__label`, and the error line's `.control-error` is
@@ -22,18 +23,21 @@
   `disabled`, so the browser groups the radios: one checked at a time, Tab to the checked radio and the
   arrow keys to move the choice, `required` validated natively, and the checked radio submitted under
   the group's `name`, in server-rendered markup before the script has loaded too. `form="id"` now ties a
-  group outside its form to that form. Give the group a `name`: without one the radios are not grouped,
-  as native radios are not. A required group left unpicked reports the browser's own message instead of
-  "Please select an option.", and the radiogroup no longer carries `aria-orientation`.
+  group outside its form to that form. The group needs a `name` to group its radios, as native radios
+  do: without one, each radio stands alone unless it carries a `name` of its own, and the group warns in
+  the console once. A required group left unpicked reports the browser's own message instead of
+  "Please select an option.".
 - Breaking: the group's `value` attribute is the starting value: the radio of that value starts
   checked, whatever its own `checked` says, and without a group `value` a radio's `checked` attribute
   decides. The group no longer writes `value` onto itself or `checked` onto its radios. Changing the
-  attribute moves a group the user has not picked in yet, and a form reset returns to it and no longer
-  clears `error`. The `value` property reads the checked radio's value and setting it checks the radio
+  attribute moves the `checked` attribute to the radio of the new value, which then becomes checked, as
+  a native radio does, unless a click or a script has already checked or unchecked that radio itself; a
+  pick changes the picked radio and the one it unchecked. A form reset returns to the starting value and
+  no longer clears `error`. The `value` property reads the checked radio's value and setting it checks the radio
   of that value, or none, without touching any attribute; `defaultValue` reads the starting value and
   sets the attribute. `form`, `validity`, `validationMessage`, `checkValidity()`, `reportValidity()` and
-  `setCustomValidity()` act on the first radio, and `focus()` moves to the checked radio, else the first
-  enabled one.
+  `setCustomValidity()` act on the first enabled radio, and `focus()` moves to the checked radio, else
+  the first enabled one.
 - Breaking: `<neuwo-radio-group>` no longer dispatches its own `change`. The picked radio's own `change`
   bubbles through the group, once per pick, and its `input` now does too, so listeners on the group get
   the radio's inner `<input>` as `event.target`, not the group; its `value` is the picked value and its
@@ -45,8 +49,8 @@
   `<neuwo-radio-group>` onto the radiogroup, which needs them for its accessible name. `data-*` stays on
   each element only, so a query such as `[data-testid="plan"]` matches one node.
 - A `<neuwo-radio>` outside any group is a radio of its own, with its own `name`, `value`, `checked`,
-  `required`, `disabled` and `form`; inside a group, the group's `name`, `required` and `form` apply
-  instead. Its `checked` property is live on the input, `defaultChecked` reads the starting state, and
+  `required`, `disabled` and `form`; inside a group, the group's `required` and `form` apply instead,
+  and its `name` when it has one. Its `checked` property is live on the input, `defaultChecked` reads the starting state, and
   `type` reads `"radio"`.
 - Through the JSX runtime, `<neuwo-radio-group>` behaves like a group of React's own radios: `value`
   makes every radio controlled, so a pick the `onChange` handler ignores is undone, `defaultValue` starts

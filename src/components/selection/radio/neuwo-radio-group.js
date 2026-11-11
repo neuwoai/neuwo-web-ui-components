@@ -14,7 +14,7 @@ const RADIO = "neuwo-radio > .neuwo-form-check > .neuwo-form-check__input";
  *
  * @summary Neuwo radio group. Public classes: `.neuwo-choice` on the wrapper; `.neuwo-radio-group` on the radiogroup, with `--horizontal` and `--error`; `.neuwo-radio-group__legend` on the legend; `.neuwo-radio-group__options` around the radios; `.neuwo-choice__error` on the error line.
  * @customElement neuwo-radio-group
- * @attr name - form field name, carried onto every radio, which is what groups them.
+ * @attr name - form field name, carried onto every radio, which is what groups them; a group without one warns in the console.
  * @attr {boolean} disabled - disables every radio and removes the group from submission.
  * @attr value - the value of the radio that starts checked, carried onto the radios as their default; the live value is the `value` property.
  * @attr form - id of the form the radios submit with, when the group sits outside it.
@@ -36,13 +36,16 @@ export class NeuwoRadioGroup extends NeuwoControlElement {
   /** @type {string | undefined} */
   #pending;
 
+  #warned = false;
+
   /**
-   * The first radio, which answers for the group in the validity API and the form lookup: every radio of a native
-   * group shares its validity.
+   * The first enabled radio, else the first, which answers for the group in the validity API and the form lookup:
+   * every radio of a native group shares its validity, and a disabled one is barred from validation.
    * @returns {HTMLInputElement | null}
    */
   get control() {
-    return this.#radios()[0] ?? null;
+    const radios = this.#radios();
+    return radios.find((radio) => !radio.disabled) ?? radios[0] ?? null;
   }
 
   /**
@@ -93,12 +96,24 @@ export class NeuwoRadioGroup extends NeuwoControlElement {
 
   connect() {
     super.connect();
+    if (!this.#warned && !this.getAttribute("name") && this.#holdsRadios()) {
+      this.#warned = true;
+      console.warn(
+        "<neuwo-radio-group> has no name, so the browser does not group its radios: more than one can be checked, " +
+          "each is its own Tab stop, and a required group needs every radio checked. Give the group a name.",
+        this,
+      );
+    }
     // The radios render after the group connects, so a value set before then is applied once they have.
     if (this.#pending !== undefined && !ownedByReact(this)) {
       queueMicrotask(() => {
         if (this.#pending !== undefined && this.#radios().length) this.value = this.#pending;
       });
     }
+  }
+
+  #holdsRadios() {
+    return Array.from(this.querySelectorAll("neuwo-radio")).some((radio) => radio.closest("neuwo-radio-group") === this);
   }
 
   /** @returns {HTMLInputElement[]} */
