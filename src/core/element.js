@@ -21,17 +21,23 @@ const relevantAttributes = (el) =>
     .join("\n");
 
 /**
- * Whether the nearest definition of `name` on the prototype chain has a setter.
+ * The attributes an element lends the elements that read it through `within`, or null when none does.
+ * @param {Element} el
+ */
+const lentBy = (el) => (readers.has(el.localName) ? JSON.stringify(Array.from(el.attributes, ({ name, value }) => [name, value])) : null);
+
+/**
+ * The nearest definition of `name` on the prototype chain, when it is an accessor.
  * @param {object | null} proto
  * @param {string} name
- * @returns {boolean}
+ * @returns {PropertyDescriptor | null}
  */
-function settable(proto, name) {
+function accessorOf(proto, name) {
   for (let each = proto; each; each = Object.getPrototypeOf(each)) {
     const descriptor = Object.getOwnPropertyDescriptor(each, name);
-    if (descriptor) return typeof descriptor.set === "function";
+    if (descriptor) return descriptor.get || descriptor.set ? descriptor : null;
   }
-  return false;
+  return null;
 }
 
 /**
@@ -86,16 +92,26 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
   /** @type {Map<string, unknown>} */
   #early = new Map();
 
+  // Compared after a reconcile, so the elements reading this one through `within` refresh only when it changed.
+  /** @type {string | null} */
+  #lent = null;
+
+  get #template() {
+    return /** @type {typeof NeuwoElement} */ (this.constructor).template;
+  }
+
   constructor() {
     super();
     // A script that sets a property before the element is defined leaves an own property hiding the accessor.
     for (const name of Object.keys(this)) {
-      if (!settable(Object.getPrototypeOf(this), name)) continue;
-      this.#early.set(name, Reflect.get(this, name));
+      const accessor = accessorOf(Object.getPrototypeOf(this), name);
+      if (!accessor) continue;
+      const value = Reflect.get(this, name);
       Reflect.deleteProperty(this, name);
+      if (accessor.set) this.#hold(name, value, accessor);
     }
     if (this.#early.size) queueMicrotask(() => this.#restore());
-    const within = /** @type {typeof NeuwoElement} */ (this.constructor).template?.within;
+    const within = this.#template?.within;
     if (within) readers.set(within, (readers.get(within) ?? new Set()).add(this.localName));
     if (!this.hasAttributes() && !this.hasChildNodes()) return;
     const observed = /** @type {{ observedAttributes?: string[] }} */ (this.constructor).observedAttributes ?? [];
@@ -119,11 +135,11 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
 
   #tooEarly() {
     // The parser may not have added the children yet, so rendering now would duplicate server markup.
-    return this.ownerDocument.readyState === "loading" && !isRendered(this, /** @type {typeof NeuwoElement} */ (this.constructor).template);
+    return this.ownerDocument.readyState === "loading" && !isRendered(this, this.#template);
   }
 
   #start() {
-    const { template } = /** @type {typeof NeuwoElement} */ (this.constructor);
+    const template = this.#template;
     const owned = ownedByReact(this);
     const restart = this.#started && !owned;
     if (!owned) {
@@ -138,6 +154,7 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
       this.#away = null;
       this.#initial = null;
       this.#within = this.#enclosing();
+      this.#lent = lentBy(this);
       this.#observer ??= new MutationObserver((records) => this.#changed(records));
       this.#observer.observe(this, { childList: true, attributes: true });
       this.#started = true;
@@ -152,9 +169,29 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
     if (restart) this.updated();
   }
 
+  /**
+   * Holds an early property for `#restore` behind an own accessor that passes a newer write on, so that write wins.
+   * @param {string} name
+   * @param {unknown} value
+   * @param {PropertyDescriptor} accessor
+   */
+  #hold(name, value, accessor) {
+    this.#early.set(name, value);
+    Object.defineProperty(this, name, {
+      configurable: true,
+      get: () => accessor.get?.call(this),
+      set: (next) => {
+        this.#early.delete(name);
+        Reflect.deleteProperty(this, name);
+        Reflect.set(this, name, next);
+      },
+    });
+  }
+
   #restore() {
     const early = Array.from(this.#early);
     this.#early.clear();
+    for (const [name] of early) Reflect.deleteProperty(this, name);
     for (const [name, value] of early) Reflect.set(this, name, value);
   }
 
@@ -168,19 +205,23 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
   }
 
   #enclosing() {
-    return JSON.stringify(withinOf(this, /** @type {typeof NeuwoElement} */ (this.constructor).template));
+    return JSON.stringify(withinOf(this, this.#template));
   }
 
   /** @param {(host: Element, template: import("./template.js").Template) => void} update */
   #write(update) {
-    update(this, /** @type {typeof NeuwoElement} */ (this.constructor).template);
+    update(this, this.#template);
     this.#observer?.takeRecords();
   }
 
   #reconcile() {
     this.#write(reconcile);
     this.#within = this.#enclosing();
-    this.#refreshReaders();
+    const lent = lentBy(this);
+    if (lent !== this.#lent) {
+      this.#lent = lent;
+      this.#refreshReaders();
+    }
     if (this.isConnected) {
       if (this.#started && !this.#firstStart) this.updated();
       return;
@@ -195,7 +236,7 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
    */
   #writable() {
     if (ownedByReact(this) || this.#waiting) return false;
-    return this.isConnected ? this.#started : isRendered(this, /** @type {typeof NeuwoElement} */ (this.constructor).template);
+    return this.isConnected ? this.#started : isRendered(this, this.#template);
   }
 
   #refreshReaders() {
@@ -229,15 +270,17 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
       this.#initial?.delete(name);
       return;
     }
+    if (this.#started && oldValue === value) return;
     if (this.#writable()) this.#reconcile();
     else this.#dirty = true;
   }
 
   /**
    * Reconciles the markup with the attributes and children now, wherever an attribute change would be written at
-   * once: on a started host in the page, then running `updated` unless the first start is re-applying early properties, and on rendered markup out of the page, such as a
-   * copy a script made. It does nothing on a host in the page that has not started or is waiting for the document
-   * to parse, on one out of the page with no rendered markup, or on one React rendered.
+   * once: on a started host in the page, then running `updated` unless the first start is re-applying early
+   * properties, and on rendered markup out of the page, such as a copy a script made. It does nothing on a host in
+   * the page that has not started or is waiting for the document to parse, on one out of the page with no rendered
+   * markup, or on one React rendered.
    */
   refresh() {
     if (this.#writable()) this.#reconcile();

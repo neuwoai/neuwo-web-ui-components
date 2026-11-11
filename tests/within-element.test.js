@@ -64,8 +64,13 @@ function describeRecord(record) {
   return `${target} children: +${record.addedNodes.length} -${record.removedNodes.length}`;
 }
 
+// Microtasks only: happy-dom holds an observer's callback in a WeakRef, so a GC between tasks can silence it.
+async function settled() {
+  for (let turn = 0; turn < 3; turn++) await Promise.resolve();
+}
+
 /** @param {ParentNode} root */
-const shown = (root) => Array.from(root.querySelectorAll(".x-item__group"), (el) => el.textContent);
+const shown =(root) => Array.from(root.querySelectorAll(".x-item__group"), (el) => el.textContent);
 
 const GROUP = `<x-group name="size" value="m"><x-item>Medium</x-item><x-item>Large</x-item></x-group>`;
 
@@ -180,6 +185,37 @@ describe("an element whose template reads its enclosing element (within)", () =>
     expect(shown(holder)).toEqual(["outer=9", "inner=2"]);
     expect(observer.takeRecords()).toEqual([]);
     expect(inner.updates).toBe(before);
+  });
+
+  it("does not reconcile the existing items when an item is appended to the group", async () => {
+    /** @type {string[]} */
+    const labels = [];
+    /** @type {import("../src/core/template.js").Template} */
+    const counted = (attrs, ctx) => {
+      labels.push(ctx.children.map((child) => child.text).join(""));
+      return itemTemplate(attrs, ctx);
+    };
+    counted.within = "x-group";
+    define(
+      "x-counted",
+      class extends NeuwoElement {
+        static template = counted;
+        static observedAttributes = [];
+      },
+    );
+    const holder = mount(`<x-group name="size" value="m"><x-counted>Medium</x-counted><x-counted>Large</x-counted></x-group>`);
+    const group = holder.querySelector("x-group");
+    labels.length = 0;
+    const added = document.createElement("x-counted");
+    added.textContent = "Small";
+    group.append(added);
+    await settled();
+    expect(added.parentElement).toBe(group.querySelector(".x-group"));
+    expect(labels.filter((label) => label === "Medium" || label === "Large")).toEqual([]);
+    expect(shown(holder)).toEqual(["size=m", "size=m", "size=m"]);
+    group.setAttribute("value", "l");
+    expect(labels.filter((label) => label === "Medium" || label === "Large")).toEqual(["Medium", "Large"]);
+    expect(shown(holder)).toEqual(["size=l", "size=l", "size=l"]);
   });
 
   it("refreshes a nested box from the box around it, never from itself", () => {

@@ -22,6 +22,7 @@ class TestLight extends NeuwoElement {
     this.disconnected++;
   }
 }
+define("test-light", TestLight);
 
 const cleanup = [];
 afterEach(() => {
@@ -449,6 +450,30 @@ describe("NeuwoElement (light DOM)", () => {
     el.setAttribute("tone", "b");
     expect(observer.takeRecords().filter((record) => record.target !== el)).toHaveLength(0);
     expect(el.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--a");
+  });
+
+  it("does not reconcile when an attribute is set to its current value", () => {
+    let calls = 0;
+    define(
+      "test-same-value",
+      class extends TestLight {
+        static template = (attrs, ctx) => {
+          calls++;
+          return template(attrs, ctx);
+        };
+      },
+    );
+    const el = mount(server("b").replaceAll("test-light", "test-same-value")).firstElementChild;
+    const observer = new MutationObserver(() => {});
+    observer.observe(el.firstElementChild, { subtree: true, childList: true, attributes: true, characterData: true });
+    calls = 0;
+    el.setAttribute("tone", "b");
+    el.setAttribute("tone", "b");
+    expect(calls).toBe(0);
+    expect(observer.takeRecords()).toHaveLength(0);
+    el.setAttribute("tone", "c");
+    expect(calls).toBeGreaterThan(0);
+    expect(el.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--c");
   });
 
   it("patches exactly one attribute on an attribute change", () => {

@@ -97,8 +97,9 @@ describe("a property set before the element is defined, in jsdom", () => {
     el.value = "early";
     define();
     customElements.upgrade(el);
-    expect(Object.hasOwn(el, "value")).toBe(false);
+    expect(Object.keys(el)).toEqual([]);
     await Promise.resolve();
+    expect(Object.hasOwn(el, "value")).toBe(false);
     expect(el.value).toBe("early");
     expect(el.control).toBeNull();
     attach(el);
@@ -106,14 +107,15 @@ describe("a property set before the element is defined, in jsdom", () => {
     expect(el.control.hasAttribute("value")).toBe(false);
   });
 
-  it("leaves a property with no setter on the element alone", () => {
+  it("drops a property only a getter defines and leaves one the element does not define alone", () => {
     const { tag, define } = later(NeuwoCheckbox);
     const el = attach(document.createElement(tag));
     el.extra = 1;
     el.validity = "mine";
     define();
     expect(el.extra).toBe(1);
-    expect(Object.getOwnPropertyDescriptor(el, "validity")?.value).toBe("mine");
+    expect(Object.hasOwn(el, "validity")).toBe(false);
+    expect(el.validity).toBe(el.control.validity);
   });
 
   it("finds nothing to take on an element created after its definition", () => {

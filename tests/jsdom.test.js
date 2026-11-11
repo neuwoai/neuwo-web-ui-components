@@ -347,6 +347,30 @@ describe("a property set on a light element before it is defined, in jsdom", () 
     expect(shown(el)).toEqual({ disabled: true, busy: "true", loading: true });
   });
 
+  it("keeps a property written after a detached upgrade over the early value", async () => {
+    const { tag, define } = await later();
+    const el = document.createElement(tag);
+    el.disabled = true;
+    define();
+    customElements.upgrade(el);
+    el.disabled = false;
+    await Promise.resolve();
+    expect(el.disabled).toBe(false);
+    expect(el.hasAttribute("disabled")).toBe(false);
+    form("").append(el);
+    expect(shown(el).disabled).toBe(false);
+  });
+
+  it("drops an early property that only a getter defines", async () => {
+    const { NeuwoRadio } = await import("../src/components/selection/radio/neuwo-radio.js");
+    const tag = `early-${++count}-radio`;
+    const el = form("").appendChild(document.createElement(tag));
+    el.type = "checkbox";
+    customElements.define(tag, class extends NeuwoRadio {});
+    expect(el.type).toBe("radio");
+    expect(Object.hasOwn(el, "type")).toBe(false);
+  });
+
   it("runs connect() without an updated() before it when a restored property changes an attribute", async () => {
     const { NeuwoButton } = await import("../src/components/button/neuwo-button.js");
     const calls = [];
@@ -398,7 +422,7 @@ describe("a property set on a light element before it is defined, in jsdom", () 
     expect(calls).toEqual(["updated"]);
   });
 
-  it("leaves a property with no setter on the element alone", async () => {
+  it("leaves a property the element does not define alone", async () => {
     const { tag, define } = await later();
     const el = form("").appendChild(document.createElement(tag));
     el.extra = 1;

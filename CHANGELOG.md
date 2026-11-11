@@ -386,7 +386,12 @@
 - A property a script sets on any Neuwo element before the element is defined, such as `loading` on a
   button or `checked` on a checkbox from an inline script on a page whose module is deferred, now reaches
   the element when it is defined, through the element's own setter; it used to hide that property and
-  never reach the markup or the control.
+  never reach the markup or the control. A value written through the property after the element is
+  defined wins over the early one, and one set on a read-only property, such as a radio's `type`, is
+  dropped, so the element's own value shows.
+- Setting an observed attribute to the value it already has no longer makes a light DOM element fit its
+  markup again, and a `<neuwo-radio-group>` refreshes its radios only when its own attributes change, so a
+  script that adds radios to a large group one at a time no longer slows down with each one.
 - Light DOM elements have a `refresh()` method, which fits the markup to the current attributes and
   children at once instead of in that microtask, wherever an attribute change applies at once: on an
   element in the page, and on rendered markup out of it, such as a copy. Component classes get an
