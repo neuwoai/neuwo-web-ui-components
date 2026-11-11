@@ -4,11 +4,11 @@ import { createRoot } from "react-dom/client";
 import { renderToString } from "react-dom/server";
 import { control, h } from "../src/core/template.js";
 import { createRuntime } from "../src/core/adapters/react.js";
+import { CONTROLLED } from "../src/core/marks.js";
 import { formTemplates } from "./fixtures/form-fields.js";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-const CONTROLLED = Symbol.for("neuwo.controlled");
 const MISSING_ON_CHANGE = "without an `onChange` handler";
 
 const { jsx } = createRuntime(formTemplates);

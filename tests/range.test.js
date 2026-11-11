@@ -6,12 +6,11 @@ import { renderToString } from "react-dom/server";
 import "../src/index.js";
 import { NeuwoRange } from "../src/components/fields/range/neuwo-range.js";
 import { NeuwoFieldElement } from "../src/components/fields/field-element.js";
+import { CONTROLLED } from "../src/core/marks.js";
 import { expand } from "../src/server/index.js";
 import { jsx } from "../src/react/jsx-runtime.js";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-
-const CONTROLLED = Symbol.for("neuwo.controlled");
 
 const cleanup = [];
 afterEach(() => {

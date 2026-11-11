@@ -1,16 +1,23 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { NeuwoElement } from "../src/core/element.js";
+import { CONTROLLED } from "../src/core/marks.js";
 import { control, h } from "../src/core/template.js";
 import { NeuwoFieldElement } from "../src/components/fields/field-element.js";
 import { controlAttrs, controlClass, fieldTemplate } from "../src/components/fields/field.template.js";
-
-const CONTROLLED = Symbol.for("neuwo.controlled");
 
 class TestField extends NeuwoFieldElement {
   static template = (attrs, ctx) =>
     fieldTemplate(attrs, ctx, control(h("input", { class: controlClass(attrs), ...controlAttrs(attrs, ctx, ["name", "placeholder", "required", "value"]) })));
 }
 customElements.define("test-field", TestField);
+
+class ResetField extends TestField {
+  resets = [];
+  formReset() {
+    this.resets.push(this.value);
+  }
+}
+customElements.define("reset-field", ResetField);
 
 class AimedField extends TestField {
   get focusTarget() {
@@ -249,6 +256,25 @@ describe("NeuwoFieldElement", () => {
     el.size = "";
     expect(el.hasAttribute("size")).toBe(false);
     expect(inputOf(el).classList.contains("neuwo-input--sm")).toBe(false);
+  });
+
+  it("runs formReset in the task after its form resets, once the starting value is back, and stops when it leaves", async () => {
+    const form = make(`<form><reset-field name="a" value="seed"></reset-field></form>`);
+    const el = form.querySelector("reset-field");
+    inputOf(el).value = "typed";
+    form.reset();
+    expect(el.resets).toEqual([]);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(el.resets).toEqual(["seed"]);
+    el.remove();
+    form.reset();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(el.resets).toEqual(["seed"]);
+    const other = attach(document.createElement("form"));
+    other.append(el);
+    other.reset();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(el.resets).toEqual(["seed", "seed"]);
   });
 
   it("lets the control's native change reach a host listener exactly once", () => {

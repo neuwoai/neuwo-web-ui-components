@@ -1,6 +1,5 @@
 import { adopt, hasLooseContent, isRendered, reconcile, render } from "./adapters/dom.js";
-
-const REACT = Symbol.for("neuwo.react");
+import { REACT } from "./marks.js";
 
 /** @param {string} name */
 const relevantName = (name) => name === "title" || name === "role" || name.startsWith("aria-");

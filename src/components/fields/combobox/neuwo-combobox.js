@@ -1,10 +1,10 @@
 import { childInfo } from "../../../core/adapters/dom.js";
 import { define, ownedByReact } from "../../../core/element.js";
+import { CONTROLLED } from "../../../core/marks.js";
 import { positionPopup } from "../../../core/position-popup.js";
 import { NeuwoFieldElement } from "../field-element.js";
 import { comboboxOptions, comboboxTemplate } from "./combobox.template.js";
 
-const CONTROLLED = Symbol.for("neuwo.controlled");
 const ACTIVE = "neuwo-combobox__option--active";
 const BOX = ":scope > .neuwo-field > .neuwo-combobox";
 const DISPLAY = { subtree: true, childList: true, characterData: true, attributeFilter: ["value", "data-placeholder", "aria-selected"] };
@@ -41,9 +41,6 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   /** @type {ReturnType<typeof setTimeout> | undefined} */
   #typeaheadTimer;
 
-  /** @type {HTMLFormElement | null} */
-  #form = null;
-
   /** @type {MutationObserver | null} */
   #observer = null;
 
@@ -57,10 +54,6 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   #picked;
 
   #reposition = () => this.#position();
-
-  #onReset = () => {
-    setTimeout(() => this.#sync(), 0);
-  };
 
   /**
    * The native input that submits the value.
@@ -187,9 +180,7 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   }
 
   connect() {
-    // React's ref sets the controlled flag after connect, so on a React host any write here could undo React's value.
-    const owned = ownedByReact(this);
-    if (!owned) super.connect();
+    super.connect();
     this.addEventListener("click", this.#onClick);
     this.addEventListener("keydown", this.#onKeydown);
     this.addEventListener("input", this.#onInputOrChange, true);
@@ -199,17 +190,18 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     this.addEventListener("blur", this.#onBlur, true);
     this.addEventListener("blur", this.#lendName, true);
     this.addEventListener("focusout", this.#lendName, true);
-    this.#bindForm();
     this.#watchOptions();
     // Every host watches, since React can hydrate one after it connected and then rewrite what the element showed.
     this.#display ??= new MutationObserver(() => {
       if (ownedByReact(this)) this.#sync();
     });
     this.#display.observe(this, DISPLAY);
-    if (!owned) this.#sync();
+    // React's ref sets the controlled flag after connect, so on a React host a write here could undo React's value.
+    if (!ownedByReact(this)) this.#sync();
   }
 
   disconnect() {
+    super.disconnect();
     this.close();
     this.removeEventListener("click", this.#onClick);
     this.removeEventListener("keydown", this.#onKeydown);
@@ -220,8 +212,6 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     this.removeEventListener("blur", this.#onBlur, true);
     this.removeEventListener("blur", this.#lendName, true);
     this.removeEventListener("focusout", this.#lendName, true);
-    this.#form?.removeEventListener("reset", this.#onReset);
-    this.#form = null;
     this.#observer?.disconnect();
     this.#observer = null;
     this.#watched = null;
@@ -230,7 +220,7 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   }
 
   updated() {
-    this.#bindForm();
+    super.updated();
     this.#watchOptions();
     this.#sync();
     if (this.#open) {
@@ -243,12 +233,8 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     this.#observer?.takeRecords();
   }
 
-  #bindForm() {
-    const form = this.control?.form ?? null;
-    if (form === this.#form) return;
-    this.#form?.removeEventListener("reset", this.#onReset);
-    form?.addEventListener("reset", this.#onReset);
-    this.#form = form;
+  formReset() {
+    this.#sync();
   }
 
   #watchOptions() {

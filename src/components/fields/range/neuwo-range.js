@@ -1,8 +1,7 @@
 import { define, ownedByReact } from "../../../core/element.js";
+import { CONTROLLED } from "../../../core/marks.js";
 import { NeuwoFieldElement } from "../field-element.js";
 import { fillPercent, rangeTemplate } from "./range.template.js";
-
-const CONTROLLED = Symbol.for("neuwo.controlled");
 
 /**
  * Slider over a numeric range. The template writes `--neuwo-range-fill` onto the native range input, so the
@@ -27,18 +26,11 @@ export class NeuwoRange extends NeuwoFieldElement {
   static template = rangeTemplate;
   static observedAttributes = [...NeuwoFieldElement.observedAttributes, "min", "max", "step", "aria-valuetext"];
 
-  /** @type {HTMLFormElement | null} */
-  #form = null;
-
   /** @type {MutationObserver | null} */
   #styleObserver = null;
 
   #onInput = (/** @type {Event} */ event) => {
     if (event.target === this.control) this.#syncFill();
-  };
-
-  #onReset = () => {
-    setTimeout(() => this.#syncFill(), 0);
   };
 
   /** @returns {string} */
@@ -53,7 +45,6 @@ export class NeuwoRange extends NeuwoFieldElement {
   connect() {
     super.connect();
     this.addEventListener("input", this.#onInput);
-    this.#bindForm();
     const control = this.control;
     if (!ownedByReact(this)) this.#syncFill();
     // Every host watches, since React can hydrate one after it connected and then write the template's fill back.
@@ -64,23 +55,18 @@ export class NeuwoRange extends NeuwoFieldElement {
   }
 
   disconnect() {
+    super.disconnect();
     this.#styleObserver?.disconnect();
     this.removeEventListener("input", this.#onInput);
-    this.#form?.removeEventListener("reset", this.#onReset);
-    this.#form = null;
   }
 
   updated() {
-    this.#bindForm();
+    super.updated();
     this.#syncFill();
   }
 
-  #bindForm() {
-    const form = this.control?.form ?? null;
-    if (form === this.#form) return;
-    this.#form?.removeEventListener("reset", this.#onReset);
-    form?.addEventListener("reset", this.#onReset);
-    this.#form = form;
+  formReset() {
+    this.#syncFill();
   }
 
   #syncFill() {

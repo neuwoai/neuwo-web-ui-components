@@ -4,6 +4,7 @@ import * as React from "react";
 import { jsx as reactJsx, jsxs as reactJsxs } from "react/jsx-runtime";
 import { jsxDEV as reactJsxDEV } from "react/jsx-dev-runtime";
 import { DEFAULT_REGION, blocksOf, distribute, keyClassOf, normalizeProps } from "../template.js";
+import { CONTROLLED, REACT } from "../marks.js";
 
 /** @typedef {import("react").ReactNode} ReactNode */
 /** @typedef {import("react").ElementType} ElementType */
@@ -35,8 +36,6 @@ const FIELDS = new Set(["input", "select", "textarea"]);
 // React DOM's hasReadOnlyValue: an <input> of these types takes `value` as an attribute, never as state.
 const FIXED_VALUE = new Set(["button", "checkbox", "hidden", "image", "radio", "reset", "submit"]);
 
-const REACT = Symbol.for("neuwo.react");
-const CONTROLLED = Symbol.for("neuwo.controlled");
 // React's own event props are camel case, so an `on` prop in lower case names one of the element's events.
 const OWN_EVENT = /^on[a-z]/;
 const CAPTURE = "Capture";

@@ -1,6 +1,5 @@
-import { NeuwoElement } from "../../core/element.js";
-
-const CONTROLLED = Symbol.for("neuwo.controlled");
+import { NeuwoElement, ownedByReact } from "../../core/element.js";
+import { CONTROLLED } from "../../core/marks.js";
 
 /**
  * Base for the field controls (input, textarea, combobox, range). The template renders a native control inside
@@ -45,6 +44,13 @@ export class NeuwoFieldElement extends NeuwoElement {
 
   /** @type {string | undefined} */
   #pending;
+
+  /** @type {HTMLFormElement | null} */
+  #form = null;
+
+  #onReset = () => {
+    setTimeout(() => this.formReset(), 0);
+  };
 
   /**
    * The native form control this field renders.
@@ -163,10 +169,35 @@ export class NeuwoFieldElement extends NeuwoElement {
   }
 
   connect() {
+    this.#bindForm();
     const control = this.control;
-    if (control && this.#pending !== undefined) {
+    // React's ref sets the controlled flag after connect, so on a React host a write here could undo React's value.
+    if (control && this.#pending !== undefined && !ownedByReact(this)) {
       control.value = this.#pending;
       this.#pending = undefined;
     }
+  }
+
+  disconnect() {
+    this.#form?.removeEventListener("reset", this.#onReset);
+    this.#form = null;
+  }
+
+  updated() {
+    this.#bindForm();
+  }
+
+  /**
+   * Hook that runs in the task after the control's form resets, once the browser has put the starting value back.
+   * It must write only values that differ from the DOM.
+   */
+  formReset() {}
+
+  #bindForm() {
+    const form = this.control?.form ?? null;
+    if (form === this.#form) return;
+    this.#form?.removeEventListener("reset", this.#onReset);
+    form?.addEventListener("reset", this.#onReset);
+    this.#form = form;
   }
 }

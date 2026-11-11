@@ -6,14 +6,13 @@ import { renderToString } from "react-dom/server";
 import "../src/index.js";
 import { NeuwoInput } from "../src/components/fields/input/neuwo-input.js";
 import { NeuwoFieldElement } from "../src/components/fields/field-element.js";
+import { CONTROLLED } from "../src/core/marks.js";
 import { expand } from "../src/server/index.js";
 import { jsx, jsxs } from "../src/react/jsx-runtime.js";
 import { createRuntime } from "../src/core/adapters/react.js";
 import { templates } from "../src/templates.js";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-
-const CONTROLLED = Symbol.for("neuwo.controlled");
 
 const cleanup = [];
 afterEach(() => {
