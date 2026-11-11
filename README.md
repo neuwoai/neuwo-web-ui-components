@@ -188,16 +188,14 @@ on hover. Two classes ride along with it.
 ```
 
 `.neuwo-link` states the same recipe explicitly, for an anchor whose surroundings strip link styling,
-and for slotted content inside a component, where the shadow root cannot reach a nested `<a>` and
-the host page has to style it. `.neuwo-link--hover-green` swaps the hover colour to the brand green.
+and for an anchor nested inside a component's slotted content. `.neuwo-link--hover-green` swaps the hover colour to the brand green.
 Both underline at rest and carry the underline into the hover colour, because
 `text-decoration-color` follows `currentColor`.
 
 There is deliberately no `<neuwo-link>` element. Prose is authored in Markdown and CMSes that
 emit `<a href>`, so a component would be bypassed by the very content it was built for, and a
 class keeps the anchor in the source HTML: crawlable, and still a working link with the script
-blocked. The trade is that a host page's own CSS can override these rules, which a shadow root
-would have prevented.
+blocked. The trade is that a host page's own CSS can override these rules.
 
 ### Page surface
 
@@ -333,7 +331,7 @@ override any property from a document stylesheet.
 
 This replaces `<neuwo-dropdown>`, removed in the same change. That element bundled the styling
 with a disclosure toggle it could not turn off, which made it unusable for navigation that is
-permanently visible, and its shadow root forced items to be direct children and forced
+permanently visible, and its markup forced items to be direct children and forced
 `!important` onto their colour. Migrating: drop the element, keep the links, put `.neuwo-nav-link`
 (or `.neuwo-nav-link--sm` inside a section) on each one, and wrap them in whatever structure the
 navigation actually needs.
@@ -661,8 +659,9 @@ and `onChange`:
   a reset, as on the combobox. `onBlur` gets the option button as `event.target`, and while the
   blur is dispatched the button's `name` reads as the field's, so `register` marks the control
   touched and validates it in `mode: "onBlur"`. The buttons have no `name` attribute and submit
-  nothing. Moving between the options with the arrow keys blurs each one, as it does native
-  radios.
+  nothing. A script that reads `name` properties during that blur, such as jQuery's
+  `serializeArray()` in a `focusout` handler, sees the field twice; `FormData` does not. Moving
+  between the options with the arrow keys blurs each one, as it does native radios.
 - Never-hydrated markup with only `defaultValue` behaves as the combobox's does: an attribute
   changed later, from a script, renders it again without that starting value, so a later
   `form.reset()`, and a control the user has not picked in yet, fall back to the option marked

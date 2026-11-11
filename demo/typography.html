@@ -410,8 +410,8 @@
         </span>
       </div>
       <p class="demo-note">
-        This is the same recipe <code>neuwo-badge</code> inlines. A shadow root cannot use a
-        document class, so the badge repeats it from the same tokens rather than importing it.
+        This is the same recipe <code>neuwo-badge</code> inlines. The badge renders its own
+        class from the same tokens, so it does not depend on this sheet.
       </p>
     </section>
 
@@ -435,10 +435,10 @@
     <section class="demo-section">
       <h2>What this sheet does not do</h2>
       <p>
-        Typography stops at the shadow boundary. A component's own text is styled by its recipe, so
+        Typography styles native elements only. A component's own text is styled by its recipe, so
         linking this sheet cannot restyle a <code>neuwo-button</code> label or a
         <code>neuwo-cta</code> headline. Those are reached through their tokens or their
-        <code>::part</code> names.
+        <code>neuwo-*</code> classes.
       </p>
       <p class="demo-note">
         It also styles nothing else: no lists, tables, blockquotes, <code>code</code> or

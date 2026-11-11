@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Selection: Toggle / Switch -- hidden native checkbox drives the state,
+   Selection: Toggle / Switch. A hidden native checkbox drives the state,
    the .neuwo-form-toggle__track is the visible control, its ::after is the thumb.
    ========================================================================== */
 

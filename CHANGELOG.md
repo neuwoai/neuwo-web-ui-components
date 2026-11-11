@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Internal: the Shadow DOM base (`NeuwoShadowElement`), its shared reset and its error helper are gone, as every component renders in light DOM.
 - Breaking: `<neuwo-segmented>` renders into its own light DOM from one template, so a server-rendered
   segmented control is styled from the first paint, and its recipe,
   `components/selection/segmented/segmented.css`, joins `neuwo-components.css`. It renders the

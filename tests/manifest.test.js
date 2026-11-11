@@ -33,17 +33,8 @@ function attributesFor(m, tag) {
   }
   return names;
 }
-function partsFor(m, tag) {
-  const names = new Set();
-  let dec = declByTag(m, tag);
-  while (dec) {
-    for (const p of dec.cssParts ?? []) names.add(p.name);
-    dec = dec.superclass ? declByName(m, dec.superclass.name) : null;
-  }
-  return names;
-}
 
-export { manifest, attributesFor, partsFor };
+export { manifest, attributesFor };
 
 const EXPECTED_TAGS = [
   "neuwo-button", "neuwo-input", "neuwo-textarea",
@@ -82,107 +73,92 @@ describe("custom-elements.json", () => {
       expect(attrs).toContain(a);
   });
 
-  it("documents the shared checkable attributes, the native events and no parts on the checkbox and the toggle", () => {
+  it("documents the shared checkable attributes, the native events on the checkbox and the toggle", () => {
     for (const tag of ["neuwo-checkbox", "neuwo-toggle"]) {
       const attrs = attributesFor(manifest, tag);
       for (const a of ["name", "value", "checked", "disabled", "form", "required", "error", "error-muted", "no-error-line"])
         expect(attrs, tag).toContain(a);
       expect(declByTag(manifest, tag).events.map((e) => e.name), tag).toEqual(expect.arrayContaining(["input", "change"]));
-      expect(partsFor(manifest, tag).size, tag).toBe(0);
     }
     expect(attributesFor(manifest, "neuwo-toggle").has("pulse")).toBe(true);
   });
 
-  it("documents the radio group's attributes, the native events and no parts", () => {
+  it("documents the radio group's attributes, the native events", () => {
     const attrs = attributesFor(manifest, "neuwo-radio-group");
     for (const a of ["name", "value", "disabled", "form", "required", "label", "orientation", "error", "error-muted", "no-error-line"])
       expect(attrs).toContain(a);
     expect(attrs.has("checked")).toBe(false);
     expect(declByTag(manifest, "neuwo-radio-group").events.map((e) => e.name)).toEqual(expect.arrayContaining(["input", "change"]));
-    expect(partsFor(manifest, "neuwo-radio-group").size).toBe(0);
   });
 
-  it("documents the button's own attributes and no parts", () => {
+  it("documents the button's own attributes", () => {
     const attrs = attributesFor(manifest, "neuwo-button");
     for (const a of ["variant", "size", "hover", "wide", "xwide", "block", "href", "disabled", "loading", "type"])
       expect(attrs).toContain(a);
-    expect(partsFor(manifest, "neuwo-button").size).toBe(0);
   });
 
-  it("documents the input's type and constraint attributes, its change event and no parts", () => {
+  it("documents the input's type and constraint attributes, its change event", () => {
     const attrs = attributesFor(manifest, "neuwo-input");
     for (const a of ["type", "min", "max", "step", "pattern", "minlength", "maxlength", "inputmode"])
       expect(attrs).toContain(a);
     expect(declByTag(manifest, "neuwo-input").events.map((e) => e.name)).toContain("change");
-    expect(partsFor(manifest, "neuwo-input").size).toBe(0);
   });
 
-  it("documents the range's bounds and exposes no parts", () => {
+  it("documents the range's bounds", () => {
     const attrs = attributesFor(manifest, "neuwo-range");
     for (const a of ["min", "max", "step", "value", "label", "disabled"]) expect(attrs).toContain(a);
-    expect(partsFor(manifest, "neuwo-range").size).toBe(0);
   });
 
-  it("documents the combobox's searchable attribute, its input and change events and no parts", () => {
+  it("documents the combobox's searchable attribute, its input and change events", () => {
     const attrs = attributesFor(manifest, "neuwo-combobox");
     for (const a of ["searchable", "name", "value", "placeholder", "required", "disabled", "form"]) expect(attrs).toContain(a);
     expect(declByTag(manifest, "neuwo-combobox").events.map((e) => e.name)).toEqual(expect.arrayContaining(["input", "change"]));
-    expect(partsFor(manifest, "neuwo-combobox").size).toBe(0);
   });
 
-  it("documents the segmented control's attributes, with no orientation, its input and change events and no parts", () => {
+  it("documents the segmented control's attributes, with no orientation, its input and change events", () => {
     const attrs = attributesFor(manifest, "neuwo-segmented");
     expect([...attrs].sort()).toEqual(["disabled", "error", "error-muted", "form", "label", "name", "no-error-line", "required", "value"]);
     expect(declByTag(manifest, "neuwo-segmented").events.map((e) => e.name)).toEqual(expect.arrayContaining(["input", "change"]));
-    expect(partsFor(manifest, "neuwo-segmented").size).toBe(0);
   });
 
-  it("documents the radio's checkable attributes, none of the error line's, the native events and no parts", () => {
+  it("documents the radio's checkable attributes, none of the error line's, the native events", () => {
     const attrs = attributesFor(manifest, "neuwo-radio");
     expect([...attrs].sort()).toEqual(["checked", "disabled", "form", "name", "required", "value"]);
     expect(declByTag(manifest, "neuwo-radio").events.map((e) => e.name)).toEqual(expect.arrayContaining(["input", "change"]));
-    expect(partsFor(manifest, "neuwo-radio").size).toBe(0);
   });
 
-  it("documents the badge's six axes and no parts", () => {
+  it("documents the badge's six axes", () => {
     const attrs = attributesFor(manifest, "neuwo-badge");
     for (const a of ["variant", "size", "borderless", "motion", "intensity", "glow"]) expect(attrs).toContain(a);
-    expect(partsFor(manifest, "neuwo-badge").size).toBe(0);
   });
 
-  it("documents the deal-id size attribute and no parts", () => {
+  it("documents the deal-id size attribute", () => {
     expect(attributesFor(manifest, "neuwo-deal-id").has("size")).toBe(true);
-    expect(partsFor(manifest, "neuwo-deal-id").size).toBe(0);
   });
 
-  it("documents the status-dot's four axes and no parts", () => {
+  it("documents the status-dot's four axes", () => {
     const attrs = attributesFor(manifest, "neuwo-status-dot");
     for (const a of ["variant", "motion", "halo", "glow"]) expect(attrs).toContain(a);
-    expect(partsFor(manifest, "neuwo-status-dot").size).toBe(0);
   });
 
-  it("documents the cta's attributes and no parts", () => {
+  it("documents the cta's attributes", () => {
     const attrs = attributesFor(manifest, "neuwo-cta");
     for (const a of ["variant", "pulse", "intensity", "heading-level", "status", "status-state"])
       expect(attrs).toContain(a);
-    expect(partsFor(manifest, "neuwo-cta").size).toBe(0);
   });
 
-  it("documents the notice's axes and no parts", () => {
+  it("documents the notice's axes", () => {
     const attrs = attributesFor(manifest, "neuwo-notice");
     for (const a of ["position", "layout", "dismissible", "dismiss-label"]) expect(attrs).toContain(a);
-    expect(partsFor(manifest, "neuwo-notice").size).toBe(0);
   });
 
-  it("documents the logo's variant, label and no parts", () => {
+  it("documents the logo's variant, label", () => {
     const attrs = attributesFor(manifest, "neuwo-logo");
     for (const a of ["variant", "label"]) expect(attrs).toContain(a);
-    expect(partsFor(manifest, "neuwo-logo").size).toBe(0);
   });
 
-  it("documents the copy wrapper's three labels and no parts", () => {
+  it("documents the copy wrapper's three labels", () => {
     const attrs = attributesFor(manifest, "neuwo-copy");
     for (const a of ["label", "copied-label", "failed-label"]) expect(attrs).toContain(a);
-    expect(partsFor(manifest, "neuwo-copy").size).toBe(0);
   });
 });

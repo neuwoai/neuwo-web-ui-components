@@ -203,7 +203,7 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
     this.disconnect();
   }
 
-  /** Hook for listeners and observers; must not write to the DOM. */
+  /** Hook for listeners and observers. It writes nothing on adoption, except to re-apply properties set before definition. */
   connect() {}
 
   /** Hook to release whatever `connect` set up. */

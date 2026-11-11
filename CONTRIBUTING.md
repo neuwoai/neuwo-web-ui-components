@@ -15,8 +15,7 @@ the **library side only**; the design system's own procedure lives in that repo.
 ## Add a component
 
 A component renders into its own light DOM from one pure template, which the HTML, DOM and React
-adapters turn into the same markup. Follow `<neuwo-button>`. The remaining components still
-extend `NeuwoShadowElement` until they are converted.
+adapters turn into the same markup. Follow `<neuwo-button>`.
 
 1. Create `src/components/<name>/<name>.template.js`: a pure function from attributes to markup,
    built with `h()`, `region()` and `raw()` from `src/core/template.js`, with no DOM, browser
@@ -31,8 +30,8 @@ extend `NeuwoShadowElement` until they are converted.
    which never write to the DOM.
 3. Create `src/components/<name>/<name>.css` with prefixed BEM classes (`.neuwo-<block>`,
    `.neuwo-<block>--<modifier>`, `.neuwo-<block>__<element>`), tokens only, and keyframes named
-   `neuwo-<name>-*`. What a Shadow DOM recipe put on `:host` becomes an element-name rule
-   (`neuwo-<name> { display: inline-block; }`) for the outer box only.
+   `neuwo-<name>-*`. The outer box is an element-name rule
+   (`neuwo-<name> { display: inline-block; }`) and nothing else.
 4. Add the tag to every `:where(...)` list in `src/components/reset.css`, and the recipe to
    `LIGHT_COMPONENT_CSS` in `scripts/light-css.js`, which the build and the tests read.
 5. Register the element in `src/index.js` (the side-effect import and the export) and in the

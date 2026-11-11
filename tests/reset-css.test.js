@@ -60,7 +60,7 @@ const PSEUDO_ELEMENT = /::(before|after)$/;
 const baseOf = (selector) => selector.replace(PSEUDO_ELEMENT, "");
 const pseudoOf = (selector) => selector.match(PSEUDO_ELEMENT)?.[0] ?? "";
 
-// The user agent's text defaults for a native text control, which the old shadow reset left alone.
+// The user agent's text defaults for a native text control.
 const NATIVE = {
   "text-align": "start",
   "text-transform": "none",

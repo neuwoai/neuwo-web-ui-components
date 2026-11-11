@@ -3,7 +3,7 @@ import { sheet } from "../src/core/sheet.js";
 
 describe("sheet()", () => {
   it("builds a CSSStyleSheet from a CSS string", () => {
-    const s = sheet(":host{color:red}");
+    const s = sheet(".x{color:red}");
     expect(s).toBeInstanceOf(CSSStyleSheet);
   });
 });
