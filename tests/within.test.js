@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { Fragment, Suspense, act, useState } from "react";
+import { Fragment, Suspense, act, createElement, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { renderToStaticMarkup, renderToString } from "react-dom/server";
 import { adopt, reconcile, render } from "../src/core/adapters/dom.js";
@@ -394,6 +394,23 @@ describe("within in the React adapter", () => {
     expect(message).toContain("<x-item>");
     expect(message).toContain("<x-group>");
     expect(message).toMatch(/component/);
+  });
+
+  it("warns once in development, naming the cause and the fix, when a group is handed readers already rendered", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const dev = createRuntime(withinTemplates, { dev: true });
+    const rendered = (/** @type {string} */ label) =>
+      createElement("x-item", { key: label }, createElement("span", { className: "x-item" }, createElement("b", { className: "x-item__group" }, "none"), label));
+    const box = createElement("x-box", { key: "box" }, createElement("div", { className: "x-box", "data-outer": "none" }));
+    for (const create of [runtime, dev]) {
+      await renderClient(create.jsx("x-group", { name: "size", value: "m", children: [rendered("A"), create.jsx("div", { children: rendered("B") }, "b"), box] }));
+    }
+    expect(warn).toHaveBeenCalledTimes(1);
+    const [message] = warn.mock.calls[0];
+    expect(message).toContain("<x-item>");
+    expect(message).toContain("<x-group>");
+    expect(message).toMatch(/Server Component/);
+    expect(message).toMatch(/same component/);
   });
 
   it("stays silent where a reader receives its group's attributes, outside any group, and in production", async () => {

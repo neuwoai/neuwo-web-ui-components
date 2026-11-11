@@ -159,6 +159,13 @@ for (const [name, create] of Object.entries(factories)) {
     functions: functionsIn(tree),
   };
 }
+found.expanded = {};
+for (const [name, create] of Object.entries(factories)) {
+  const radios = [create("neuwo-radio", { value: "free", children: "Free" }, "free"), create("neuwo-radio", { value: "pro", children: "Pro" }, "pro")];
+  const { errors, payload } = await flight(radios);
+  assert.deepEqual(errors, [], `${name}: the radios' Flight render reported errors`);
+  found.expanded[name] = payload;
+}
 found.segmented = {};
 for (const [name, create] of Object.entries(factories)) {
   const options = [create("option", { value: "visual", children: "Visual" }, "visual"), create("option", { value: "json", children: "JSON" }, "json")];

@@ -95,18 +95,21 @@ const isTransparent = (el) =>
  * @param {ReactNode} node
  * @param {string} tag
  * @param {Within} within
+ * @param {((tag: string) => void) | null} rendered called with the tag of each element that arrives already
+ *   rendered, as a Server Component's output does
  * @returns {ReactNode}
  */
-function lend(node, tag, within) {
+function lend(node, tag, within, rendered) {
   if (Array.isArray(node)) {
-    const lent = node.map((child) => lend(child, tag, within));
+    const lent = node.map((child) => lend(child, tag, within, rendered));
     return lent.some((child, index) => child !== node[index]) ? lent : node;
   }
   const el = asElement(node);
   if (!el) return node;
+  if (typeof el.type === "string") rendered?.(el.type);
   const reads = typeof el.type === "function" && hostWithin.get(el.type) === tag;
   const own = /** @type {ReactNode} */ (el.props.children);
-  const children = tagOf(el) !== tag && isTransparent(el) ? lend(own, tag, within) : own;
+  const children = tagOf(el) !== tag && isTransparent(el) ? lend(own, tag, within, rendered) : own;
   // React freezes a static children array in development; spread, it keeps its exemption from the key check.
   const spread = Array.isArray(children) && Object.isFrozen(own);
   if (children !== own) return cloneElement(el, reads ? { __neuwoWithin: within } : null, ...(spread ? children : [children]));
@@ -356,11 +359,12 @@ function useMark(authorRef, controlled, handlers, mounted) {
 /**
  * @param {string} tag
  * @param {Template} template
- * @param {{ markHost: boolean, server: boolean, provider: boolean, dev: boolean, warned: Set<string> }} options
- *   `provider` when another template names this tag as its `within`; `warned` holds the tags warned about once.
+ * @param {{ markHost: boolean, server: boolean, readers: Set<string>, dev: boolean, warned: Set<string> }} options
+ *   `readers` holds the tags whose templates name this tag as their `within`; `warned` holds the warnings given once.
  */
-function hostFor(tag, template, { markHost, server, provider, dev, warned }) {
+function hostFor(tag, template, { markHost, server, readers, dev, warned }) {
   const { within: enclosing } = template;
+  const provider = readers.size > 0;
   /** @param {Element} el */
   const unlent = (el) => {
     if (warned.has(tag) || !el.parentElement?.closest(enclosing)) return;
@@ -368,6 +372,17 @@ function hostFor(tag, template, { markHost, server, provider, dev, warned }) {
     console.warn(
       `<${tag}> is inside <${enclosing}> but was rendered without its attributes: a component of your own stands between ` +
         `them, and the JSX runtime cannot see into it. Render <${tag}> inside <${enclosing}> through elements, fragments or Suspense.`,
+    );
+  };
+  /** @param {string} reader */
+  const expanded = (reader) => {
+    const key = `${reader} in ${tag}`;
+    if (!readers.has(reader) || warned.has(key)) return;
+    warned.add(key);
+    console.warn(
+      `<${reader}> reached <${tag}> already rendered, without its attributes: a Server Component rendered it outside ` +
+        `<${tag}>, as it renders the children it passes to a Client Component. Render <${tag}> and its <${reader}> elements ` +
+        `in the same component.`,
     );
   };
   /** @param {Record<string, unknown>} props */
@@ -385,7 +400,7 @@ function hostFor(tag, template, { markHost, server, provider, dev, warned }) {
     const mark = markHost && { ref: useMark(props.ref, controlled, takeHandlers(host), dev && enclosing && !within ? unlent : null) };
     const blocks = blocksOf(node);
     const lent = provider && { attrs, controlled, hasOnChange: typeof props.onChange === "function" };
-    const placed = lent ? /** @type {ReactNode[]} */ (lend(items, tag, lent)) : items;
+    const placed = lent ? /** @type {ReactNode[]} */ (lend(items, tag, lent, dev ? expanded : null)) : items;
     const form = held ? { host: heldState(held, within?.hasOnChange === true || typeof props.onChange === "function"), controlled } : { host: props, controlled };
     const root = toReact(node, distribute(node, placed, slotOf), blocks, keyOf(node, blocks, 0), form);
     // A field assigns a value it is handed to its live control, which would overwrite what the user typed.
@@ -402,20 +417,23 @@ function hostFor(tag, template, { markHost, server, provider, dev, warned }) {
  * @param {Record<string, Template>} registry
  * @param {{ markHost?: boolean, server?: boolean, dev?: boolean }} [options] `server` renders for React Server
  *   Components: no form control is controlled, the element itself gets no `value` or `checked`, and the adapter adds
- *   no function prop. `dev` warns once per tag when a reader mounts inside its `within` element without its attributes.
+ *   no function prop. `dev` warns once per tag when a reader mounts inside its `within` element without its attributes,
+ *   and once per reader and enclosing tag when that element is handed the reader already rendered.
  * @returns {{ jsx: typeof reactJsx, jsxs: typeof reactJsxs, jsxDEV: typeof reactJsxDEV }}
  */
 export function createRuntime(registry, { markHost = true, server = false, dev = false } = {}) {
   /** @type {Map<string, ReturnType<typeof hostFor>>} */
   const hosts = new Map();
-  const providers = new Set(Object.values(registry).flatMap((template) => template.within ?? []));
+  /** @type {Map<string, Set<string>>} */
+  const readers = new Map();
+  for (const [tag, { within }] of Object.entries(registry)) if (within) readers.set(within, (readers.get(within) ?? new Set()).add(tag));
   /** @type {Set<string>} */
   const warned = new Set();
   /** @param {ElementType} type */
   const resolve = (type) => {
     if (typeof type !== "string" || !Object.hasOwn(registry, type)) return type;
     let host = hosts.get(type);
-    if (!host) hosts.set(type, (host = hostFor(type, registry[type], { markHost, server, provider: providers.has(type), dev, warned })));
+    if (!host) hosts.set(type, (host = hostFor(type, registry[type], { markHost, server, readers: readers.get(type) ?? new Set(), dev, warned })));
     return host;
   };
   return {

@@ -593,6 +593,11 @@ value props:
   its own, and development builds warn about it, so write the radios in place inside the group.
   One edge remains: a radio inside your own component, inside `Suspense`, inside a group, can
   mismatch on hydration when it is revealed.
+- In Next.js, radios a Server Component passes as `children` to a Client Component that renders
+  the group are rendered on the server, outside the group, so they get none of its attributes: no
+  `name`, value, `required` or `form`, and the browser does not group them. Development builds
+  warn about it. Render the group and its radios in the same component, whether that is the
+  Client Component or the Server Component.
 - React Hook Form's `register` goes on the group: it reads the picked value from the group's
   `value` and checks the matching radio on a reset.
 - A lone `<neuwo-radio>` outside any group behaves like React's own radio, through `checked` and

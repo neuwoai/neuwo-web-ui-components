@@ -110,7 +110,9 @@
   makes every radio controlled, so a pick the `onChange` handler ignores is undone, `defaultValue` starts
   an uncontrolled group, and `onChange` fires once per pick with the radio's input as `event.target`.
   The radios get the group's attributes inside elements, fragments, `Suspense` and other Neuwo elements,
-  but not inside a component of your own. React Hook Form's `register` goes on the group, which it reads
+  but not inside a component of your own. Radios a Server Component passes to a Client Component that
+  renders the group arrive already rendered, outside the group, so they get none of its attributes;
+  development builds warn about it. React Hook Form's `register` goes on the group, which it reads
   through `value` and resets by setting it. The JSX types give `<neuwo-radio>` `name`, `value`,
   `checked`, `defaultChecked`, `disabled`, `form`, `required` and an `onChange`, and refuse
   `defaultValue` and the error attributes on it.

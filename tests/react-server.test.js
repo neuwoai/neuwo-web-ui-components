@@ -9,6 +9,7 @@ import { renderToStaticMarkup, renderToString } from "react-dom/server";
 import { createFromReadableStream } from "react-server-dom-webpack/client.edge";
 import "../src/index.js";
 import { jsx } from "../src/react/jsx-runtime.js";
+import { jsxDEV } from "../src/react/jsx-dev-runtime.js";
 import { templates } from "../src/templates.js";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -127,6 +128,37 @@ describe("JSX runtime in React Server Components", () => {
       functions: [],
     };
     expect(found.radio).toEqual({ jsx: expected, jsxDEV: expected });
+  });
+
+  it.runIf(built)("warns once in development when a client radio group meets radios a Server Component rendered outside it", async () => {
+    const decode = (payload) => createFromReadableStream(new Response(payload).body, { serverConsumerManifest: { moduleMap: {}, moduleLoading: null } });
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const error = vi.spyOn(console, "error");
+    for (const [runtime, create] of [
+      ["production", jsx],
+      ["development", (type, props) => jsxDEV(type, props, undefined, false)],
+    ]) {
+      for (const [name, payload] of Object.entries(found.expanded)) {
+        const radios = await decode(payload);
+        const container = mount();
+        const app = createRoot(container);
+        cleanups.unshift(() => act(() => app.unmount()));
+        await act(async () => app.render(create("neuwo-radio-group", { name: "plan", defaultValue: "pro", children: radios })));
+        const inputs = Array.from(container.querySelectorAll("neuwo-radio input"), (input) => [input.value, input.name, input.checked]);
+        expect(inputs, `${runtime} group, ${name} radios`).toEqual([
+          ["free", "", false],
+          ["pro", "", false],
+        ]);
+      }
+      if (runtime === "production") expect(warn).not.toHaveBeenCalled();
+    }
+    expect(warn).toHaveBeenCalledTimes(1);
+    const [message] = warn.mock.calls[0];
+    expect(message).toContain("<neuwo-radio>");
+    expect(message).toContain("<neuwo-radio-group>");
+    expect(message).toMatch(/Server Component/);
+    expect(message).toMatch(/same component/);
+    expect(error).not.toHaveBeenCalled();
   });
 
   it.runIf(built)("renders <neuwo-segmented value> with its option checked and the value as the form value's default, with no function", () => {
