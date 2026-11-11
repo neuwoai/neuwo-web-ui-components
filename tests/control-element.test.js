@@ -7,6 +7,7 @@ import { NeuwoChoiceElement } from "../src/components/selection/choice-element.j
 import { NeuwoInput } from "../src/components/fields/input/neuwo-input.js";
 import { NeuwoCheckbox } from "../src/components/selection/checkbox/neuwo-checkbox.js";
 import { NeuwoToggle } from "../src/components/selection/toggle/neuwo-toggle.js";
+import { NeuwoRadioGroup } from "../src/components/selection/radio/neuwo-radio-group.js";
 
 const cleanup = [];
 afterEach(() => {
@@ -27,10 +28,11 @@ function later(base) {
 }
 
 describe("NeuwoControlElement", () => {
-  it("is the light base the fields and the choices share", () => {
+  it("is the light base the fields, the choices and the radio group share", () => {
     expect(Object.getPrototypeOf(NeuwoControlElement)).toBe(NeuwoElement);
     expect(Object.getPrototypeOf(NeuwoFieldElement)).toBe(NeuwoControlElement);
-    expect(Object.getPrototypeOf(NeuwoChoiceElement)).toBe(NeuwoControlElement);
+    expect(Object.getPrototypeOf(Object.getPrototypeOf(NeuwoChoiceElement))).toBe(NeuwoControlElement);
+    expect(Object.getPrototypeOf(NeuwoRadioGroup)).toBe(NeuwoControlElement);
   });
 });
 

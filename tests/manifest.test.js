@@ -93,10 +93,13 @@ describe("custom-elements.json", () => {
     expect(attributesFor(manifest, "neuwo-toggle").has("pulse")).toBe(true);
   });
 
-  it("documents the shared single-select attributes on the radio group", () => {
+  it("documents the radio group's attributes, the native events and no parts", () => {
     const attrs = attributesFor(manifest, "neuwo-radio-group");
-    for (const a of ["name", "value", "disabled", "required", "label", "orientation", "error", "error-muted", "no-error-line"])
+    for (const a of ["name", "value", "disabled", "form", "required", "label", "orientation", "error", "error-muted", "no-error-line"])
       expect(attrs).toContain(a);
+    expect(attrs.has("checked")).toBe(false);
+    expect(declByTag(manifest, "neuwo-radio-group").events.map((e) => e.name)).toEqual(expect.arrayContaining(["input", "change"]));
+    expect(partsFor(manifest, "neuwo-radio-group").size).toBe(0);
   });
 
   it("documents the button's own attributes and no parts", () => {
@@ -128,14 +131,14 @@ describe("custom-elements.json", () => {
   });
 
   it("documents the Shadow DOM selection-control parts", () => {
-    for (const p of ["field", "input", "label"]) expect(partsFor(manifest, "neuwo-radio").has(p)).toBe(true);
-    for (const p of ["legend", "options"]) expect(partsFor(manifest, "neuwo-radio-group").has(p)).toBe(true);
     for (const p of ["indicator", "option"]) expect(partsFor(manifest, "neuwo-segmented").has(p)).toBe(true);
   });
 
-  it("documents the radio's own attributes", () => {
+  it("documents the radio's checkable attributes, none of the error line's, the native events and no parts", () => {
     const attrs = attributesFor(manifest, "neuwo-radio");
-    for (const a of ["value", "disabled", "checked"]) expect(attrs).toContain(a);
+    expect([...attrs].sort()).toEqual(["checked", "disabled", "form", "name", "required", "value"]);
+    expect(declByTag(manifest, "neuwo-radio").events.map((e) => e.name)).toEqual(expect.arrayContaining(["input", "change"]));
+    expect(partsFor(manifest, "neuwo-radio").size).toBe(0);
   });
 
   it("documents the badge's six axes and no parts", () => {

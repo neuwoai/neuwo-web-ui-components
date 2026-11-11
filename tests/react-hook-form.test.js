@@ -83,3 +83,44 @@ describe("<neuwo-checkbox> and <neuwo-toggle> with React Hook Form's register, i
     expect(errors).not.toHaveBeenCalled();
   });
 });
+
+describe("<neuwo-radio-group> with React Hook Form's register, in jsdom", () => {
+  const radioOf = (group, value) => group.querySelector(`neuwo-radio[value="${value}"] > .neuwo-form-check > input`);
+  const radios = () => [
+    jsx("neuwo-radio", { value: "free", children: "Free" }, "free"),
+    jsx("neuwo-radio", { value: "pro", children: "Pro" }, "pro"),
+  ];
+
+  it("registers the group as a plain field, checks its default, and reads each pick through the group's value", async () => {
+    const errors = vi.spyOn(console, "error");
+    const form = useForm({ plan: "pro" });
+    const container = await render(jsx("form", { children: jsx("neuwo-radio-group", { ...form.register("plan"), children: radios() }) }));
+    const group = container.querySelector("neuwo-radio-group");
+    expect(form.fields.plan.ref).toBe(group);
+    expect(form.fields.plan.refs).toBeUndefined();
+    expect(radioOf(group, "pro").checked).toBe(true);
+    expect(form.values.plan).toBe("pro");
+    await act(async () => radioOf(group, "free").click());
+    expect(form.values.plan).toBe("free");
+    expect(group.hasAttribute("value")).toBe(false);
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it("reads an unpicked group as an empty value, and resets to the default value, checking its radio", async () => {
+    const errors = vi.spyOn(console, "error");
+    const blank = useForm();
+    const first = await render(jsx("neuwo-radio-group", { ...blank.register("tier"), children: radios() }));
+    expect(blank.values.tier).toBe("");
+    expect(first.querySelector("neuwo-radio-group").value).toBe("");
+    const form = useForm({ plan: "free" });
+    const container = await render(jsx("form", { children: jsx("neuwo-radio-group", { ...form.register("plan"), children: radios() }) }));
+    const group = container.querySelector("neuwo-radio-group");
+    await act(async () => radioOf(group, "pro").click());
+    expect(form.values.plan).toBe("pro");
+    await act(async () => form.reset());
+    expect(radioOf(group, "free").checked).toBe(true);
+    expect(radioOf(group, "pro").checked).toBe(false);
+    expect(form.values.plan).toBe("free");
+    expect(errors).not.toHaveBeenCalled();
+  });
+});

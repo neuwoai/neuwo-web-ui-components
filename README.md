@@ -1,9 +1,9 @@
 # Neuwo Web UI Library
 
 Neuwo design-language web components: vanilla custom elements, zero runtime deps. The button,
-badge, deal-ID chip, status dot, logo, copy wrapper, notice card, CTA band, form fields, checkbox and
-toggle render into light DOM and can be server-rendered; the radio group and segmented control still
-use Shadow DOM while they migrate.
+badge, deal-ID chip, status dot, logo, copy wrapper, notice card, CTA band, form fields, checkbox,
+toggle, radio and radio group render into light DOM and can be server-rendered; the segmented control
+still uses Shadow DOM while it migrates.
 The single source for reusable Neuwo UI and its styling (tokens, component recipes, typography).
 
 ## Install
@@ -497,18 +497,18 @@ createRoot(document.getElementById("root")!).render(<App />);
 `jsxImportSource` points JSX at the library's runtime, which wraps React's own and expands the
 light DOM elements (`<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuwo-status-dot>`,
 `<neuwo-logo>`, `<neuwo-copy>`, `<neuwo-notice>`, `<neuwo-cta>`, `<neuwo-input>`, `<neuwo-textarea>`,
-`<neuwo-range>`, `<neuwo-combobox>`, `<neuwo-checkbox>` and `<neuwo-toggle>`) into their markup; MDX reads its own `jsxImportSource` option, not tsconfig's, so set it there too (in
+`<neuwo-range>`, `<neuwo-combobox>`, `<neuwo-checkbox>`, `<neuwo-toggle>`, `<neuwo-radio>` and
+`<neuwo-radio-group>`) into their markup; MDX reads its own `jsxImportSource` option, not tsconfig's, so set it there too (in
 `@mdx-js/*` or Next's MDX config). Elements recognise markup React rendered, from Client or Server
 Components, and leave it to React, so without the setting a light DOM tag React renders stays bare.
 The same setting adds every element to JSX with each attribute's allowed values and each custom
 event's `detail`, so a misspelt variant fails the type check. React stays an optional peer
 dependency.
 
-React renders the markup of the fourteen light DOM elements itself, so they show from the first paint.
-The Shadow DOM components (the radio group and the segmented control) render when they register,
-which the first import does in the same pass, before the browser paints. Registering later, from an
-effect or a script that runs after the app, shows those as bare tags first and the components a
-moment after.
+React renders the markup of the sixteen light DOM elements itself, so they show from the first paint.
+The Shadow DOM component (the segmented control) renders when it registers, which the first import
+does in the same pass, before the browser paints. Registering later, from an effect or a script that
+runs after the app, shows it as a bare tag first and the component a moment after.
 
 React 19 sets a property where the element has one and binds events, so the elements behave like
 native controls:
@@ -520,8 +520,9 @@ native controls:
 <neuwo-notice dismissible hidden={!open} ondismiss={(e) => { e.preventDefault(); setOpen(false); }}>...</neuwo-notice>
 ```
 
-- `onChange` fires as it does on native fields. On the form fields, the checkbox and the toggle
-  that means React's own controlled and uncontrolled models, in [Form fields in React](#form-fields-in-react).
+- `onChange` fires as it does on native fields. On the form fields, the checkbox, the toggle and
+  the radio group that means React's own controlled and uncontrolled models, in
+  [Form fields in React](#form-fields-in-react).
 - A custom event binds by its exact name, so it is lower case: `oncopied`, `ondismiss`.
   `onCopied` listens for an event called `Copied`, which never fires; the types reject it.
 - Cancel the notice's `dismiss` and drive `hidden` from state. Left alone, the element hides
@@ -576,6 +577,37 @@ value props:
   gives its `value`, or `true` without one, and an unchecked one `false`.
 - In Server Components `checked` is the starting state.
 
+`<neuwo-radio-group>` holds the value of its radios, as a group of React's own radios does:
+
+```tsx
+<neuwo-radio-group name="plan" value={plan} onChange={(e) => setPlan(e.target.value)}>
+  <neuwo-radio value="free">Free</neuwo-radio>
+  <neuwo-radio value="pro">Pro</neuwo-radio>
+</neuwo-radio-group>
+<neuwo-radio-group name="plan" defaultValue="pro">...</neuwo-radio-group>
+```
+
+- `value` makes it controlled: every radio shows whatever your state says, and a pick your
+  handler ignores is undone.
+- `onChange` fires once per pick with the picked radio's input as `event.target`, so
+  `event.target.value` is the new value and `event.target.name` the group's.
+- `defaultValue` gives an uncontrolled group with a starting value, which keeps the user's pick
+  across re-renders. In Server Components `value` is the starting value.
+- The radios may sit in your markup inside the group, in elements, fragments, `Suspense` or
+  other Neuwo elements, and get the group's `name` and value there. A radio inside a component of
+  your own is out of the group's reach, since the JSX runtime cannot see into it: it renders on
+  its own, and development builds warn about it, so write the radios in place inside the group.
+  One edge remains: a radio inside your own component, inside `Suspense`, inside a group, can
+  mismatch on hydration when it is revealed.
+- React Hook Form's `register` goes on the group: it reads the picked value from the group's
+  `value` and checks the matching radio on a reset.
+- A lone `<neuwo-radio>` outside any group behaves like React's own radio, through `checked` and
+  `defaultChecked`.
+- Markup React renders once and never hydrates, such as an Astro component with no client
+  directive, gives the group element no `value` attribute when only `defaultValue` is set, as it
+  does a field. Change an attribute of such a group later, from a script, and its radios lose
+  that starting value; set `value` there instead.
+
 `<neuwo-combobox>` follows the same two models:
 
 ```tsx
@@ -628,10 +660,10 @@ export function Neuwo() {
 }
 ```
 
-Render `<Neuwo />` once in the root layout. Because the JSX runtime expands the fourteen light DOM
+Render `<Neuwo />` once in the root layout. Because the JSX runtime expands the sixteen light DOM
 elements, the server-rendered HTML carries their full markup and they are on-brand from the first
-paint, before the bundle has run. The radio group and the segmented control, still on Shadow DOM,
-arrive as bare tags and render when the bundle registers them. Import `neuwo.css` instead of `neuwo-components.css` to add the
+paint, before the bundle has run. The segmented control, still on Shadow DOM, arrives as a bare tag
+and renders when the bundle registers it. Import `neuwo.css` instead of `neuwo-components.css` to add the
 typography and page surface.
 
 ## Components
@@ -672,16 +704,18 @@ Published styling files, for direct linking or non-web use:
 | Component reset (before any recipe) | `@neuwo/web-ui-library--demo/components/reset.css` |
 | Button recipe | `@neuwo/web-ui-library--demo/components/button/button.css` |
 | Field chrome | `@neuwo/web-ui-library--demo/components/fields/field.css` |
-| Selection shell (checkbox, toggle) | `@neuwo/web-ui-library--demo/components/selection/controls.css` |
-| Checkbox recipe | `@neuwo/web-ui-library--demo/components/selection/form-check.css` |
+| Selection shell (checkbox, toggle, radio group) | `@neuwo/web-ui-library--demo/components/selection/controls.css` |
+| Checkbox and radio recipe | `@neuwo/web-ui-library--demo/components/selection/form-check.css` |
+| Radio group recipe | `@neuwo/web-ui-library--demo/components/selection/radio/radio-group.css` |
 | Toggle recipe | `@neuwo/web-ui-library--demo/components/selection/toggle/toggle.css` |
 | Logo files | `@neuwo/web-ui-library--demo/logos/neuwo-logo--bg-dark.svg` |
 
 ## Restyling from the host
 
 `<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuwo-status-dot>`, `<neuwo-logo>`,
-`<neuwo-copy>`, `<neuwo-notice>`, `<neuwo-cta>`, the form fields, `<neuwo-checkbox>` and
-`<neuwo-toggle>` render their markup into their own light DOM, so they have no parts. Their prefixed classes are the public hooks instead. Put the element name in
+`<neuwo-copy>`, `<neuwo-notice>`, `<neuwo-cta>`, the form fields, `<neuwo-checkbox>`,
+`<neuwo-toggle>`, `<neuwo-radio>` and `<neuwo-radio-group>` render their markup into their own light
+DOM, so they have no parts. Their prefixed classes are the public hooks instead. Put the element name in
 front for weight, so a rule wins without `!important`:
 
 ```css
@@ -760,12 +794,17 @@ properties, or target the children you passed in.
 | `.neuwo-combobox__listbox`, `.neuwo-combobox__option`, `.neuwo-combobox__option--active` | the list, each option row, and the row the keyboard highlights |
 | `.neuwo-combobox__group-item`, `.neuwo-combobox__group` | the row around an `<optgroup>`'s options and its label |
 | `.neuwo-combobox__empty` | the "No matches" row, hidden until a filter matches nothing |
-| `.neuwo-choice` | the checkbox's or toggle's wrapper `<div>`, which stacks the row and the error line |
+| `.neuwo-choice` | the checkbox's, toggle's or radio group's wrapper `<div>`, which stacks the row (or the radiogroup) and the error line |
 | `.neuwo-choice__error` | the reserved error line; it was `.control-error` and `::part(error)` |
-| `.neuwo-form-check` | the checkbox's `<label>`, around the box and the label content; it was `::part(field)` |
+| `.neuwo-form-check` | the checkbox's or radio's `<label>`, around the box and the label content; it was `::part(field)` |
 | `.neuwo-form-check--error` | the checkbox's label, by `error` unless `error-muted` or `no-error-line` is set |
-| `.neuwo-form-check__input` | the native checkbox; it was `::part(input)` |
-| `.neuwo-form-check__label` | the wrapper around the checkbox's children; it was `::part(label)` |
+| `.neuwo-form-check__input` | the native checkbox or radio; it was `::part(input)` |
+| `.neuwo-form-check__label` | the wrapper around the checkbox's or radio's children; it was `::part(label)` |
+| `.neuwo-radio-group` | the radio group's `role="radiogroup"` `<div>`, around the legend and the radios; it was `.radio-group` and `::part(group)` |
+| `.neuwo-radio-group--horizontal` | the radiogroup, by `orientation="horizontal"`, which lays the radios out in a row |
+| `.neuwo-radio-group--error` | the radiogroup, by `error` unless `error-muted` or `no-error-line` is set; it rings every radio's box |
+| `.neuwo-radio-group__legend` | the visible label, `hidden` while `label` is not set; it was `::part(legend)` |
+| `.neuwo-radio-group__options` | the wrapper around the group's children, the radios; it was `::part(options)` |
 | `.neuwo-form-toggle` | the toggle's `<label>`, around the switch, the track and the label content; it was `::part(field)` |
 | `.neuwo-form-toggle--pulse`, `.neuwo-form-toggle--error` | the toggle's label, by `pulse`, and by `error` unless `error-muted` or `no-error-line` is set |
 | `.neuwo-form-toggle__input` | the visually hidden native switch, `role="switch"`; it was `::part(input)` |
@@ -795,13 +834,12 @@ The other elements render into a shadow root. Shadow DOM keeps the host page's
 CSS out, but two channels are deliberately open, and together they reach almost
 every visual detail without forking a component:
 
-- **`::part(...)`** is the intended restyling hook. Every element exposes its
-  internals as parts (the radio `label`, the radio group `legend`, the segmented
-  `option`, and more, listed per component in the manifest). Adjust size, weight,
-  colour, font or spacing from the host:
+- **`::part(...)`** is the intended restyling hook. The segmented control exposes
+  its internals as parts (`group`, `option`, `indicator` and `error`, listed in the
+  manifest). Adjust size, weight, colour, font or spacing from the host:
 
   ```css
-  .my-radio::part(label) { font-weight: 500; }
+  .my-segmented::part(option) { font-weight: 500; }
   ```
 
 - **Inherited CSS properties** cross the boundary into slotted content, so a
@@ -815,8 +853,9 @@ share the same attributes (`name`, `value`, `label`, `disabled`, `required`,
 `size` and `noErrorLine` properties, and the same `change` event. The
 selection controls (`<neuwo-checkbox>`, `<neuwo-toggle>`,
 `<neuwo-radio-group>`, `<neuwo-segmented>`) share the error and
-`no-error-line` behaviour below, and the checkbox and the toggle share the
-checkable API under [Checkbox and toggle](#checkbox-and-toggle). The generated
+`no-error-line` behaviour below. The checkbox and the toggle share the
+checkable API under [Checkbox and toggle](#checkbox-and-toggle), and the radio
+group and its radios are under [Radio group](#radio-group). The generated
 `.d.ts` shows these on the base class each control `extends`.
 
 `<neuwo-input>`, `<neuwo-textarea>` and `<neuwo-range>` render a native `<input>`
@@ -913,6 +952,48 @@ What were the parts `field`, `input`, `label`, `track` and `error` are the
 classes `.neuwo-form-check` or `.neuwo-form-toggle`, their `__input`, `__label`
 and `__track` elements, and `.neuwo-choice__error`, listed under restyling above.
 
+### Radio group
+
+`<neuwo-radio-group>` holds `<neuwo-radio>` elements, directly or inside your own
+markup. Each radio renders a native `<input type="radio">` inside a `<label>`
+that also holds its children, and that input takes the group's `name`,
+`required` and `form`, and its `disabled` too, so the browser groups the radios:
+one is checked at a time, Tab reaches the checked one and the arrow keys move
+the choice, `required` is checked natively, and the checked radio submits its
+`value` under the group's `name`, in server-rendered markup before the script
+has loaded too. Give the group a `name`: radios with none are not grouped, as
+native radios are not. The group renders the `role="radiogroup"` box, its
+legend and the error line, and has no form control of its own.
+
+- **`value` on the group is the starting value**: the radio of that value
+  starts checked, whatever its own `checked` says; without a group `value`, a
+  radio's `checked` attribute decides. Changing the attribute moves a group the
+  user has not picked in yet, and `form.reset()` returns to it and leaves
+  `error` alone. The group's `value` property reads the checked radio's value,
+  or an empty string, and setting it checks the radio of that value, or none;
+  `defaultValue` reads the starting value and sets the attribute.
+- **The picked radio's own events** reach your listeners on the group: `input`
+  and `change` once per pick, with that radio's `<input>` as `event.target`.
+  The group dispatches none of its own, and setting `value` fires nothing.
+- **The native form API** answers for the radios: `form`, `validity`,
+  `validationMessage`, `checkValidity()`, `reportValidity()` and
+  `setCustomValidity()` act on the first radio, which shares the group's
+  validity. `focus()` moves to the checked radio, else the first enabled one.
+- **Changing the group** reaches every radio: its `name`, `value`, `disabled`,
+  `required` and `form`. An `error` change touches no radio, so the user's pick
+  stays.
+- **A lone `<neuwo-radio>`**, outside any group, is a radio of its own, with its
+  own `name`, `value`, `checked`, `required`, `disabled` and `form`. Its
+  `checked` property is live on the input, `defaultChecked` reads the starting
+  state, and `type` reads `radio`.
+- **`aria-*` and `title`** on a radio are copied onto its input, and on the
+  group onto the radiogroup; `data-*` stays on the element only.
+
+What were the parts `legend` and `options` on the group, and `field`, `input`
+and `label` on the radio, are the classes `.neuwo-radio-group__legend`,
+`.neuwo-radio-group__options` and `.neuwo-form-check` with its `__input` and
+`__label` elements, listed under restyling above.
+
 ## Form errors
 
 Every form control (fields and selection controls) shows an error from the consumer-set
@@ -920,9 +1001,9 @@ Every form control (fields and selection controls) shows an error from the consu
 component owns no error text of its own, so the consumer decides when the error appears and
 clears (`required` validity is reported natively and separately, not as this message). On
 the four fields (`<neuwo-input>`, `<neuwo-textarea>`, `<neuwo-range>` and `<neuwo-combobox>`),
-`<neuwo-checkbox>` and `<neuwo-toggle>` the message line is part of the rendered markup, so an error
-the server sets shows in the first paint, and a form reset leaves `error` alone: the page set it, so
-the page clears it.
+`<neuwo-checkbox>`, `<neuwo-toggle>` and `<neuwo-radio-group>` the message line is part of the
+rendered markup, so an error the server sets shows in the first paint, and a form reset leaves
+`error` alone: the page set it, so the page clears it.
 
 Add `error-muted` alongside `error` to drop the heavy control chrome without losing the note: the
 red border and box-shadow ring come off the instant the user acts, while the red message and the

@@ -17,18 +17,28 @@ export function controlClass(attrs) {
 }
 
 /**
- * The host attributes a native control carries for assistive technology: every `aria-*` and `title`, and the
- * error's `aria-invalid` and `aria-describedby`, which `no-error-line` leaves off.
+ * The host attributes a native control carries as they are: every `aria-*` and `title`.
  * @param {Record<string, string>} attrs
- * @param {TemplateContext} ctx
  * @returns {Record<string, string>}
  */
-export function ariaAttrs(attrs, ctx) {
+export function forwardedAttrs(attrs) {
   /** @type {Record<string, string>} */
   const props = {};
   for (const [name, value] of Object.entries(attrs)) {
     if (name === "title" || name.startsWith("aria-")) props[name] = value;
   }
+  return props;
+}
+
+/**
+ * The host attributes a native control carries for assistive technology: the `forwardedAttrs`, and the error's
+ * `aria-invalid` and `aria-describedby`, which `no-error-line` leaves off.
+ * @param {Record<string, string>} attrs
+ * @param {TemplateContext} ctx
+ * @returns {Record<string, string>}
+ */
+export function ariaAttrs(attrs, ctx) {
+  const props = forwardedAttrs(attrs);
   if (!has(attrs, "no-error-line")) {
     if (has(attrs, "error")) props["aria-invalid"] = "true";
     if (attrs.error) props["aria-describedby"] = ctx.id("error");

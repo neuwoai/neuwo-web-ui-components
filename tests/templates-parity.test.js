@@ -13,17 +13,19 @@ const BOOLEAN_PROPS = new Set(["disabled", "selected"]);
 // React renders `selected` on an <option> but warns, preferring a value on the <select>; server markup carries it.
 const SELECTED_WARNING = "instead of setting `selected` on <option>";
 
-function toReact(child) {
-  if (typeof child === "string") return child;
-  const props = Object.fromEntries(Object.entries(child.attrs ?? {}).map(([name, value]) => [name, value === "" && BOOLEAN_PROPS.has(name) ? true : value]));
-  if (child.children) return jsxs(child.tag, { ...props, children: child.children.map(toReact) });
-  return jsx(child.tag, { ...props, children: child.text });
-}
-
 // React warns about a value or checked without onChange, and a fixture's are only the starting state.
 const handlers = (attrs) => (Object.hasOwn(attrs, "value") || Object.hasOwn(attrs, "checked") ? { onChange() {} } : {});
 // A JSX `checked` is a boolean, and the adapter reads an empty string as unchecked.
-const checked = (attrs) => (Object.hasOwn(attrs, "checked") ? { checked: true } : {});
+const checked = (attrs) => (Object.hasOwn(attrs, "checked") ? { checked: true, onChange() {} } : {});
+
+function toReact(child) {
+  if (typeof child === "string") return child;
+  const attrs = child.attrs ?? {};
+  const props = Object.fromEntries(Object.entries(attrs).map(([name, value]) => [name, value === "" && BOOLEAN_PROPS.has(name) ? true : value]));
+  Object.assign(props, checked(attrs));
+  if (child.children) return jsxs(child.tag, { ...props, children: child.children.map(toReact) });
+  return jsx(child.tag, { ...props, children: child.text });
+}
 
 const viaReact = (tag, testCase) =>
   renderToStaticMarkup(jsxs(tag, { ...testCase.attrs, ...checked(testCase.attrs), ...handlers(testCase.attrs), children: testCase.children.map(toReact) }));

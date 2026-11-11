@@ -139,4 +139,24 @@ for (const [name, create] of Object.entries(withinFactories)) {
     functions: functionsIn(tree),
   };
 }
+found.radio = {};
+for (const [name, create] of Object.entries(factories)) {
+  const radios = [create("neuwo-radio", { value: "free", children: "Free" }, "free"), create("div", { children: create("neuwo-radio", { value: "pro", children: "Pro" }) }, "pro")];
+  const Page = () =>
+    create("main", {
+      children: [
+        create("neuwo-radio-group", { name: "plan", value: "pro", label: "Plan", children: radios }, "group"),
+        create("neuwo-radio", { name: "solo", value: "x", checked: true, children: "Solo" }, "solo"),
+      ],
+    });
+  const { errors, payload } = await flight(create(Page, {}));
+  assert.deepEqual(errors, [], `${name}: the radio group Flight render reported errors`);
+  const tree = await decode(payload);
+  found.radio[name] = {
+    inputs: findAll(tree, (el) => el.props.className === "neuwo-form-check__input").map((el) => el.props),
+    hostValue: find(tree, (el) => el.type === "neuwo-radio-group")?.props.value ?? null,
+    leaked: findAll(tree, (el) => Object.keys(el.props).some((prop) => /within/i.test(prop))).length > 0,
+    functions: functionsIn(tree),
+  };
+}
 console.log(JSON.stringify(found));

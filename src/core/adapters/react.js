@@ -211,6 +211,19 @@ function isControlled(props, control) {
 }
 
 /**
+ * The state a control renders, as the props `bindForm` reads from a controlled host: how a reader of a controlled
+ * element, such as a radio in a controlled group, holds what its template made of that element's state.
+ * @param {TemplateNode} control
+ * @param {boolean} hasOnChange
+ * @returns {Record<string, unknown>}
+ */
+const heldState = (control, hasOnChange) => ({
+  checked: Object.hasOwn(control.props, "checked"),
+  value: control.props.value,
+  onChange: hasOnChange ? noop : undefined,
+});
+
+/**
  * Gives a form element its state the way React expects: the consumer's own on the control of a controlled host,
  * as the template resolved it, and the template's as a default everywhere else, so the browser keeps what the user
  * types.
@@ -365,13 +378,16 @@ function hostFor(tag, template, { markHost, server, provider, dev, warned }) {
     const items = flatten(/** @type {ReactNode} */ (props.children));
     const attrs = normalizeProps({ ...host, value: props.value ?? defaultValue, checked: props.checked ?? defaultChecked });
     const node = template(attrs, { id: (suffix) => scope + suffix, children: describe(items), within: within?.attrs ?? null });
+    const control = controlOf(node);
+    const held = !server && within?.controlled === true && control ? control : null;
     // An enclosing element such as a radio group holds a value its template has no control for.
-    const controlled = !server && (provider ? props.value != null : isControlled(props, controlOf(node)));
+    const controlled = !server && (provider ? props.value != null : held !== null || isControlled(props, control));
     const mark = markHost && { ref: useMark(props.ref, controlled, takeHandlers(host), dev && enclosing && !within ? unlent : null) };
     const blocks = blocksOf(node);
     const lent = provider && { attrs, controlled, hasOnChange: typeof props.onChange === "function" };
     const placed = lent ? /** @type {ReactNode[]} */ (lend(items, tag, lent)) : items;
-    const root = toReact(node, distribute(node, placed, slotOf), blocks, keyOf(node, blocks, 0), { host: props, controlled });
+    const form = held ? { host: heldState(held, within?.hasOnChange === true || typeof props.onChange === "function"), controlled } : { host: props, controlled };
+    const root = toReact(node, distribute(node, placed, slotOf), blocks, keyOf(node, blocks, 0), form);
     // A field assigns a value it is handed to its live control, which would overwrite what the user typed.
     if (server || host.value == null) delete host.value;
     if (server || host.checked == null) delete host.checked;

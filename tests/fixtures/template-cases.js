@@ -8,6 +8,14 @@ import { templates } from "../../src/templates.js";
 /** @typedef {{ name: string, attrs: Record<string, string>, children: Child[] }} TemplateCase */
 /** @typedef {import("../../src/core/template.js").ChildInfo} ChildInfo */
 
+/**
+ * @param {string} value
+ * @param {string} label
+ * @param {Record<string, string>} [attrs]
+ * @returns {ChildElement}
+ */
+const radio = (value, label, attrs = {}) => ({ tag: "neuwo-radio", attrs: { value, ...attrs }, text: label });
+
 /** @type {Record<string, TemplateCase[]>} */
 export const cases = {
   "neuwo-button": [
@@ -123,6 +131,37 @@ export const cases = {
   "neuwo-toggle": [
     { name: "pulse", attrs: { name: "enrich", pulse: "" }, children: ["Bid Enrichment"] },
     { name: "checked, disabled and a muted error", attrs: { checked: "", disabled: "", error: "Unavailable", "error-muted": "" }, children: ["On by default"] },
+  ],
+  "neuwo-radio-group": [
+    {
+      name: "a value",
+      attrs: { name: "plan", value: "pro", label: "Plan" },
+      children: [radio("free", "Free"), radio("pro", "Pro"), radio("ent", "Enterprise", { disabled: "" })],
+    },
+    { name: "a radio carrying checked", attrs: { name: "size" }, children: [radio("s", "S"), radio("m", "M", { checked: "" }), radio("l", "L")] },
+    {
+      name: "horizontal with an error",
+      attrs: { name: "size", label: "Size", orientation: "horizontal", error: "Pick a size" },
+      children: [radio("s", "S"), radio("m", "M")],
+    },
+    {
+      name: "required, with a radio inside other markup",
+      attrs: { name: "tier", label: "Tier", required: "", form: "signup" },
+      children: [radio("free", "Free"), { tag: "div", children: [radio("pro", "Pro", { "aria-label": "Pro plan" })] }],
+    },
+    {
+      name: "a disabled group",
+      attrs: { name: "plan", value: "a", disabled: "", "aria-label": "Plan", title: "Plan", "data-x": "1", "no-error-line": "" },
+      children: [radio("a", "A"), radio("b", "B")],
+    },
+  ],
+  "neuwo-radio": [
+    {
+      name: "a lone radio",
+      attrs: { name: "agree", value: "yes", checked: "", required: "", form: "signup", "aria-label": "Agree", title: "Agree", "data-x": "1" },
+      children: ["I ", { tag: "em", text: "agree" }],
+    },
+    { name: "a lone radio with no value", attrs: {}, children: ["Plain"] },
   ],
   "neuwo-deal-id": [
     { name: "default", attrs: {}, children: ["NW-CA-2026-04-8A3F"] },
@@ -309,12 +348,32 @@ function describe(child) {
   return { tag: child.tag, attrs, text: textOf(child), slot: attrs.slot || "default", children: nested.map(describe) };
 }
 
+const PROVIDERS = new Set(Object.values(templates).flatMap((template) => template.within ?? []));
+
 /**
- * The children as the HTML adapter receives them from the server, nested registered elements already expanded.
- * @param {Child[]} children
+ * Expands the markup of a child as it sits in its host, so an element that reads the host as its `within` gets
+ * the host's attributes; the host itself is left as it is.
+ * @param {string} html
+ * @param {{ tag: string, attrs: Record<string, string> }} host
  */
-export function renderChildren(children) {
-  return children.map((child) => ({ ...describe(child), html: expand(markup(child)) }));
+function expandIn(html, { tag, attrs }) {
+  const registry = Object.fromEntries(Object.entries(templates).filter(([name]) => name !== tag));
+  const close = `</${tag}>`;
+  const open = markup({ tag, attrs, children: [] }).slice(0, -close.length);
+  return expand(`${open}${html}${close}`, registry).slice(open.length, -close.length);
+}
+
+/**
+ * The children as the HTML adapter receives them from the server, nested registered elements already expanded,
+ * inside `host` when one is given.
+ * @param {Child[]} children
+ * @param {{ tag: string, attrs: Record<string, string> }} [host]
+ */
+export function renderChildren(children, host) {
+  return children.map((child) => ({
+    ...describe(child),
+    html: host && PROVIDERS.has(host.tag) ? expandIn(markup(child), host) : expand(markup(child)),
+  }));
 }
 
 const REFERENCES = ["for", "aria-describedby", "aria-labelledby", "aria-controls"];
@@ -358,5 +417,5 @@ export function normalise(html, parsed = true) {
  * @returns {string}
  */
 export function renderHtml(tag, testCase) {
-  return renderElement(tag, testCase.attrs, renderChildren(testCase.children), templates[tag], idScope("neuwo-s"));
+  return renderElement(tag, testCase.attrs, renderChildren(testCase.children, { tag, attrs: testCase.attrs }), templates[tag], idScope("neuwo-s"));
 }

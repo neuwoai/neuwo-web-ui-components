@@ -113,6 +113,21 @@ describe("JSX runtime in React Server Components", () => {
     const expected = { shown: ["size=m", "size=m", "none"], values: ["m", "m", null], leaked: false, functions: [] };
     expect(found.within).toEqual({ jsx: expected, jsxDEV: expected });
   });
+
+  it.runIf(built)("renders a radio group's radios with its name and value as their default, in other markup too, with no function", () => {
+    const input = (extra) => ({ className: "neuwo-form-check__input", type: "radio", ...extra });
+    const expected = {
+      inputs: [
+        input({ name: "plan", value: "free" }),
+        input({ name: "plan", value: "pro", defaultChecked: true }),
+        input({ name: "solo", value: "x", defaultChecked: true }),
+      ],
+      hostValue: null,
+      leaked: false,
+      functions: [],
+    };
+    expect(found.radio).toEqual({ jsx: expected, jsxDEV: expected });
+  });
 });
 
 describe("Server Component output reconciled in the browser", () => {

@@ -3,7 +3,7 @@ import { syncError } from "../../core/control-error.js";
 
 let uid = 0;
 
-// Shared base for the single-select form controls (radio-group, segmented).
+// Shared base for the single-select form control (segmented).
 // Owns form association, the single value, required validity, error display,
 // the role=radiogroup wiring, and the WAI-ARIA APG roving-focus keyboard with
 // selection following focus. Option sourcing and rendering are seams: a
@@ -11,10 +11,10 @@ let uid = 0;
 //
 // Option handle: { value, disabled, element, set checked(on), set tabbable(on),
 //   set disabledByGroup(on), set invalid(on), focus() }. `invalid` is the group's
-//   active-error state (error set and not muted); a radio reddens its own circle
-//   with it, segmented conveys the error on the group accent and ignores it.
+//   active-error state (error set and not muted); segmented conveys the error on
+//   the group accent and ignores it.
 /**
- * Base for the single-select controls (radio group, segmented). Owns form
+ * Base for the single-select control (segmented). Owns form
  * association, the single value, required validity, error display, the
  * role=radiogroup wiring, and the roving-focus keyboard with selection
  * following focus.

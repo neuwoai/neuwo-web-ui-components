@@ -1,31 +1,41 @@
-/* ==========================================================================
-   Selection: Radio group -- legend + stacked (or inline) <neuwo-radio> rows.
-   ========================================================================== */
-
-:host {
+neuwo-radio-group:not([hidden]) {
   display: block;
 }
 
-.radio-group {
+neuwo-radio:not([hidden]) {
+  display: inline-flex;
+}
+
+.neuwo-choice:has(> .neuwo-radio-group) {
+  gap: 0;
+  align-items: stretch;
+}
+
+.neuwo-radio-group {
   display: flex;
   flex-direction: column;
   gap: var(--neuwo-space-2);
 }
 
-.radio-group__legend {
+.neuwo-radio-group__legend {
   font-size: var(--neuwo-font-size-sm);
   font-weight: var(--neuwo-font-weight-medium);
   color: var(--neuwo-color-heading);
 }
 
-.radio-group__options {
+.neuwo-radio-group__options {
   display: flex;
   flex-direction: column;
   gap: var(--neuwo-space-3);
 }
 
-:host([orientation="horizontal"]) .radio-group__options {
+.neuwo-radio-group--horizontal > .neuwo-radio-group__options {
   flex-direction: row;
   flex-wrap: wrap;
   gap: var(--neuwo-space-5);
+}
+
+.neuwo-radio-group--error .neuwo-form-check__input {
+  border-color: var(--neuwo-color-red);
+  box-shadow: var(--neuwo-shadow-danger);
 }

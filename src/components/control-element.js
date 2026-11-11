@@ -15,15 +15,14 @@ function settable(proto, name) {
 }
 
 /**
- * Base for the light DOM elements built on one native form control: the fields and the selection controls. The
- * template renders that control, which does the form work. The element reflects the shared attributes, follows
- * its form's reset, and delegates the validity API and focus to the control.
+ * Base for the light DOM elements built on native form controls: the fields, the selection controls and the radio
+ * group, whose radios are its controls. The template renders the controls, which do the form work. The element
+ * reflects the shared attributes, follows its form's reset, and delegates the validity API and focus to the
+ * control.
  *
  * @summary Base class for Neuwo form controls.
  * @attr name - form field name, carried onto the native control.
  * @attr {boolean} disabled - disables the control and removes it from submission.
- * @attr error - error message; shows the red accent, the message, and aria-invalid.
- * @attr {boolean} no-error-line - drop the reserved error message row (for a non-validated control); setting `error` alongside it is a misconfiguration.
  */
 export class NeuwoControlElement extends NeuwoElement {
   /** @type {Map<string, unknown>} */

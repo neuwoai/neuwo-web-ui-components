@@ -48,12 +48,15 @@
         color: black !important;
         border-radius: 0 !important;
       }
-      /* Hostile rule: the old unprefixed classes no longer reach the checkboxes and switches. */
+      /* Hostile rule: the old unprefixed classes no longer reach the checkboxes, switches and radios. */
       .form-check,
       .form-check__input,
       .form-check__label,
       .form-toggle,
       .form-toggle__track,
+      .radio-group,
+      .radio-group__legend,
+      .radio-group__options,
       .control-error {
         background: hotpink !important;
         color: black !important;
@@ -680,6 +683,12 @@
     </div>
 
     <h2>Selection: radio group</h2>
+    <p>
+      Each radio is a native radio carrying its group's <code>name</code>, so the browser groups them:
+      Tab reaches the checked one and the arrow keys move the choice. The page defines a hostile
+      <code>.radio-group</code> rule. The classes are prefixed <code>.neuwo-radio-group</code>, so it
+      does not reach them.
+    </p>
     <form id="radio-form">
       <div class="row">
         <neuwo-radio-group name="plan" label="Plan" value="pro">
@@ -697,6 +706,22 @@
         </neuwo-radio-group>
       </div>
     </form>
+    <p>Radios may sit inside other markup in their group. A disabled group disables every radio.</p>
+    <div class="row">
+      <neuwo-radio-group name="billing" label="Billing">
+        <div><neuwo-radio value="monthly" checked>Monthly</neuwo-radio></div>
+        <div><neuwo-radio value="yearly">Yearly (two months free)</neuwo-radio></div>
+      </neuwo-radio-group>
+      <neuwo-radio-group name="region" label="Region" value="eu" disabled>
+        <neuwo-radio value="eu">Europe</neuwo-radio>
+        <neuwo-radio value="us">United States</neuwo-radio>
+      </neuwo-radio-group>
+    </div>
+    <p>Outside a group, a radio is a radio of its own; these two share a <code>name</code>.</p>
+    <div class="row">
+      <neuwo-radio name="contact" value="email" checked>Email me</neuwo-radio>
+      <neuwo-radio name="contact" value="phone">Call me</neuwo-radio>
+    </div>
 
     <h2>Selection: segmented control</h2>
     <form id="segmented-form" class="row">

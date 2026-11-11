@@ -1,100 +1,33 @@
-import { NeuwoShadowElement } from "../../../core/shadow-element.js";
 import { define } from "../../../core/element.js";
-import { formCheckSheet } from "../form-check.js";
-
-let uid = 0;
+import { NeuwoCheckableElement } from "../checkable-element.js";
+import { radioTemplate } from "./radio.template.js";
 
 /**
- * A single radio. Not form-associated: the parent `<neuwo-radio-group>` owns the
- * value and drives this through its option-handle API.
+ * A native radio inside its label. In a `<neuwo-radio-group>`, at any depth, it takes the group's `name`,
+ * `required` and `form` and is disabled with the group, so the browser groups the radios: one checked at a time,
+ * arrow keys, `required`, and submission with the form, before the script has loaded too. Outside a group it is a
+ * radio of its own.
  *
- * @summary Neuwo radio (child of neuwo-radio-group).
+ * @summary Neuwo radio. Public classes: `.neuwo-form-check` on the `<label>`; `.neuwo-form-check__input` on the native radio; `.neuwo-form-check__label` around the label content.
  * @customElement neuwo-radio
- * @attr value - the value this option contributes to the group.
- * @attr {boolean} disabled - disables just this option.
- * @attr {boolean} checked - whether this option is selected (managed by the group).
- * @slot - the radio label content.
- * @csspart field - the label/circle/text row.
- * @csspart input - the underlying native radio input.
- * @csspart label - the radio label text.
+ * @attr name - outside a group, the form field name carried onto the native radio; inside one, the group's applies.
+ * @attr {boolean} checked - the starting state, outside a group or in one with no `value`; a group's `value` decides it otherwise. The live state is the `checked` property.
+ * @attr {boolean} disabled - disables this radio; a disabled group disables all of its radios.
+ * @attr form - outside a group, the id of the form the radio submits with; inside one, the group's applies.
+ * @attr {boolean} required - outside a group, the radio must be checked to be valid; inside one, the group's applies.
+ * @slot - the label content, inside the `<label>` that wraps the radio.
  */
-// tabbable / group-disabled are stored as fields so they apply even if the group
-// sets them before this element has rendered.
-export class NeuwoRadio extends NeuwoShadowElement {
-  static styles = formCheckSheet;
-  static observedAttributes = ["value", "disabled", "checked"];
+export class NeuwoRadio extends NeuwoCheckableElement {
+  static template = radioTemplate;
 
-  #input = null;
-  #label = null;
-  #id = `neuwo-radio-${++uid}`;
-  #tabbable = false;
-  #groupDisabled = false;
-  #invalid = false;
-  #built = false;
-
-  // --- option-handle API consumed by NeuwoRadioGroup ---
-  get value() { return this.getAttribute("value") ?? ""; }
-  get disabled() { return this.hasAttribute("disabled"); }
-  get element() { return this; }
-  get checked() { return this.#input ? this.#input.checked : this.hasAttribute("checked"); }
-  set checked(v) {
-    const on = Boolean(v);
-    this.toggleAttribute("checked", on);
-    if (this.#input) this.#input.checked = on;
-  }
-  set tabbable(v) {
-    this.#tabbable = Boolean(v);
-    if (this.#input) this.#input.tabIndex = this.#tabbable ? 0 : -1;
-  }
-  set disabledByGroup(v) {
-    this.#groupDisabled = Boolean(v);
-    if (this.#input) this.#input.disabled = this.#groupDisabled || this.hasAttribute("disabled");
-  }
-  // The group's active-error state: redden this radio's circle to match the
-  // checkbox error ring (the shared .form-check--error rule on the label).
-  set invalid(v) {
-    this.#invalid = Boolean(v);
-    if (this.#label) this.#label.classList.toggle("form-check--error", this.#invalid);
-  }
-  focus() { this.#input?.focus(); }
-
-  render() {
-    if (this.#built) { this.#patch(); return; }
-    this.#input = document.createElement("input");
-    this.#input.type = "radio";
-    this.#input.className = "form-check__input";
-    this.#input.setAttribute("part", "input");
-    this.#input.id = this.#id;
-    this.#input.tabIndex = -1;
-    // Forward keydown events from the shadow input to this element so the
-    // parent <neuwo-radio-group> can receive them via normal light-DOM bubbling.
-    // (Shadow-internal events do not cross the shadow boundary by default.)
-    this.#input.addEventListener("keydown", (e) => {
-      this.dispatchEvent(
-        new KeyboardEvent(e.type, { key: e.key, bubbles: true, cancelable: e.cancelable })
-      );
-    });
-
-    const label = document.createElement("label");
-    label.className = "form-check";
-    label.setAttribute("part", "field");
-    this.#label = label;
-    const text = document.createElement("span");
-    text.className = "form-check__label";
-    text.setAttribute("part", "label");
-    text.append(document.createElement("slot"));
-    label.append(this.#input, text);
-    this.shadowRoot.append(label);
-
-    this.#built = true;
-    this.#patch();
+  /** @returns {HTMLInputElement | null} */
+  get control() {
+    return this.querySelector(":scope > .neuwo-form-check > .neuwo-form-check__input");
   }
 
-  #patch() {
-    this.#input.checked = this.hasAttribute("checked");
-    this.#input.disabled = this.hasAttribute("disabled") || this.#groupDisabled;
-    this.#input.tabIndex = this.#tabbable ? 0 : -1;
-    this.#label.classList.toggle("form-check--error", this.#invalid);
+  /** @returns {string} */
+  get type() {
+    return "radio";
   }
 }
 

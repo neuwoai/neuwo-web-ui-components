@@ -53,11 +53,26 @@ export function Usage() {
       <neuwo-combobox {...register("plan")}>
         <option value="a">A</option>
       </neuwo-combobox>
+      <neuwo-radio-group value={s} name="plan" onChange={(e) => setS(e.target.value)}>
+        <neuwo-radio value="free">Free</neuwo-radio>
+        <neuwo-radio value="pro" disabled>
+          Pro
+        </neuwo-radio>
+      </neuwo-radio-group>
+      <neuwo-radio-group defaultValue="free" label="Plan" orientation="horizontal" required form="signup" />
+      <neuwo-radio-group {...register("tier")} />
+      <neuwo-radio name="solo" value="x" defaultChecked onChange={(e) => setAgreed(e.target.checked)} />
       <neuwo-input type="number" min={0} max="10" step={0.5} minlength={1} maxlength="5" />
       <neuwo-range min="0" max={100} step={10} />
       <neuwo-textarea rows="4" minlength={2} maxlength={200} />
       {/* @ts-expect-error a checkbox starts from defaultChecked, not defaultValue */}
       <neuwo-checkbox defaultValue="on" />
+      {/* @ts-expect-error a radio's error belongs on its group */}
+      <neuwo-radio error="Pick one" />
+      {/* @ts-expect-error a radio starts from defaultChecked, not defaultValue */}
+      <neuwo-radio defaultValue="x" />
+      {/* @ts-expect-error not an orientation */}
+      <neuwo-radio-group orientation="diagonal" />
       {/* @ts-expect-error checked is a boolean */}
       <neuwo-toggle checked="yes" />
       {/* @ts-expect-error not a text-like input type */}

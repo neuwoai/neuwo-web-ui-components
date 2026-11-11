@@ -109,6 +109,43 @@ describe("JSX types", () => {
     }
   });
 
+  it("gives the radio React's checkbox props and none of the error line's", () => {
+    const props = block("neuwo-radio");
+    for (const line of [
+      "name?: string;",
+      "value?: string | number;",
+      "checked?: boolean;",
+      "disabled?: boolean;",
+      "form?: string;",
+      "required?: boolean;",
+      "defaultChecked?: boolean;",
+      "defaultValue?: never;",
+      "onChange?: React.ChangeEventHandler<NeuwoRadio>;",
+    ])
+      expect(props).toContain(line);
+    expect(props).not.toMatch(/error/);
+  });
+
+  it("gives the radio group a value, a defaultValue and an onChange, and no checked", () => {
+    const props = block("neuwo-radio-group");
+    for (const line of [
+      "name?: string;",
+      "value?: string | number;",
+      "defaultValue?: string | number;",
+      "onChange?: React.ChangeEventHandler<NeuwoRadioGroup>;",
+      'orientation?: "horizontal" | "vertical";',
+      "form?: string;",
+      "label?: string;",
+      "required?: boolean;",
+      "disabled?: boolean;",
+      "error?: string;",
+      '"error-muted"?: boolean;',
+      '"no-error-line"?: boolean;',
+    ])
+      expect(props).toContain(line);
+    expect(props).not.toMatch(/checked/i);
+  });
+
   it("reads a checked attribute whatever its declared type, with or without a change event", () => {
     const generated = jsxElementsTypes({
       modules: [
