@@ -88,7 +88,8 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
   }
 
   attributeChangedCallback() {
-    if (this.isConnected && !this.#waiting && !this.#tooEarly() && !ownedByReact(this)) this.#reconcile();
+    // An upgrade calls this for every attribute before the first connect, which adopts; those are not changes.
+    if (this.#started && this.isConnected && !this.#waiting && !ownedByReact(this)) this.#reconcile();
   }
 
   /**

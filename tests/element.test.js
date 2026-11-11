@@ -132,6 +132,30 @@ describe("NeuwoElement (light DOM)", () => {
     expect(host.querySelectorAll(".neuwo-t").length).toBe(1);
   });
 
+  it("adopts markup the host's attributes would not render, writing nothing, when an upgrade's attribute callbacks come first", () => {
+    const tag = "test-order-mismatch";
+    class Order extends TestLight {
+      connectedCallback() {}
+      run() {
+        super.connectedCallback();
+      }
+    }
+    define(tag, Order);
+    const host = document.createElement("div");
+    host.innerHTML = `<${tag} tone="b"><span class="neuwo-t neuwo-t--a"><span class="neuwo-t__start"></span><span class="neuwo-t__body">hi</span></span></${tag}>`;
+    document.body.appendChild(host);
+    cleanup.push(host);
+    const el = host.firstElementChild;
+    const observer = new MutationObserver(() => {});
+    observer.observe(host, { subtree: true, childList: true, attributes: true, characterData: true });
+    el.attributeChangedCallback("tone", null, "b");
+    el.run();
+    expect(observer.takeRecords()).toHaveLength(0);
+    expect(el.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--a");
+    el.setAttribute("tone", "c");
+    expect(el.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--c");
+  });
+
   describe("while the document is still parsing", () => {
     const loading = () => Object.defineProperty(document, "readyState", { configurable: true, get: () => "loading" });
     afterEach(() => delete document.readyState);
@@ -278,13 +302,17 @@ describe("NeuwoElement (light DOM)", () => {
       expect(el.querySelectorAll(".neuwo-t")).toHaveLength(1);
     });
 
-    it("renders a connected host that has not rendered yet when an observed attribute changes", () => {
+    it("leaves a connected host that has not started alone on an attribute change, and its first connect renders the attributes", () => {
       define("test-idle", class extends TestLight {
         connectedCallback() {}
+        run() {
+          super.connectedCallback();
+        }
       });
       const el = mount(`<test-idle>hi</test-idle>`).firstElementChild;
-      expect(el.querySelector(".neuwo-t")).toBeNull();
       el.setAttribute("tone", "b");
+      expect(el.querySelector(".neuwo-t")).toBeNull();
+      el.run();
       expect(el.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--b");
       expect(el.querySelector(".neuwo-t__body").textContent).toBe("hi");
     });

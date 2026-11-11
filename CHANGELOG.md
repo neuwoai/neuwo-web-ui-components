@@ -209,7 +209,9 @@
   parser bundled; `./jsx-runtime` and `./jsx-dev-runtime` wrap React's runtime for `jsxImportSource`,
   with a `react-server` build for Server Components. Elements recognise markup React rendered, from
   Client or Server Components, and leave it to React, so children passed in keep their state and DOM
-  nodes across re-renders.
+  nodes across re-renders. Markup React served but has not hydrated yet is adopted as it is when the
+  script defines the elements, so a field keeps the starting value that `value` in a Server Component, or
+  `defaultValue`, put on its native control, and hydration finds the markup it sent.
 - Through the JSX runtime, the native control inside a light DOM component behaves like React's own
   input: `value` and `checked` are controlled, `onChange` on the element fires on every keystroke with
   the native control as `event.target`, and `defaultValue` and `defaultChecked` start an uncontrolled
