@@ -72,12 +72,6 @@ function stateFor(host) {
 const live = (host) => states.get(host)?.root?.parentNode === host;
 
 /**
- * @param {Element} host
- * @param {HostState} state
- */
-const besideRoot = (host, state) => new Set(Array.from(host.childNodes).filter((node) => node !== state.root && !isContent(node)));
-
-/**
  * @param {Element} el
  * @returns {Record<string, string>}
  */
@@ -556,7 +550,7 @@ export function adopt(host, template) {
   const root = locate(host, probe);
   if (!root) return;
   Object.assign(state, { root, dropped: [], ids: new Map(state.renamed), wrappers: wrappersOf(probe), loading: host.ownerDocument.readyState === "loading" });
-  state.formatting = besideRoot(host, state);
+  state.formatting = new Set(Array.from(host.childNodes).filter((node) => node !== root && !isContent(node)));
   snapshot(state, root);
   const { nodes, regionIn } = authorNodes(host, state);
   const full = applyTemplate(host, template, state.id, describe(nodes, regionIn(state.wrappers)));
@@ -585,11 +579,10 @@ export function reconcile(host, template) {
   const placed = nodes.filter((node) => !loose.has(node) || isContent(node));
   const run = prepare(state, next, placed, regionOf);
   if (run.replace || run.arranges.length) {
-    // Whitespace and comments left beside the root by the adoption or the last reconcile are formatting, never placed.
+    // Whitespace and comments beside the root when it was adopted are the served formatting, never placed.
     const arranged = nodes.filter((node) => !state.formatting.has(node));
     commit(state, next, arranged, prepare(state, next, arranged, regionOf));
   } else commit(state, next, placed, run);
-  state.formatting = besideRoot(host, state);
 }
 
 /**

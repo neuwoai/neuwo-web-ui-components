@@ -342,6 +342,11 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
     if (this.#started) this.#away = relevantAttributes(this);
     this.#observer?.disconnect();
     this.#observer = null;
+    if (this.#loaded) {
+      this.ownerDocument.removeEventListener("DOMContentLoaded", this.#loaded);
+      this.#loaded = null;
+      this.#dirty = true;
+    }
     if (this.#waiting) {
       this.ownerDocument.removeEventListener("DOMContentLoaded", this.#waiting);
       this.#waiting = null;

@@ -280,6 +280,20 @@ describe("<neuwo-notice>", () => {
       expect(isEmpty(el, "title")).toBe(true);
     });
 
+    it("leaves a notice removed while it loads alone when the document has loaded, and catches up when it returns", async () => {
+      const el = served();
+      const title = el.querySelector('[slot="title"]');
+      title.slot = "actions";
+      await settled();
+      const holder = el.parentElement;
+      el.remove();
+      parsed();
+      expect(title.parentElement).toBe(part(el, "title"));
+      holder.append(el);
+      expect(title.parentElement).toBe(part(el, "actions"));
+      expect(isEmpty(el, "title")).toBe(true);
+    });
+
     it("restores --empty on a wrapper a script emptied while it loads, once it has loaded", async () => {
       const el = served();
       part(el, "actions").replaceChildren();

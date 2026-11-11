@@ -917,6 +917,25 @@ describe("reconcile()", () => {
     expect(Array.from(served.childNodes, (node) => node.nodeType === 3 && node.data)).toEqual(["\n  ", false, "\n"]);
   });
 
+  it.each([
+    ["a space, then an element in a later change", false, [" ", "<b>now</b>"], "Save now"],
+    ["a space, then an element, after an attribute change", true, [" ", "<b>now</b>"], "Save now"],
+    ["a space, then text in a later change", false, [" ", "x"], "Save x"],
+  ])("places whitespace a script appended after render once content follows it: %s", (_, changed, appends, label) => {
+    const host = make(`<neuwo-t>Save</neuwo-t>`);
+    render(host, testTemplate);
+    if (changed) {
+      host.setAttribute("tone", "b");
+      reconcile(host, testTemplate);
+    }
+    for (const html of appends) {
+      host.insertAdjacentHTML("beforeend", html);
+      reconcile(host, testTemplate);
+    }
+    expect(host.querySelector(".neuwo-t__label").textContent).toBe(label);
+    expect(host.childNodes).toHaveLength(1);
+  });
+
   it("writes only the changed attribute on pretty-printed served markup", () => {
     const host = make(`<neuwo-t>
   <span class="neuwo-t neuwo-t--a">
