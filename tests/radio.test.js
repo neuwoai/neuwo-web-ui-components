@@ -356,6 +356,21 @@ describe("<neuwo-radio-group> and <neuwo-radio>", () => {
     expect(off.control).toBe(inputOf(radiosOf(off)[0]));
   });
 
+  it("sets a custom error on every radio, so clearing it while the first radio is disabled leaves the form valid", () => {
+    const form = make(`<form><neuwo-radio-group name="tier"><neuwo-radio value="a">A</neuwo-radio><neuwo-radio value="b">B</neuwo-radio></neuwo-radio-group></form>`);
+    const el = form.querySelector("neuwo-radio-group");
+    const [first] = radiosOf(el);
+    el.setCustomValidity("Pick again");
+    expect(inputsOf(el).map((input) => input.validationMessage)).toEqual(["Pick again", "Pick again"]);
+    expect(form.checkValidity()).toBe(false);
+    first.disabled = true;
+    el.setCustomValidity("");
+    first.disabled = false;
+    expect(inputsOf(el).map((input) => input.validationMessage)).toEqual(["", ""]);
+    expect(el.checkValidity()).toBe(true);
+    expect(form.checkValidity()).toBe(true);
+  });
+
   it("validates required natively, through the group's validity API", () => {
     const el = make(`<neuwo-radio-group name="tier" required>${RADIOS}</neuwo-radio-group>`);
     expect(inputsOf(el).every((input) => input.required)).toBe(true);

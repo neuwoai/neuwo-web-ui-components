@@ -65,9 +65,13 @@ export class NeuwoFieldElement extends NeuwoControlElement {
     else this.#pending = next;
   }
 
-  /** @returns {string} */
+  /**
+   * The starting value: the control's default, which the JSX runtime renders from `defaultValue` without a host
+   * attribute, else the `value` attribute. Setting it sets the attribute.
+   * @returns {string}
+   */
   get defaultValue() {
-    return this.getAttribute("value") ?? "";
+    return this.control?.defaultValue ?? this.getAttribute("value") ?? "";
   }
   set defaultValue(value) {
     this.setAttribute("value", String(value));

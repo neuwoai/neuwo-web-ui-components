@@ -89,9 +89,9 @@
   pick changes the picked radio and the one it unchecked. A form reset returns to the starting value and
   no longer clears `error`. The `value` property reads the checked radio's value and setting it checks the radio
   of that value, or none, without touching any attribute; `defaultValue` reads the starting value and
-  sets the attribute. `form`, `validity`, `validationMessage`, `checkValidity()`, `reportValidity()` and
-  `setCustomValidity()` act on the first enabled radio, and `focus()` moves to the checked radio, else
-  the first enabled one.
+  sets the attribute. `form`, `validity`, `validationMessage`, `checkValidity()` and `reportValidity()`
+  act on the first enabled radio, `setCustomValidity()` sets its message on every radio, and `focus()`
+  moves to the checked radio, else the first enabled one.
 - Breaking: `<neuwo-radio-group>` no longer dispatches its own `change`. The picked radio's own `change`
   bubbles through the group, once per pick, and its `input` now does too, so listeners on the group get
   the radio's inner `<input>` as `event.target`, not the group; its `value` is the picked value and its
@@ -190,7 +190,9 @@
   `change` and `input` listeners on the element now get the inner `<input>` as `event.target`, not the
   element; use `event.currentTarget` for the element. `form`, `validity`,
   `validationMessage`, `checkValidity()`, `reportValidity()`, `setCustomValidity()`, `focus()` and
-  `blur()` act on the inner input, and `name` and `defaultValue` are now properties too.
+  `blur()` act on the inner input, and `name` and `defaultValue` are now properties too. `defaultValue`
+  reads the starting value the inner input holds, as on every field, so it also reads one the JSX
+  runtime set from `defaultValue` without a `value` attribute.
 - Breaking: in React, `onChange` on `<neuwo-input>` fires on every keystroke, as on React's own
   `<input>`, instead of when the user commits a value. `value` makes the field controlled,
   `defaultValue` starts an uncontrolled one, and `event.target` is the inner `<input>`.

@@ -366,7 +366,8 @@ describe("<neuwo-combobox> options as they change", () => {
     el.value = "b";
     el.setAttribute("value", "c");
     expect(el.value).toBe("b");
-    expect(el.defaultValue).toBe("c");
+    expect(el.getAttribute("value")).toBe("c");
+    expect(el.defaultValue).toBe("");
     expect(shownOf(el)).toBe("Banana");
     expect(triggerOf(el).hasAttribute("data-placeholder")).toBe(false);
     expect(rowOf(el, "b").getAttribute("aria-selected")).toBe("true");

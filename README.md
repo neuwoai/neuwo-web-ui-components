@@ -1003,10 +1003,12 @@ of its own.
 - **The picked radio's own events** reach your listeners on the group: `input`
   and `change` once per pick, with that radio's `<input>` as `event.target`.
   The group dispatches none of its own, and setting `value` fires nothing.
-- **The native form API** answers for the radios: `form`, `validity`,
-  `validationMessage`, `checkValidity()`, `reportValidity()` and
-  `setCustomValidity()` act on the first enabled radio, which shares the
-  group's validity. `focus()` moves to the checked radio, else the first enabled one.
+- **The native form API** answers for the radios. `setCustomValidity()` sets
+  its message on every radio, so the message holds, and clears, whichever radio
+  is enabled. `form`, `validity`, `validationMessage`, `checkValidity()` and
+  `reportValidity()` read the first enabled radio, which carries that message
+  and, as every radio of a native group does, the group's `valueMissing`.
+  `focus()` moves to the checked radio, else the first enabled one.
 - **Changing the group** reaches every radio: its `name`, `value`, `disabled`,
   `required` and `form`. An `error` change touches no radio, so the user's pick
   stays.

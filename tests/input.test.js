@@ -335,6 +335,23 @@ describe("<neuwo-input> under React", () => {
     expect(errors).not.toHaveBeenCalled();
   });
 
+  it("reads its starting value as defaultValue though the element has no value attribute, as every field does", async () => {
+    const errors = vi.spyOn(console, "error");
+    const options = [jsx("option", { value: "a", children: "A" }, "a"), jsx("option", { value: "b", children: "B" }, "b")];
+    for (const [tag, start, children] of [
+      ["neuwo-input", "a", undefined],
+      ["neuwo-textarea", "draft", undefined],
+      ["neuwo-range", "30", undefined],
+      ["neuwo-combobox", "b", options],
+    ]) {
+      const { container } = await render(jsx(tag, { defaultValue: start, name: "q", children }));
+      const host = container.querySelector(tag);
+      expect(host.hasAttribute("value"), tag).toBe(false);
+      expect(host.defaultValue, tag).toBe(start);
+    }
+    expect(errors).not.toHaveBeenCalled();
+  });
+
   it("takes a form prop as the id of the form the inner input submits with", async () => {
     const errors = vi.spyOn(console, "error");
     const { container } = await render(jsxs("div", { children: [jsx("form", { id: "signup" }), jsx("neuwo-input", { form: "signup", name: "q", defaultValue: "a" })] }));

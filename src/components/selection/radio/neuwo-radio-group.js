@@ -39,7 +39,8 @@ export class NeuwoRadioGroup extends NeuwoControlElement {
 
   /**
    * The first enabled radio, else the first, which answers for the group in the validity API and the form lookup:
-   * every radio of a native group shares its validity, and a disabled one is barred from validation.
+   * every radio of a native group shares `valueMissing`, `setCustomValidity()` gives each radio the same message,
+   * and a disabled radio is barred from validation.
    * @returns {HTMLInputElement | null}
    */
   get control() {
@@ -98,6 +99,14 @@ export class NeuwoRadioGroup extends NeuwoControlElement {
   }
   set noErrorLine(value) {
     this.toggleAttribute("no-error-line", Boolean(value));
+  }
+
+  /**
+   * Sets the message on every radio, so it holds, and clears, whichever radio is enabled at the time.
+   * @param {string} message
+   */
+  setCustomValidity(message) {
+    for (const radio of this.#radios()) radio.setCustomValidity(message);
   }
 
   connect() {

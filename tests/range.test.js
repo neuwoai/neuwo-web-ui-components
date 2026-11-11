@@ -132,7 +132,8 @@ describe("<neuwo-range>", () => {
     const el = make(`<neuwo-range min="0" max="10"></neuwo-range>`);
     expect(rangeOf(el).getAttribute("value")).toBe("5");
     expect(el.value).toBe("5");
-    expect(el.defaultValue).toBe("");
+    expect(el.defaultValue).toBe("5");
+    expect(el.hasAttribute("value")).toBe(false);
     el.setAttribute("label", "Views");
     expect(fillOf(el)).toBe("50%");
   });
