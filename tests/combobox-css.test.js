@@ -65,9 +65,22 @@ describe("combobox.css recipe", () => {
     for (const declaration of ["position: absolute", "inset: 0", "opacity: 0", "pointer-events: none"]) expect(formValue).toContain(declaration);
   });
 
-  it("restates on the trigger the button chrome and text defaults it had in the shadow root", () => {
+  it("restates on the trigger the button chrome and the text defaults the inputs beside it keep", () => {
     const trigger = rule(".neuwo-combobox__trigger");
-    for (const declaration of ["cursor: pointer", "text-align: left", "text-transform: none", "letter-spacing: normal", "word-spacing: normal", "text-indent: 0", "text-shadow: none"]) {
+    for (const declaration of [
+      "cursor: pointer",
+      "text-align: left",
+      "text-transform: none",
+      "letter-spacing: normal",
+      "word-spacing: normal",
+      "text-indent: 0",
+      "text-shadow: none",
+      "font-style: normal",
+      "font-variant: normal",
+      "font-weight: normal",
+      "line-height: normal",
+      "white-space: normal",
+    ]) {
       expect(trigger).toContain(declaration);
     }
   });

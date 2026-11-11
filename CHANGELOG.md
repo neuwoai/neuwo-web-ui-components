@@ -11,10 +11,12 @@
   `.neuwo-input--sm` and `.neuwo-input--error`. The label holds two new spans: `.neuwo-field__label-content`
   around the `slot="label"` children, `display: contents`, and `.neuwo-field__label-text` around the
   `label` text.
-- A native text control that a light DOM component renders, such as the `<input>` in `<neuwo-input>`,
-  keeps the browser's own text defaults (alignment, casing, spacing, weight, style, line height and
-  white space) instead of taking them from the host, as it did in a shadow root, so a centred or
-  uppercase container does not restyle what the user types.
+- A native control that a light DOM component renders, such as the `<input>` in `<neuwo-input>` or the
+  trigger of `<neuwo-combobox>`, keeps its own text defaults (alignment, casing, spacing, weight, style,
+  line height and white space) instead of taking them from the host, so a centred or uppercase container
+  does not restyle what the user types. In a shadow root the combobox trigger took its weight, style, line
+  height and white space from the page, so a container with a tall line height made it taller than the
+  input beside it; it no longer does.
 - Breaking: `::part(field)`, `::part(label)`, `::part(input)` and `::part(error)` on `<neuwo-input>` are
   gone. Restyle through the classes, with the element name in front for weight:
   `neuwo-input .neuwo-input { border-radius: 0; }`.

@@ -13,12 +13,17 @@
   padding-right: var(--neuwo-space-10);
   text-align: left;
   cursor: pointer;
-  /* The button's own text defaults, which it kept in a shadow root; the light reset would hand it the page's. */
+  /* The text defaults the inputs beside it keep; the light reset would hand a button the page's. */
   text-transform: none;
   letter-spacing: normal;
   word-spacing: normal;
   text-indent: 0;
   text-shadow: none;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  line-height: normal;
+  white-space: normal;
 }
 
 /* Compact: the gutter and the chevron move together, so the gap between the
