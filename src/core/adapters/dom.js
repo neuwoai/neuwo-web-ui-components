@@ -18,8 +18,10 @@ import { idScope } from "../ids.js";
  *   reslotted: Set<Node>,
  *   formatting: Set<Node>,
  *   defaults: Record<string, string>,
+ *   served: Served | null,
  * }} HostState
  */
+/** @typedef {{ attrs: Record<string, string>, names: Set<string> }} Served */
 /** @typedef {{ attrs: Record<string, string>, raw: string | null }} Seen */
 /** @typedef {Node | string | TemplateNode} Wanted */
 /**
@@ -63,7 +65,7 @@ function stateFor(host) {
       issued.add(value);
       return value;
     };
-    state = { id, issued, ids: new Map(), renamed: new Map(), wrappers: new Map(), root: null, dropped: [], loading: false, reslotted: new Set(), formatting: new Set(), defaults: {} };
+    state = { id, issued, ids: new Map(), renamed: new Map(), wrappers: new Map(), root: null, dropped: [], loading: false, reslotted: new Set(), formatting: new Set(), defaults: {}, served: null };
     states.set(host, state);
   }
   return state;
@@ -311,37 +313,44 @@ function controlIn(blocks, el, node) {
 }
 
 /**
- * The attributes React's runtime leaves off the host when it serves `defaultValue` or `defaultChecked` on the
- * control: `value` or `checked`, when the host lacks it, the served control carries a starting state the template
- * does not render, and the template given it renders the served control exactly, so it is not a copy's stale state.
- * @param {Element} host
- * @param {Template} template
+ * The `value` or `checked` React served on the control and left off the host, or null before the control is parsed.
  * @param {HostState} state
- * @param {ChildInfo[]} children
- * @param {TemplateNode} full
- * @returns {Record<string, string>}
+ * @param {Served} served
+ * @param {(extra: Record<string, string>) => TemplateNode} render
+ * @param {TemplateNode} [full]
+ * @returns {Record<string, string> | null}
  */
-function servedDefaults(host, template, state, children, full) {
+function servedDefaults(state, served, render, full = render({})) {
   const root = /** @type {Element} */ (state.root);
   const found = controlIn(blocksOf(full), root, full);
+  if (!found) return null;
+  const [el, control] = found;
   /** @type {Record<string, string>} */
   const defaults = {};
-  if (!found) return defaults;
-  const [el, control] = found;
-  if (!host.hasAttribute("value")) {
-    const served = el.localName === "textarea" ? el.textContent : el.getAttribute("value");
+  if (served.names.has("value")) {
+    const value = el.localName === "textarea" ? el.textContent : el.getAttribute("value");
     const rendered = control.tag === "textarea" ? control.children.join("") : (control.props.value ?? null);
-    if (served !== null && served !== rendered) defaults.value = served;
+    if (value !== null && value !== rendered) defaults.value = value;
   }
-  if (!host.hasAttribute("checked") && el.hasAttribute("checked") && control.props.checked !== true) defaults.checked = "";
+  if (served.names.has("checked") && el.hasAttribute("checked") && control.props.checked !== true) defaults.checked = "";
   if (!Object.keys(defaults).length) return defaults;
-  state.defaults = defaults;
-  const next = applyTemplate(host, template, state.id, children);
+  const next = render(defaults);
   const again = controlIn(blocksOf(next), root, next);
   const wanted = again?.[0] === el ? Object.entries(propsOf(state, again[1])) : [];
   const exact = wanted.length === el.attributes.length && wanted.every(([name, value]) => el.getAttribute(name) === value);
   return exact ? defaults : {};
 }
+
+/**
+ * @param {Element} host
+ * @param {Template} template
+ * @param {HostState} state
+ * @param {ChildInfo[]} children
+ * @param {Served} served
+ * @returns {(extra: Record<string, string>) => TemplateNode}
+ */
+const renderServed = (host, template, state, children, served) => (extra) =>
+  template({ ...extra, ...served.attrs }, { id: state.id, children, within: withinOf(host, template) });
 
 /**
  * @param {HostState} state
@@ -533,7 +542,7 @@ function view(host, template) {
   const probe = applyTemplate(host, template, (suffix) => suffix, []);
   const root = locate(host, probe);
   if (!root) return null;
-  return { id: (suffix) => suffix, issued: new Set(), ids: new Map(), renamed: new Map(), wrappers: wrappersOf(probe), root, dropped: [], loading: false, reslotted: new Set(), formatting: new Set(), defaults: {} };
+  return { id: (suffix) => suffix, issued: new Set(), ids: new Map(), renamed: new Map(), wrappers: wrappersOf(probe), root, dropped: [], loading: false, reslotted: new Set(), formatting: new Set(), defaults: {}, served: null };
 }
 
 /**
@@ -609,7 +618,10 @@ export function adopt(host, template) {
   const children = describe(nodes, regionIn(state.wrappers));
   const full = applyTemplate(host, template, state.id, children);
   mapIds(state, blocksOf(full), root, full);
-  state.defaults = servedDefaults(host, template, state, children, full);
+  const served = { attrs: attrsOf(host), names: new Set(["value", "checked"].filter((name) => !host.hasAttribute(name))) };
+  const defaults = servedDefaults(state, served, renderServed(host, template, state, children, served), full);
+  state.defaults = defaults ?? {};
+  state.served = defaults === null && state.loading ? served : null;
   separateIds(host, state);
 }
 
@@ -619,8 +631,10 @@ export function adopt(host, template) {
  * @param {string} name
  */
 export function forget(host, name) {
-  const defaults = states.get(host)?.defaults;
-  if (defaults) delete defaults[name];
+  const state = states.get(host);
+  if (!state) return;
+  delete state.defaults[name];
+  state.served?.names.delete(name);
 }
 
 /**
@@ -634,11 +648,18 @@ export function reconcile(host, template) {
   }
   const state = states.get(host);
   const { nodes, loose, regionIn } = authorNodes(host, state);
-  const next = applyTemplate(host, template, state.id, describe(nodes, regionIn(state.wrappers)));
+  const children = describe(nodes, regionIn(state.wrappers));
+  let next = applyTemplate(host, template, state.id, children);
   if (state.loading) {
-    // An adoption while the document loads maps only the ids parsed so far.
+    // An adoption while the document loads maps only the ids, and finds only the control, parsed so far.
     mapIds(state, blocksOf(next), state.root, next);
+    const defaults = state.served && servedDefaults(state, state.served, renderServed(host, template, state, children, state.served));
+    if (defaults) {
+      state.defaults = defaults;
+      next = applyTemplate(host, template, state.id, children);
+    }
     state.loading = host.ownerDocument.readyState === "loading";
+    if (defaults || !state.loading) state.served = null;
   }
   const regionOf = regionIn(wrappersOf(next));
   const placed = nodes.filter((node) => !loose.has(node) || isContent(node));

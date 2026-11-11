@@ -510,6 +510,27 @@ describe("served markup defined while the document is still parsing it, in jsdom
     expect(document.getElementById(/** @type {string} */ (input.getAttribute("aria-describedby")))?.textContent).toBe("Worse");
   });
 
+  it("keeps a starting value React left off the element when its control is parsed after the adoption", async () => {
+    const { NeuwoInput } = await import("../src/components/fields/input/neuwo-input.js");
+    const { renderToStaticMarkup } = await import("react-dom/server");
+    const { jsx } = await import("../src/react/jsx-runtime.js");
+    const html = renderToStaticMarkup(jsx("neuwo-input", { name: "email", label: "Email", defaultValue: "typed" }));
+    for (const write of [false, true]) {
+      const { host, later } = stream(html, NeuwoInput, (root) => Array.from(root.children).slice(1).map((node) => [root, node]));
+      for (const [parent, node] of later) parent.append(node);
+      parsed();
+      if (write) {
+        host.setAttribute("value", "other");
+        host.removeAttribute("value");
+      }
+      host.setAttribute("error", "Wrong");
+      /** @type {HTMLFormElement} */ (host.closest("form")).reset();
+      const input = /** @type {HTMLInputElement} */ (host.querySelector("input"));
+      expect(input.getAttribute("aria-invalid")).toBe("true");
+      expect(input.value, String(write)).toBe(write ? "" : "typed");
+    }
+  });
+
   it("writes nothing while the parser fills the wrappers of a notice it adopted", async () => {
     const { NeuwoNotice } = await import("../src/components/notice/neuwo-notice.js");
     const html = `<neuwo-notice><span slot="title">Title</span>Body<button slot="actions">Go</button></neuwo-notice>`;

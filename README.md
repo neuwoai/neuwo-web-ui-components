@@ -655,7 +655,10 @@ value props:
 - Markup React renders once and never hydrates, such as an Astro component with no client
   directive, gives the element no `value` attribute when only `defaultValue` is set. The combobox
   still keeps that starting value when a script changes an attribute later, and `form.reset()`
-  returns to it, until the `value` attribute itself is set or removed.
+  returns to it, until the `value` attribute itself is set or removed. A `defaultValue` equal to
+  where the element starts without one, such as the option marked `selected`, or the midpoint of a
+  `<neuwo-range>`, leaves no trace in that markup, so it moves with a later change of `selected` or
+  of the bounds, as if it had not been set.
 
 `<neuwo-segmented>` follows the combobox's models, with the same `value`, `defaultValue`, `onInput`
 and `onChange`:
