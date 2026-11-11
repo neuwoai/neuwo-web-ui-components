@@ -761,12 +761,12 @@ CSS out, but two channels are deliberately open, and together they reach almost
 every visual detail without forking a component:
 
 - **`::part(...)`** is the intended restyling hook. Every element exposes its
-  internals as parts (`input`, the field `label` and `error`, and more, listed
-  per component in the manifest). Adjust size, weight, colour, font or spacing
-  from the host:
+  internals as parts (the checkbox `label` and `error`, the toggle `track`, and
+  more, listed per component in the manifest). Adjust size, weight, colour, font
+  or spacing from the host:
 
   ```css
-  .my-field::part(label) { font-weight: 500; }
+  .my-checkbox::part(label) { font-weight: 500; }
   ```
 
 - **Inherited CSS properties** cross the boundary into slotted content, so a
@@ -849,9 +849,9 @@ Every form control (fields and selection controls) shows an error from the consu
 `error` attribute: the message text, a red accent, and `aria-invalid` on the control. The
 component owns no error text of its own, so the consumer decides when the error appears and
 clears (`required` validity is reported natively and separately, not as this message). On
-`<neuwo-input>` the message line is part of the rendered markup, so an error the server sets
-shows in the first paint, and a form reset leaves `error` alone: the page set it, so the page
-clears it.
+the four fields (`<neuwo-input>`, `<neuwo-textarea>`, `<neuwo-range>` and `<neuwo-combobox>`) the
+message line is part of the rendered markup, so an error the server sets shows in the first paint,
+and a form reset leaves `error` alone: the page set it, so the page clears it.
 
 Add `error-muted` alongside `error` to drop the heavy control chrome without losing the note: the
 red border and box-shadow ring come off the instant the user acts, while the red message and the

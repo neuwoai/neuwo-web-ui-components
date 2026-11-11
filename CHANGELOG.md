@@ -43,16 +43,18 @@
   height and vertical resize; the unprefixed `.field`, `.input` and their parts are gone, and
   `::part(field)`, `::part(label)`, `::part(input)` and `::part(error)` no longer match. It is no longer
   form-associated: the native `<textarea>` submits, resets and validates with its form, the `value`
-  attribute is its starting text, and the `change` and `input` events, `event.target`, `onChange` in React
-  and `data-*` follow `<neuwo-input>` above. A value that starts with a line break survives server rendering,
-  including one written as `\r\n` or `\r`, as a submitted form sends it.
+  attribute is its starting text, a form reset no longer clears `error`, and the `change` and `input`
+  events, `event.target`, `onChange` in React and `data-*` follow `<neuwo-input>` above. A value that
+  starts with a line break survives server rendering, including one written as `\r\n` or `\r`, as a
+  submitted form sends it.
 - Breaking: `<neuwo-range>` renders into its own light DOM from the same shell as `<neuwo-input>`, with
   its recipe, `components/fields/range/range.css`, in `neuwo-components.css`. The native range input
   carries `.neuwo-input` and `.neuwo-range`; the unprefixed `.range`, `.field`, `.input` and their parts are
   gone, and `::part(field)`, `::part(label)`, `::part(input)` and `::part(error)` no longer match. It is no
   longer form-associated: the native input submits, resets and validates with its form, the `value`
-  attribute is its starting value, and the `change` and `input` events, `event.target`, `onChange` in
-  React and `data-*` follow `<neuwo-input>` above. The custom properties keep their `--neuwo-range-*` names.
+  attribute is its starting value, a form reset no longer clears `error`, and the `change` and `input`
+  events, `event.target`, `onChange` in React and `data-*` follow `<neuwo-input>` above. The custom
+  properties keep their `--neuwo-range-*` names.
 - The filled part of a range track is in the first paint. The template writes `--neuwo-range-fill` onto
   the input from `min`, `max` and `value`, so server-rendered markup shows it in WebKit and Blink before the
   script loads; it used to be written by script and the track was unfilled until then. The element keeps it
@@ -77,6 +79,10 @@
   `reportValidity()` and `setCustomValidity()` act on that input, and focus that lands on it moves to the
   trigger. In React, the options must be `<option>` and `<optgroup>` elements written in place, not a
   component that renders them.
+- Breaking: `data-*` on `<neuwo-combobox>` stays on the element and is no longer copied onto the trigger, so
+  a query such as `[data-testid="plan"]` matches the element alone; a query that pierces shadow roots, such
+  as Playwright's `getByTestId`, used to match the trigger too. `aria-*` and `title` are still copied onto
+  the trigger.
 - Breaking: a required `<neuwo-combobox>` with nothing selected reports the browser's own message, such as
   "Please fill out this field.", instead of "Please select an option.". Its trigger carries
   `aria-required="true"`, since the required native input is hidden from assistive technology.
@@ -206,8 +212,8 @@
   markup whose ids another element in the same document or shadow root already has does the same.
 - Light DOM elements have a `refresh()` method, which fits the markup to the current attributes and
   children at once instead of in that microtask, and an `updated()` hook for component classes, which
-  runs after every reconcile but not after the first render or adoption, to re-apply live state the
-  template cannot know.
+  runs after every reconcile and after every reconnect, but not after the first render or adoption, to
+  re-apply live state the template cannot know.
 - `components/reset.css`, the reset for the light DOM components, is published and leads the component
   styles in `neuwo-components.css`.
 - Page element rules such as `button { text-transform: uppercase }`, `span { line-height: 3 }` or

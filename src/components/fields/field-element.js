@@ -21,6 +21,7 @@ import { CONTROLLED } from "../../core/marks.js";
  * @attr error - error message; shows the red accent, the message, and aria-invalid.
  * @attr {boolean} error-muted - softens a shown error: drops the border/box-shadow accent while the red message and invalid state stay.
  * @attr {boolean} no-error-line - drop the reserved error message row (for a non-validated control); setting `error` alongside it is a misconfiguration.
+ * @fires {Event} input - the value changed as the user typed or moved it; the native control's own `input`, bubbling through the element.
  * @fires {Event} change - the user committed a new value; the native control's own `change`, bubbling through the element.
  * @slot label - rich label content (a help link, a badge, emphasis) replacing the `label` attribute text, inside the associated `<label>`. The required marker still follows it.
  * @cssprop --neuwo-color-blue - brand accent (focus ring); re-theme by setting it on :root.
