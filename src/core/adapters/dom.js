@@ -13,6 +13,7 @@ import { idScope } from "../ids.js";
  *   wrappers: Map<string, string>,
  *   root: Element | null,
  *   dropped: Node[],
+ *   separated: boolean,
  * }} HostState
  */
 /** @typedef {{ attrs: Record<string, string>, raw: string | null }} Seen */
@@ -58,7 +59,7 @@ function stateFor(host) {
       issued.add(value);
       return value;
     };
-    state = { id, issued, ids: new Map(), wrappers: new Map(), root: null, dropped: [] };
+    state = { id, issued, ids: new Map(), wrappers: new Map(), root: null, dropped: [], separated: false };
     states.set(host, state);
   }
   return state;
@@ -307,11 +308,14 @@ function rename(state, el, fresh) {
 
 /**
  * Gives each adopted id the library minted that another element in the host's root also has, as on a copy made with
- * `cloneNode`, the id the host issued for it, and points every reference to it there too.
+ * `cloneNode`, the id the host issued for it, and points every reference to it there too. It runs once, at the first
+ * adoption in the document, since a copy adopted outside it cannot see the ids it shares.
  * @param {Element} host
  * @param {HostState} state
  */
 function separateIds(host, state) {
+  if (state.separated || !host.isConnected) return;
+  state.separated = true;
   if (!state.ids.size || !state.root) return;
   const scope = /** @type {ParentNode} */ (host.getRootNode());
   /** @type {Map<string, string>} */
@@ -467,7 +471,7 @@ function view(host, template) {
   const probe = applyTemplate(host, template, (suffix) => suffix, []);
   const root = locate(host, probe);
   if (!root) return null;
-  return { id: (suffix) => suffix, issued: new Set(), ids: new Map(), wrappers: wrappersOf(probe), root, dropped: [] };
+  return { id: (suffix) => suffix, issued: new Set(), ids: new Map(), wrappers: wrappersOf(probe), root, dropped: [], separated: true };
 }
 
 /**
@@ -526,12 +530,15 @@ export function hasLooseContent(host) {
  * @param {Template} template
  */
 export function adopt(host, template) {
-  if (live(host)) return reconcile(host, template);
   const state = stateFor(host);
+  if (live(host)) {
+    separateIds(host, state);
+    return reconcile(host, template);
+  }
   const probe = applyTemplate(host, template, state.id, []);
   const root = locate(host, probe);
   if (!root) return;
-  Object.assign(state, { root, dropped: [], ids: new Map(), wrappers: wrappersOf(probe) });
+  Object.assign(state, { root, dropped: [], ids: new Map(), wrappers: wrappersOf(probe), separated: false });
   snapshot(state, root);
   const { nodes, regionIn } = authorNodes(host, state);
   const full = applyTemplate(host, template, state.id, describe(nodes, regionIn(state.wrappers)));

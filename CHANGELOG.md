@@ -372,13 +372,16 @@
   wrote them, so hydration still finds them, and a copy a script makes of markup React rendered keeps React's
   ids too: only the ids the library made are renamed.
 - An attribute a script sets on, or removes from, a copy of a light DOM element made with `cloneNode(true)`
-  before inserting it, such as a new `name`, a cleared `error` on an "add another" row, or an `aria-*`, `title`
-  or `role` the element carries onto its control, reaches the copy's markup when it is inserted; it used to be
-  lost until the next change.
+  before inserting it reaches the copy's markup; it used to be lost until the next change. One of the
+  element's own attributes, such as a new `name` or a cleared `error` on an "add another" row, applies at
+  once, so the copy's native controls carry it before they join the page: a renamed copy of a
+  `<neuwo-radio-group>` or a `<neuwo-radio>` appended to the same form leaves the original's checked radio
+  alone. An `aria-*`, `title` or `role` the element carries onto its control applies when the copy is
+  inserted. A change to an element a script took out of the page applies at once in the same way.
 - Light DOM elements have a `refresh()` method, which fits the markup to the current attributes and
   children at once instead of in that microtask, and an `updated()` hook for component classes, which
-  runs after every reconcile and after every reconnect, but not after the first render or adoption, to
-  re-apply live state the template cannot know.
+  runs after every reconcile in the page and after every reconnect, but not after the first render or
+  adoption, to re-apply live state the template cannot know.
 - A component template can name an enclosing tag as its `within` to read the attributes of the nearest such
   element: in `expand`, in the browser, and through the JSX runtime, which reaches it through elements,
   fragments, `Suspense` and other Neuwo elements but not inside a component of your own, and warns about

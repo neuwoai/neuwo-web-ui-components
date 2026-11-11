@@ -127,6 +127,51 @@ describe("fields copied with cloneNode(true)", () => {
   });
 });
 
+const CHOICES =
+  `<neuwo-checkbox name="terms" value="yes" checked error="Accept">Terms</neuwo-checkbox>` +
+  `<neuwo-segmented name="view" value="json" error="Pick"><option value="table">Table</option><option value="json">JSON</option></neuwo-segmented>` +
+  `<neuwo-radio-group name="tier" value="pro" label="Tier" error="Pick"><neuwo-radio value="free">Free</neuwo-radio><neuwo-radio value="pro">Pro</neuwo-radio></neuwo-radio-group>`;
+
+describe("selection controls copied with cloneNode(true)", () => {
+  for (const [source, html] of [
+    ["rendered by the elements", CHOICES],
+    ["served", expand(CHOICES)],
+  ]) {
+    for (const [when, wait] of [
+      ["in the same task", () => undefined],
+      ["in a later task", () => new Promise((resolve) => setTimeout(resolve, 0))],
+    ]) {
+      it(`apply a name and a cleared error set on a copy of controls ${source} ${when}, before it is inserted`, async () => {
+        const holder = form(html);
+        const originals = Array.from(holder.children);
+        const copies = originals.map((host) => /** @type {Element} */ (host.cloneNode(true)));
+        await wait();
+        for (const copy of copies) {
+          copy.setAttribute("name", `${copy.getAttribute("name")}-1`);
+          copy.removeAttribute("error");
+        }
+        holder.append(...copies);
+        expect(copies.map((copy) => copy.control.name)).toEqual(["terms-1", "view-1", "tier-1"]);
+        expect(copies.map((copy) => copy.querySelector(".neuwo-choice__error").textContent)).toEqual(["", "", ""]);
+        expect(originals.map((host) => host.querySelector(".neuwo-choice__error").textContent)).toEqual(["Accept", "Pick", "Pick"]);
+        expect([...new FormData(holder)]).toEqual([
+          ["terms", "yes"],
+          ["view", "json"],
+          ["tier", "pro"],
+          ["terms-1", "yes"],
+          ["view-1", "json"],
+          ["tier-1", "pro"],
+        ]);
+        const ids = Array.from(document.querySelectorAll("[id]"), (el) => el.id);
+        expect(ids.filter((id, index) => ids.indexOf(id) !== index)).toEqual([]);
+        for (const host of [...originals, ...copies]) {
+          for (const id of referencesOf(host)) expect(host.contains(document.getElementById(id)), `${host.localName} ${id}`).toBe(true);
+        }
+      });
+    }
+  }
+});
+
 describe("React roots served without identifierPrefix", () => {
   it("keep React's ids when the elements adopt them before hydration, with no console.error", async () => {
     const errors = vi.spyOn(console, "error");

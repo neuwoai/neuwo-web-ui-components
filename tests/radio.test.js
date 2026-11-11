@@ -228,6 +228,43 @@ describe("<neuwo-radio-group> and <neuwo-radio>", () => {
     expect([...new FormData(holder.querySelector("#third"))]).toEqual([["solo", "x"]]);
   });
 
+  for (const [source, served] of [
+    ["rendered by the elements", false],
+    ["served", true],
+  ]) {
+    it(`keeps the original's pick when a renamed copy of a group ${source} is appended to the same form, as an "add another" row does`, () => {
+      const row = `<div class="row"><neuwo-radio-group name="tier-0" label="Tier" value="pro">${RADIOS}</neuwo-radio-group></div>`;
+      const form = make(`<form>${served ? expand(row) : row}</form>`);
+      const copy = form.querySelector(".row").cloneNode(true);
+      const group = copy.querySelector("neuwo-radio-group");
+      group.setAttribute("name", "tier-1");
+      expect(inputsOf(group).map((input) => input.name)).toEqual(["tier-1", "tier-1", "tier-1"]);
+      form.append(copy);
+      const [original] = form.querySelectorAll("neuwo-radio-group");
+      expect([original.value, group.value]).toEqual(["pro", "pro"]);
+      expect([...new FormData(form)]).toEqual([
+        ["tier-0", "pro"],
+        ["tier-1", "pro"],
+      ]);
+      const ids = Array.from(form.querySelectorAll("[id]"), (el) => el.id);
+      expect(new Set(ids).size).toBe(ids.length);
+      expect(document.getElementById(groupOf(group).getAttribute("aria-labelledby"))).toBe(legendOf(group));
+    });
+  }
+
+  // happy-dom does not uncheck a group's radio when a checked one is inserted, so the name is read before insertion.
+  it("keeps the original lone radio checked when a renamed copy is appended to the same form", () => {
+    const form = make(`<form><neuwo-radio name="agree-0" value="yes" checked>Agree</neuwo-radio></form>`);
+    const copy = form.firstElementChild.cloneNode(true);
+    copy.setAttribute("name", "agree-1");
+    expect(inputOf(copy).name).toBe("agree-1");
+    form.append(copy);
+    expect([...new FormData(form)]).toEqual([
+      ["agree-0", "yes"],
+      ["agree-1", "yes"],
+    ]);
+  });
+
   it("updates every radio when the group's value, name or disabled changes", () => {
     const el = make(`<neuwo-radio-group name="plan" value="pro">${RADIOS}</neuwo-radio-group>`);
     el.setAttribute("value", "free");

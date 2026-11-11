@@ -220,6 +220,22 @@ describe("readers of an enclosing element (within), upgraded and copied in jsdom
     expect(shown(copy)).toEqual(["size=m"]);
   });
 
+  it("writes nothing when served markup outside the document is upgraded", () => {
+    const holder = document.createElement("div");
+    holder.innerHTML = expand(`<x-group name="size" value="m"><x-late-item>Medium</x-late-item></x-group>`, { ...withinTemplates, "x-late-item": itemTemplate });
+    define("x-late-item", class extends NeuwoElement {
+      static template = itemTemplate;
+      static observedAttributes = [];
+    });
+    expect(holder.querySelector("x-late-item")).not.toBeInstanceOf(customElements.get("x-late-item"));
+    const observer = new MutationObserver(() => {});
+    observer.observe(holder, { subtree: true, childList: true, attributes: true, characterData: true });
+    customElements.upgrade(holder);
+    expect(holder.querySelector("x-late-item")).toBeInstanceOf(customElements.get("x-late-item"));
+    expect(observer.takeRecords().map(describeRecord)).toEqual([]);
+    expect(shown(holder)).toEqual(["size=m"]);
+  });
+
   it("gives a copy the change its group made between the copy and its insertion", () => {
     const group = container.querySelector("x-group");
     const copy = /** @type {Element} */ (group.querySelector("x-item").cloneNode(true));
@@ -243,5 +259,44 @@ describe("a copy of a wrapper around a rendered <neuwo-radio>, in jsdom", () => 
     const input = /** @type {HTMLInputElement} */ (copy.querySelector("input"));
     expect(input.hasAttribute("name")).toBe(false);
     expect(input.hasAttribute("checked")).toBe(false);
+  });
+});
+
+describe("a renamed copy of a rendered radio appended to the same form, in jsdom", () => {
+  const ROW = `<div class="row"><neuwo-radio-group name="tier-0" label="Tier" value="pro"><neuwo-radio value="free">Free</neuwo-radio><neuwo-radio value="pro">Pro</neuwo-radio></neuwo-radio-group></div>`;
+  const LONE = `<div class="row"><neuwo-radio name="agree-0" value="yes" checked>Agree</neuwo-radio></div>`;
+
+  for (const [source, html] of [
+    ["rendered by the elements", ROW],
+    ["served", expand(ROW)],
+  ]) {
+    it(`keeps the original group's pick, for a group ${source}`, async () => {
+      await import("../src/index.js");
+      const holder = form(html);
+      const row = /** @type {Element} */ (holder.querySelector(".row").cloneNode(true));
+      row.querySelector("neuwo-radio-group").setAttribute("name", "tier-1");
+      holder.append(row);
+      const [original, copy] = /** @type {import("../src/components/selection/radio/neuwo-radio-group.js").NeuwoRadioGroup[]} */ (
+        Array.from(holder.querySelectorAll("neuwo-radio-group"))
+      );
+      expect(Array.from(copy.querySelectorAll("input"), (input) => input.name)).toEqual(["tier-1", "tier-1"]);
+      expect([original.value, copy.value]).toEqual(["pro", "pro"]);
+      expect([...new FormData(holder)]).toEqual([
+        ["tier-0", "pro"],
+        ["tier-1", "pro"],
+      ]);
+    });
+  }
+
+  it("keeps the original lone radio checked", async () => {
+    await import("../src/index.js");
+    const holder = form(LONE);
+    const row = /** @type {Element} */ (holder.querySelector(".row").cloneNode(true));
+    row.querySelector("neuwo-radio").setAttribute("name", "agree-1");
+    holder.append(row);
+    expect([...new FormData(holder)]).toEqual([
+      ["agree-0", "yes"],
+      ["agree-1", "yes"],
+    ]);
   });
 });

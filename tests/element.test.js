@@ -325,6 +325,41 @@ describe("NeuwoElement (light DOM)", () => {
       expect(el.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--c");
     });
 
+    it("applies an observed attribute change made while it is away at once, and writes nothing more on its return", () => {
+      const el = mismatched();
+      el.remove();
+      el.setAttribute("tone", "c");
+      expect(el.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--c");
+      const observer = new MutationObserver(() => {});
+      observer.observe(el, { subtree: true, childList: true, attributes: true, characterData: true });
+      mount("").appendChild(el);
+      expect(observer.takeRecords()).toHaveLength(0);
+      expect(el.connected).toBe(2);
+    });
+
+    it("applies an observed attribute change to a copy before it is inserted", () => {
+      const el = mismatched();
+      const copy = /** @type {TestLight} */ (el.cloneNode(true));
+      copy.setAttribute("tone", "c");
+      expect(copy.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--c");
+      expect(copy.querySelectorAll(".neuwo-t")).toHaveLength(1);
+      expect(el.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--a");
+      mount("").appendChild(copy);
+      expect(copy.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--c");
+      expect(copy.connected).toBe(1);
+    });
+
+    it("renders a host that holds no markup only once it is connected, with the attributes it has then", () => {
+      const el = document.createElement("test-light");
+      el.setAttribute("tone", "b");
+      el.setAttribute("tone", "c");
+      el.append("hi");
+      expect(el.innerHTML).toBe("hi");
+      mount("").appendChild(el);
+      expect(el.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--c");
+      expect(el.querySelector(".neuwo-t__body").textContent).toBe("hi");
+    });
+
     it("reconciles when an aria-* or title attribute changed while it was away", () => {
       const el = mismatched();
       moveWatched(el, () => el.setAttribute("aria-label", "x"));
@@ -400,6 +435,20 @@ describe("NeuwoElement (light DOM)", () => {
     expect(el.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--a");
     expect(el.connected).toBe(2);
     expect(el.disconnected).toBe(1);
+  });
+
+  it.each([
+    ["the JSX runtime's marker", Symbol.for("neuwo.react")],
+    ["React DOM's fiber property", "__reactFiber$test"],
+  ])("writes nothing into a removed host React owns, known by %s, on an attribute change", (_, key) => {
+    const el = mount(server()).firstElementChild;
+    el[key] = true;
+    el.remove();
+    const observer = new MutationObserver(() => {});
+    observer.observe(el, { subtree: true, childList: true, attributes: true, characterData: true });
+    el.setAttribute("tone", "b");
+    expect(observer.takeRecords().filter((record) => record.target !== el)).toHaveLength(0);
+    expect(el.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--a");
   });
 
   it("patches exactly one attribute on an attribute change", () => {
@@ -562,7 +611,7 @@ describe("updated() and refresh()", () => {
     expect(el.updates).toBe(1);
   });
 
-  it("runs updated once, after connect, following the reconcile a reconnect performs", () => {
+  it("runs updated once, after connect, when a host changed while out of the page returns", () => {
     const el = mount(served()).firstElementChild;
     el.remove();
     el.setAttribute("tone", "b");

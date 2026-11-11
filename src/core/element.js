@@ -143,7 +143,21 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
     this.#write(reconcile);
     this.#within = this.#enclosing();
     this.#refreshReaders();
-    if (this.#started) this.updated();
+    if (this.isConnected) {
+      if (this.#started) this.updated();
+      return;
+    }
+    this.#dirty = false;
+    this.#away = relevantAttributes(this);
+  }
+
+  /**
+   * Whether a change is written now: to a started host in the document, and to rendered markup outside it, such as
+   * a copy a script made, whose native controls must carry the change before they join the document's.
+   */
+  #writable() {
+    if (ownedByReact(this) || this.#waiting) return false;
+    return this.isConnected ? this.#started : isRendered(this, /** @type {typeof NeuwoElement} */ (this.constructor).template);
   }
 
   #refreshReaders() {
@@ -151,8 +165,8 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
     if (!tags) return;
     for (const el of Array.from(this.querySelectorAll(Array.from(tags).join(",")))) {
       if (!(el instanceof NeuwoElement) || el.parentElement?.closest(this.localName) !== this) continue;
-      // refresh() skips a host waiting for the document; marked dirty, it reconciles when it starts.
-      if (el.#started && !el.#waiting) el.refresh();
+      // Marked dirty, a reader that cannot be written now reconciles when it starts.
+      if (el.#writable()) el.#reconcile();
       else el.#dirty = true;
     }
   }
@@ -172,11 +186,12 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
    */
   attributeChangedCallback(name, oldValue, value) {
     if (ownedByReact(this)) return;
-    if (!this.#started && !this.#waiting) {
-      // An upgrade reporting an attribute the element had, or the parser filling one it just created, is not a change.
-      if (oldValue === null && (this.#initial === null || this.#initial.get(name) === value)) this.#initial?.delete(name);
-      else this.#dirty = true;
-    } else if (this.#started && this.isConnected && !this.#waiting) this.#reconcile();
+    // An upgrade reporting an attribute the element had, or the parser filling one it just created, is not a change.
+    if (!this.#started && !this.#waiting && oldValue === null && (this.#initial === null || this.#initial.get(name) === value)) {
+      this.#initial?.delete(name);
+      return;
+    }
+    if (this.#writable()) this.#reconcile();
     else this.#dirty = true;
   }
 
@@ -211,8 +226,9 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
 
   /**
    * Hook to re-apply live state the template cannot know. It runs after every write to the markup but the first
-   * render or adoption: after an attribute or child change, after `refresh()`, and after a reconnect, where it
-   * follows `connect`. It must write only values that differ from the DOM.
+   * render or adoption: after an attribute or child change in the page, after `refresh()`, and after a reconnect,
+   * where it follows `connect` and covers a change written while the element was out of the page. It must write
+   * only values that differ from the DOM.
    */
   updated() {}
 }

@@ -104,6 +104,40 @@ describe("an element whose template reads its enclosing element (within)", () =>
         expect(observer.takeRecords().map(describeRecord)).toEqual(["x-group. tone", "div.x-group x-group--b class"]);
         expect(shown(holder)).toEqual(["size=m", "size=m"]);
       });
+
+      it("gives the items in a copy of the group the copy's change before the copy is inserted, and writes only what differs", () => {
+        const holder = mount(html);
+        const copy = /** @type {Element} */ (holder.querySelector("x-group").cloneNode(true));
+        const changed = watch(copy);
+        copy.setAttribute("value", "l");
+        expect(changed.takeRecords().map(describeRecord)).toEqual([
+          "x-group. value",
+          "span.x-item data-value",
+          "text in x-item__group text",
+          "span.x-item data-value",
+          "text in x-item__group text",
+        ]);
+        expect(shown(copy)).toEqual(["size=l", "size=l"]);
+        expect(shown(holder)).toEqual(["size=m", "size=m"]);
+        holder.append(copy);
+        expect(changed.takeRecords()).toEqual([]);
+        expect(shown(holder)).toEqual(["size=m", "size=m", "size=l", "size=l"]);
+      });
+
+      it("gives the items of a group the change made while it was removed, before it returns", () => {
+        const holder = mount(html);
+        const group = holder.querySelector("x-group");
+        const updates = () => Array.from(group.querySelectorAll("x-item"), (el) => /** @type {XItem} */ (el).updates);
+        const before = updates();
+        group.remove();
+        group.setAttribute("value", "s");
+        expect(shown(group)).toEqual(["size=s", "size=s"]);
+        expect(updates()).toEqual(before);
+        const observer = watch(group);
+        holder.append(group);
+        expect(observer.takeRecords()).toEqual([]);
+        expect(updates()).toEqual(before.map((count) => count + 1));
+      });
     });
   }
 

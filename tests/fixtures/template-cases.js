@@ -1,3 +1,4 @@
+import { Window } from "happy-dom";
 import { renderElement } from "../../src/core/adapters/html.js";
 import { idScope } from "../../src/core/ids.js";
 import { expand } from "../../src/server/index.js";
@@ -401,6 +402,9 @@ export function renderChildren(children, host) {
 
 const REFERENCES = ["for", "aria-describedby", "aria-labelledby", "aria-controls"];
 
+/** @type {Window | undefined} */
+let blank;
+
 /**
  * Sorts attributes and renumbers ids by first appearance, so adapters that mint ids differently compare equal.
  * A browser's parser drops the newline right after `<textarea>`, which happy-dom's does not, so markup that
@@ -410,7 +414,9 @@ const REFERENCES = ["for", "aria-describedby", "aria-labelledby", "aria-controls
  * @returns {string}
  */
 export function normalise(html, parsed = true) {
-  const holder = document.createElement("template");
+  // happy-dom upgrades elements in a template's content, which browsers never do, so it parses where none is defined.
+  blank ??= new Window();
+  const holder = blank.document.createElement("template");
   holder.innerHTML = html;
   if (parsed) {
     for (const area of holder.content.querySelectorAll("textarea")) {
