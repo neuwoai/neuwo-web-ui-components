@@ -15,9 +15,9 @@ const CONTROLLED = Symbol.for("neuwo.controlled");
  *
  * @summary Neuwo range slider. Shares the field's classes (see `neuwo-input`), with `.neuwo-range` added on the native range input.
  * @customElement neuwo-range
- * @attr min - lowest selectable value (default 0).
- * @attr max - highest selectable value (default 100).
- * @attr step - step granularity (default 1).
+ * @attr {string | number} min - lowest selectable value (default 0).
+ * @attr {string | number} max - highest selectable value (default 100).
+ * @attr {string | number} step - step granularity (default 1).
  * @attr aria-valuetext - human reading of the current value ("2.4M page views"); forwarded to the control, and observed so a consumer can rewrite it as the slider moves.
  * @cssprop --neuwo-range-track-height - thickness of the track (default 0.375rem).
  * @cssprop --neuwo-range-thumb-size - diameter of the thumb (default 0.875rem).

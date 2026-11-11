@@ -8,9 +8,9 @@ import { textareaTemplate } from "./textarea.template.js";
  *
  * @summary Neuwo textarea. Shares the field's classes (see `neuwo-input`), with `.neuwo-textarea` added on the native `<textarea>`.
  * @customElement neuwo-textarea
- * @attr {number} rows - visible row count.
- * @attr minlength - minimum text length.
- * @attr maxlength - maximum text length.
+ * @attr {string | number} rows - visible row count.
+ * @attr {string | number} minlength - minimum text length.
+ * @attr {string | number} maxlength - maximum text length.
  */
 export class NeuwoTextarea extends NeuwoFieldElement {
   static template = textareaTemplate;

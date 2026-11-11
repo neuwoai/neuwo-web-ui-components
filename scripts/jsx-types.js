@@ -9,12 +9,9 @@ function propKey(name) {
 
 function attributeType(text) {
   if (!text) return "string";
-  if (PRIMITIVES.has(text)) return text;
-  return text
-    .split("|")
-    .map((value) => value.trim())
-    .map((value) => (/^\d+$/.test(value) ? `${value} | "${value}"` : JSON.stringify(value)))
-    .join(" | ");
+  const members = text.split("|").map((value) => value.trim());
+  if (members.every((value) => PRIMITIVES.has(value))) return members.join(" | ");
+  return members.map((value) => (/^\d+$/.test(value) ? `${value} | "${value}"` : JSON.stringify(value))).join(" | ");
 }
 
 function isFormControl(declaration) {

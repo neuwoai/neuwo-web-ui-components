@@ -217,7 +217,9 @@
   the native control as `event.target`, and `defaultValue` and `defaultChecked` start an uncontrolled
   control. The Server Components build takes `value` and `checked` as starting values. The JSX types
   give every element with a `value` and a `change` event `value` and `defaultValue` as a string or a
-  number, and an `onChange` whose target is typed as the element.
+  number, and an `onChange` whose target is typed as the element. `min`, `max`, `step`, `minlength`,
+  `maxlength` and `rows` on the fields take a string or a number too, so React Hook Form's
+  `{...register("name")}` spreads onto every field.
 - `neuwo.js` can be imported on a server, where it registers nothing, and loading it twice no longer throws.
 - `neuwo-components.css` and `foundation/fonts.css` are now published, and `neuwo.css` carries the font faces.
 - The metric-adjusted fallback faces also use Liberation Sans or Arimo where Arial is missing, as on most

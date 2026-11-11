@@ -40,7 +40,23 @@ describe("JSX types", () => {
 
   it("keeps boolean and number attributes as such", () => {
     expect(block("neuwo-button")).toContain("disabled?: boolean;");
-    expect(block("neuwo-textarea")).toContain("rows?: number;");
+    const generated = jsxElementsTypes({ modules: [{ declarations: [{ kind: "class", name: "Counted", tagName: "x-counted", attributes: [{ name: "count", type: { text: "number" } }] }] }] });
+    expect(generated).toContain("count?: number;");
+  });
+
+  it("types a union of primitive types as those types, not as string literals", () => {
+    const generated = jsxElementsTypes({ modules: [{ declarations: [{ kind: "class", name: "Bounded", tagName: "x-bounded", attributes: [{ name: "min", type: { text: "string | number" } }] }] }] });
+    expect(generated).toContain("min?: string | number;");
+    expect(generated).not.toContain('"string"');
+  });
+
+  it("takes a field's numeric attributes as a string or a number, as React's own fields do", () => {
+    const input = block("neuwo-input");
+    for (const name of ["min", "max", "step", "minlength", "maxlength"]) expect(input).toContain(`${name}?: string | number;`);
+    const range = block("neuwo-range");
+    for (const name of ["min", "max", "step"]) expect(range).toContain(`${name}?: string | number;`);
+    const textarea = block("neuwo-textarea");
+    for (const name of ["rows", "minlength", "maxlength"]) expect(textarea).toContain(`${name}?: string | number;`);
   });
 
   it("types an attribute with no declared type as a string", () => {

@@ -1,6 +1,23 @@
 import type { NeuwoButton, NeuwoInput } from "@neuwo/web-ui-library--demo";
 import { useRef, useState } from "react";
 
+// React Hook Form's own shape, declared here so the repository does not depend on it.
+type FormHandler = (event: { target: unknown; type?: unknown }) => Promise<void | boolean>;
+type UseFormRegisterReturn = {
+  onChange: FormHandler;
+  onBlur: FormHandler;
+  ref: (instance: unknown) => void;
+  name: string;
+  min?: string | number;
+  max?: string | number;
+  maxLength?: number;
+  minLength?: number;
+  pattern?: string;
+  required?: boolean;
+  disabled?: boolean;
+};
+declare const register: (name: string) => UseFormRegisterReturn;
+
 export function Usage() {
   const button = useRef<NeuwoButton>(null);
   const input = useRef<NeuwoInput>(null);
@@ -25,6 +42,15 @@ export function Usage() {
         <option value="a">A</option>
       </neuwo-combobox>
       <neuwo-combobox defaultValue="a" name="plan" searchable />
+      <neuwo-input {...register("email")} />
+      <neuwo-textarea {...register("bio")} />
+      <neuwo-range {...register("volume")} />
+      <neuwo-combobox {...register("plan")}>
+        <option value="a">A</option>
+      </neuwo-combobox>
+      <neuwo-input type="number" min={0} max="10" step={0.5} minlength={1} maxlength="5" />
+      <neuwo-range min="0" max={100} step={10} />
+      <neuwo-textarea rows="4" minlength={2} maxlength={200} />
       {/* @ts-expect-error not a text-like input type */}
       <neuwo-input type="checkbox" />
       {/* @ts-expect-error not a button variant */}
