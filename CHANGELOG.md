@@ -388,9 +388,11 @@
   the element when it is defined, through the element's own setter; it used to hide that property and
   never reach the markup or the control.
 - Light DOM elements have a `refresh()` method, which fits the markup to the current attributes and
-  children at once instead of in that microtask, and an `updated()` hook for component classes, which
-  runs after every reconcile in the page and after every reconnect, but not after the first render or
-  adoption, to re-apply live state the template cannot know.
+  children at once instead of in that microtask, wherever an attribute change applies at once: on an
+  element in the page, and on rendered markup out of it, such as a copy. Component classes get an
+  `updated()` hook, which runs after every reconcile in the page and after every reconnect, but not after
+  the first render or adoption, nor after a write out of the page, to re-apply live state the template
+  cannot know.
 - A component template can name an enclosing tag as its `within` to read the attributes of the nearest such
   element: in `expand`, in the browser, and through the JSX runtime, which reaches it through elements,
   fragments, `Suspense` and other Neuwo elements but not inside a component of your own, and warns about

@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { NeuwoElement, define } from "../src/core/element.js";
+import { REACT } from "../src/core/marks.js";
+import { h, region } from "../src/core/template.js";
 import { expand } from "../src/server/index.js";
 import { templates } from "../src/templates.js";
 import { cases, markup } from "./fixtures/template-cases.js";
@@ -354,5 +356,260 @@ describe("a property set on a light element before it is defined, in jsdom", () 
     expect(el.extra).toBe(1);
     expect(Object.getOwnPropertyDescriptor(el, "template")?.value).toBe("mine");
     expect(el.querySelector(".neuwo-btn")).not.toBeNull();
+  });
+});
+
+describe("what an observed attribute change, and refresh(), do in each lifecycle state, in jsdom", () => {
+  /** @param {Record<string, string>} attrs */
+  const lifeTemplate = (attrs) =>
+    h("span", { class: `x-life x-life--${attrs.tone ?? "a"}` }, h("span", { class: "x-life__start" }, region("start")), h("span", { class: "x-life__body" }, region()));
+  /** @type {import("../src/core/template.js").Template} */
+  const lifeItem = (attrs, ctx) => itemTemplate(attrs, ctx);
+  lifeItem.within = "x-life-group";
+  const LIFE = { "x-life": lifeTemplate, "x-life-idle": lifeTemplate, "x-life-group": groupTemplate, "x-life-item": lifeItem, "x-life-item-idle": lifeItem };
+
+  /** Starts only when the test calls run(), as an element whose connect has not run yet. */
+  const idle = (/** @type {typeof NeuwoElement} */ base) =>
+    class extends base {
+      connectedCallback() {}
+      run() {
+        super.connectedCallback();
+      }
+    };
+
+  beforeAll(() => {
+    const element = (/** @type {import("../src/core/template.js").Template} */ template, /** @type {string[]} */ observed) =>
+      class extends NeuwoElement {
+        static template = template;
+        static observedAttributes = observed;
+      };
+    define("x-life", element(lifeTemplate, ["tone"]));
+    define("x-life-idle", idle(element(lifeTemplate, ["tone"])));
+    define("x-life-group", element(groupTemplate, ["name", "value"]));
+    define("x-life-item", element(lifeItem, []));
+    define("x-life-item-idle", idle(element(lifeItem, [])));
+  });
+
+  afterEach(() => delete document.readyState);
+
+  /** @param {string} html */
+  const page = (html) => {
+    const holder = document.createElement("div");
+    holder.innerHTML = html;
+    document.body.append(holder);
+    cleanup.push(() => holder.remove());
+    return holder;
+  };
+  /** @param {string} html */
+  const served = (html) => expand(html, LIFE);
+  const loading = () => Object.defineProperty(document, "readyState", { configurable: true, get: () => "loading" });
+  const parsed = () => {
+    delete document.readyState;
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+  };
+  /** @param {Element} el */
+  const reinsert = (el) => () => page("").append(el);
+  /** @param {string} html */
+  const markedForReact = (html) => {
+    const holder = document.createElement("div");
+    holder.innerHTML = served(html);
+    for (const el of holder.querySelectorAll("x-life, x-life-item")) Reflect.set(el, REACT, true);
+    document.body.append(holder);
+    cleanup.push(() => holder.remove());
+    return holder.firstElementChild;
+  };
+  const GROUP = `<x-life-group name="size" value="m"><x-life-item>One</x-life-item></x-life-group>`;
+
+  /** @typedef {{ el: Element, change: () => void, start: () => void }} State */
+  /** @param {Element} el */
+  const own = (el, start = () => {}) => ({ el, change: () => el.setAttribute("tone", "b"), start });
+  /**
+   * @param {Element} group
+   * @param {Element} el
+   */
+  const read = (group, el, start = () => {}) => ({ el, change: () => group.setAttribute("value", "l"), start });
+
+  /** @type {Array<[string, "writes now" | "marks dirty" | "ignores", () => State]>} */
+  const STATES = [
+    ["rendered, in the page, started", "writes now", () => own(page(served(`<x-life>Hi</x-life>`)).firstElementChild)],
+    [
+      "rendered, out of the page, started",
+      "writes now",
+      () => {
+        const el = page(served(`<x-life>Hi</x-life>`)).firstElementChild;
+        el.remove();
+        return own(el, reinsert(el));
+      },
+    ],
+    [
+      "rendered, out of the page, never started: a copy",
+      "writes now",
+      () => {
+        const el = /** @type {Element} */ (page(served(`<x-life>Hi</x-life>`)).firstElementChild.cloneNode(true));
+        return own(el, reinsert(el));
+      },
+    ],
+    [
+      "rendered, out of the page, never started: served markup upgraded there",
+      "writes now",
+      () => {
+        const holder = document.createElement("div");
+        holder.innerHTML = served(`<x-life>Hi</x-life>`);
+        customElements.upgrade(holder);
+        const el = holder.firstElementChild;
+        return own(el, reinsert(el));
+      },
+    ],
+    [
+      "rendered, in the page, never started",
+      "marks dirty",
+      () => {
+        const el = page(served(`<x-life-idle>Hi</x-life-idle>`)).firstElementChild;
+        return own(el, () => el.run());
+      },
+    ],
+    [
+      "empty, in the page, never started",
+      "marks dirty",
+      () => {
+        const el = page(`<x-life-idle>Hi</x-life-idle>`).firstElementChild;
+        return own(el, () => el.run());
+      },
+    ],
+    [
+      "empty, out of the page, never started",
+      "marks dirty",
+      () => {
+        const el = document.createElement("x-life");
+        el.append("Hi");
+        return own(el, reinsert(el));
+      },
+    ],
+    [
+      "empty, out of the page, started",
+      "marks dirty",
+      () => {
+        const el = page(served(`<x-life>Hi</x-life>`)).firstElementChild;
+        el.remove();
+        el.textContent = "Hi";
+        return own(el, reinsert(el));
+      },
+    ],
+    [
+      "empty, in the page, waiting for the document",
+      "marks dirty",
+      () => {
+        loading();
+        const el = document.createElement("x-life");
+        el.append("Hi");
+        page("").append(el);
+        return own(el, parsed);
+      },
+    ],
+    [
+      "rendered, in the page, React-owned",
+      "ignores",
+      () => {
+        const el = markedForReact(`<x-life>Hi</x-life>`);
+        return own(el, reinsert(el));
+      },
+    ],
+    [
+      "rendered, out of the page, React-owned",
+      "ignores",
+      () => {
+        const el = markedForReact(`<x-life>Hi</x-life>`);
+        el.remove();
+        return own(el, reinsert(el));
+      },
+    ],
+    [
+      "a reader, rendered, in the page, started",
+      "writes now",
+      () => {
+        const group = page(served(GROUP)).firstElementChild;
+        return read(group, group.querySelector("x-life-item"));
+      },
+    ],
+    [
+      "a reader, rendered, out of the page, started",
+      "writes now",
+      () => {
+        const group = page(served(GROUP)).firstElementChild;
+        group.remove();
+        return read(group, group.querySelector("x-life-item"), reinsert(group));
+      },
+    ],
+    [
+      "a reader, rendered, out of the page, never started: in a copy of its group",
+      "writes now",
+      () => {
+        const group = /** @type {Element} */ (page(served(GROUP)).firstElementChild.cloneNode(true));
+        return read(group, group.querySelector("x-life-item"), reinsert(group));
+      },
+    ],
+    [
+      "a reader, rendered, in the page, never started",
+      "marks dirty",
+      () => {
+        const group = page(served(GROUP.replaceAll("x-life-item", "x-life-item-idle"))).firstElementChild;
+        const el = group.querySelector("x-life-item-idle");
+        return read(group, el, () => el.run());
+      },
+    ],
+    [
+      "a reader, empty, out of the page, in a copy of its group",
+      "marks dirty",
+      () => {
+        const group = /** @type {Element} */ (page(served(`<x-life-group name="size" value="m"></x-life-group>`)).firstElementChild.cloneNode(true));
+        const el = document.createElement("x-life-item");
+        el.append("One");
+        group.querySelector(".x-group").append(el);
+        return read(group, el, reinsert(group));
+      },
+    ],
+    [
+      "a reader, empty, in the page, waiting for the document",
+      "marks dirty",
+      () => {
+        const group = page(served(`<x-life-group name="size" value="m"></x-life-group>`)).firstElementChild;
+        loading();
+        const el = document.createElement("x-life-item");
+        el.append("One");
+        group.querySelector(".x-group").append(el);
+        return read(group, el, parsed);
+      },
+    ],
+    [
+      "a reader, rendered, in the page, React-owned",
+      "ignores",
+      () => {
+        const group = markedForReact(GROUP);
+        return read(group, group.querySelector("x-life-item"), reinsert(group));
+      },
+    ],
+  ];
+
+  /** @param {Element} el */
+  const shownOf = (el) => (el.localName.startsWith("x-life-item") ? el.querySelector(".x-item__group")?.textContent : el.querySelector(":scope > .x-life")?.className) ?? null;
+  /** @param {Element} el */
+  const changedOf = (el) => (el.localName.startsWith("x-life-item") ? "size=l" : "x-life x-life--b");
+
+  it.each(STATES)("%s: an observed attribute change %s", (_, expected, setup) => {
+    const { el, change, start } = setup();
+    change();
+    const now = shownOf(el);
+    start();
+    const later = shownOf(el);
+    const target = changedOf(el);
+    expect(now === target ? "writes now" : later === target ? "marks dirty" : "ignores").toBe(expected);
+  });
+
+  it.each(STATES)("%s: refresh() writes now only where a change does", (_, expected, setup) => {
+    const { el } = setup();
+    const child = document.createElement("i");
+    el.append(child);
+    /** @type {NeuwoElement} */ (el).refresh();
+    expect(child.parentElement !== el).toBe(expected === "writes now");
   });
 });

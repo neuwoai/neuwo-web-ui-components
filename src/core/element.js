@@ -227,12 +227,13 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
   }
 
   /**
-   * Reconciles the markup with the attributes and children now, then runs `updated`. Does nothing on a host
-   * that is disconnected, not yet rendered, waiting for the document to parse, or rendered by React.
+   * Reconciles the markup with the attributes and children now, wherever an attribute change would be written at
+   * once: on a started host in the page, then running `updated`, and on rendered markup out of the page, such as a
+   * copy a script made. It does nothing on a host in the page that has not started or is waiting for the document
+   * to parse, on one out of the page with no rendered markup, or on one React rendered.
    */
   refresh() {
-    const { template } = /** @type {typeof NeuwoElement} */ (this.constructor);
-    if (this.isConnected && !this.#waiting && !ownedByReact(this) && isRendered(this, template)) this.#reconcile();
+    if (this.#writable()) this.#reconcile();
   }
 
   disconnectedCallback() {
@@ -259,10 +260,11 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
   disconnect() {}
 
   /**
-   * Hook to re-apply live state the template cannot know. It runs after every write to the markup but the first
-   * render or adoption: after an attribute or child change in the page, after `refresh()`, and after a reconnect,
-   * where it follows `connect` and covers a change written while the element was out of the page. It must write
-   * only values that differ from the DOM.
+   * Hook to re-apply live state the template cannot know. It runs on a started host in the page: after each
+   * reconcile there, from an attribute or child change or `refresh()`, and after every reconnect, where it follows
+   * `connect` and covers a change written while the element was out of the page. It never runs on the first start,
+   * where `connect` runs alone, nor for a write to markup out of the page. It must write only values that differ
+   * from the DOM.
    */
   updated() {}
 }

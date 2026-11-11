@@ -665,7 +665,21 @@ describe("updated() and refresh()", () => {
     expect(el.updates).toBe(0);
   });
 
-  it("leaves a disconnected host, and a connected one that has not rendered, alone on refresh", () => {
+  it("reconciles a rendered host out of the page at once on refresh, without running updated", () => {
+    const el = mount(served()).firstElementChild;
+    el.remove();
+    const icon = document.createElement("i");
+    icon.slot = "start";
+    el.append(icon);
+    el.refresh();
+    expect(icon.parentElement.className).toBe("neuwo-t__start");
+    expect(el.updates).toBe(0);
+    mount("").appendChild(el);
+    expect(icon.parentElement.className).toBe("neuwo-t__start");
+    expect(el.updates).toBe(1);
+  });
+
+  it("leaves a host that holds no rendered markup, in the page or out of it, alone on refresh", () => {
     const gone = mount(served()).firstElementChild;
     gone.remove();
     gone.textContent = "y";
