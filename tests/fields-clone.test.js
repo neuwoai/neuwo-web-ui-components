@@ -63,6 +63,37 @@ describe("fields copied with cloneNode(true)", () => {
     }
   }
 
+  for (const [source, html] of [
+    ["rendered by the elements", FIELDS],
+    ["served", expand(FIELDS)],
+  ]) {
+    for (const [when, wait] of [
+      ["in the same task", () => undefined],
+      ["in a later task", () => new Promise((resolve) => setTimeout(resolve, 0))],
+    ]) {
+      it(`apply attributes set on a copy of fields ${source} ${when}, before it is inserted`, async () => {
+        const holder = form(html);
+        const originals = Array.from(holder.children);
+        const copies = originals.map((host) => /** @type {Element} */ (host.cloneNode(true)));
+        await wait();
+        for (const [index, copy] of copies.entries()) {
+          copy.setAttribute("name", `copy-${index}`);
+          copy.removeAttribute("error");
+        }
+        holder.append(...copies);
+        for (const [index, copy] of copies.entries()) {
+          expect(copy.control.name, copy.localName).toBe(`copy-${index}`);
+          expect(copy.querySelector(".neuwo-field__error").textContent, copy.localName).toBe("");
+          expect(controlOf(copy).hasAttribute("aria-invalid"), copy.localName).toBe(false);
+        }
+        expect(originals.map((host) => host.control.name)).toEqual(["email", "plan"]);
+        expect(originals.map((host) => host.querySelector(".neuwo-field__error").textContent)).toEqual(["Bad", "Pick one"]);
+        expect(originals.map((host) => controlOf(host).getAttribute("aria-invalid"))).toEqual(["true", "true"]);
+        expectOwnIds([...originals, ...copies]);
+      });
+    }
+  }
+
   it("keeps the copy's ids through a later change", async () => {
     const holder = form(FIELDS);
     const copies = Array.from(holder.children, (host) => /** @type {Element} */ (host.cloneNode(true)));

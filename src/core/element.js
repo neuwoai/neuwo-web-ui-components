@@ -50,6 +50,22 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
   /** @type {string | null} */
   #away = null;
 
+  /**
+   * The observed attributes the element had when it was constructed, which an upgrade then reports one by one; null
+   * when it was constructed empty, as the parser and `createElement` construct it before adding any attribute.
+   * @type {Map<string, string> | null}
+   */
+  #initial;
+
+  constructor() {
+    super();
+    const observed = /** @type {{ observedAttributes?: string[] }} */ (this.constructor).observedAttributes ?? [];
+    this.#initial =
+      this.hasAttributes() || this.hasChildNodes()
+        ? new Map(observed.filter((name) => this.hasAttribute(name)).map((name) => [name, /** @type {string} */ (this.getAttribute(name))]))
+        : null;
+  }
+
   connectedCallback() {
     if (this.#tooEarly()) {
       if (this.#waiting) return;
@@ -79,6 +95,7 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
       if (!restart && (this.#dirty || hasLooseContent(this))) this.#write(reconcile);
       this.#dirty = false;
       this.#away = null;
+      this.#initial = null;
       this.#observer ??= new MutationObserver((records) => this.#changed(records));
       this.#observer.observe(this, { childList: true, attributes: true });
       this.#started = true;
@@ -110,10 +127,18 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
     } else if (records.some(relevant)) this.#reconcile();
   }
 
-  attributeChangedCallback() {
-    // An upgrade calls this for every attribute before the first connect, which adopts; those are not changes.
-    if ((!this.#started && !this.#waiting) || ownedByReact(this)) return;
-    if (this.#started && this.isConnected && !this.#waiting) this.#reconcile();
+  /**
+   * @param {string} name
+   * @param {string | null} oldValue
+   * @param {string | null} value
+   */
+  attributeChangedCallback(name, oldValue, value) {
+    if (ownedByReact(this)) return;
+    if (!this.#started && !this.#waiting) {
+      // An upgrade reporting an attribute the element had, or the parser filling one it just created, is not a change.
+      if (oldValue === null && (this.#initial === null || this.#initial.get(name) === value)) this.#initial?.delete(name);
+      else this.#dirty = true;
+    } else if (this.#started && this.isConnected && !this.#waiting) this.#reconcile();
     else this.#dirty = true;
   }
 
