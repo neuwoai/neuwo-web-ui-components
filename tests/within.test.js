@@ -417,7 +417,10 @@ describe("within in the React adapter", () => {
     expect(message).toContain("<x-item>");
     expect(message).toContain("<x-group>");
     expect(message).toMatch(/Server Component/);
-    expect(message).toMatch(/same component/);
+    expect(message).toMatch(/React\.createElement/);
+    expect(message).toMatch(/jsxImportSource/);
+    expect(message).toMatch(/same Client Component/);
+    expect(message).toMatch(/JSX runtime/);
   });
 
   it("stays silent where a reader receives its group's attributes, outside any group, and in production", async () => {

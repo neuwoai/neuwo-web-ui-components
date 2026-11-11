@@ -67,6 +67,8 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
 
   #dirty = false;
 
+  #firstStart = false;
+
   // The relevant attributes the markup was last known to match: at a disconnect, or at construction with content.
   /** @type {string | null} */
   #away = null;
@@ -140,7 +142,9 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
       this.#observer.observe(this, { childList: true, attributes: true });
       this.#started = true;
     }
+    this.#firstStart = !restart;
     this.#restore();
+    this.#firstStart = false;
     this.connect();
     if (restart) this.updated();
   }
@@ -175,7 +179,7 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
     this.#within = this.#enclosing();
     this.#refreshReaders();
     if (this.isConnected) {
-      if (this.#started) this.updated();
+      if (this.#started && !this.#firstStart) this.updated();
       return;
     }
     this.#dirty = false;
@@ -252,7 +256,8 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
 
   /**
    * Hook for listeners and observers. It writes nothing on adoption. It runs just after the element has re-applied,
-   * through their setters, the properties a script set before the element was defined.
+   * through their setters, the properties a script set before the element was defined, and `updated` does not run
+   * for those on the first start.
    */
   connect() {}
 

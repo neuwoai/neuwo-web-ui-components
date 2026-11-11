@@ -157,7 +157,7 @@ describe("JSX runtime in React Server Components", () => {
     expect(message).toContain("<neuwo-radio>");
     expect(message).toContain("<neuwo-radio-group>");
     expect(message).toMatch(/Server Component/);
-    expect(message).toMatch(/same component/);
+    expect(message).toMatch(/same Client Component/);
     expect(error).not.toHaveBeenCalled();
   });
 

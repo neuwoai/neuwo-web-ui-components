@@ -347,6 +347,30 @@ describe("a property set on a light element before it is defined, in jsdom", () 
     expect(shown(el)).toEqual({ disabled: true, busy: "true", loading: true });
   });
 
+  it("runs connect() without an updated() before it when a restored property changes an attribute", async () => {
+    const { NeuwoButton } = await import("../src/components/button/neuwo-button.js");
+    const calls = [];
+    const tag = `early-${++count}-button`;
+    const el = form("").appendChild(document.createElement(tag));
+    el.loading = true;
+    customElements.define(
+      tag,
+      class extends NeuwoButton {
+        connect() {
+          calls.push("connect");
+        }
+        updated() {
+          calls.push("updated");
+        }
+      },
+    );
+    expect(calls).toEqual(["connect"]);
+    expect(shown(el).loading).toBe(true);
+    el.remove();
+    form("").append(el);
+    expect(calls).toEqual(["connect", "connect", "updated"]);
+  });
+
   it("leaves a property with no setter on the element alone", async () => {
     const { tag, define } = await later();
     const el = form("").appendChild(document.createElement(tag));

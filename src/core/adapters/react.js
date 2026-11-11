@@ -391,9 +391,10 @@ function hostFor(tag, template, { markHost, server, readers, dev, warned }) {
     if (!readers.has(reader) || warned.has(key)) return;
     warned.add(key);
     console.warn(
-      `<${reader}> reached <${tag}> already rendered, without its attributes: a Server Component rendered it outside ` +
-        `<${tag}>, as it renders the children it passes to a Client Component. Render <${tag}> and its <${reader}> elements ` +
-        `in the same component.`,
+      `<${reader}> reached <${tag}> already rendered, without its attributes: either a Server Component rendered it ` +
+        `outside <${tag}>, as it renders the children it passes to a Client Component, or it was created with ` +
+        `React.createElement or under another jsxImportSource, so it never passed through this library's JSX runtime. ` +
+        `Render <${tag}> and its <${reader}> elements in the same Client Component, or create them with this library's JSX runtime.`,
     );
   };
   /** @param {Record<string, unknown>} props */

@@ -39,6 +39,11 @@ function drag(control, value) {
   control.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
+// Synchronous act() and microtasks only: happy-dom holds an observer's callback in a WeakRef, which a GC between tasks drops.
+async function settled() {
+  for (let turn = 0; turn < 3; turn++) await Promise.resolve();
+}
+
 const nextTask = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 describe("<neuwo-range>", () => {
@@ -309,15 +314,17 @@ describe("<neuwo-range> under React", () => {
     expect(host).toBeInstanceOf(NeuwoRange);
     expect(fillOf(host)).toBe("20%");
     let root;
-    await act(async () => {
+    act(() => {
       root = hydrateRoot(container, jsx(App, {}));
     });
+    await settled();
     cleanup.push(() => act(() => root.unmount()));
     expect(container.querySelector("neuwo-range")).toBe(host);
-    await act(async () => drag(rangeOf(host), "70"));
+    act(() => drag(rangeOf(host), "70"));
+    await settled();
     expect(fillOf(host)).toBe("70%");
-    await act(async () => setMax(200));
-    await nextTask();
+    act(() => setMax(200));
+    await settled();
     expect(rangeOf(host).value).toBe("70");
     expect(fillOf(host)).toBe("35%");
     expect(errors).not.toHaveBeenCalled();

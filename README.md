@@ -893,7 +893,8 @@ element itself is not form-associated, so each value is submitted once.
 - **`value` is the starting value**, as on a native input. Changing the
   attribute moves an input the user has not edited yet, and `form.reset()`
   returns to it. The `value` property reads and writes what the field shows
-  now and never touches the attribute; `defaultValue` reflects the attribute.
+  now and never touches the attribute; `defaultValue` reads the control's starting value, else the
+  attribute, and sets the attribute.
 - **The inner input's own events** reach your listeners: `input` on every
   keystroke and `change` when the user commits, both bubbling through the
   element. The element dispatches none of its own, so `event.target` is the
