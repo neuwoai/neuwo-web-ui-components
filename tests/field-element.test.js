@@ -5,6 +5,7 @@ import { CONTROLLED } from "../src/core/marks.js";
 import { control, h } from "../src/core/template.js";
 import { NeuwoFieldElement } from "../src/components/fields/field-element.js";
 import { controlAttrs, controlClass, fieldTemplate } from "../src/components/fields/field.template.js";
+import { ancestry } from "./fixtures/ancestry.js";
 
 class TestField extends NeuwoFieldElement {
   static template = (attrs, ctx) =>
@@ -58,8 +59,9 @@ describe("NeuwoFieldElement", () => {
     HTMLElement.prototype.attachInternals = internals;
     cleanup.push(() => delete HTMLElement.prototype.attachInternals);
     const el = make(`<test-field></test-field>`);
-    expect(Object.getPrototypeOf(Object.getPrototypeOf(NeuwoFieldElement))).toBe(NeuwoElement);
-    expect(Object.getPrototypeOf(NeuwoFieldElement)).toBe(NeuwoControlElement);
+    expect(ancestry(NeuwoFieldElement)).toEqual(["NeuwoErrorMixin", "NeuwoDefaultValueMixin", "NeuwoControlElement", "NeuwoElement"]);
+    expect(NeuwoFieldElement.prototype).toBeInstanceOf(NeuwoControlElement);
+    expect(NeuwoFieldElement.prototype).toBeInstanceOf(NeuwoElement);
     expect(el.shadowRoot).toBeNull();
     expect(internals).not.toHaveBeenCalled();
     expect(NeuwoFieldElement.formAssociated).toBeUndefined();

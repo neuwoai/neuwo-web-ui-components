@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Internal: `error`, `error-muted`, `no-error-line` and `noErrorLine` are documented once, on `NeuwoErrorMixin`, which the field base, the checkbox and toggle base, the radio group and the segmented control apply, and `defaultValue` once, on `NeuwoDefaultValueMixin`, which the field base, the radio group and the segmented control apply. The manifest records both mixins and lists those attributes and properties as inherited from them, with one wording for every control, and the generated `.d.ts` types each base as extending them. No attribute, property or JSX type changed.
 - Fixed: an errored `<neuwo-radio-group>` rings only its own radios: a `<neuwo-checkbox>` placed among them, and the radios of a group nested in it that has no error of its own, keep their own colour. The rule still weighs two classes. The error rules of the checkbox and the toggle likewise reach only their own box and track.
 - Fixed: `<neuwo-radio-group>` warns about a missing `name` only when one of its radios has no `name` either, since radios that each carry one are grouped by the browser.
 - Fixed: `<neuwo-segmented>` keeps each option's label on one line, as `<neuwo-button>` does, so an option no longer wraps in a narrow or `white-space: nowrap` container.

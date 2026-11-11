@@ -1,6 +1,8 @@
 import { ownedByReact } from "../../core/element.js";
 import { CONTROLLED } from "../../core/marks.js";
 import { NeuwoControlElement } from "../control-element.js";
+import { NeuwoDefaultValueMixin } from "../default-value-mixin.js";
+import { NeuwoErrorMixin } from "../error-mixin.js";
 
 /**
  * Base for the field controls (input, textarea, combobox, range). The template renders a native control inside
@@ -16,15 +18,12 @@ import { NeuwoControlElement } from "../control-element.js";
  * @attr autocomplete - native autocomplete hint carried onto the control.
  * @attr {sm} size - compact density step for the control, label and error line (default: the standard size when the attribute is absent).
  * @attr label - visible label text rendered above the control, unless a `slot="label"` child replaces it.
- * @attr error - error message; shows the red accent, the message, and aria-invalid.
- * @attr {boolean} error-muted - softens a shown error: drops the border/box-shadow accent while the red message and invalid state stay.
- * @attr {boolean} no-error-line - drop the reserved error message row (for a non-validated control); setting `error` alongside it is a misconfiguration.
  * @fires {Event} input - the value changed as the user typed or moved it; the native control's own `input`, bubbling through the element.
  * @fires {Event} change - the user committed a new value; the native control's own `change`, bubbling through the element.
  * @slot label - rich label content (a help link, a badge, emphasis) replacing the `label` attribute text, inside the associated `<label>`. The required marker still follows it.
  * @cssprop --neuwo-color-blue - brand accent (focus ring); re-theme by setting it on :root.
  */
-export class NeuwoFieldElement extends NeuwoControlElement {
+export class NeuwoFieldElement extends NeuwoErrorMixin(NeuwoDefaultValueMixin(NeuwoControlElement)) {
   static observedAttributes = [
     "name",
     "value",
@@ -63,25 +62,6 @@ export class NeuwoFieldElement extends NeuwoControlElement {
     const control = this.control;
     if (control) control.value = next;
     else this.#pending = next;
-  }
-
-  /**
-   * The starting value: the control's default, which the JSX runtime renders from `defaultValue` without a host
-   * attribute, else the `value` attribute. Setting it sets the attribute.
-   * @returns {string}
-   */
-  get defaultValue() {
-    return this.control?.defaultValue ?? this.getAttribute("value") ?? "";
-  }
-  set defaultValue(value) {
-    this.setAttribute("value", String(value));
-  }
-
-  get noErrorLine() {
-    return this.hasAttribute("no-error-line");
-  }
-  set noErrorLine(value) {
-    this.toggleAttribute("no-error-line", Boolean(value));
   }
 
   get size() {

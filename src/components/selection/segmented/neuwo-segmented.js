@@ -1,6 +1,8 @@
 import { childInfo } from "../../../core/adapters/dom.js";
 import { define, ownedByReact } from "../../../core/element.js";
 import { NeuwoControlElement } from "../../control-element.js";
+import { NeuwoDefaultValueMixin } from "../../default-value-mixin.js";
+import { NeuwoErrorMixin } from "../../error-mixin.js";
 import { OptionWidget } from "../../fields/option-widget.js";
 import { readOptions } from "../../fields/options.js";
 import { segmentedTemplate } from "./segmented.template.js";
@@ -33,15 +35,12 @@ const isShown = (button) => isChecked(button) && !button.disabled;
  * @attr {boolean} disabled - disables every option and removes the control from submission.
  * @attr {boolean} required - an option must be selected for the control to be valid.
  * @attr label - accessible name of the radiogroup.
- * @attr error - error message; shows the red accent, the message, and aria-invalid.
- * @attr {boolean} error-muted - softens a shown error: drops the accent while the red message and invalid state stay.
- * @attr {boolean} no-error-line - drop the reserved error message row (for a non-validated control, such as a toolbar); setting `error` alongside it is a misconfiguration.
  * @fires {Event} input - the user picked a new value; dispatched just before `change`.
  * @fires {Event} change - the user picked a new value.
  * @slot - the `<option>` elements, one per segment.
  * @cssprop --neuwo-color-blue - brand accent (selected option, sliding pill); re-theme by setting it on :root.
  */
-export class NeuwoSegmented extends NeuwoControlElement {
+export class NeuwoSegmented extends NeuwoErrorMixin(NeuwoDefaultValueMixin(NeuwoControlElement)) {
   static template = segmentedTemplate;
   static observedAttributes = ["name", "value", "disabled", "form", "required", "label", "error", "error-muted", "no-error-line"];
 
@@ -105,26 +104,6 @@ export class NeuwoSegmented extends NeuwoControlElement {
     const next = value == null ? "" : String(value);
     if (!this.control) this.#pending = next;
     else this.#widget.assign(next);
-  }
-
-  /**
-   * The starting value: the form value's default, which the JSX runtime renders from `defaultValue` without a host
-   * attribute, else the `value` attribute. Setting it sets the attribute.
-   * @returns {string}
-   */
-  get defaultValue() {
-    return this.control?.defaultValue ?? this.getAttribute("value") ?? "";
-  }
-  /** @param {string} value */
-  set defaultValue(value) {
-    this.setAttribute("value", String(value));
-  }
-
-  get noErrorLine() {
-    return this.hasAttribute("no-error-line");
-  }
-  set noErrorLine(value) {
-    this.toggleAttribute("no-error-line", Boolean(value));
   }
 
   /**

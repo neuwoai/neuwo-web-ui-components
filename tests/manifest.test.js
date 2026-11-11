@@ -136,6 +136,35 @@ describe("custom-elements.json", () => {
     expect(declByName(manifest, "NeuwoControlElement").members.some((member) => member.name === "noErrorLine")).toBe(false);
   });
 
+  it("documents the error attributes and noErrorLine once, on a mixin every base with an error line applies, never the radio", () => {
+    const mixin = declByName(manifest, "NeuwoErrorMixin");
+    expect(mixin.kind).toBe("mixin");
+    expect(mixin.attributes.map((attribute) => attribute.name)).toEqual(["error", "error-muted", "no-error-line"]);
+    expect(mixin.members.map((member) => member.name)).toEqual(["noErrorLine"]);
+    for (const name of ["NeuwoFieldElement", "NeuwoChoiceElement", "NeuwoRadioGroup", "NeuwoSegmented"]) {
+      expect(declByName(manifest, name).mixins?.map((applied) => applied.name), name).toContain("NeuwoErrorMixin");
+    }
+    const declarations = (manifest.modules ?? []).flatMap((mod) => mod.declarations ?? []).filter((declaration) => declaration.kind === "class");
+    for (const declaration of declarations) {
+      for (const item of [...(declaration.attributes ?? []), ...(declaration.members ?? [])].filter(({ name }) => ["error", "error-muted", "no-error-line", "noErrorLine"].includes(name))) {
+        expect(item.inheritedFrom?.name, `${declaration.name} ${item.name}`).toBe("NeuwoErrorMixin");
+      }
+    }
+    expect(declByTag(manifest, "neuwo-radio").mixins).toBeUndefined();
+  });
+
+  it("shares the starting value accessor of the fields, the radio group and the segmented control through one mixin", () => {
+    const mixin = declByName(manifest, "NeuwoDefaultValueMixin");
+    expect(mixin.kind).toBe("mixin");
+    expect(mixin.members.map((member) => member.name)).toEqual(["defaultValue"]);
+    for (const name of ["NeuwoFieldElement", "NeuwoRadioGroup", "NeuwoSegmented"]) {
+      expect(declByName(manifest, name).mixins?.map((applied) => applied.name), name).toContain("NeuwoDefaultValueMixin");
+    }
+    for (const tag of ["neuwo-checkbox", "neuwo-toggle", "neuwo-radio"]) {
+      expect(declByTag(manifest, tag).members.some((member) => member.name === "defaultValue"), tag).toBe(false);
+    }
+  });
+
   it("documents the form attribute once, on the control base, which only the radio restates", () => {
     const own = (name) => declByName(manifest, name).attributes?.find((attribute) => attribute.name === "form" && !attribute.inheritedFrom);
     expect(own("NeuwoControlElement")?.description).toMatch(/id of the form/);

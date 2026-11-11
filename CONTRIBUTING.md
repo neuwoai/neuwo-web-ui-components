@@ -35,11 +35,15 @@ adapters turn into the same markup. Follow `<neuwo-button>`.
    template with `control()` from `src/core/template.js`, so the React adapter maps `value`,
    `defaultValue`, `checked` and `defaultChecked` onto it, and return it from the `control` getter.
    To read an enclosing element's attributes, as a radio reads its group's, set the template's
-   `within` to that tag and read `ctx.within`. Follow the React-owned rules: write nothing to a
-   host `ownedByReact()` reports, and drop a value written while the host carries the `CONTROLLED`
-   mark from `src/core/marks.js`, since React holds it. `connect()` may re-apply a property set
-   before the control rendered, as the field base puts a pending `value` on its control, but not
-   on a host React rendered.
+   `within` to that tag and read `ctx.within`. A control that renders its own error line extends
+   `NeuwoErrorMixin(...)` from `src/components/error-mixin.js`, which documents `error`,
+   `error-muted` and `no-error-line` and adds `noErrorLine`, and lists the three in its
+   `observedAttributes`; one whose `value` attribute is its starting value applies
+   `NeuwoDefaultValueMixin` from `src/components/default-value-mixin.js` too. Follow the
+   React-owned rules: write nothing to a host `ownedByReact()` reports, and drop a value written
+   while the host carries the `CONTROLLED` mark from `src/core/marks.js`, since React holds it.
+   `connect()` may re-apply a property set before the control rendered, as the field base puts a
+   pending `value` on its control, but not on a host React rendered.
 4. Create `src/components/<name>/<name>.css` with prefixed BEM classes (`.neuwo-<block>`,
    `.neuwo-<block>--<modifier>`, `.neuwo-<block>__<element>`), tokens only, and keyframes named
    `neuwo-<name>-*`. The outer box is an element-name rule

@@ -4,6 +4,7 @@ import "../src/index.js";
 import { NeuwoSegmented } from "../src/components/selection/segmented/neuwo-segmented.js";
 import { NeuwoControlElement } from "../src/components/control-element.js";
 import { expand } from "../src/server/index.js";
+import { ancestry } from "./fixtures/ancestry.js";
 
 const cleanup = [];
 afterEach(() => {
@@ -71,7 +72,8 @@ function listen(el) {
 describe("<neuwo-segmented>", () => {
   it("registers a light DOM element on the control base, with no form association", () => {
     expect(customElements.get("neuwo-segmented")).toBe(NeuwoSegmented);
-    expect(Object.getPrototypeOf(NeuwoSegmented)).toBe(NeuwoControlElement);
+    expect(ancestry(NeuwoSegmented)).toEqual(["NeuwoErrorMixin", "NeuwoDefaultValueMixin", "NeuwoControlElement", "NeuwoElement"]);
+    expect(NeuwoSegmented.prototype).toBeInstanceOf(NeuwoControlElement);
     expect(NeuwoSegmented.formAssociated).toBeUndefined();
     const el = make(`<neuwo-segmented label="View">${OPTS}</neuwo-segmented>`);
     expect(el.shadowRoot).toBeNull();

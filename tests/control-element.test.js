@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it } from "vitest";
 import { NeuwoElement } from "../src/core/element.js";
+import { ancestry } from "./fixtures/ancestry.js";
 import { NeuwoControlElement } from "../src/components/control-element.js";
 import { NeuwoFieldElement } from "../src/components/fields/field-element.js";
 import { NeuwoChoiceElement } from "../src/components/selection/choice-element.js";
@@ -30,9 +31,9 @@ function later(base) {
 describe("NeuwoControlElement", () => {
   it("is the light base the fields, the choices and the radio group share", () => {
     expect(Object.getPrototypeOf(NeuwoControlElement)).toBe(NeuwoElement);
-    expect(Object.getPrototypeOf(NeuwoFieldElement)).toBe(NeuwoControlElement);
-    expect(Object.getPrototypeOf(Object.getPrototypeOf(NeuwoChoiceElement))).toBe(NeuwoControlElement);
-    expect(Object.getPrototypeOf(NeuwoRadioGroup)).toBe(NeuwoControlElement);
+    expect(ancestry(NeuwoFieldElement)).toEqual(["NeuwoErrorMixin", "NeuwoDefaultValueMixin", "NeuwoControlElement", "NeuwoElement"]);
+    expect(ancestry(NeuwoChoiceElement)).toEqual(["NeuwoErrorMixin", "NeuwoCheckableElement", "NeuwoControlElement", "NeuwoElement"]);
+    expect(ancestry(NeuwoRadioGroup)).toEqual(["NeuwoErrorMixin", "NeuwoDefaultValueMixin", "NeuwoControlElement", "NeuwoElement"]);
   });
 });
 

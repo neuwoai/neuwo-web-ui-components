@@ -12,6 +12,7 @@ import { CONTROLLED } from "../src/core/marks.js";
 import { expand } from "../src/server/index.js";
 import { jsx, jsxs } from "../src/react/jsx-runtime.js";
 import { createRuntime } from "./fixtures/runtime.js";
+import { ancestry } from "./fixtures/ancestry.js";
 import { templates } from "../src/templates.js";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -65,7 +66,8 @@ describe("<neuwo-radio-group> and <neuwo-radio>", () => {
     expect(customElements.get("neuwo-radio")).toBe(NeuwoRadio);
     expect(customElements.get("neuwo-radio-group")).toBe(NeuwoRadioGroup);
     expect(Object.getPrototypeOf(NeuwoRadio)).toBe(NeuwoCheckableElement);
-    expect(Object.getPrototypeOf(NeuwoRadioGroup)).toBe(NeuwoControlElement);
+    expect(ancestry(NeuwoRadioGroup)).toEqual(["NeuwoErrorMixin", "NeuwoDefaultValueMixin", "NeuwoControlElement", "NeuwoElement"]);
+    expect(NeuwoRadioGroup.prototype).toBeInstanceOf(NeuwoControlElement);
     expect(NeuwoRadioGroup.formAssociated).toBeUndefined();
     const el = make(`<neuwo-radio-group name="plan" label="Plan">${RADIOS}</neuwo-radio-group>`);
     expect(el.shadowRoot).toBeNull();

@@ -5,6 +5,7 @@ import { CONTROLLED } from "../src/core/marks.js";
 import { NeuwoCheckableElement } from "../src/components/selection/checkable-element.js";
 import { NeuwoChoiceElement } from "../src/components/selection/choice-element.js";
 import { NeuwoCheckbox } from "../src/components/selection/checkbox/neuwo-checkbox.js";
+import { ancestry } from "./fixtures/ancestry.js";
 
 class ResetChoice extends NeuwoCheckbox {
   resets = [];
@@ -43,9 +44,10 @@ describe("NeuwoChoiceElement", () => {
     HTMLElement.prototype.attachInternals = internals;
     cleanup.push(() => delete HTMLElement.prototype.attachInternals);
     const el = make(`<neuwo-checkbox>Agree</neuwo-checkbox>`);
-    expect(Object.getPrototypeOf(Object.getPrototypeOf(Object.getPrototypeOf(NeuwoChoiceElement)))).toBe(NeuwoElement);
-    expect(Object.getPrototypeOf(Object.getPrototypeOf(NeuwoChoiceElement))).toBe(NeuwoControlElement);
-    expect(Object.getPrototypeOf(NeuwoChoiceElement)).toBe(NeuwoCheckableElement);
+    expect(ancestry(NeuwoChoiceElement)).toEqual(["NeuwoErrorMixin", "NeuwoCheckableElement", "NeuwoControlElement", "NeuwoElement"]);
+    expect(NeuwoChoiceElement.prototype).toBeInstanceOf(NeuwoCheckableElement);
+    expect(NeuwoChoiceElement.prototype).toBeInstanceOf(NeuwoControlElement);
+    expect(NeuwoChoiceElement.prototype).toBeInstanceOf(NeuwoElement);
     expect(Object.getPrototypeOf(NeuwoCheckbox)).toBe(NeuwoChoiceElement);
     expect(el.shadowRoot).toBeNull();
     expect(internals).not.toHaveBeenCalled();

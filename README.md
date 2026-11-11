@@ -894,7 +894,9 @@ selection controls (`<neuwo-checkbox>`, `<neuwo-toggle>`,
 checkable API under [Checkbox and toggle](#checkbox-and-toggle), the radio
 group and its radios are under [Radio group](#radio-group), and the segmented
 control is under [Segmented control](#segmented-control). The generated
-`.d.ts` shows these on the base class each control `extends`.
+`.d.ts` shows these on the base class each control `extends`, and `noErrorLine`
+and `defaultValue` on the `NeuwoErrorMixin` and `NeuwoDefaultValueMixin` that base
+applies.
 
 `<neuwo-input>`, `<neuwo-textarea>` and `<neuwo-range>` render a native `<input>`
 or `<textarea>` into their own light DOM, and that control is the form control. The element carries `name`, `value`, `required`,
