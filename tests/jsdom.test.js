@@ -371,6 +371,33 @@ describe("a property set on a light element before it is defined, in jsdom", () 
     expect(calls).toEqual(["connect", "connect", "updated"]);
   });
 
+  it("still runs updated() on later changes when a setter throws during the first-start restore", async () => {
+    const { NeuwoButton } = await import("../src/components/button/neuwo-button.js");
+    const calls = [];
+    const tag = `early-${++count}-button`;
+    const el = form("").appendChild(document.createElement(tag));
+    el.loading = true;
+    const swallow = (/** @type {ErrorEvent} */ event) => event.preventDefault();
+    window.addEventListener("error", swallow);
+    cleanup.push(() => window.removeEventListener("error", swallow));
+    customElements.define(
+      tag,
+      class extends NeuwoButton {
+        set loading(value) {
+          throw new Error("setter failed");
+        }
+        get loading() {
+          return false;
+        }
+        updated() {
+          calls.push("updated");
+        }
+      },
+    );
+    el.setAttribute("disabled", "");
+    expect(calls).toEqual(["updated"]);
+  });
+
   it("leaves a property with no setter on the element alone", async () => {
     const { tag, define } = await later();
     const el = form("").appendChild(document.createElement(tag));

@@ -143,8 +143,11 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
       this.#started = true;
     }
     this.#firstStart = !restart;
-    this.#restore();
-    this.#firstStart = false;
+    try {
+      this.#restore();
+    } finally {
+      this.#firstStart = false;
+    }
     this.connect();
     if (restart) this.updated();
   }
@@ -232,7 +235,7 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
 
   /**
    * Reconciles the markup with the attributes and children now, wherever an attribute change would be written at
-   * once: on a started host in the page, then running `updated`, and on rendered markup out of the page, such as a
+   * once: on a started host in the page, then running `updated` unless the first start is re-applying early properties, and on rendered markup out of the page, such as a
    * copy a script made. It does nothing on a host in the page that has not started or is waiting for the document
    * to parse, on one out of the page with no rendered markup, or on one React rendered.
    */

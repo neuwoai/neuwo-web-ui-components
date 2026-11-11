@@ -419,7 +419,7 @@ describe("within in the React adapter", () => {
     expect(message).toMatch(/Server Component/);
     expect(message).toMatch(/React\.createElement/);
     expect(message).toMatch(/jsxImportSource/);
-    expect(message).toMatch(/same Client Component/);
+    expect(message).toMatch(/same component/);
     expect(message).toMatch(/JSX runtime/);
   });
 
