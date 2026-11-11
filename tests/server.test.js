@@ -121,6 +121,54 @@ describe("expand() on real-world markup", () => {
   });
 });
 
+describe("expand() on a paragraph Markdown wrapped around an element", () => {
+  const field = '<neuwo-input name="a"></neuwo-input>';
+
+  it("lifts an element whose markup is block content out of a paragraph that holds only it", () => {
+    const html = expand(`<p>${field}</p>`);
+    expect(html).not.toContain("<p>");
+    expect(html).toMatch(/^<neuwo-input name="a"><div class="neuwo-field">[\s\S]*<\/div><\/neuwo-input>$/);
+    expect(html).toBe(expand(field));
+  });
+
+  it("lifts it when only whitespace sits beside it, keeping what is around the paragraph", () => {
+    const options = "<option>A</option><option>B</option>";
+    const html = `<form>\n<p>\n  <neuwo-combobox name="plan">${options}</neuwo-combobox>\n</p>\n<p>x</p></form>`;
+    expect(expand(html)).toBe(`<form>\n${expand(`<neuwo-combobox name="plan">${options}</neuwo-combobox>`)}\n<p>x</p></form>`);
+  });
+
+  it("lifts every block element in its own paragraph, as blank lines between fields give", () => {
+    const html = expand(`<form><p>${field}</p>\n<p><neuwo-textarea name="b"></neuwo-textarea></p>\n<p><neuwo-range name="c"></neuwo-range></p></form>`);
+    expect(html).not.toContain("<p>");
+    expect(html.match(/class="neuwo-field"/g)).toHaveLength(3);
+  });
+
+  it.each([
+    ["other text", `<p>Text ${field}</p>`],
+    ["a second element", `<p>${field}${field}</p>`],
+    ["a comment", `<p><!-- a -->${field}</p>`],
+  ])("leaves a paragraph that holds %s beside the element", (_, html) => {
+    expect(expand(html)).toMatch(/^<p>/);
+  });
+
+  it.each([
+    ["a badge", "<p>Text <neuwo-badge>x</neuwo-badge></p>"],
+    ["a button", "<p><neuwo-button>Go</neuwo-button></p>"],
+    ["a link button", '<p><neuwo-button href="/x">Go</neuwo-button></p>'],
+  ])("keeps the paragraph around %s, whose markup is phrasing content", (_, html) => {
+    const out = expand(html);
+    expect(out).toMatch(/^<p>/);
+    expect(out).toMatch(/<\/p>$/);
+  });
+
+  it("leaves an element that already holds its markup where it is, and stays idempotent", () => {
+    const once = expand(`<p>${field}</p>`);
+    expect(expand(once)).toBe(once);
+    const served = `<p>${once}</p>`;
+    expect(expand(served)).toBe(served);
+  });
+});
+
 describe("eleventyPlugin()", () => {
   afterEach(() => {
     delete templates["neuwo-t"];

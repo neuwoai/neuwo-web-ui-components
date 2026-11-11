@@ -217,6 +217,10 @@
   nodes across re-renders. Markup React served but has not hydrated yet is adopted as it is when the
   script defines the elements, so a field keeps the starting value that `value` in a Server Component, or
   `defaultValue`, put on its native control, and hydration finds the markup it sent.
+- `expand` replaces a `<p>` that holds nothing but a block component, such as a field, `<neuwo-copy>`,
+  `<neuwo-cta>` or `<neuwo-notice>`, with the expanded component. Markdown wraps a component on a line of
+  its own in a paragraph, and the browser used to move the component's markup out of it, so a form of
+  fields separated by blank lines submitted every value twice.
 - Through the JSX runtime, the native control inside a light DOM component behaves like React's own
   input: `value` and `checked` are controlled, `onChange` on the element fires on every keystroke with
   the native control as `event.target`, and `defaultValue` and `defaultChecked` start an uncontrolled

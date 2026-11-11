@@ -169,6 +169,12 @@ export default function (eleventyConfig) {
 Then link the stylesheet and load `neuwo.js` in your layout as above. For Astro and other Node
 builds, call `expand` on each page's output before it is written.
 
+In Markdown, give a block component, such as a field, `<neuwo-copy>`, `<neuwo-cta>` or
+`<neuwo-notice>`, a line of its own. Markdown wraps such a line in a `<p>`, and a browser closes a
+paragraph at the first block element inside it, which would move the component's markup out of the
+element, so `expand` replaces a paragraph that holds only the component with the component. One that
+shares a paragraph with text stays inside it and breaks.
+
 ### Links
 
 The sheet styles bare `<a>` in prose: brand blue, underlined, deepening to `--neuwo-color-blue-dark`
