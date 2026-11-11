@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { h, has, raw, region } from "../src/core/template.js";
 import { adopt, childInfo, isRendered, reconcile, render } from "../src/core/adapters/dom.js";
 import { renderElement } from "../src/core/adapters/html.js";
@@ -30,6 +30,7 @@ function make(html) {
 
 afterEach(() => {
   for (const container of containers.splice(0)) container.remove();
+  vi.restoreAllMocks();
 });
 
 function watch(host) {
@@ -306,6 +307,34 @@ describe("adopt()", () => {
     for (const host of Array.from(container.children)) adopt(host, field);
     expect(observer.takeRecords()).toHaveLength(0);
     expect(Array.from(container.querySelectorAll("input"), (input) => input.id)).toEqual(["neuwo-s1-input", "neuwo-s2-input"]);
+  });
+
+  it("leaves a duplicated id alone when the library did not mint it, as React's useId ids", () => {
+    const field = (a, ctx) => h("div", { class: "neuwo-f" }, h("label", { class: "neuwo-f__label", for: ctx.id("input") }), h("input", { class: "neuwo-f__input", id: ctx.id("input") }));
+    const react = (prefix) => renderElement("neuwo-f", {}, [], field, () => (suffix) => `${prefix}${suffix}`);
+    const container = make(`<div>${react("neuwo_R_0_-")}${react("neuwo_R_0_-")}${react("my-")}${react("my-")}</div>`);
+    const observer = watch(container);
+    for (const host of Array.from(container.children)) adopt(host, field);
+    expect(observer.takeRecords()).toHaveLength(0);
+    expect(Array.from(container.querySelectorAll("input"), (input) => input.id)).toEqual(["neuwo_R_0_-input", "neuwo_R_0_-input", "my-input", "my-input"]);
+  });
+
+  it("gives a copy fresh ids inside a shadow root, looking each id up rather than listing every id there", () => {
+    const field = (a, ctx) => h("div", { class: "neuwo-f" }, h("label", { class: "neuwo-f__label", for: ctx.id("input") }), h("input", { class: "neuwo-f__input", id: ctx.id("input") }));
+    const outer = make(`<div></div>`);
+    const shadow = outer.attachShadow({ mode: "open" });
+    shadow.innerHTML = renderElement("neuwo-f", {}, [], field, idScope("neuwo-s"));
+    const original = shadow.firstElementChild;
+    adopt(original, field);
+    const copy = original.cloneNode(true);
+    shadow.prepend(copy);
+    const query = vi.spyOn(shadow, "querySelectorAll");
+    adopt(copy, field);
+    expect(query.mock.calls.map(([selector]) => selector)).toEqual(["#neuwo-s1-input"]);
+    const ids = Array.from(shadow.querySelectorAll("input"), (input) => input.id);
+    expect(new Set(ids).size).toBe(2);
+    expect(original.querySelector("input").id).toBe("neuwo-s1-input");
+    expect(copy.querySelector("label").htmlFor).toBe(copy.querySelector("input").id);
   });
 
   it("maps ids afresh when someone else replaced the markup", () => {

@@ -1,6 +1,12 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { act } from "react";
+import { hydrateRoot } from "react-dom/client";
+import { renderToString } from "react-dom/server";
 import "../src/index.js";
 import { expand } from "../src/server/index.js";
+import { jsx } from "../src/react/jsx-runtime.js";
+
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 const REFERENCES = ["for", "aria-describedby", "aria-controls", "aria-labelledby", "aria-activedescendant"];
 const FIELDS =
@@ -10,6 +16,7 @@ const FIELDS =
 const cleanup = [];
 afterEach(() => {
   while (cleanup.length) cleanup.pop()();
+  vi.restoreAllMocks();
 });
 
 function form(html) {
@@ -101,5 +108,33 @@ describe("fields copied with cloneNode(true)", () => {
     for (const copy of copies) copy.setAttribute("error", "Still bad");
     await Promise.resolve();
     expectOwnIds(Array.from(holder.children));
+  });
+});
+
+describe("React roots served without identifierPrefix", () => {
+  it("keep React's ids when the elements adopt them before hydration, with no console.error", async () => {
+    const errors = vi.spyOn(console, "error");
+    const tree = () => jsx("neuwo-input", { name: "email", label: "Email", error: "Bad", defaultValue: "a" });
+    const containers = [0, 1].map(() => {
+      const container = document.createElement("div");
+      container.innerHTML = renderToString(tree());
+      document.body.append(container);
+      cleanup.push(() => container.remove());
+      return container;
+    });
+    const ids = () => containers.map((container) => Array.from(container.querySelectorAll("[id]"), (el) => el.id));
+    const served = ids();
+    expect(served[0]).toEqual(served[1]);
+    expect(served[0][0]).toMatch(/^neuwo_R_/);
+    for (const container of containers) expect(container.firstElementChild).toBeInstanceOf(customElements.get("neuwo-input"));
+    const roots = [];
+    for (const container of containers) {
+      await act(async () => {
+        roots.push(hydrateRoot(container, tree()));
+      });
+    }
+    cleanup.push(() => roots.forEach((root) => act(() => root.unmount())));
+    expect(ids()).toEqual(served);
+    expect(errors).not.toHaveBeenCalled();
   });
 });

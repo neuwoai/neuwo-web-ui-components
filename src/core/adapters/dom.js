@@ -33,6 +33,8 @@ const SVG = "http://www.w3.org/2000/svg";
 const ELEMENT = 1;
 const TEXT = 3;
 const REFERENCES = ["id", "for", "aria-describedby", "aria-controls", "aria-labelledby", "aria-activedescendant"];
+// The HTML and DOM adapters mint ids as neuwo-s1- and neuwo-c1-; React's useId ones are React's to keep unique.
+const MINTED = /^neuwo-[cs]\d+-/;
 
 const newIds = idScope("neuwo-c");
 /** @type {WeakMap<Element, HostState>} */
@@ -284,24 +286,19 @@ function rename(state, el, fresh) {
 }
 
 /**
- * Gives each adopted template id that another element in the host's root also has, as on a copy made with
+ * Gives each adopted id the library minted that another element in the host's root also has, as on a copy made with
  * `cloneNode`, the id the host issued for it, and points every reference to it there too.
  * @param {Element} host
  * @param {HostState} state
  */
 function separateIds(host, state) {
   if (!state.ids.size || !state.root) return;
-  const taken = new Set(state.ids.values());
-  /** @type {Map<string, number>} */
-  const counts = new Map();
-  for (const el of Array.from(/** @type {ParentNode} */ (host.getRootNode()).querySelectorAll("[id]"))) {
-    const id = el.getAttribute("id") ?? "";
-    if (taken.has(id)) counts.set(id, (counts.get(id) ?? 0) + 1);
-  }
+  const scope = /** @type {ParentNode} */ (host.getRootNode());
   /** @type {Map<string, string>} */
   const fresh = new Map();
   for (const [issued, existing] of state.ids) {
-    if ((counts.get(existing) ?? 0) < 2) continue;
+    // getElementById finds only the first, which is the host's own when a copy goes before its original.
+    if (!MINTED.test(existing) || scope.querySelectorAll(`#${CSS.escape(existing)}`).length < 2) continue;
     fresh.set(existing, issued);
     state.ids.delete(issued);
   }

@@ -209,7 +209,9 @@
 - A copy of a rendered field made with `cloneNode(true)` gets ids of its own when it is inserted, and its
   label, `aria-describedby`, `aria-controls`, `aria-labelledby` and `aria-activedescendant` follow them, so
   the copy's label focuses the copy's control instead of the original's. Any light DOM element that adopts
-  markup whose ids another element in the same document or shadow root already has does the same.
+  markup whose ids another element in the same document or shadow root already has does the same, for the ids
+  `expand` and the elements write (`neuwo-s1-...`, `neuwo-c1-...`). Ids React's `useId` made are left as React
+  wrote them, so hydration still finds them.
 - An attribute a script sets on, or removes from, a copy of a light DOM element made with `cloneNode(true)`
   before inserting it, such as a new `name` or a cleared `error` on an "add another" row, reaches the copy's
   markup when it is inserted; it used to be lost until the next change.
