@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Window } from "happy-dom";
-import { act } from "react";
-import { createRoot } from "react-dom/client";
+import { act, useState } from "react";
+import { createRoot, hydrateRoot } from "react-dom/client";
 import { renderToString } from "react-dom/server";
 import "../src/index.js";
 import { NeuwoRange } from "../src/components/fields/range/neuwo-range.js";
@@ -182,6 +182,16 @@ describe("<neuwo-range>", () => {
   it("drops the reserved error line on request", () => {
     expect(make(`<neuwo-range no-error-line></neuwo-range>`).querySelector(".neuwo-field__error")).toBeNull();
   });
+
+  it("shows the live fill of served markup whose thumb moved before the element adopted it", () => {
+    const holder = document.createElement("div");
+    holder.innerHTML = expand(`<neuwo-range name="v" min="0" max="100" value="20"></neuwo-range>`);
+    const control = holder.querySelector(".neuwo-range");
+    control.value = "80";
+    attach(holder);
+    expect(control.value).toBe("80");
+    expect(control.style.getPropertyValue("--neuwo-range-fill")).toBe("80%");
+  });
 });
 
 describe("<neuwo-range> under React", () => {
@@ -281,6 +291,35 @@ describe("<neuwo-range> under React", () => {
     await rerender(tree("b"));
     expect(rangeOf(host).name).toBe("b");
     expect(rangeOf(host).value).toBe("70");
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it("keeps the live fill after a bound change on markup it adopted before React hydrated it", async () => {
+    const errors = vi.spyOn(console, "error");
+    let setMax;
+    function App() {
+      const [max, set] = useState(100);
+      setMax = set;
+      return jsx("neuwo-range", { min: 0, max, defaultValue: 20 });
+    }
+    const container = document.createElement("div");
+    container.innerHTML = renderToString(jsx(App, {}));
+    attach(container);
+    const host = container.querySelector("neuwo-range");
+    expect(host).toBeInstanceOf(NeuwoRange);
+    expect(fillOf(host)).toBe("20%");
+    let root;
+    await act(async () => {
+      root = hydrateRoot(container, jsx(App, {}));
+    });
+    cleanup.push(() => act(() => root.unmount()));
+    expect(container.querySelector("neuwo-range")).toBe(host);
+    await act(async () => drag(rangeOf(host), "70"));
+    expect(fillOf(host)).toBe("70%");
+    await act(async () => setMax(200));
+    await nextTask();
+    expect(rangeOf(host).value).toBe("70");
+    expect(fillOf(host)).toBe("35%");
     expect(errors).not.toHaveBeenCalled();
   });
 

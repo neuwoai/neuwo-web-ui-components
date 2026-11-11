@@ -55,15 +55,16 @@ export class NeuwoRange extends NeuwoFieldElement {
     this.addEventListener("input", this.#onInput);
     this.#bindForm();
     const control = this.control;
-    if (control && ownedByReact(this) && Reflect.get(this, CONTROLLED) !== true) {
-      this.#styleObserver = new MutationObserver(() => this.#syncFill());
-      this.#styleObserver.observe(control, { attributes: true, attributeFilter: ["style"] });
-    }
+    if (!ownedByReact(this)) this.#syncFill();
+    // Every host watches, since React can hydrate one after it connected and then write the template's fill back.
+    this.#styleObserver ??= new MutationObserver(() => {
+      if (ownedByReact(this)) this.#syncFill();
+    });
+    if (control) this.#styleObserver.observe(control, { attributes: true, attributeFilter: ["style"] });
   }
 
   disconnect() {
     this.#styleObserver?.disconnect();
-    this.#styleObserver = null;
     this.removeEventListener("input", this.#onInput);
     this.#form?.removeEventListener("reset", this.#onReset);
     this.#form = null;

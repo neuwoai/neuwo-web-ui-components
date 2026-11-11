@@ -55,7 +55,8 @@
 - The filled part of a range track is in the first paint. The template writes `--neuwo-range-fill` onto
   the input from `min`, `max` and `value`, so server-rendered markup shows it in WebKit and Blink before the
   script loads; it used to be written by script and the track was unfilled until then. The element keeps it
-  current when the thumb moves, the value is set, a bound changes and the form resets.
+  current when the thumb moves, the value is set, a bound changes and the form resets, in markup React
+  hydrated too, and it shows a value the browser restored, or the user set, before the script loaded.
 - Breaking: `<neuwo-combobox>` renders into its own light DOM from one template, with its recipe,
   `components/fields/combobox/combobox.css`, in `neuwo-components.css`, so a server-rendered combobox shows
   its trigger and selected label from the first paint. Its classes are prefixed: `.combobox` is now
