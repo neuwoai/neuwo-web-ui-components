@@ -169,11 +169,13 @@ export default function (eleventyConfig) {
 Then link the stylesheet and load `neuwo.js` in your layout as above. For Astro and other Node
 builds, call `expand` on each page's output before it is written.
 
-In Markdown, give a block component, such as a field, `<neuwo-copy>`, `<neuwo-cta>` or
-`<neuwo-notice>`, a line of its own. Markdown wraps such a line in a `<p>`, and a browser closes a
-paragraph at the first block element inside it, which would move the component's markup out of the
-element, so `expand` replaces a paragraph that holds only the component with the component. One that
-shares a paragraph with text stays inside it and breaks.
+In Markdown, keep a block component, such as a field, `<neuwo-copy>`, `<neuwo-cta>` or
+`<neuwo-notice>`, out of paragraphs of text. Markdown wraps a component on its own line, or a run of
+them on consecutive lines, in a `<p>`, and a browser closes a paragraph at the first block element
+inside it, which would move the component's markup out of the element. So `expand` replaces a
+paragraph that holds only block components, whitespace and comments with what it holds, dropping the
+paragraph's own attributes. A block component that shares a paragraph with text or an inline element
+stays inside it and breaks.
 
 ### Links
 
@@ -569,7 +571,9 @@ value props:
 - `onBlur` gets the trigger as `event.target`, and while the blur is dispatched the trigger's
   `name` reads as the field's, so React Hook Form's `register` marks the combobox touched and
   validates it in `mode: "onBlur"`, as it does a native `<select>`. The trigger has no `name`
-  attribute and submits nothing.
+  attribute and submits nothing. A script that reads `name` properties during that blur, such as
+  jQuery's `serializeArray()` in a `focusout` handler, sees a `searchable` combobox twice;
+  `FormData` does not.
 - `value` makes it controlled: it shows whatever your state says, so a pick your handler ignores
   is never shown. A `value` that names no enabled option resolves as the `value` attribute does:
   to the first enabled option marked `selected`, else to nothing, which shows the placeholder and

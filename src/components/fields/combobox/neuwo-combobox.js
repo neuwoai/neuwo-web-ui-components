@@ -539,10 +539,7 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   };
 
   /**
-   * Lends the trigger the field's `name` while a blur or focusout from it is dispatched, so a form library that
-   * finds the field by `event.target.name`, as React Hook Form's `register` does, finds this one. The trigger
-   * gains no `name` attribute and reads as nameless at any other time, so a script that serialises a form from
-   * its controls' `name` properties never counts the searchable trigger.
+   * Form libraries find a blurred field by `event.target.name`, so the trigger reads as named for that dispatch only.
    * @param {FocusEvent} event
    */
   #lendName = (event) => {

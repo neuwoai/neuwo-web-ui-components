@@ -131,10 +131,10 @@ describe("expand() on a paragraph Markdown wrapped around an element", () => {
     expect(html).toBe(expand(field));
   });
 
-  it("lifts it when only whitespace sits beside it, keeping what is around the paragraph", () => {
+  it("lifts it when only whitespace sits beside it, keeping that whitespace and what is around the paragraph", () => {
     const options = "<option>A</option><option>B</option>";
     const html = `<form>\n<p>\n  <neuwo-combobox name="plan">${options}</neuwo-combobox>\n</p>\n<p>x</p></form>`;
-    expect(expand(html)).toBe(`<form>\n${expand(`<neuwo-combobox name="plan">${options}</neuwo-combobox>`)}\n<p>x</p></form>`);
+    expect(expand(html)).toBe(`<form>\n\n  ${expand(`<neuwo-combobox name="plan">${options}</neuwo-combobox>`)}\n\n<p>x</p></form>`);
   });
 
   it("lifts every block element in its own paragraph, as blank lines between fields give", () => {
@@ -143,11 +143,29 @@ describe("expand() on a paragraph Markdown wrapped around an element", () => {
     expect(html.match(/class="neuwo-field"/g)).toHaveLength(3);
   });
 
+  it("lifts a run of block elements Markdown put in one paragraph, from fields on consecutive lines", () => {
+    const run = `${field}\n<neuwo-textarea name="b"></neuwo-textarea>`;
+    const html = expand(`<form>\n<p>${run}</p>\n</form>`);
+    expect(html).not.toContain("<p>");
+    expect(html).toBe(expand(`<form>\n${run}\n</form>`));
+    expect(html.match(/class="neuwo-field"/g)).toHaveLength(2);
+    expect(expand(html)).toBe(html);
+  });
+
+  it("lifts block elements with a comment beside them, keeping the comment", () => {
+    expect(expand(`<p><!-- a -->${field}</p>`)).toBe(expand(`<!-- a -->${field}`));
+  });
+
+  it("drops the paragraph's own attributes with it", () => {
+    expect(expand(`<p class="x">${field}</p>`)).toBe(expand(field));
+  });
+
   it.each([
     ["other text", `<p>Text ${field}</p>`],
-    ["a second element", `<p>${field}${field}</p>`],
-    ["a comment", `<p><!-- a -->${field}</p>`],
-  ])("leaves a paragraph that holds %s beside the element", (_, html) => {
+    ["a non-breaking space", `<p>&nbsp;${field}</p>`],
+    ["an inline element", `<p><b>x</b>${field}</p>`],
+    ["a component whose markup is phrasing content", `<p>${field}<neuwo-badge>x</neuwo-badge></p>`],
+  ])("leaves a paragraph that holds %s beside the block elements", (_, html) => {
     expect(expand(html)).toMatch(/^<p>/);
   });
 

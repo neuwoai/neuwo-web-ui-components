@@ -82,19 +82,25 @@ function isRendered(el, template) {
 }
 
 /**
- * The registered element a `<p>` holds alone, whitespace aside, when its markup is not phrasing content. A browser's
- * parser closes the paragraph at that markup and moves it out of the element, so the element is lifted out instead.
+ * @param {Page} page
+ * @param {ChildNode} node
+ * @returns {boolean}
+ */
+function isBlockElement(page, node) {
+  if (!isElement(node) || !Object.hasOwn(page.registry, node.name)) return false;
+  const template = page.registry[node.name];
+  return !isRendered(node, template) && !PHRASING.has(template({ ...node.attribs }, { id: (suffix) => suffix, children: [] }).tag);
+}
+
+/**
+ * A browser closes a `<p>` at block markup and moves it out of its element, so a paragraph of only such elements goes.
  * @param {Page} page
  * @param {Element} p
- * @returns {Element | null}
+ * @returns {boolean}
  */
 function liftable(page, p) {
-  const content = p.children.filter((child) => !isText(child) || /[^\t\n\f\r ]/.test(child.data));
-  const [el] = content;
-  if (content.length !== 1 || !isElement(el) || !Object.hasOwn(page.registry, el.name)) return null;
-  const template = page.registry[el.name];
-  if (isRendered(el, template)) return null;
-  return PHRASING.has(template({ ...el.attribs }, { id: (suffix) => suffix, children: [] }).tag) ? null : el;
+  const ignorable = (/** @type {ChildNode} */ node) => node.type === ElementType.Comment || (isText(node) && !/[^\t\n\f\r ]/.test(node.data));
+  return p.children.some(isElement) && p.children.every((child) => ignorable(child) || isBlockElement(page, child));
 }
 
 /**
@@ -135,12 +141,8 @@ function visit(page, nodes, limit, emit) {
     if (!isElement(node) || OPAQUE.has(node.name)) return;
     const next = i + 1 < nodes.length ? startOf(page.html, nodes[i + 1]) : limit;
     const { start, content, end } = span(page.html, node, next);
-    const lifted = node.name === "p" ? liftable(page, node) : null;
-    if (lifted) {
-      const at = node.children.indexOf(lifted);
-      const until = at + 1 < node.children.length ? startOf(page.html, node.children[at + 1]) : content;
-      emit(start, end, expandElement(page, lifted, span(page.html, lifted, until).content));
-    } else if (!Object.hasOwn(page.registry, node.name)) visit(page, node.children, content, emit);
+    if (node.name === "p" && liftable(page, node)) emit(start, end, rewrite(page, node.children, startOf(page.html, node.children[0]), content));
+    else if (!Object.hasOwn(page.registry, node.name)) visit(page, node.children, content, emit);
     else if (!isRendered(node, page.registry[node.name])) emit(start, end, expandElement(page, node, content));
   });
 }
@@ -165,8 +167,8 @@ function rewrite(page, nodes, from, to) {
 /**
  * Expands every registered `<neuwo-*>` element in an HTML document in place. Elements that already hold their
  * rendered markup, and anything inside `<template>`, `<script>`, `<style>` or `<textarea>`, are left alone, as
- * is every byte outside the elements it expands, but one: a `<p>` that holds nothing but an element whose markup
- * is block content, as Markdown writes around an element on its own line, is replaced by the expanded element.
+ * is every byte outside the elements it expands, but one: a `<p>` that holds nothing but elements whose markup is
+ * block content, whitespace and comments, as Markdown writes around such elements, is replaced by what it holds.
  * @param {string} html
  * @param {Record<string, Template>} [registry]
  * @returns {string}
