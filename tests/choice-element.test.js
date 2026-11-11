@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { NeuwoElement } from "../src/core/element.js";
+import { NeuwoControlElement } from "../src/components/control-element.js";
 import { CONTROLLED } from "../src/core/marks.js";
 import { NeuwoChoiceElement } from "../src/components/selection/choice-element.js";
 import { NeuwoCheckbox } from "../src/components/selection/checkbox/neuwo-checkbox.js";
@@ -41,7 +42,8 @@ describe("NeuwoChoiceElement", () => {
     HTMLElement.prototype.attachInternals = internals;
     cleanup.push(() => delete HTMLElement.prototype.attachInternals);
     const el = make(`<neuwo-checkbox>Agree</neuwo-checkbox>`);
-    expect(Object.getPrototypeOf(NeuwoChoiceElement)).toBe(NeuwoElement);
+    expect(Object.getPrototypeOf(Object.getPrototypeOf(NeuwoChoiceElement))).toBe(NeuwoElement);
+    expect(Object.getPrototypeOf(NeuwoChoiceElement)).toBe(NeuwoControlElement);
     expect(Object.getPrototypeOf(NeuwoCheckbox)).toBe(NeuwoChoiceElement);
     expect(el.shadowRoot).toBeNull();
     expect(internals).not.toHaveBeenCalled();

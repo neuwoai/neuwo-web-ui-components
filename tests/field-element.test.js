@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { NeuwoElement } from "../src/core/element.js";
+import { NeuwoControlElement } from "../src/components/control-element.js";
 import { CONTROLLED } from "../src/core/marks.js";
 import { control, h } from "../src/core/template.js";
 import { NeuwoFieldElement } from "../src/components/fields/field-element.js";
@@ -57,7 +58,8 @@ describe("NeuwoFieldElement", () => {
     HTMLElement.prototype.attachInternals = internals;
     cleanup.push(() => delete HTMLElement.prototype.attachInternals);
     const el = make(`<test-field></test-field>`);
-    expect(Object.getPrototypeOf(NeuwoFieldElement)).toBe(NeuwoElement);
+    expect(Object.getPrototypeOf(Object.getPrototypeOf(NeuwoFieldElement))).toBe(NeuwoElement);
+    expect(Object.getPrototypeOf(NeuwoFieldElement)).toBe(NeuwoControlElement);
     expect(el.shadowRoot).toBeNull();
     expect(internals).not.toHaveBeenCalled();
     expect(NeuwoFieldElement.formAssociated).toBeUndefined();

@@ -37,6 +37,9 @@
   and `title` are still copied, and a later change or removal now reaches the inner checkbox too.
 - The transition on the box of `<neuwo-checkbox>` now stops under `prefers-reduced-motion: reduce`, as
   the toggle's already did.
+- A property a script sets on a field, a checkbox or a toggle before its element is defined, such as
+  `checked` or `value` from an inline script on a page whose module is deferred, now reaches the element
+  when it is defined; it used to hide the element's own property and never reach the control.
 - Through the JSX runtime, `<neuwo-checkbox>` and `<neuwo-toggle>` behave like React's own checkbox:
   `checked` makes one controlled, `defaultChecked` starts an uncontrolled one, and `onChange` fires on
   every click with the inner checkbox as `event.target`. The JSX types give an element with a `checked`
