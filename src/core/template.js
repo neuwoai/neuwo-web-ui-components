@@ -15,12 +15,14 @@
  * adapters rely on this to tell template markup from author content: a wrapper's children are the author's,
  * every other node under the root is the template's. A template may name a tag as its `within`: every adapter then
  * hands it, as `ctx.within`, the attributes of the nearest enclosing element of that tag, never the host, or null.
+ * Through React the enclosing host passes them down through elements, fragments, `Suspense` and other Neuwo hosts,
+ * but not into a component of the app's own, whose output it cannot see, so a reader there gets null.
  * @typedef {((attrs: Record<string, string>, ctx: TemplateContext) => TemplateNode) & { within?: string }} Template
  */
 
 export const DEFAULT_REGION = "default";
 
-const NOT_ATTRIBUTES = new Set(["children", "key", "ref", "className", "style"]);
+const NOT_ATTRIBUTES = new Set(["children", "key", "ref", "className", "style", "__neuwoWithin"]);
 
 /**
  * @param {unknown[]} children

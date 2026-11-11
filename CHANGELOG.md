@@ -222,9 +222,10 @@
   runs after every reconcile and after every reconnect, but not after the first render or adoption, to
   re-apply live state the template cannot know.
 - A component template can name an enclosing tag as its `within` to read the attributes of the nearest such
-  element: in `expand`, in the browser, and through the JSX runtime, where the element must be its direct
-  child. `renderElement` takes them as an optional last argument, and an element refreshes the descendants
-  that read it when it changes.
+  element: in `expand`, in the browser, and through the JSX runtime, which reaches it through elements,
+  fragments, `Suspense` and other Neuwo elements but not inside a component of your own, and warns about
+  that in development. `renderElement` takes them as an optional last argument, and an element refreshes
+  the descendants that read it when it changes.
 - `components/reset.css`, the reset for the light DOM components, is published and leads the component
   styles in `neuwo-components.css`.
 - Page element rules such as `button { text-transform: uppercase }`, `span { line-height: 3 }` or

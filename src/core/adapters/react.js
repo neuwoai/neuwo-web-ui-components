@@ -85,14 +85,31 @@ function flatten(children, prefix = "", out = []) {
 }
 
 /**
- * @param {ReactNode} item
+ * @param {AnyElement} el
+ * @returns {boolean}
+ */
+const isTransparent = (el) =>
+  typeof el.type === "string" || el.type === Fragment || el.type === React.Suspense || (typeof el.type === "function" && hostTags.has(el.type));
+
+/**
+ * @param {ReactNode} node
  * @param {string} tag
  * @param {Within} within
  * @returns {ReactNode}
  */
-function lend(item, tag, within) {
-  const el = asElement(item);
-  return el && typeof el.type === "function" && hostWithin.get(el.type) === tag ? cloneElement(el, { __neuwoWithin: within }) : item;
+function lend(node, tag, within) {
+  if (Array.isArray(node)) {
+    const lent = node.map((child) => lend(child, tag, within));
+    return lent.some((child, index) => child !== node[index]) ? lent : node;
+  }
+  const el = asElement(node);
+  if (!el) return node;
+  const reads = typeof el.type === "function" && hostWithin.get(el.type) === tag;
+  const own = /** @type {ReactNode} */ (el.props.children);
+  const children = tagOf(el) !== tag && isTransparent(el) ? lend(own, tag, within) : own;
+  // Passed as arguments, the children keep the key check their static array had, which a clone would reset.
+  if (children !== own) return cloneElement(el, reads ? { __neuwoWithin: within } : null, ...(Array.isArray(children) ? children : [children]));
+  return reads ? cloneElement(el, { __neuwoWithin: within }) : node;
 }
 
 /**
@@ -286,8 +303,9 @@ function takeHandlers(props) {
  * @param {unknown} authorRef
  * @param {boolean} controlled
  * @param {Record<string, (event: Event) => void>} handlers
+ * @param {((el: Element) => void) | null} mounted
  */
-function useMark(authorRef, controlled, handlers) {
+function useMark(authorRef, controlled, handlers, mounted) {
   const latest = React.useRef(handlers);
   React.useLayoutEffect(() => {
     latest.current = handlers;
@@ -298,6 +316,7 @@ function useMark(authorRef, controlled, handlers) {
     (el) => {
       Reflect.set(el, REACT, true);
       Reflect.set(el, CONTROLLED, controlled);
+      mounted?.(el);
       const unbind = names
         .split(" ")
         .filter(Boolean)
@@ -316,17 +335,27 @@ function useMark(authorRef, controlled, handlers) {
         else pass(authorRef, null);
       };
     },
-    [authorRef, controlled, names],
+    [authorRef, controlled, names, mounted],
   );
 }
 
 /**
  * @param {string} tag
  * @param {Template} template
- * @param {{ markHost: boolean, server: boolean, provider: boolean }} options `provider` when another template names
- *   this tag as its `within`.
+ * @param {{ markHost: boolean, server: boolean, provider: boolean, dev: boolean, warned: Set<string> }} options
+ *   `provider` when another template names this tag as its `within`; `warned` holds the tags warned about once.
  */
-function hostFor(tag, template, { markHost, server, provider }) {
+function hostFor(tag, template, { markHost, server, provider, dev, warned }) {
+  const { within: enclosing } = template;
+  /** @param {Element} el */
+  const unlent = (el) => {
+    if (warned.has(tag) || !el.parentElement?.closest(enclosing)) return;
+    warned.add(tag);
+    console.warn(
+      `<${tag}> is inside <${enclosing}> but was rendered without its attributes: a component of your own stands between ` +
+        `them, and the JSX runtime cannot see into it. Render <${tag}> inside <${enclosing}> through elements, fragments or Suspense.`,
+    );
+  };
   /** @param {Record<string, unknown>} props */
   function NeuwoHost(props) {
     const { __neuwoWithin, defaultValue, defaultChecked, ...host } = props;
@@ -337,10 +366,10 @@ function hostFor(tag, template, { markHost, server, provider }) {
     const node = template(attrs, { id: (suffix) => scope + suffix, children: describe(items), within: within?.attrs ?? null });
     // An enclosing element such as a radio group holds a value its template has no control for.
     const controlled = !server && (provider ? props.value != null : isControlled(props, controlOf(node)));
-    const mark = markHost && { ref: useMark(props.ref, controlled, takeHandlers(host)) };
+    const mark = markHost && { ref: useMark(props.ref, controlled, takeHandlers(host), dev && enclosing && !within ? unlent : null) };
     const blocks = blocksOf(node);
     const lent = provider && { attrs, controlled, hasOnChange: typeof props.onChange === "function" };
-    const placed = lent ? items.map((item) => lend(item, tag, lent)) : items;
+    const placed = lent ? /** @type {ReactNode[]} */ (lend(items, tag, lent)) : items;
     const root = toReact(node, distribute(node, placed, slotOf), blocks, keyOf(node, blocks, 0), { host: props, controlled });
     // A field assigns a value it is handed to its live control, which would overwrite what the user typed.
     if (server || host.value == null) delete host.value;
@@ -354,19 +383,22 @@ function hostFor(tag, template, { markHost, server, provider }) {
 
 /**
  * @param {Record<string, Template>} registry
- * @param {{ markHost?: boolean, server?: boolean }} [options] `server` renders for React Server Components: no form
- *   control is controlled, the element itself gets no `value` or `checked`, and the adapter adds no function prop.
+ * @param {{ markHost?: boolean, server?: boolean, dev?: boolean }} [options] `server` renders for React Server
+ *   Components: no form control is controlled, the element itself gets no `value` or `checked`, and the adapter adds
+ *   no function prop. `dev` warns once per tag when a reader mounts inside its `within` element without its attributes.
  * @returns {{ jsx: typeof reactJsx, jsxs: typeof reactJsxs, jsxDEV: typeof reactJsxDEV }}
  */
-export function createRuntime(registry, { markHost = true, server = false } = {}) {
+export function createRuntime(registry, { markHost = true, server = false, dev = false } = {}) {
   /** @type {Map<string, ReturnType<typeof hostFor>>} */
   const hosts = new Map();
   const providers = new Set(Object.values(registry).flatMap((template) => template.within ?? []));
+  /** @type {Set<string>} */
+  const warned = new Set();
   /** @param {ElementType} type */
   const resolve = (type) => {
     if (typeof type !== "string" || !Object.hasOwn(registry, type)) return type;
     let host = hosts.get(type);
-    if (!host) hosts.set(type, (host = hostFor(type, registry[type], { markHost, server, provider: providers.has(type) })));
+    if (!host) hosts.set(type, (host = hostFor(type, registry[type], { markHost, server, provider: providers.has(type), dev, warned })));
     return host;
   };
   return {

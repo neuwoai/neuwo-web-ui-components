@@ -32,5 +32,8 @@ export function boxTemplate(attrs, ctx) {
 }
 boxTemplate.within = "x-box";
 
+/** @param {Record<string, string>} attrs */
+export const wrapTemplate = (attrs) => h("div", { class: "x-wrap" }, region());
+
 /** @type {Record<string, Template>} */
-export const withinTemplates = { "x-group": groupTemplate, "x-item": itemTemplate, "x-box": boxTemplate };
+export const withinTemplates = { "x-group": groupTemplate, "x-item": itemTemplate, "x-box": boxTemplate, "x-wrap": wrapTemplate };

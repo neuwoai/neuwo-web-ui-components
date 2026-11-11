@@ -1,4 +1,8 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { Suspense, act } from "react";
+import { hydrateRoot } from "react-dom/client";
+import { renderToString } from "react-dom/server";
+import { createRuntime } from "../src/core/adapters/react.js";
 import { NeuwoElement, define } from "../src/core/element.js";
 import { expand } from "../src/server/index.js";
 import { boxTemplate, groupTemplate, itemTemplate, withinTemplates } from "./fixtures/within.js";
@@ -26,10 +30,13 @@ define("x-group", XGroup);
 define("x-item", XItem);
 define("x-box", XBox);
 
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
 /** @type {Array<() => void>} */
 const cleanup = [];
 afterEach(() => {
   while (cleanup.length) cleanup.pop()();
+  vi.restoreAllMocks();
 });
 
 /** @param {string} html */
@@ -172,6 +179,39 @@ describe("an element whose template reads its enclosing element (within)", () =>
       delete document.readyState;
       document.dispatchEvent(new Event("DOMContentLoaded"));
       expect(shown(holder)).toEqual(["size=l"]);
+    });
+  });
+
+  describe("React output revealed from a Suspense boundary before hydration", () => {
+    it("writes nothing when the reader moves from its hidden container into the group, and hydrates with no error", async () => {
+      const errors = vi.spyOn(console, "error");
+      const { jsx } = createRuntime(withinTemplates);
+      const tree = () => jsx("x-group", { name: "size", value: "m", onChange() {}, children: jsx(Suspense, { children: jsx("x-item", { children: "Medium" }) }) });
+      const parsed = document.createElement("div");
+      parsed.innerHTML = renderToString(tree());
+      const item = parsed.querySelector("x-item");
+      const end = /** @type {ChildNode} */ (item.nextSibling);
+      expect(end.nodeType).toBe(Node.COMMENT_NODE);
+      item.remove();
+      const container = mount("");
+      container.append(...parsed.childNodes);
+      const parked = mount("");
+      parked.hidden = true;
+      parked.append(item);
+      expect(shown(item)).toEqual(["size=m"]);
+      const observer = watch(item);
+      end.before(item);
+      expect(observer.takeRecords().map(describeRecord)).toEqual([]);
+      expect(shown(container)).toEqual(["size=m"]);
+      const recoverable = [];
+      let root;
+      await act(async () => {
+        root = hydrateRoot(container, tree(), { onRecoverableError: (thrown) => void recoverable.push(String(thrown?.message ?? thrown)) });
+      });
+      cleanup.push(() => act(() => root.unmount()));
+      expect(recoverable).toEqual([]);
+      expect(errors).not.toHaveBeenCalled();
+      expect(container.querySelector("x-item")).toBe(item);
     });
   });
 });

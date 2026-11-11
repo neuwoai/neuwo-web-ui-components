@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { Fragment, act, useState } from "react";
+import { Fragment, Suspense, act, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { renderToStaticMarkup, renderToString } from "react-dom/server";
 import { adopt, reconcile, render } from "../src/core/adapters/dom.js";
@@ -80,12 +80,67 @@ function mount(html) {
   return container;
 }
 
-/** @param {Spec} spec */
-function viaDom(spec) {
-  const container = mount(markup(spec));
-  for (const host of Array.from(container.querySelectorAll("x-group, x-item, x-box"))) render(host, withinTemplates[host.localName]);
+/** @param {string} html */
+function viaDom(html) {
+  const container = mount(html);
+  for (const host of Array.from(container.querySelectorAll(Object.keys(withinTemplates).join(",")))) render(host, withinTemplates[host.localName]);
   return container.innerHTML;
 }
+
+/** @typedef {{ jsx: Function, jsxs: Function }} Factories */
+/**
+ * @param {Factories} create
+ * @param {string} [label]
+ * @param {string} [key]
+ */
+const reader = (create, label = "One", key = undefined) => create.jsx("x-item", { children: label }, key);
+
+/**
+ * Where a reader sits inside `<x-group name="size" value="m">`, as markup and as React children, with what each
+ * reader shows.
+ * @type {Array<[string, string, (create: Factories) => unknown, string[]]>}
+ */
+const WRAPPERS = [
+  ["directly", `<x-item>One</x-item>`, (create) => reader(create), ["size=m"]],
+  ["in a <div>", `<div class="w"><x-item>One</x-item></div>`, (create) => create.jsx("div", { className: "w", children: reader(create) }), ["size=m"]],
+  ["in a <label>", `<label><x-item>One</x-item></label>`, (create) => create.jsx("label", { children: reader(create) }), ["size=m"]],
+  [
+    "in a <label> beside text, with no keys",
+    `<label><x-item>A</x-item> or <x-item>B</x-item></label>`,
+    (create) => create.jsxs("label", { children: [reader(create, "A"), " or ", reader(create, "B")] }),
+    ["size=m", "size=m"],
+  ],
+  ["in a <Suspense>", `<x-item>One</x-item>`, (create) => create.jsx(Suspense, { children: reader(create) }), ["size=m"]],
+  [
+    "in a nested array in a <div>",
+    `<div><x-item>A</x-item><x-item>B</x-item><x-item>C</x-item></div>`,
+    (create) => create.jsxs("div", { children: [[reader(create, "A", "a"), reader(create, "B", "b")], reader(create, "C", "c")] }),
+    ["size=m", "size=m", "size=m"],
+  ],
+  ["in a fragment in a <span>", `<span><x-item>One</x-item></span>`, (create) => create.jsx("span", { children: create.jsx(Fragment, { children: reader(create) }) }), ["size=m"]],
+  ["in another Neuwo element", `<x-wrap><x-item>One</x-item></x-wrap>`, (create) => create.jsx("x-wrap", { children: reader(create) }), ["size=m"]],
+  [
+    "in a <label> in another Neuwo element in a <Suspense>",
+    `<x-wrap><label><x-item>One</x-item></label></x-wrap>`,
+    (create) => create.jsx(Suspense, { children: create.jsx("x-wrap", { children: create.jsx("label", { children: reader(create) }) }) }),
+    ["size=m"],
+  ],
+  [
+    "beside a group nested in a <div>, which lends its own",
+    `<div><x-group name="inner" value="2"><x-item>In</x-item></x-group></div><x-item>Out</x-item>`,
+    (create) => [
+      create.jsx("div", { children: create.jsx("x-group", { name: "inner", value: "2", children: reader(create, "In") }) }, "div"),
+      reader(create, "Out", "out"),
+    ],
+    ["inner=2", "size=m"],
+  ],
+];
+
+/**
+ * @param {Factories} create
+ * @param {unknown} children
+ */
+const groupOf = (create, children) => create.jsx("x-group", { name: "size", value: "m", onChange() {}, children });
 
 /**
  * @param {import("../src/core/template.js").Template} template
@@ -120,7 +175,19 @@ describe("enclosing-element attributes (within) across the HTML, React and DOM a
       const html = normalise(expand(markup(spec), withinTemplates));
       expect(html).toContain(`<${spec.tag}`);
       expect(normalise(renderToStaticMarkup(toReact(spec)))).toBe(html);
-      expect(normalise(viaDom(spec), false)).toBe(html);
+      expect(normalise(viaDom(markup(spec)), false)).toBe(html);
+      expect(errors).not.toHaveBeenCalled();
+    });
+  }
+
+  for (const [name, inner, children, shown] of WRAPPERS) {
+    it(`gives a reader ${name} its group's attributes`, () => {
+      const errors = vi.spyOn(console, "error");
+      const source = `<x-group name="size" value="m">${inner}</x-group>`;
+      const html = normalise(expand(source, withinTemplates));
+      expect(Array.from(mount(html).querySelectorAll(".x-item__group"), (el) => el.textContent)).toEqual(shown);
+      expect(normalise(renderToStaticMarkup(groupOf(runtime, children(runtime))))).toBe(html);
+      expect(normalise(viaDom(source), false)).toBe(html);
       expect(errors).not.toHaveBeenCalled();
     });
   }
@@ -266,17 +333,53 @@ describe("within in the React adapter", () => {
     expect(errors).not.toHaveBeenCalled();
   });
 
-  it("lends to items inside a fragment, which are direct children once flattened, and to nothing else", () => {
-    const html = renderToStaticMarkup(
-      group({ value: "m" }, [
-        runtime.jsxs(Fragment, { children: [runtime.jsx("x-item", { children: "In a fragment" }, "f")] }, "fragment"),
-        runtime.jsx("div", { children: runtime.jsx("x-item", { children: "In a div" }) }, "div"),
-        runtime.jsx("x-box", { label: "box" }, "box"),
-      ]),
-    );
-    const holder = mount(html);
-    expect(Array.from(holder.querySelectorAll(".x-item__group"), (el) => el.textContent)).toEqual(["size=m", "none"]);
+  it("lends nothing to a reader of another tag, and keeps the internal prop out of the children a Neuwo element describes", () => {
+    /** @type {unknown[]} */
+    const described = [];
+    const { jsx, jsxs } = createRuntime({
+      ...withinTemplates,
+      "x-wrap": (attrs, ctx) => {
+        described.push(ctx.children);
+        return withinTemplates["x-wrap"](attrs, ctx);
+      },
+    });
+    const wrapped = jsxs("x-wrap", { children: [jsx("x-item", { children: "One" }, "1"), jsx("x-box", { label: "box" }, "2")] });
+    const holder = mount(renderToStaticMarkup(jsx("x-group", { name: "size", value: "m", children: wrapped })));
+    expect(holder.querySelector(".x-item__group").textContent).toBe("size=m");
     expect(holder.querySelector(".x-box").getAttribute("data-outer")).toBe("none");
+    expect(described.length).toBeGreaterThan(0);
+    expect(JSON.stringify(described)).not.toMatch(/within/i);
+  });
+
+  it("cannot see into a component of the app's own, so its reader gets no attributes there", () => {
+    const Row = ({ children }) => runtime.jsx("div", { children });
+    const holder = mount(renderToStaticMarkup(groupOf(runtime, runtime.jsx(Row, { children: reader(runtime) }))));
+    expect(holder.querySelector(".x-item__group").textContent).toBe("none");
+  });
+
+  it("warns once in development, naming the reader and the reason, when a component of the app's own hides readers from their group", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const dev = createRuntime(withinTemplates, { dev: true });
+    const Row = ({ children }) => dev.jsx("div", { children });
+    const rows = [dev.jsx(Row, { children: reader(dev, "A") }, "a"), dev.jsx(Row, { children: reader(dev, "B") }, "b")];
+    await renderClient(dev.jsxs("x-group", { name: "size", value: "m", onChange() {}, children: rows }));
+    expect(warn).toHaveBeenCalledTimes(1);
+    const [message] = warn.mock.calls[0];
+    expect(message).toContain("<x-item>");
+    expect(message).toContain("<x-group>");
+    expect(message).toMatch(/component/);
+  });
+
+  it("stays silent where a reader receives its group's attributes, outside any group, and in production", async () => {
+    const warn = vi.spyOn(console, "warn");
+    const errors = vi.spyOn(console, "error");
+    const dev = createRuntime(withinTemplates, { dev: true });
+    for (const [, , children] of WRAPPERS) await renderClient(groupOf(dev, children(dev)));
+    await renderClient(dev.jsx("div", { children: reader(dev) }));
+    const Row = ({ children }) => runtime.jsx("div", { children });
+    await renderClient(groupOf(runtime, runtime.jsx(Row, { children: reader(runtime) })));
+    expect(warn).not.toHaveBeenCalled();
+    expect(errors).not.toHaveBeenCalled();
   });
 
   it("strips the internal prop from a host it was handed to directly", () => {
