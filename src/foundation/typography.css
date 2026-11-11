@@ -75,9 +75,8 @@ p {
 }
 
 /* Inline prose link. The bare element carries the treatment, and `.neuwo-link` applies
-   the same recipe explicitly: for an anchor sitting in a context that strips link
-   styling, and for slotted content inside a component, where the shadow root
-   cannot reach a nested `<a>` and the host page has to style it. */
+   the same recipe explicitly, for an anchor sitting in a context that strips link
+   styling. */
 a,
 .neuwo-link {
   color: var(--neuwo-color-blue);

@@ -659,10 +659,7 @@
       <neuwo-checkbox id="parent-cb">Select all (indeterminate)</neuwo-checkbox>
     </form>
     <script>
-      // Set before the deferred module defines the element, the property would shadow its accessor.
-      customElements.whenDefined("neuwo-checkbox").then(() => {
-        document.getElementById("parent-cb").indeterminate = true;
-      });
+      document.getElementById("parent-cb").indeterminate = true;
     </script>
 
     <h2>Selection: toggle / switch</h2>

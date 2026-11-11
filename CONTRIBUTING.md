@@ -27,23 +27,35 @@ adapters turn into the same markup. Follow `<neuwo-button>`.
    that reflect the attributes, and the JSDoc block that generates the manifest and types
    (`@summary` naming the public classes, `@attr`, `@slot`, `@cssprop`). Register it with
    `define("neuwo-<name>", NeuwoX)`. Listeners and observers go in `connect()` and `disconnect()`,
-   which never write to the DOM.
-3. Create `src/components/<name>/<name>.css` with prefixed BEM classes (`.neuwo-<block>`,
+   which write nothing to adopted markup. A property a script set before the element was defined is
+   assigned again through its setter just before `connect()`, so a setter writes only what differs.
+3. For a form control, extend `NeuwoControlElement` from `src/components/control-element.js`, or
+   the field base (`fields/field-element.js`) or the checkable base
+   (`selection/checkable-element.js`), instead of `NeuwoElement`. Mark the native control in the
+   template with `control()` from `src/core/template.js`, so the React adapter maps `value`,
+   `defaultValue`, `checked` and `defaultChecked` onto it, and return it from the `control` getter.
+   To read an enclosing element's attributes, as a radio reads its group's, set the template's
+   `within` to that tag and read `ctx.within`. Follow the React-owned rules: write nothing to a
+   host `ownedByReact()` reports, and drop a value written while the host carries the `CONTROLLED`
+   mark from `src/core/marks.js`, since React holds it. `connect()` may re-apply a property set
+   before the control rendered, as the field base puts a pending `value` on its control, but not
+   on a host React rendered.
+4. Create `src/components/<name>/<name>.css` with prefixed BEM classes (`.neuwo-<block>`,
    `.neuwo-<block>--<modifier>`, `.neuwo-<block>__<element>`), tokens only, and keyframes named
    `neuwo-<name>-*`. The outer box is an element-name rule
    (`neuwo-<name> { display: inline-block; }`) and nothing else.
-4. Add the tag to every `:where(...)` list in `src/components/reset.css`, and the recipe to
+5. Add the tag to every `:where(...)` list in `src/components/reset.css`, and the recipe to
    `LIGHT_COMPONENT_CSS` in `scripts/light-css.js`, which the build and the tests read.
-5. Register the element in `src/index.js` (the side-effect import and the export) and in the
+6. Register the element in `src/index.js` (the side-effect import and the export) and in the
    `HTMLElementTagNameMap` in `src/types/elements.d.ts`.
-6. Add representative attribute combinations to `tests/fixtures/template-cases.js`, which the
+7. Add representative attribute combinations to `tests/fixtures/template-cases.js`, which the
    parity, snapshot and contract tests read. Add `tests/<name>-template.test.js`,
    `tests/<name>.test.js` (behaviour, adopting server markup without a mutation, and React) and
    `tests/<name>-css.test.js`, and the tag to `EXPECTED_TAGS` in `tests/manifest.test.js`.
-7. Add a demo section in `demo/index.html`.
-8. `npm run build` and confirm `dist/components/<name>/<name>.css` is emitted; `npm test` green.
-9. Add the component to the catalogue and restyling tables in `README.md`.
-10. Hand off: cut a version (below). The design system adopts it by bumping the library version
+8. Add a demo section in `demo/index.html`.
+9. `npm run build` and confirm `dist/components/<name>/<name>.css` is emitted; `npm test` green.
+10. Add the component to the catalogue and restyling tables in `README.md`.
+11. Hand off: cut a version (below). The design system adopts it by bumping the library version
     and following its own guide.
 
 ## Change a component

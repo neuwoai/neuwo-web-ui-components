@@ -187,9 +187,10 @@ on hover. Two classes ride along with it.
 <a class="neuwo-link neuwo-link--hover-green" href="/cookies/">Cookie Policy</a>
 ```
 
-`.neuwo-link` states the same recipe explicitly, for an anchor whose surroundings strip link styling,
-and for an anchor nested inside a component's slotted content. `.neuwo-link--hover-green` swaps the hover colour to the brand green.
-Both underline at rest and carry the underline into the hover colour, because
+`.neuwo-link` states the same recipe explicitly, for an anchor whose surroundings strip link styling.
+An anchor you put inside a component, such as a link in a checkbox's label, is plain light DOM, so
+the bare `a` rule already reaches it. `.neuwo-link--hover-green` swaps the hover colour to the brand
+green. Both underline at rest and carry the underline into the hover colour, because
 `text-decoration-color` follows `currentColor`.
 
 There is deliberately no `<neuwo-link>` element. Prose is authored in Markdown and CMSes that
@@ -1033,7 +1034,9 @@ inside a horizontal `role="radiogroup"` pill, and keeps your options in a hidden
 `<select>`. Its form control is a visually hidden native `<input>`,
 `.neuwo-segmented__form-value`, which carries `name`, the starting value,
 `required`, `disabled` and `form`, so the control submits, resets and validates
-with its form, in server-rendered markup before the script has loaded too.
+with its form, in server-rendered markup before the script has loaded too. A pick
+needs the script, though: with JavaScript off the buttons do nothing, so a
+`required` control with no starting value blocks its form.
 
 ```html
 <neuwo-segmented name="view" label="Results view" value="visual">
@@ -1083,9 +1086,9 @@ Every form control (fields and selection controls) shows an error from the consu
 component owns no error text of its own, so the consumer decides when the error appears and
 clears (`required` validity is reported natively and separately, not as this message). On
 the four fields (`<neuwo-input>`, `<neuwo-textarea>`, `<neuwo-range>` and `<neuwo-combobox>`),
-`<neuwo-checkbox>`, `<neuwo-toggle>` and `<neuwo-radio-group>` the message line is part of the
-rendered markup, so an error the server sets shows in the first paint, and a form reset leaves
-`error` alone: the page set it, so the page clears it.
+`<neuwo-checkbox>`, `<neuwo-toggle>`, `<neuwo-radio-group>` and `<neuwo-segmented>` the message
+line is part of the rendered markup, so an error the server sets shows in the first paint, and a
+form reset leaves `error` alone: the page set it, so the page clears it.
 
 Add `error-muted` alongside `error` to drop the heavy control chrome without losing the note: the
 red border and box-shadow ring come off the instant the user acts, while the red message and the
