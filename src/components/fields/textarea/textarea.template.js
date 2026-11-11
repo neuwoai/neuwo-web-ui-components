@@ -12,6 +12,13 @@ export function textareaTemplate(attrs, ctx) {
   return fieldTemplate(
     attrs,
     ctx,
-    control(h("textarea", { class: `${controlClass(attrs)} neuwo-textarea`, ...controlAttrs(attrs, ctx, FORWARDED) }, attrs.value || undefined)),
+    control(
+      h(
+        "textarea",
+        { class: `${controlClass(attrs)} neuwo-textarea`, ...controlAttrs(attrs, ctx, FORWARDED) },
+        // A parser reads CR as LF before it drops the LF after the tag, so markup must carry the LF form to keep it.
+        attrs.value?.replace(/\r\n?/g, "\n") || undefined,
+      ),
+    ),
   );
 }

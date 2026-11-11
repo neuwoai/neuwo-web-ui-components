@@ -142,6 +142,20 @@ describe("<neuwo-textarea>", () => {
     expect(document.activeElement).toBe(areaOf(el));
   });
 
+  it("keeps the first line break of a value that starts with a carriage return through server markup", () => {
+    for (const [value, reference] of [
+      ["\r\nlead", "&#13;&#10;lead"],
+      ["\rlead", "&#13;lead"],
+    ]) {
+      const html = expand(`<neuwo-textarea value="${reference}"></neuwo-textarea>`);
+      expect(html, JSON.stringify(value)).toMatch(/<textarea[^>]*>\n\nlead<\/textarea>/);
+      // A browser's parser turns every CR LF and lone CR into LF before it drops the newline after the tag.
+      const parsed = new DOMParser().parseFromString(html.replace(/\r\n?/g, "\n"), "text/html");
+      expect(parsedValue(areaOf(parsed.body.firstElementChild)), JSON.stringify(value)).toBe("\nlead");
+      expect(renderToString(jsx("neuwo-textarea", { defaultValue: value })), JSON.stringify(value)).toMatch(/<textarea[^>]*>\n\nlead<\/textarea>/);
+    }
+  });
+
   describe("round trip of a value through every adapter", () => {
     for (const value of VALUES) {
       it(`keeps ${JSON.stringify(value)}`, async () => {

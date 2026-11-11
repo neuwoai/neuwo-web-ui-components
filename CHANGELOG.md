@@ -44,7 +44,8 @@
   `::part(field)`, `::part(label)`, `::part(input)` and `::part(error)` no longer match. It is no longer
   form-associated: the native `<textarea>` submits, resets and validates with its form, the `value`
   attribute is its starting text, and the `change` and `input` events, `event.target`, `onChange` in React
-  and `data-*` follow `<neuwo-input>` above. A value that starts with a newline survives server rendering.
+  and `data-*` follow `<neuwo-input>` above. A value that starts with a line break survives server rendering,
+  including one written as `\r\n` or `\r`, as a submitted form sends it.
 - Breaking: `<neuwo-range>` renders into its own light DOM from the same shell as `<neuwo-input>`, with
   its recipe, `components/fields/range/range.css`, in `neuwo-components.css`. The native range input
   carries `.neuwo-input` and `.neuwo-range`; the unprefixed `.range`, `.field`, `.input` and their parts are
