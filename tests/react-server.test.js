@@ -128,6 +128,21 @@ describe("JSX runtime in React Server Components", () => {
     };
     expect(found.radio).toEqual({ jsx: expected, jsxDEV: expected });
   });
+
+  it.runIf(built)("renders <neuwo-segmented value> with its option checked and the value as the form value's default, with no function", () => {
+    const expected = {
+      hostValue: null,
+      formValue: expect.objectContaining({ className: "neuwo-segmented__form-value", name: "view", defaultValue: "json" }),
+      options: [
+        ["visual", "false", "-1"],
+        ["json", "true", "0"],
+      ],
+      indicator: { className: "neuwo-segmented__indicator", "aria-hidden": "true" },
+      functions: [],
+    };
+    expect(found.segmented).toEqual({ jsx: expected, jsxDEV: expected });
+    expect(found.segmented.jsx.formValue).not.toHaveProperty("value");
+  });
 });
 
 describe("Server Component output reconciled in the browser", () => {

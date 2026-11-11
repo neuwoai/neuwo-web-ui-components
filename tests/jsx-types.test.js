@@ -146,6 +146,25 @@ describe("JSX types", () => {
     expect(props).not.toMatch(/checked/i);
   });
 
+  it("gives the segmented control a value, a defaultValue, an onChange and a form, and no orientation or checked", () => {
+    const props = block("neuwo-segmented");
+    for (const line of [
+      "name?: string;",
+      "value?: string | number;",
+      "defaultValue?: string | number;",
+      "onChange?: React.ChangeEventHandler<NeuwoSegmented>;",
+      "form?: string;",
+      "label?: string;",
+      "required?: boolean;",
+      "disabled?: boolean;",
+      "error?: string;",
+      '"error-muted"?: boolean;',
+      '"no-error-line"?: boolean;',
+    ])
+      expect(props).toContain(line);
+    expect(props).not.toMatch(/orientation|checked/i);
+  });
+
   it("reads a checked attribute whatever its declared type, with or without a change event", () => {
     const generated = jsxElementsTypes({
       modules: [

@@ -48,7 +48,7 @@
         color: black !important;
         border-radius: 0 !important;
       }
-      /* Hostile rule: the old unprefixed classes no longer reach the checkboxes, switches and radios. */
+      /* Hostile rule: the old unprefixed classes no longer reach the selection controls. */
       .form-check,
       .form-check__input,
       .form-check__label,
@@ -57,6 +57,9 @@
       .radio-group,
       .radio-group__legend,
       .radio-group__options,
+      .segmented,
+      .segmented__indicator,
+      .segmented__option,
       .control-error {
         background: hotpink !important;
         color: black !important;
@@ -724,6 +727,11 @@
     </div>
 
     <h2>Selection: segmented control</h2>
+    <p>
+      The selected option is marked in the markup, so it shows before the script runs; the sliding pill
+      appears with the first pick. The page defines a hostile <code>.segmented</code> rule. The classes
+      are prefixed <code>.neuwo-segmented</code>, so it does not reach them.
+    </p>
     <form id="segmented-form" class="row">
       <neuwo-segmented name="view" label="Results view" value="visual">
         <option value="visual">Visual</option>
@@ -742,6 +750,18 @@
         <option value="fri">Fri</option>
       </neuwo-segmented>
     </form>
+    <p>An option marked <code>selected</code> starts selected when there is no <code>value</code>. A disabled control disables every option.</p>
+    <div class="row">
+      <neuwo-segmented name="period" label="Period">
+        <option value="day">Day</option>
+        <option value="week" selected>Week</option>
+        <option value="month">Month</option>
+      </neuwo-segmented>
+      <neuwo-segmented name="locked" label="Locked view" value="json" disabled>
+        <option value="visual">Visual</option>
+        <option value="json">JSON</option>
+      </neuwo-segmented>
+    </div>
     <p>A bare toolbar toggle drops the reserved error row with <code>no-error-line</code> (no extra vertical space below it).</p>
     <div class="row">
       <neuwo-segmented name="toolbar-view" value="visual" no-error-line>

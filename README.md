@@ -2,8 +2,7 @@
 
 Neuwo design-language web components: vanilla custom elements, zero runtime deps. The button,
 badge, deal-ID chip, status dot, logo, copy wrapper, notice card, CTA band, form fields, checkbox,
-toggle, radio and radio group render into light DOM and can be server-rendered; the segmented control
-still uses Shadow DOM while it migrates.
+toggle, radio, radio group and segmented control render into light DOM and can be server-rendered.
 The single source for reusable Neuwo UI and its styling (tokens, component recipes, typography).
 
 ## Install
@@ -497,18 +496,15 @@ createRoot(document.getElementById("root")!).render(<App />);
 `jsxImportSource` points JSX at the library's runtime, which wraps React's own and expands the
 light DOM elements (`<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuwo-status-dot>`,
 `<neuwo-logo>`, `<neuwo-copy>`, `<neuwo-notice>`, `<neuwo-cta>`, `<neuwo-input>`, `<neuwo-textarea>`,
-`<neuwo-range>`, `<neuwo-combobox>`, `<neuwo-checkbox>`, `<neuwo-toggle>`, `<neuwo-radio>` and
-`<neuwo-radio-group>`) into their markup; MDX reads its own `jsxImportSource` option, not tsconfig's, so set it there too (in
+`<neuwo-range>`, `<neuwo-combobox>`, `<neuwo-checkbox>`, `<neuwo-toggle>`, `<neuwo-radio>`,
+`<neuwo-radio-group>` and `<neuwo-segmented>`) into their markup; MDX reads its own `jsxImportSource` option, not tsconfig's, so set it there too (in
 `@mdx-js/*` or Next's MDX config). Elements recognise markup React rendered, from Client or Server
 Components, and leave it to React, so without the setting a light DOM tag React renders stays bare.
 The same setting adds every element to JSX with each attribute's allowed values and each custom
 event's `detail`, so a misspelt variant fails the type check. React stays an optional peer
 dependency.
 
-React renders the markup of the sixteen light DOM elements itself, so they show from the first paint.
-The Shadow DOM component (the segmented control) renders when it registers, which the first import
-does in the same pass, before the browser paints. Registering later, from an effect or a script that
-runs after the app, shows it as a bare tag first and the component a moment after.
+React renders the markup of all seventeen elements itself, so they show from the first paint.
 
 React 19 sets a property where the element has one and binds events, so the elements behave like
 native controls:
@@ -520,8 +516,8 @@ native controls:
 <neuwo-notice dismissible hidden={!open} ondismiss={(e) => { e.preventDefault(); setOpen(false); }}>...</neuwo-notice>
 ```
 
-- `onChange` fires as it does on native fields. On the form fields, the checkbox, the toggle and
-  the radio group that means React's own controlled and uncontrolled models, in
+- `onChange` fires as it does on native fields. On the form fields, the checkbox, the toggle, the
+  radio group and the segmented control that means React's own controlled and uncontrolled models, in
   [Form fields in React](#form-fields-in-react).
 - A custom event binds by its exact name, so it is lower case: `oncopied`, `ondismiss`.
   `onCopied` listens for an event called `Copied`, which never fires; the types reject it.
@@ -639,6 +635,26 @@ value props:
   `value`. Uncontrolled, a pick whose option goes away is cleared without a `change`, so your
   state never hears of it.
 
+`<neuwo-segmented>` follows the combobox's models, with the same `value`, `defaultValue`, `onInput`
+and `onChange`:
+
+```tsx
+<neuwo-segmented label="View" value={view} onChange={(e) => setView(e.target.value)}>
+  <option value="visual">Visual</option>
+  <option value="json">JSON</option>
+</neuwo-segmented>
+<neuwo-segmented label="View" defaultValue="json" name="view">...</neuwo-segmented>
+```
+
+- `onInput` and `onChange` fire once each per pick, with the element as `event.target`, so
+  `event.target.value` is the picked value and `event.target.name` the field's.
+- `value` makes it controlled: the option your state names shows selected, and a pick your
+  handler ignores is never shown. `defaultValue` gives an uncontrolled one, which shows the
+  user's pick itself and keeps it across re-renders. In Server Components `value` is the
+  starting value.
+- React Hook Form's `register` reads the picked value from the element's `value` and sets it on
+  a reset, as on the combobox.
+
 ### Next.js and server rendering
 
 The library imports safely on a server, so no loader component is needed. Set `jsxImportSource`
@@ -660,10 +676,9 @@ export function Neuwo() {
 }
 ```
 
-Render `<Neuwo />` once in the root layout. Because the JSX runtime expands the sixteen light DOM
-elements, the server-rendered HTML carries their full markup and they are on-brand from the first
-paint, before the bundle has run. The segmented control, still on Shadow DOM, arrives as a bare tag
-and renders when the bundle registers it. Import `neuwo.css` instead of `neuwo-components.css` to add the
+Render `<Neuwo />` once in the root layout. Because the JSX runtime expands all seventeen elements,
+the server-rendered HTML carries their full markup and they are on-brand from the first paint,
+before the bundle has run. Import `neuwo.css` instead of `neuwo-components.css` to add the
 typography and page surface.
 
 ## Components
@@ -704,18 +719,16 @@ Published styling files, for direct linking or non-web use:
 | Component reset (before any recipe) | `@neuwo/web-ui-library--demo/components/reset.css` |
 | Button recipe | `@neuwo/web-ui-library--demo/components/button/button.css` |
 | Field chrome | `@neuwo/web-ui-library--demo/components/fields/field.css` |
-| Selection shell (checkbox, toggle, radio group) | `@neuwo/web-ui-library--demo/components/selection/controls.css` |
+| Selection shell (checkbox, toggle, radio group, segmented control) | `@neuwo/web-ui-library--demo/components/selection/controls.css` |
 | Checkbox and radio recipe | `@neuwo/web-ui-library--demo/components/selection/form-check.css` |
 | Radio group recipe | `@neuwo/web-ui-library--demo/components/selection/radio/radio-group.css` |
 | Toggle recipe | `@neuwo/web-ui-library--demo/components/selection/toggle/toggle.css` |
+| Segmented control recipe | `@neuwo/web-ui-library--demo/components/selection/segmented/segmented.css` |
 | Logo files | `@neuwo/web-ui-library--demo/logos/neuwo-logo--bg-dark.svg` |
 
 ## Restyling from the host
 
-`<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuwo-status-dot>`, `<neuwo-logo>`,
-`<neuwo-copy>`, `<neuwo-notice>`, `<neuwo-cta>`, the form fields, `<neuwo-checkbox>`,
-`<neuwo-toggle>`, `<neuwo-radio>` and `<neuwo-radio-group>` render their markup into their own light
-DOM, so they have no parts. Their prefixed classes are the public hooks instead. Put the element name in
+Every element renders its markup into its own light DOM, so none has parts. Their prefixed classes are the public hooks instead. Put the element name in
 front for weight, so a rule wins without `!important`:
 
 ```css
@@ -794,7 +807,7 @@ properties, or target the children you passed in.
 | `.neuwo-combobox__listbox`, `.neuwo-combobox__option`, `.neuwo-combobox__option--active` | the list, each option row, and the row the keyboard highlights |
 | `.neuwo-combobox__group-item`, `.neuwo-combobox__group` | the row around an `<optgroup>`'s options and its label |
 | `.neuwo-combobox__empty` | the "No matches" row, hidden until a filter matches nothing |
-| `.neuwo-choice` | the checkbox's, toggle's or radio group's wrapper `<div>`, which stacks the row (or the radiogroup) and the error line |
+| `.neuwo-choice` | the checkbox's, toggle's, radio group's or segmented control's wrapper `<div>`, which stacks the row (or the radiogroup) and the error line |
 | `.neuwo-choice--flush` | the radio group's wrapper, which keeps the error line right under the full-width radiogroup |
 | `.neuwo-choice__error` | the reserved error line; it was `.control-error` and `::part(error)` |
 | `.neuwo-form-check` | the checkbox's or radio's `<label>`, around the box and the label content; it was `::part(field)` |
@@ -811,6 +824,12 @@ properties, or target the children you passed in.
 | `.neuwo-form-toggle__input` | the visually hidden native switch, `role="switch"`; it was `::part(input)` |
 | `.neuwo-form-toggle__track` | the visible track, whose `::after` is the thumb; it was `::part(track)` |
 | `.neuwo-form-toggle__label` | the wrapper around the toggle's children; it was `::part(label)` |
+| `.neuwo-segmented` | the segmented control's `role="radiogroup"` pill, around the indicator, the options and the form value; it was `.segmented` and `::part(group)` |
+| `.neuwo-segmented--error` | the pill, by `error` unless `error-muted` or `no-error-line` is set |
+| `.neuwo-segmented__indicator` | the sliding pill behind the selected option, shown once a pick gives it `data-neuwo-placed`; it was `::part(indicator)` |
+| `.neuwo-segmented__option` | each option's `<button>`, the selected one with `aria-checked="true"`; it was `::part(option)` |
+| `.neuwo-segmented__options` | the hidden `<select>` that keeps your `<option>` children |
+| `.neuwo-segmented__form-value` | the visually hidden native input that submits the value |
 
 The badge and deal-id render their text as authored, so casing is yours:
 
@@ -831,21 +850,6 @@ host-driven event without a persistent `error`, is a rule on the same classes:
 }
 ```
 
-The other elements render into a shadow root. Shadow DOM keeps the host page's
-CSS out, but two channels are deliberately open, and together they reach almost
-every visual detail without forking a component:
-
-- **`::part(...)`** is the intended restyling hook. The segmented control exposes
-  its internals as parts (`group`, `option`, `indicator` and `error`, listed in the
-  manifest). Adjust size, weight, colour, font or spacing from the host:
-
-  ```css
-  .my-segmented::part(option) { font-weight: 500; }
-  ```
-
-- **Inherited CSS properties** cross the boundary into slotted content, so a
-  host `text-transform` or `color` reaches the text of a shadow DOM element.
-
 ## Form fields share one API
 
 `<neuwo-input>`, `<neuwo-textarea>`, `<neuwo-combobox>` and `<neuwo-range>`
@@ -855,8 +859,9 @@ share the same attributes (`name`, `value`, `label`, `disabled`, `required`,
 selection controls (`<neuwo-checkbox>`, `<neuwo-toggle>`,
 `<neuwo-radio-group>`, `<neuwo-segmented>`) share the error and
 `no-error-line` behaviour below. The checkbox and the toggle share the
-checkable API under [Checkbox and toggle](#checkbox-and-toggle), and the radio
-group and its radios are under [Radio group](#radio-group). The generated
+checkable API under [Checkbox and toggle](#checkbox-and-toggle), the radio
+group and its radios are under [Radio group](#radio-group), and the segmented
+control is under [Segmented control](#segmented-control). The generated
 `.d.ts` shows these on the base class each control `extends`.
 
 `<neuwo-input>`, `<neuwo-textarea>` and `<neuwo-range>` render a native `<input>`
@@ -1000,6 +1005,54 @@ What were the parts `legend` and `options` on the group, and `field`, `input`
 and `label` on the radio, are the classes `.neuwo-radio-group__legend`,
 `.neuwo-radio-group__options` and `.neuwo-form-check` with its `__input` and
 `__label` elements, listed under restyling above.
+
+### Segmented control
+
+`<neuwo-segmented>` renders one `<button role="radio">` per `<option>` child,
+inside a horizontal `role="radiogroup"` pill, and keeps your options in a hidden
+`<select>`. Its form control is a visually hidden native `<input>`,
+`.neuwo-segmented__form-value`, which carries `name`, the starting value,
+`required`, `disabled` and `form`, so the control submits, resets and validates
+with its form, in server-rendered markup before the script has loaded too.
+
+```html
+<neuwo-segmented name="view" label="Results view" value="visual">
+  <option value="visual">Visual</option>
+  <option value="json">JSON</option>
+  <option value="raw" disabled>Raw</option>
+</neuwo-segmented>
+```
+
+- **`value` is the starting value**, as on the combobox: the option it names
+  starts selected when it is enabled, else the first enabled option marked
+  `selected`, else none. Its button carries `aria-checked="true"`, which gives it
+  the blue background and white text from CSS, so the selection shows from the
+  first paint with no script. `form.reset()` returns to it and leaves `error`
+  alone. The `value` property reads and sets the live value, selecting only an
+  enabled option's value, and never touches the attribute; `defaultValue` reads
+  the starting value and sets the attribute.
+- **The sliding pill** appears once the user picks: the element places it under
+  the selected option, from where it slides to each later pick and follows a
+  resize. Until then the selected option shows its own background, so nothing
+  moves or shifts when the script loads. In a disabled control the selected
+  option dims with the others.
+- **A pick** by click or key dispatches `input` then `change` on the element,
+  once each, with the element as `event.target`; setting `value` fires nothing,
+  and `commit(value)` picks as the user does. The arrow keys move the selection,
+  which follows focus, wrapping past disabled options, Home and End go to the
+  first and last enabled option, and Space selects the focused one.
+- **The native form API** answers for the hidden input: `form`, `validity`,
+  `validationMessage`, `checkValidity()`, `reportValidity()` and
+  `setCustomValidity()`. `focus()` moves to the selected option, else the first
+  enabled one, and focus that lands on the hidden input, as the browser's
+  validation does, moves there too.
+- **It is always horizontal**, with `aria-orientation="horizontal"`; there is no
+  `orientation` attribute. `label` names the radiogroup, `aria-*` and `title` on
+  the element are copied onto it, and `data-*` stays on the element only.
+
+What were the parts `group`, `indicator`, `option` and `error` are the classes
+`.neuwo-segmented`, `.neuwo-segmented__indicator`, `.neuwo-segmented__option`
+and `.neuwo-choice__error`, listed under restyling above.
 
 ## Form errors
 

@@ -62,6 +62,12 @@ export function Usage() {
       <neuwo-radio-group defaultValue="free" label="Plan" orientation="horizontal" required form="signup" />
       <neuwo-radio-group {...register("tier")} />
       <neuwo-radio name="solo" value="x" defaultChecked onChange={(e) => setAgreed(e.target.checked)} />
+      <neuwo-segmented value={s} name="view" label="View" onChange={(e) => setS(e.target.value + e.target.name)}>
+        <option value="visual">Visual</option>
+        <option value="json">JSON</option>
+      </neuwo-segmented>
+      <neuwo-segmented defaultValue="visual" required form="search" no-error-line onInput={(e) => e.currentTarget.commit("json")} />
+      <neuwo-segmented {...register("view")} />
       <neuwo-input type="number" min={0} max="10" step={0.5} minlength={1} maxlength="5" />
       <neuwo-range min="0" max={100} step={10} />
       <neuwo-textarea rows="4" minlength={2} maxlength={200} />
@@ -73,6 +79,8 @@ export function Usage() {
       <neuwo-radio defaultValue="x" />
       {/* @ts-expect-error not an orientation */}
       <neuwo-radio-group orientation="diagonal" />
+      {/* @ts-expect-error the segmented control is always horizontal */}
+      <neuwo-segmented orientation="vertical" />
       {/* @ts-expect-error checked is a boolean */}
       <neuwo-toggle checked="yes" />
       {/* @ts-expect-error not a text-like input type */}

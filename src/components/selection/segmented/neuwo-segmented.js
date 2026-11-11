@@ -1,132 +1,315 @@
-import { NeuwoSingleSelect } from "../single-select.js";
-import { define } from "../../../core/element.js";
-import { sheet } from "../../../core/sheet.js";
-import { controlsSheet } from "../controls.js";
-import segmentedCss from "./segmented.css?raw";
+import { childInfo } from "../../../core/adapters/dom.js";
+import { define, ownedByReact } from "../../../core/element.js";
+import { NeuwoControlElement } from "../../control-element.js";
+import { OptionWidget } from "../../fields/option-widget.js";
+import { readOptions } from "../../fields/options.js";
+import { segmentedTemplate } from "./segmented.template.js";
+
+const GROUP = ":scope > .neuwo-choice > .neuwo-segmented";
+const PLACED = "data-neuwo-placed";
+
+/** @param {Element} button */
+const valueOf = (button) => button.getAttribute("data-value") ?? "";
+
+/** @param {Element} button */
+const isChecked = (button) => button.getAttribute("aria-checked") === "true";
+
+/** @param {HTMLButtonElement} button */
+const isShown = (button) => isChecked(button) && !button.disabled;
 
 /**
- * Segmented control: a compact pill of single-select buttons with a sliding
- * selection indicator.
+ * Segmented control: a compact pill of single-select buttons, one per `<option>` child, for switching a view or a
+ * mode. The template renders the buttons as a horizontal radiogroup, the hidden `<select>` that keeps the options,
+ * and a visually hidden native input that carries `name`, the starting value, `required` and `disabled`, so the
+ * control submits, resets and validates with its form, before the script has loaded too. The starting value is
+ * the `value` attribute when it names an enabled option, else the first enabled option marked `selected`, and its
+ * button shows selected from the first paint. Once the user picks, a pill slides behind the selected button. The
+ * arrow keys, Home and End move the selection, which follows focus, past disabled options, and Space selects.
  *
- * @summary Neuwo segmented control.
+ * @summary Neuwo segmented control. Public classes: `.neuwo-choice` on the wrapper; `.neuwo-segmented` on the radiogroup pill, with `--error`; `.neuwo-segmented__indicator` on the sliding pill, which carries `data-neuwo-placed` once a pick has placed it; `.neuwo-segmented__option` on each button, the selected one with `aria-checked="true"`; `.neuwo-segmented__options` on the hidden `<select>`; `.neuwo-segmented__form-value` on the native input that submits; `.neuwo-choice__error` on the error line.
  * @customElement neuwo-segmented
- * @slot - the `<option>` children defining the segments.
- * @csspart indicator - the sliding selection pill.
- * @csspart option - each segment button.
+ * @attr name - form field name, carried onto the native input.
+ * @attr value - the starting value, carried onto the native input as its default; the live value is the `value` property.
+ * @attr {boolean} disabled - disables every option and removes the control from submission.
+ * @attr form - id of the form the control submits with, when it sits outside it.
+ * @attr {boolean} required - an option must be selected for the control to be valid.
+ * @attr label - accessible name of the radiogroup.
+ * @attr error - error message; shows the red accent, the message, and aria-invalid.
+ * @attr {boolean} error-muted - softens a shown error: drops the accent while the red message and invalid state stay.
+ * @attr {boolean} no-error-line - drop the reserved error message row (for a non-validated control, such as a toolbar); setting `error` alongside it is a misconfiguration.
+ * @fires {Event} input - the user picked a new value; dispatched just before `change`.
+ * @fires {Event} change - the user picked a new value.
+ * @slot - the `<option>` elements, one per segment.
+ * @cssprop --neuwo-color-blue - brand accent (selected option, sliding pill); re-theme by setting it on :root.
  */
-export class NeuwoSegmented extends NeuwoSingleSelect {
-  static formAssociated = true;
-  static styles = [sheet(segmentedCss), controlsSheet];
-  static observedAttributes = NeuwoSingleSelect.observedAttributes;
+export class NeuwoSegmented extends NeuwoControlElement {
+  static template = segmentedTemplate;
+  static observedAttributes = ["name", "value", "disabled", "form", "required", "label", "error", "error-muted", "no-error-line"];
 
-  #buttons = [];
-  #indicator = null;
-  #indicatorReady = false;
+  /** @type {string | undefined} */
+  #pending;
+
+  // Set by the first pick: from then on the pill follows the selection.
+  #armed = false;
+
+  /** @type {ResizeObserver | null} */
   #resize = null;
 
-  get groupClass() { return "segmented"; }
-  get accentClass() { return "segmented--error"; }
+  /** @type {Element | null} */
+  #measured = null;
 
-  connectedCallback() {
-    super.connectedCallback();
-    // Keep the sliding indicator aligned when the pill reflows (responsive
-    // width, or a late web-font swap changing button widths).
-    if (typeof ResizeObserver === "function") {
-      this.#resize = new ResizeObserver(() => this.#repositionActive());
-      this.#resize.observe(this.group);
-    }
+  #widget = new OptionWidget(this, {
+    options: () => this.querySelector(`${GROUP} > .neuwo-segmented__options`),
+    accept: (value) => this.#accept(value),
+    show: (value) => this.#show(value),
+    held: () => this.#follow(),
+    attributes: ["value", "aria-checked", "tabindex", "disabled"],
+  });
+
+  /**
+   * The native input that submits the value.
+   * @returns {HTMLInputElement | null}
+   */
+  get control() {
+    return this.querySelector(`${GROUP} > .neuwo-segmented__form-value`);
   }
 
-  disconnectedCallback() {
-    super.disconnectedCallback?.();
+  /**
+   * The button `focus()` moves to: the selected one, else the first enabled one, as Tab reaches the control.
+   * @returns {HTMLButtonElement | null}
+   */
+  get focusTarget() {
+    const enabled = this.#buttons().filter((button) => !button.disabled);
+    return enabled.find(isChecked) ?? enabled[0] ?? null;
+  }
+
+  /**
+   * The options, read from the `<option>` children.
+   * @returns {import("../../fields/options.js").ListOption[]}
+   */
+  get options() {
+    return readOptions(childInfo(this, segmentedTemplate));
+  }
+
+  /**
+   * The live value, which is the form value's; while a pick on a host React controls dispatches `input` and
+   * `change`, it is the picked value. Setting it selects an enabled option's value, or nothing for any other value,
+   * fires nothing and writes no attribute; it does nothing on a host React controls.
+   * @returns {string}
+   */
+  get value() {
+    return this.#widget.picked ?? this.control?.value ?? this.#pending ?? this.getAttribute("value") ?? "";
+  }
+  set value(value) {
+    if (this.#widget.refuses) return;
+    const next = value == null ? "" : String(value);
+    if (!this.control) this.#pending = next;
+    else this.#widget.assign(next);
+  }
+
+  /**
+   * The starting value: the form value's default, which the JSX runtime renders from `defaultValue` without a host
+   * attribute, else the `value` attribute. Setting it sets the attribute.
+   * @returns {string}
+   */
+  get defaultValue() {
+    return this.control?.defaultValue ?? this.getAttribute("value") ?? "";
+  }
+  /** @param {string} value */
+  set defaultValue(value) {
+    this.setAttribute("value", String(value));
+  }
+
+  /**
+   * Picks a value as the user does: selects it, then dispatches `input` and `change` on the element when it
+   * changed. A value no enabled option has picks nothing. On a host React controls it only dispatches them, with
+   * `value` reading the picked value meanwhile, and React shows whatever the consumer's state then holds.
+   * @param {string} value
+   */
+  commit(value) {
+    this.#widget.commit(value);
+  }
+
+  connect() {
+    super.connect();
+    const control = this.control;
+    // React's ref sets the controlled flag after connect, so on a React host a write here could undo React's value.
+    if (control && this.#pending !== undefined && !ownedByReact(this)) {
+      control.value = this.#pending;
+      this.#pending = undefined;
+    }
+    this.addEventListener("click", this.#onClick);
+    this.addEventListener("keydown", this.#onKeydown);
+    this.addEventListener("focus", this.#onFocus, true);
+    this.#widget.connect();
+    if (this.#armed) this.#measure();
+  }
+
+  disconnect() {
+    super.disconnect();
+    this.removeEventListener("click", this.#onClick);
+    this.removeEventListener("keydown", this.#onKeydown);
+    this.removeEventListener("focus", this.#onFocus, true);
+    this.#widget.disconnect();
     this.#resize?.disconnect();
+    this.#measured = null;
   }
 
-  syncLabel(group) {
-    const label = this.getAttribute("label");
-    if (label) group.setAttribute("aria-label", label);
-    else group.removeAttribute("aria-label");
+  updated() {
+    super.updated();
+    this.#widget.updated();
   }
 
-  renderOptions() {
-    const data = [...this.querySelectorAll(":scope > option")].map((o) => ({
-      value: o.getAttribute("value") ?? o.textContent.trim(),
-      label: o.textContent.trim(),
-      disabled: o.hasAttribute("disabled"),
-    }));
-    // The indicator is the moving blue pill that sits behind the active option.
-    const indicator = document.createElement("span");
-    indicator.className = "segmented__indicator";
-    indicator.setAttribute("part", "indicator");
-    indicator.setAttribute("aria-hidden", "true");
-    this.#indicator = indicator;
-    this.#indicatorReady = false;
-    this.group.replaceChildren(
-      indicator,
-      ...data.map((d) => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "segmented__option";
-        btn.setAttribute("part", "option");
-        btn.setAttribute("role", "radio");
-        btn.dataset.value = d.value;
-        btn.textContent = d.label;
-        btn.tabIndex = -1;
-        if (d.disabled) {
-          btn.setAttribute("data-own-disabled", "");
-          btn.disabled = true;
-        }
-        return btn;
-      })
-    );
-    this.#buttons = [...this.group.querySelectorAll(".segmented__option")];
+  formReset() {
+    this.#widget.sync();
   }
 
-  readOptions() {
-    const self = this;
-    return this.#buttons.map((btn) => ({
-      element: btn,
-      value: btn.dataset.value,
-      disabled: btn.hasAttribute("data-own-disabled"),
-      set checked(on) {
-        btn.setAttribute("aria-checked", on ? "true" : "false");
-        if (on) self.#positionIndicator(btn);
-      },
-      set tabbable(on) { btn.tabIndex = on ? 0 : -1; },
-      set disabledByGroup(on) { btn.disabled = on || btn.hasAttribute("data-own-disabled"); },
-      // The error is shown on the group accent (.segmented--error), which sits in
-      // this same shadow root, so the per-option signal is intentionally a no-op.
-      set invalid(on) {},
-      focus() { btn.focus(); },
-    }));
+  /** @returns {HTMLButtonElement[]} */
+  #buttons() {
+    return Array.from(this.querySelectorAll(`${GROUP} > .neuwo-segmented__option`));
   }
 
-  initialValue() {
-    const sel = this.querySelector(":scope > option[selected]");
-    return sel ? sel.getAttribute("value") ?? sel.textContent.trim() : "";
+  /** @returns {HTMLElement | null} */
+  #indicator() {
+    return this.querySelector(`${GROUP} > .neuwo-segmented__indicator`);
   }
 
-  // Move the blue pill under the given option button.
-  #positionIndicator(btn) {
-    const ind = this.#indicator;
-    if (!ind) return;
-    ind.style.width = `${btn.offsetWidth}px`;
-    ind.style.height = `${btn.offsetHeight}px`;
-    ind.style.transform = `translate(${btn.offsetLeft}px, ${btn.offsetTop}px)`;
-    ind.dataset.active = "true";
-    if (!this.#indicatorReady) {
-      // Arm the slide only after the first placement, so the active pill
-      // appears in position on load instead of sliding in from the corner.
-      void ind.offsetWidth; // flush layout before enabling the transition
-      ind.classList.add("segmented__indicator--animated");
-      this.#indicatorReady = true;
+  /**
+   * @param {EventTarget | null} target
+   * @returns {HTMLButtonElement | undefined}
+   */
+  #buttonOf(target) {
+    const button = /** @type {Element | null} */ (target)?.closest?.(".neuwo-segmented__option");
+    return button ? this.#buttons().find((each) => each === button) : undefined;
+  }
+
+  /**
+   * @param {string} value
+   * @returns {string}
+   */
+  #accept(value) {
+    return this.options.some((option) => !option.disabled && option.value === value) ? value : "";
+  }
+
+  /**
+   * Writes which button is checked and which is the tab stop, as the template does for a starting value, and moves
+   * a placed pill. It writes only what differs.
+   * @param {string} value
+   */
+  #show(value) {
+    const buttons = this.#buttons();
+    const chosen = buttons[this.options.findIndex((option) => !option.disabled && option.value === value)];
+    const stop = chosen && !chosen.disabled ? chosen : buttons.find((button) => !button.disabled);
+    for (const button of buttons) {
+      const checked = String(button === chosen);
+      if (button.getAttribute("aria-checked") !== checked) button.setAttribute("aria-checked", checked);
+      const tabindex = button === stop ? "0" : "-1";
+      if (button.getAttribute("tabindex") !== tabindex) button.setAttribute("tabindex", tabindex);
     }
+    this.#follow();
   }
 
-  #repositionActive() {
-    const active = this.#buttons.find((b) => b.getAttribute("aria-checked") === "true");
-    if (active) this.#positionIndicator(active);
+  /** @param {HTMLButtonElement} button */
+  #pick(button) {
+    this.#arm();
+    this.commit(valueOf(button));
+    button.focus();
   }
+
+  /** Shows the pill under the selection the user is about to change, so the pick slides it from there. */
+  #arm() {
+    this.#armed = true;
+    this.#measure();
+    const indicator = this.#indicator();
+    const selected = this.#buttons().find(isShown);
+    if (!indicator || !selected || indicator.hasAttribute(PLACED)) return;
+    this.#place(indicator, selected);
+    // Styled at this position now, the pill transitions from it when the pick moves it.
+    void indicator.offsetWidth;
+  }
+
+  /**
+   * Once a pick has armed it, moves the pill under the selected button, or hides it when none is selected or the
+   * selected one is disabled, which then shows its own dimmed background.
+   */
+  #follow() {
+    const indicator = this.#indicator();
+    if (!this.#armed || !indicator) return;
+    const selected = this.#buttons().find(isShown);
+    if (selected) this.#place(indicator, selected);
+    else if (indicator.hasAttribute(PLACED)) indicator.removeAttribute(PLACED);
+  }
+
+  /**
+   * @param {HTMLElement} indicator
+   * @param {HTMLButtonElement} button
+   */
+  #place(indicator, button) {
+    const { style } = indicator;
+    const width = `${button.offsetWidth}px`;
+    const height = `${button.offsetHeight}px`;
+    const transform = `translate(${button.offsetLeft}px, ${button.offsetTop}px)`;
+    if (style.width !== width) style.width = width;
+    if (style.height !== height) style.height = height;
+    if (style.transform !== transform) style.transform = transform;
+    if (!indicator.hasAttribute(PLACED)) indicator.setAttribute(PLACED, "");
+  }
+
+  /** Re-places the pill whenever the pill's group resizes, as a late font swap does. */
+  #measure() {
+    const group = this.querySelector(GROUP);
+    if (!group || group === this.#measured || typeof ResizeObserver !== "function") return;
+    this.#resize ??= new ResizeObserver(() => this.#follow());
+    this.#resize.disconnect();
+    this.#resize.observe(group);
+    this.#measured = group;
+  }
+
+  /** @param {MouseEvent} event */
+  #onClick = (event) => {
+    const button = this.#buttonOf(event.target);
+    if (button && !button.disabled) this.#pick(button);
+  };
+
+  /** @param {KeyboardEvent} event */
+  #onKeydown = (event) => {
+    const button = this.#buttonOf(event.target);
+    if (!button) return;
+    const enabled = this.#buttons().filter((each) => !each.disabled);
+    const at = enabled.indexOf(button);
+    const count = enabled.length;
+    /** @type {HTMLButtonElement | undefined} */
+    let next;
+    switch (event.key) {
+      case "ArrowRight":
+      case "ArrowDown":
+        next = enabled[(at + 1) % count];
+        break;
+      case "ArrowLeft":
+      case "ArrowUp":
+        next = enabled[at < 0 ? count - 1 : (at - 1 + count) % count];
+        break;
+      case "Home":
+        next = enabled[0];
+        break;
+      case "End":
+        next = enabled[count - 1];
+        break;
+      case " ":
+        next = at < 0 ? undefined : button;
+        break;
+      default:
+        return;
+    }
+    if (!next) return;
+    event.preventDefault();
+    this.#pick(next);
+  };
+
+  /** @param {FocusEvent} event */
+  #onFocus = (event) => {
+    if (event.target === this.control) this.focusTarget?.focus();
+  };
 }
 
 define("neuwo-segmented", NeuwoSegmented);

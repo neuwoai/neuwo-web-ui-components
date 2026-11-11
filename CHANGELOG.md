@@ -2,6 +2,55 @@
 
 ## Unreleased
 
+- Breaking: `<neuwo-segmented>` renders into its own light DOM from one template, so a server-rendered
+  segmented control is styled from the first paint, and its recipe,
+  `components/selection/segmented/segmented.css`, joins `neuwo-components.css`. It renders the
+  `.neuwo-choice` root around the pill and the error line, as the checkbox does. The classes are
+  prefixed: `.segmented` is now `.neuwo-segmented` (with `.neuwo-segmented--error`),
+  `.segmented__indicator` and `.segmented__option` are now `.neuwo-segmented__indicator` and
+  `.neuwo-segmented__option`, and the error line's `.control-error` is now `.neuwo-choice__error`. The
+  indicator's `.segmented__indicator--animated` class and `data-active` attribute are gone: a placed
+  pill carries `data-neuwo-placed`. The hidden `<select>` that keeps the options is
+  `.neuwo-segmented__options` and the form value is `.neuwo-segmented__form-value`.
+- Breaking: `::part(group)`, `::part(indicator)`, `::part(option)` and `::part(error)` on
+  `<neuwo-segmented>` are gone, so no element has parts any more. Restyle through the classes, with the
+  element name in front for weight: `neuwo-segmented .neuwo-segmented__option { font-weight: 500; }`.
+- Breaking: `<neuwo-segmented>` is no longer form-associated. Its form control is a visually hidden
+  native input that carries `name`, the starting value, `required`, `disabled` and `form`, so the control
+  submits, resets and validates natively, in server-rendered markup before the script has loaded too,
+  and `form="id"` now ties one outside its form to that form. A required control left unpicked reports
+  the browser's own message instead of "Please select an option.". `form`, `validity`,
+  `validationMessage`, `checkValidity()`, `reportValidity()` and `setCustomValidity()` act on that
+  input, and `focus()` moves to the selected option, else the first enabled one.
+- Breaking: the segmented control's `value` attribute is the starting value, as on the combobox: the
+  option it names starts selected when it is enabled, else the first enabled option marked `selected`,
+  else none, so a `value` that names a disabled or missing option no longer stands. The element no
+  longer writes `value` onto itself. The `value` property reads the live value and setting it selects
+  the option of that value, only an enabled one, without touching any attribute; `defaultValue` reads
+  the starting value and sets the attribute. Changing the attribute moves a control the user has not
+  picked in yet. A form reset returns to the starting value and no longer clears `error`.
+- The segmented control's selected option is marked in the first paint: its button carries
+  `aria-checked="true"`, which gives it the blue background and white text from CSS, readable with no
+  script. The sliding pill is placed only once the user picks, slides to each later pick, and follows a
+  resize from then on; the element no longer measures the buttons when it connects, so nothing shifts
+  when the script loads. While the pill is shown, the selected option's own background gives way to it.
+  In a disabled control the selected option dims with the others, as a checked disabled checkbox does,
+  where the old pill stayed at full strength. The options keep a button's own text defaults, so a page's
+  `text-transform` or `letter-spacing` still does not reach them.
+- `<neuwo-segmented>` now dispatches `input` just before `change`, once each per pick, with the
+  element as `event.target`; setting `value` still fires nothing, and the new `commit(value)` picks as
+  the user does. Home and End now move to the first and last enabled option, beside the arrow keys
+  and Space.
+- Breaking: the segmented control is always horizontal. Its radiogroup always carries
+  `aria-orientation="horizontal"`, where it said `vertical` unless `orientation="horizontal"` was set,
+  and the `orientation` attribute is gone from its docs and types; one left on the element is ignored.
+- `aria-*` and `title` on `<neuwo-segmented>` are now copied onto its radiogroup, a later change too.
+  `data-*` stays on the element only, so a query such as `[data-testid="view"]` matches one node.
+- Through the JSX runtime, `<neuwo-segmented>` behaves like the combobox: `value` makes it controlled,
+  so a pick the `onChange` handler ignores is never shown, `defaultValue` starts an uncontrolled one,
+  and `onInput` and `onChange` fire once per pick with the element as `event.target`. React Hook Form's
+  `register` reads it through `value` and resets it by setting `value`. The JSX types gain `form` and
+  lose `orientation`.
 - Breaking: `<neuwo-radio>` and `<neuwo-radio-group>` render into their own light DOM from one template
   each, so a server-rendered radio group is styled from the first paint, and the group's recipe,
   `components/selection/radio/radio-group.css`, joins `neuwo-components.css`. The group renders the

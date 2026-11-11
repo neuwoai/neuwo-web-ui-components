@@ -1,20 +1,8 @@
-/* ==========================================================================
-   Selection: Segmented control -- a compact pill of single-select buttons.
-   Active state is driven by aria-checked (set by the ARIA layer); the blue
-   selection is a sliding .segmented__indicator positioned in JS.
-   ========================================================================== */
-
-/* Stack the pill and its reserved error line, matching the other selection
-   controls. (inline-block would put the inline-flex pill on a line box and pick
-   up baseline whitespace, nudging it off-centre next to the error line.) */
-:host {
+neuwo-segmented:not([hidden]) {
   display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--neuwo-space-1);
 }
 
-.segmented {
+.neuwo-segmented {
   position: relative;
   display: inline-flex;
   gap: 0.125rem;
@@ -24,33 +12,24 @@
   background: var(--neuwo-glass-bg-light);
 }
 
-/* The moving blue pill behind the active option. Its width/height/transform
-   are set inline by neuwo-segmented.js from the active button's box. */
-.segmented__indicator {
+/* Shown once a pick places it, from display: none, so its first position never slides in from the corner. */
+.neuwo-segmented__indicator {
   position: absolute;
   top: 0;
   left: 0;
   z-index: 0;
-  width: 0;
-  height: 0;
+  display: none;
   background: var(--neuwo-color-blue);
   border-radius: var(--neuwo-radius-full);
-  opacity: 0;
   pointer-events: none;
+  transition: transform var(--neuwo-transition-base), width var(--neuwo-transition-base);
 }
 
-.segmented__indicator[data-active="true"] {
-  opacity: 1;
+.neuwo-segmented__indicator[data-neuwo-placed] {
+  display: block;
 }
 
-/* Armed only after the first placement (see neuwo-segmented.js), so the active
-   pill appears in position on load and slides only on later changes. */
-.segmented__indicator--animated {
-  transition: transform var(--neuwo-transition-base), width var(--neuwo-transition-base),
-    opacity var(--neuwo-transition-fast);
-}
-
-.segmented__option {
+.neuwo-segmented__option {
   position: relative;
   z-index: 1;
   padding: var(--neuwo-space-1) var(--neuwo-space-4);
@@ -63,33 +42,56 @@
   color: var(--neuwo-color-text-muted);
   cursor: pointer;
   transition: color var(--neuwo-transition-fast);
+  /* A button's own text defaults, which the light reset would hand over to the page's. */
+  text-align: center;
+  text-transform: none;
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-indent: 0;
+  text-shadow: none;
 }
 
-.segmented__option:not([aria-checked="true"]):not(:disabled):hover {
+.neuwo-segmented__option:not([aria-checked="true"]):not(:disabled):hover {
   color: var(--neuwo-color-heading);
 }
 
-.segmented__option:focus-visible {
+.neuwo-segmented__option:focus-visible {
   outline: none;
   box-shadow: var(--neuwo-shadow-focus);
 }
 
-.segmented__option[aria-checked="true"] {
+.neuwo-segmented__option[aria-checked="true"] {
+  background: var(--neuwo-color-blue);
   color: var(--neuwo-color-white);
 }
 
-.segmented__option:disabled {
+.neuwo-segmented__indicator[data-neuwo-placed] ~ .neuwo-segmented__option[aria-checked="true"] {
+  background: transparent;
+}
+
+.neuwo-segmented__option:disabled {
   opacity: var(--neuwo-opacity-disabled);
   cursor: not-allowed;
 }
 
-.segmented--error {
+.neuwo-segmented--error {
   border-color: var(--neuwo-color-red);
   box-shadow: var(--neuwo-shadow-danger);
 }
 
+/* Over the pill, so the browser's validation message points at it. */
+.neuwo-segmented__form-value {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .segmented__indicator--animated {
+  .neuwo-segmented__indicator,
+  .neuwo-segmented__option {
     transition: none;
   }
 }

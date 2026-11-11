@@ -1,8 +1,0 @@
-/* Shared, reserved error line for the selection controls. Always present and
-   reserving one line, so showing or hiding the message never shifts layout. */
-.control-error {
-  display: block;
-  min-height: 1lh;
-  font-size: var(--neuwo-font-size-sm);
-  color: var(--neuwo-color-red);
-}

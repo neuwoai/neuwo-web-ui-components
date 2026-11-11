@@ -14,6 +14,7 @@ export const LIGHT_COMPONENT_CSS = [
   "src/components/selection/controls.css",
   "src/components/selection/form-check.css",
   "src/components/selection/radio/radio-group.css",
+  "src/components/selection/segmented/segmented.css",
   "src/components/selection/toggle/toggle.css",
   "src/components/status-dot/status-dot.css",
 ];

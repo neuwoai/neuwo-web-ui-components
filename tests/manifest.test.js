@@ -130,8 +130,11 @@ describe("custom-elements.json", () => {
     expect(partsFor(manifest, "neuwo-combobox").size).toBe(0);
   });
 
-  it("documents the Shadow DOM selection-control parts", () => {
-    for (const p of ["indicator", "option"]) expect(partsFor(manifest, "neuwo-segmented").has(p)).toBe(true);
+  it("documents the segmented control's attributes, with no orientation, its input and change events and no parts", () => {
+    const attrs = attributesFor(manifest, "neuwo-segmented");
+    expect([...attrs].sort()).toEqual(["disabled", "error", "error-muted", "form", "label", "name", "no-error-line", "required", "value"]);
+    expect(declByTag(manifest, "neuwo-segmented").events.map((e) => e.name)).toEqual(expect.arrayContaining(["input", "change"]));
+    expect(partsFor(manifest, "neuwo-segmented").size).toBe(0);
   });
 
   it("documents the radio's checkable attributes, none of the error line's, the native events and no parts", () => {

@@ -159,4 +159,19 @@ for (const [name, create] of Object.entries(factories)) {
     functions: functionsIn(tree),
   };
 }
+found.segmented = {};
+for (const [name, create] of Object.entries(factories)) {
+  const options = [create("option", { value: "visual", children: "Visual" }, "visual"), create("option", { value: "json", children: "JSON" }, "json")];
+  const Page = () => create("main", { children: create("neuwo-segmented", { value: "json", name: "view", label: "View", children: options }) });
+  const { errors, payload } = await flight(create(Page, {}));
+  assert.deepEqual(errors, [], `${name}: the neuwo-segmented Flight render reported errors`);
+  const tree = await decode(payload);
+  found.segmented[name] = {
+    hostValue: find(tree, (el) => el.type === "neuwo-segmented")?.props.value ?? null,
+    formValue: find(tree, (el) => el.props.className === "neuwo-segmented__form-value")?.props,
+    options: findAll(tree, (el) => el.props.className === "neuwo-segmented__option").map((el) => [el.props["data-value"], el.props["aria-checked"], el.props.tabIndex]),
+    indicator: find(tree, (el) => el.props.className === "neuwo-segmented__indicator")?.props,
+    functions: functionsIn(tree),
+  };
+}
 console.log(JSON.stringify(found));

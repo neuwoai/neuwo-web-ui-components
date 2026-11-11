@@ -16,6 +16,14 @@ import { templates } from "../../src/templates.js";
  */
 const radio = (value, label, attrs = {}) => ({ tag: "neuwo-radio", attrs: { value, ...attrs }, text: label });
 
+/**
+ * @param {string} value
+ * @param {string} label
+ * @param {Record<string, string>} [attrs]
+ * @returns {ChildElement}
+ */
+const view = (value, label, attrs = {}) => ({ tag: "option", attrs: { value, ...attrs }, text: label });
+
 /** @type {Record<string, TemplateCase[]>} */
 export const cases = {
   "neuwo-button": [
@@ -162,6 +170,21 @@ export const cases = {
       children: ["I ", { tag: "em", text: "agree" }],
     },
     { name: "a lone radio with no value", attrs: {}, children: ["Plain"] },
+  ],
+  "neuwo-segmented": [
+    { name: "a value", attrs: { name: "view", value: "json", label: "View" }, children: [view("visual", "Visual"), view("json", "JSON"), view("raw", "Raw", { disabled: "" })] },
+    {
+      name: "a selected option",
+      attrs: { name: "density" },
+      children: ["\n  ", view("compact", "Compact"), "\n  ", view("comfortable", "Comfortable", { selected: "" }), "\n  ", { tag: "option", text: "Spacious" }, "\n"],
+    },
+    {
+      name: "disabled options",
+      attrs: { value: "b", form: "search", "aria-label": "Mode", title: "Mode", "data-x": "1", "no-error-line": "" },
+      children: [view("a", "A", { disabled: "" }), view("b", "B", { disabled: "", selected: "" }), view("c", "C")],
+    },
+    { name: "a disabled group", attrs: { name: "view", value: "json", disabled: "", orientation: "vertical" }, children: [view("visual", "Visual"), view("json", "JSON")] },
+    { name: "required with an error", attrs: { name: "view", label: "View", required: "", error: "Choose a view" }, children: [view("visual", "Visual"), view("json", "JSON")] },
   ],
   "neuwo-deal-id": [
     { name: "default", attrs: {}, children: ["NW-CA-2026-04-8A3F"] },

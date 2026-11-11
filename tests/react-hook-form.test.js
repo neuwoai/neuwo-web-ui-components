@@ -124,3 +124,44 @@ describe("<neuwo-radio-group> with React Hook Form's register, in jsdom", () => 
     expect(errors).not.toHaveBeenCalled();
   });
 });
+
+describe("<neuwo-segmented> with React Hook Form's register, in jsdom", () => {
+  const buttonOf = (host, value) => host.querySelector(`:scope > .neuwo-choice > .neuwo-segmented > .neuwo-segmented__option[data-value="${value}"]`);
+  const checkedOf = (host) => Array.from(host.querySelectorAll('.neuwo-segmented__option[aria-checked="true"]'), (button) => button.dataset.value);
+  const views = () => [jsx("option", { value: "visual", children: "Visual" }, "visual"), jsx("option", { value: "json", children: "JSON" }, "json")];
+
+  it("registers the element as a plain field, shows its default, and reads each pick through its value", async () => {
+    const errors = vi.spyOn(console, "error");
+    const form = useForm({ view: "json" });
+    const container = await render(jsx("form", { children: jsx("neuwo-segmented", { ...form.register("view"), children: views() }) }));
+    const host = container.querySelector("neuwo-segmented");
+    expect(form.fields.view.ref).toBe(host);
+    expect(form.fields.view.refs).toBeUndefined();
+    expect(checkedOf(host)).toEqual(["json"]);
+    expect(form.values.view).toBe("json");
+    await act(async () => buttonOf(host, "visual").click());
+    expect(form.values.view).toBe("visual");
+    expect(host.hasAttribute("value")).toBe(false);
+    expect([...new FormData(container.querySelector("form"))]).toEqual([["view", "visual"]]);
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it("reads an unpicked one as an empty value, and resets to the default value", async () => {
+    const errors = vi.spyOn(console, "error");
+    const blank = useForm();
+    const first = await render(jsx("neuwo-segmented", { ...blank.register("mode"), children: views() }));
+    expect(blank.values.mode).toBe("");
+    expect(first.querySelector("neuwo-segmented").value).toBe("");
+    const form = useForm({ view: "visual" });
+    const container = await render(jsx("form", { children: jsx("neuwo-segmented", { ...form.register("view"), children: views() }) }));
+    const host = container.querySelector("neuwo-segmented");
+    await act(async () => buttonOf(host, "json").click());
+    expect(form.values.view).toBe("json");
+    await act(async () => form.reset());
+    await act(async () => new Promise((resolve) => setTimeout(resolve, 0)));
+    expect(host.value).toBe("visual");
+    expect(checkedOf(host)).toEqual(["visual"]);
+    expect(form.values.view).toBe("visual");
+    expect(errors).not.toHaveBeenCalled();
+  });
+});
