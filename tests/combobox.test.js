@@ -687,10 +687,19 @@ describe("<neuwo-combobox searchable>", () => {
     expect(el.isOpen).toBe(true);
   });
 
-  // The popover API a browser gives the popup: light dismiss at a pointerup outside it, each toggle event a task later.
+  // The popover API a browser gives the popup: light dismiss at a pointerup outside it, beforetoggle at once and toggle
+  // a task later, and an entrance animation that starts again on every show and drops out of getAnimations() when done.
   function popover(el) {
     const popup = el.popup;
     let shown = false;
+    let hiding = false;
+    let animations = [];
+    const entrance = () => ({ currentTime: 0, finished: false, finish() { this.finished = true; } });
+    const before = (newState) => {
+      const event = new Event("beforetoggle");
+      event.newState = newState;
+      popup.dispatchEvent(event);
+    };
     const toggle = (newState) =>
       setTimeout(() => {
         const event = new Event("toggle");
@@ -699,20 +708,29 @@ describe("<neuwo-combobox searchable>", () => {
       });
     popup.showPopover = () => {
       if (shown) throw new DOMException("Already shown", "InvalidStateError");
+      before("open");
       shown = true;
+      animations = [entrance()];
       toggle("open");
     };
     popup.hidePopover = () => {
       if (!shown) throw new DOMException("Already hidden", "InvalidStateError");
+      if (hiding) return;
+      hiding = true;
+      before("closed");
+      hiding = false;
       shown = false;
+      animations = [];
       toggle("closed");
     };
+    popup.getAnimations = () => animations.filter((animation) => !animation.finished);
     popup.matches = (selector) => (selector === ":popover-open" ? shown : Element.prototype.matches.call(popup, selector));
     const dismiss = (event) => {
       if (shown && !popup.contains(event.target)) popup.hidePopover();
     };
     document.addEventListener("pointerup", dismiss, true);
     cleanup.push(() => document.removeEventListener("pointerup", dismiss, true));
+    return { animation: () => animations[0] };
   }
 
   const pointer = (target, type, pointerType) => target.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, pointerType }));
@@ -759,6 +777,46 @@ describe("<neuwo-combobox searchable>", () => {
     await nextTask();
     expect(el.isOpen).toBe(true);
     expect(el.popup.matches(":popover-open")).toBe(true);
+  });
+
+  it("continues the entrance where light dismiss cut it when the click shows the list again, never replaying it", async () => {
+    const el = make(`<neuwo-combobox searchable>${FRUIT}</neuwo-combobox>`);
+    const { animation } = popover(el);
+    const trigger = triggerOf(el);
+    pointer(trigger, "pointerdown", "mouse");
+    mouse(trigger, "mousedown");
+    trigger.focus();
+    animation().currentTime = 80;
+    pointer(trigger, "pointerup", "mouse");
+    mouse(trigger, "mouseup");
+    mouse(trigger, "click");
+    expect(el.popup.matches(":popover-open")).toBe(true);
+    expect(animation()).toMatchObject({ currentTime: 80, finished: false });
+    await nextTask();
+    animation().finish();
+    click(trigger);
+    expect(el.popup.matches(":popover-open")).toBe(true);
+    expect(animation().finished).toBe(true);
+    await nextTask();
+    el.close();
+    trigger.blur();
+    trigger.focus();
+    expect(animation()).toMatchObject({ currentTime: 0, finished: false });
+  });
+
+  it("closes at once when light dismiss hides the popup for a press elsewhere", async () => {
+    const el = make(`<neuwo-combobox searchable>${FRUIT}</neuwo-combobox>`);
+    popover(el);
+    click(triggerOf(el));
+    await nextTask();
+    click(document.body);
+    expect(el.isOpen).toBe(false);
+    expect(triggerOf(el).getAttribute("aria-expanded")).toBe("false");
+    expect(el.popup.matches(":popover-open")).toBe(false);
+    click(triggerOf(el));
+    expect(el.isOpen).toBe(true);
+    await nextTask();
+    expect(el.isOpen).toBe(true);
   });
 
   it("stays closed after a click on an option, which returns focus to its text field", async () => {

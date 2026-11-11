@@ -48,8 +48,11 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   #typeaheadTimer;
   #labelClicked = false;
   #quiet = false;
+  #pressed = false;
+  /** @type {number | null} */
+  #entrance = null;
   /** @type {Node | null} */
-  #labelRoot = null;
+  #root = null;
 
   #widget = new OptionWidget(this, {
     options: () => this.querySelector(`${BOX} > .neuwo-combobox__options`),
@@ -153,7 +156,13 @@ export class NeuwoCombobox extends NeuwoFieldElement {
       }
     }
     this.#position();
-    if (!opening) return;
+    if (!opening) {
+      for (const animation of popup.getAnimations?.() ?? []) {
+        if (this.#entrance === null) animation.finish();
+        else animation.currentTime = this.#entrance;
+      }
+      return;
+    }
     if (this.#active < 0) this.#activeStart();
     window.addEventListener("scroll", this.#reposition, true);
     window.addEventListener("resize", this.#reposition);
@@ -183,12 +192,14 @@ export class NeuwoCombobox extends NeuwoFieldElement {
 
   connect() {
     super.connect();
-    this.#labelRoot = this.getRootNode();
-    this.#labelRoot.addEventListener("click", this.#onLabelClick, true);
+    this.#root = this.getRootNode();
+    this.#root.addEventListener("click", this.#onLabelClick, true);
+    this.#root.addEventListener("pointerdown", this.#onPress, true);
     this.addEventListener("click", this.#onClick);
     this.addEventListener("keydown", this.#onKeydown);
     this.addEventListener("input", this.#onInputOrChange, true);
     this.addEventListener("change", this.#onInputOrChange, true);
+    this.addEventListener("beforetoggle", this.#onBeforeToggle, true);
     this.addEventListener("toggle", this.#onToggle, true);
     this.addEventListener("focus", this.#onFocus, true);
     this.addEventListener("blur", this.#onBlur, true);
@@ -198,12 +209,14 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   disconnect() {
     super.disconnect();
     this.close();
-    this.#labelRoot?.removeEventListener("click", this.#onLabelClick, true);
-    this.#labelRoot = null;
+    this.#root?.removeEventListener("click", this.#onLabelClick, true);
+    this.#root?.removeEventListener("pointerdown", this.#onPress, true);
+    this.#root = null;
     this.removeEventListener("click", this.#onClick);
     this.removeEventListener("keydown", this.#onKeydown);
     this.removeEventListener("input", this.#onInputOrChange, true);
     this.removeEventListener("change", this.#onInputOrChange, true);
+    this.removeEventListener("beforetoggle", this.#onBeforeToggle, true);
     this.removeEventListener("toggle", this.#onToggle, true);
     this.removeEventListener("focus", this.#onFocus, true);
     this.removeEventListener("blur", this.#onBlur, true);
@@ -383,6 +396,7 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     const target = /** @type {Element} */ (event.target);
     const trigger = this.trigger;
     if (trigger && trigger.contains(target)) {
+      this.#pressed = false;
       if (this.#labelClicked) {
         this.#labelClicked = false;
         this.#focusQuietly();
@@ -486,6 +500,24 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     this.#filter = trigger.value;
     if (!this.#open) this.open();
     this.#applyFilter();
+  };
+
+  /** @param {Event} event */
+  #onPress = (event) => {
+    this.#pressed = Boolean(this.trigger?.contains(/** @type {Node} */ (event.target)));
+  };
+
+  /** @param {Event} event */
+  #onBeforeToggle = (event) => {
+    const popup = this.popup;
+    if (event.target !== popup || /** @type {ToggleEvent} */ (event).newState !== "closed" || !this.#open) return;
+    if (!this.#pressed) {
+      this.close();
+      return;
+    }
+    // Light dismiss of a press on the trigger is undone by the click that ends it, so the entrance must resume there.
+    const running = popup.getAnimations?.() ?? [];
+    this.#entrance = running.length ? Number(running[0].currentTime) : null;
   };
 
   /** @param {Event} event */
