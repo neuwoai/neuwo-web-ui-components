@@ -76,8 +76,8 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
     if (!owned) {
       // A move such as React's Suspense reveal reconnects served markup its attributes alone would not render.
       if (!restart || this.#changedWhileAway()) this.#write(isRendered(this, template) ? adopt : render);
-      // A child a script appended before the element was defined sits beside the adopted markup.
-      if (!restart && hasLooseContent(this)) this.#write(reconcile);
+      // A change made while it waited for the parser, or a child appended before definition, is not in the adopted markup.
+      if (!restart && (this.#dirty || hasLooseContent(this))) this.#write(reconcile);
       this.#dirty = false;
       this.#away = null;
       this.#observer ??= new MutationObserver((records) => this.#changed(records));
@@ -113,8 +113,8 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
 
   attributeChangedCallback() {
     // An upgrade calls this for every attribute before the first connect, which adopts; those are not changes.
-    if (!this.#started || ownedByReact(this)) return;
-    if (this.isConnected && !this.#waiting) this.#reconcile();
+    if ((!this.#started && !this.#waiting) || ownedByReact(this)) return;
+    if (this.#started && this.isConnected && !this.#waiting) this.#reconcile();
     else this.#dirty = true;
   }
 

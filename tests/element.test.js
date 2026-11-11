@@ -216,6 +216,22 @@ describe("NeuwoElement (light DOM)", () => {
       expect(el.connected).toBe(1);
     });
 
+    it("applies an attribute a script changed while it waited to the server markup it adopts", () => {
+      const { host, el, observer } = parse();
+      const detached = document.createElement("div");
+      detached.innerHTML = server().replace(/^<test-light>|<\/test-light>$/g, "");
+      el.append(...detached.childNodes);
+      el.setAttribute("tone", "b");
+      observer.takeRecords();
+      delete document.readyState;
+      document.dispatchEvent(new Event("DOMContentLoaded"));
+      expect(observer.takeRecords().map((record) => record.attributeName)).toEqual(["class"]);
+      expect(host.querySelectorAll(".neuwo-t")).toHaveLength(1);
+      expect(el.querySelector(".neuwo-t").className).toBe("neuwo-t neuwo-t--b");
+      expect(el.querySelector(".neuwo-t__body").textContent).toBe("hi");
+      expect(el.connected).toBe(1);
+    });
+
     it("renders an unexpanded element at DOMContentLoaded", () => {
       const { el } = parse();
       el.append("plain");
