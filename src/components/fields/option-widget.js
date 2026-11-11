@@ -10,6 +10,8 @@ import { CONTROLLED } from "../../core/marks.js";
  * @property {(value: string) => void} show - writes the widget's display of an accepted value, only what differs.
  * @property {() => void} [held] - re-applies what the element still owns on a host React controls.
  * @property {string[]} attributes - the attributes of the display React may rewrite.
+ * @property {(target: EventTarget | null) => HTMLElement | null} named - the widget's own focusable element an event
+ *   targets, which reads as named while it loses focus, else null.
  */
 
 /**
@@ -18,7 +20,8 @@ import { CONTROLLED } from "../../core/marks.js";
  * segmented control. The form value holds the live value. A pick on a host React controls only dispatches
  * `input` and `change`, with the element's `value` reading the picked value meanwhile, and React shows whatever
  * the consumer's state then holds. On a React host the element re-applies the live display once React has
- * written its own, and the form value's own `input` and `change` never leave the element.
+ * written its own, and the form value's own `input` and `change` never leave the element. While the element's own
+ * focusable part loses focus, it reads as named after the element, as form libraries expect of a blurred field.
  */
 export class OptionWidget {
   /** @type {OptionHost} */
@@ -109,6 +112,8 @@ export class OptionWidget {
     const host = this.#host;
     host.addEventListener("input", this.#isolate, true);
     host.addEventListener("change", this.#isolate, true);
+    host.addEventListener("blur", this.#lendName, true);
+    host.addEventListener("focusout", this.#lendName, true);
     this.#watch();
     // Every host watches, since React can hydrate one after it connected and then rewrite what the element showed.
     this.#shown ??= new MutationObserver(() => {
@@ -122,6 +127,8 @@ export class OptionWidget {
   disconnect() {
     this.#host.removeEventListener("input", this.#isolate, true);
     this.#host.removeEventListener("change", this.#isolate, true);
+    this.#host.removeEventListener("blur", this.#lendName, true);
+    this.#host.removeEventListener("focusout", this.#lendName, true);
     this.#options?.disconnect();
     this.#options = null;
     this.#watched = null;
@@ -162,5 +169,20 @@ export class OptionWidget {
     if (event.target !== this.#host.control) return;
     event.stopPropagation();
     if (Reflect.get(this.#host, CONTROLLED) !== true) this.sync();
+  };
+
+  /**
+   * Form libraries find a blurred field by `event.target.name`, so the focusable part reads as named for that
+   * dispatch only.
+   * @param {Event} event
+   */
+  #lendName = (event) => {
+    const target = this.#display.named(event.target);
+    if (!target) return;
+    Object.defineProperty(target, "name", {
+      configurable: true,
+      get: () => (event.eventPhase === Event.NONE ? (target.getAttribute("name") ?? "") : this.#host.name),
+      set: (value) => target.setAttribute("name", value),
+    });
   };
 }

@@ -634,6 +634,11 @@ value props:
 - If the options change while the combobox is mounted, for example once they have loaded, use
   `value`. Uncontrolled, a pick whose option goes away is cleared without a `change`, so your
   state never hears of it.
+- Markup React renders once and never hydrates, such as an Astro component with no client
+  directive, gives the element no `value` attribute when only `defaultValue` is set. Change an
+  attribute of such a combobox later, from a script, and it renders again without that starting
+  value: a later `form.reset()`, and a combobox the user has not picked in yet, fall back to the
+  option marked `selected` or to nothing. Set `value` there instead.
 
 `<neuwo-segmented>` follows the combobox's models, with the same `value`, `defaultValue`, `onInput`
 and `onChange`:
@@ -653,7 +658,15 @@ and `onChange`:
   user's pick itself and keeps it across re-renders. In Server Components `value` is the
   starting value.
 - React Hook Form's `register` reads the picked value from the element's `value` and sets it on
-  a reset, as on the combobox.
+  a reset, as on the combobox. `onBlur` gets the option button as `event.target`, and while the
+  blur is dispatched the button's `name` reads as the field's, so `register` marks the control
+  touched and validates it in `mode: "onBlur"`. The buttons have no `name` attribute and submit
+  nothing. Moving between the options with the arrow keys blurs each one, as it does native
+  radios.
+- Never-hydrated markup with only `defaultValue` behaves as the combobox's does: an attribute
+  changed later, from a script, renders it again without that starting value, so a later
+  `form.reset()`, and a control the user has not picked in yet, fall back to the option marked
+  `selected` or to none. Set `value` there instead.
 
 ### Next.js and server rendering
 
@@ -1039,8 +1052,10 @@ with its form, in server-rendered markup before the script has loaded too.
 - **A pick** by click or key dispatches `input` then `change` on the element,
   once each, with the element as `event.target`; setting `value` fires nothing,
   and `commit(value)` picks as the user does. The arrow keys move the selection,
-  which follows focus, wrapping past disabled options, Home and End go to the
-  first and last enabled option, and Space selects the focused one.
+  which follows focus, wrapping past disabled options; in a right-to-left
+  context ArrowLeft moves to the next option and ArrowRight to the previous.
+  Home and End go to the first and last enabled option, and Space selects the
+  focused one.
 - **The native form API** answers for the hidden input: `form`, `validity`,
   `validationMessage`, `checkValidity()`, `reportValidity()` and
   `setCustomValidity()`. `focus()` moves to the selected option, else the first

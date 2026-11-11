@@ -148,6 +148,22 @@ describe("<neuwo-segmented>", () => {
     expect(heard.filter(([type]) => type === "change")).toHaveLength(4);
   });
 
+  it("mirrors ArrowLeft and ArrowRight in a right-to-left context, read when the key is pressed", () => {
+    const holder = make(`<div style="direction: rtl"><neuwo-segmented value="json">${OPTS}</neuwo-segmented></div>`);
+    const el = holder.querySelector("neuwo-segmented");
+    key(buttonOf(el, "json"), "ArrowLeft");
+    expect(el.value).toBe("table");
+    key(buttonOf(el, "table"), "ArrowRight");
+    expect(el.value).toBe("json");
+    key(buttonOf(el, "json"), "ArrowDown");
+    expect(el.value).toBe("table");
+    key(buttonOf(el, "table"), "ArrowUp");
+    expect(el.value).toBe("json");
+    holder.style.direction = "ltr";
+    key(buttonOf(el, "json"), "ArrowLeft");
+    expect(el.value).toBe("visual");
+  });
+
   it("moves to the first and last enabled options with Home and End, and selects the focused one with Space", () => {
     const el = make(`<neuwo-segmented value="json"><option value="a" disabled>A</option>${OPTS}<option value="z" disabled>Z</option></neuwo-segmented>`);
     key(buttonOf(el, "json"), "End");

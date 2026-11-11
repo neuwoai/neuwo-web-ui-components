@@ -1,4 +1,5 @@
-// Mirrors react-hook-form 7.92.0: register's ref, onChange, getFieldValue, getCheckboxValue and setFieldValue.
+// Mirrors react-hook-form 7.92.0: register's ref, its onChange and onBlur (one handler, which marks a blurred field
+// touched), getFieldValue, getCheckboxValue and setFieldValue.
 
 const isCheckBoxInput = (element) => element.type === "checkbox";
 const isRadioOrCheckbox = (element) => element.type === "radio" || isCheckBoxInput(element);
@@ -21,6 +22,8 @@ export function useForm(defaultValues = {}) {
   const fields = {};
   /** @type {Record<string, unknown>} */
   const values = {};
+  /** @type {Record<string, boolean>} */
+  const touched = {};
 
   function setFieldValue(name, value) {
     const field = fields[name];
@@ -35,14 +38,21 @@ export function useForm(defaultValues = {}) {
     else setFieldValue(name, defaultValues[name]);
   }
 
+  /** @param {Event} event */
+  function onChange(event) {
+    const target = /** @type {HTMLInputElement} */ (event.target);
+    const field = fields[target.name];
+    if (!field) return;
+    if (event.type === "blur" || event.type === "focusout") touched[target.name] = true;
+    values[target.name] = target.type ? getFieldValue(field) : target.value;
+  }
+
   /** @param {string} name */
   function register(name) {
     return {
       name,
-      onChange(/** @type {Event} */ event) {
-        const target = /** @type {HTMLInputElement} */ (event.target);
-        values[target.name] = target.type ? getFieldValue(fields[target.name]) : target.value;
-      },
+      onChange,
+      onBlur: onChange,
       ref(/** @type {Element | null} */ ref) {
         if (!ref) return;
         const fieldRef = ref.value === undefined ? ref.querySelectorAll("input,select,textarea")[0] || ref : ref;
@@ -58,5 +68,5 @@ export function useForm(defaultValues = {}) {
     for (const name of Object.keys(fields)) settle(name);
   }
 
-  return { register, reset, values, fields };
+  return { register, reset, values, touched, fields };
 }

@@ -49,7 +49,7 @@ export class NeuwoSegmented extends NeuwoControlElement {
   /** @type {string | undefined} */
   #pending;
 
-  // Set by the first pick: from then on the pill follows the selection.
+  // Only a pick sets it, so a served first paint is never measured or written to before the user acts.
   #armed = false;
 
   /** @type {ResizeObserver | null} */
@@ -64,6 +64,7 @@ export class NeuwoSegmented extends NeuwoControlElement {
     show: (value) => this.#show(value),
     held: () => this.#follow(),
     attributes: ["value", "aria-checked", "tabindex", "disabled"],
+    named: (target) => this.#buttonOf(target) ?? null,
   });
 
   /**
@@ -278,33 +279,32 @@ export class NeuwoSegmented extends NeuwoControlElement {
     const enabled = this.#buttons().filter((each) => !each.disabled);
     const at = enabled.indexOf(button);
     const count = enabled.length;
+    const step = this.#step(event.key);
     /** @type {HTMLButtonElement | undefined} */
     let next;
-    switch (event.key) {
-      case "ArrowRight":
-      case "ArrowDown":
-        next = enabled[(at + 1) % count];
-        break;
-      case "ArrowLeft":
-      case "ArrowUp":
-        next = enabled[at < 0 ? count - 1 : (at - 1 + count) % count];
-        break;
-      case "Home":
-        next = enabled[0];
-        break;
-      case "End":
-        next = enabled[count - 1];
-        break;
-      case " ":
-        next = at < 0 ? undefined : button;
-        break;
-      default:
-        return;
-    }
+    if (step === 1) next = enabled[(at + 1) % count];
+    else if (step === -1) next = enabled[at < 0 ? count - 1 : (at - 1 + count) % count];
+    else if (event.key === "Home") next = enabled[0];
+    else if (event.key === "End") next = enabled[count - 1];
+    else if (event.key === " ") next = at < 0 ? undefined : button;
+    else return;
     if (!next) return;
     event.preventDefault();
     this.#pick(next);
   };
+
+  /**
+   * How far an arrow key moves the selection: 1 to the next option, -1 to the previous, else 0. ArrowLeft and
+   * ArrowRight follow the element's text direction at the time of the key.
+   * @param {string} key
+   * @returns {number}
+   */
+  #step(key) {
+    if (key === "ArrowDown") return 1;
+    if (key === "ArrowUp") return -1;
+    if (key !== "ArrowLeft" && key !== "ArrowRight") return 0;
+    return (key === "ArrowRight") === (getComputedStyle(this).direction !== "rtl") ? 1 : -1;
+  }
 
   /** @param {FocusEvent} event */
   #onFocus = (event) => {

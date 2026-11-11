@@ -146,6 +146,24 @@ describe("<neuwo-segmented> with React Hook Form's register, in jsdom", () => {
     expect(errors).not.toHaveBeenCalled();
   });
 
+  it("marks the field touched when an option loses focus, its name lent to the option for that blur only", async () => {
+    const errors = vi.spyOn(console, "error");
+    const form = useForm();
+    const container = await render(jsx("form", { children: jsx("neuwo-segmented", { ...form.register("view"), defaultValue: "json", children: views() }) }));
+    const host = container.querySelector("neuwo-segmented");
+    const button = buttonOf(host, "json");
+    const sent = () => [...new FormData(container.querySelector("form"))];
+    expect(sent()).toEqual([["view", "json"]]);
+    await act(async () => button.focus());
+    await act(async () => button.blur());
+    expect(form.touched).toEqual({ view: true });
+    expect(form.values.view).toBe("json");
+    expect(button.hasAttribute("name")).toBe(false);
+    expect(button.name).toBe("");
+    expect(sent()).toEqual([["view", "json"]]);
+    expect(errors).not.toHaveBeenCalled();
+  });
+
   it("reads an unpicked one as an empty value, and resets to the default value", async () => {
     const errors = vi.spyOn(console, "error");
     const blank = useForm();
@@ -162,6 +180,24 @@ describe("<neuwo-segmented> with React Hook Form's register, in jsdom", () => {
     expect(host.value).toBe("visual");
     expect(checkedOf(host)).toEqual(["visual"]);
     expect(form.values.view).toBe("visual");
+    expect(errors).not.toHaveBeenCalled();
+  });
+});
+
+describe("<neuwo-combobox> with React Hook Form's register, in jsdom", () => {
+  it("marks the field touched when its trigger loses focus, its name lent to the trigger for that blur only", async () => {
+    const errors = vi.spyOn(console, "error");
+    const form = useForm();
+    const options = [jsx("option", { value: "fi", children: "Finland" }, "fi"), jsx("option", { value: "fr", children: "France" }, "fr")];
+    const container = await render(jsx("form", { children: jsx("neuwo-combobox", { ...form.register("country"), defaultValue: "fr", children: options }) }));
+    const trigger = container.querySelector(".neuwo-combobox__trigger");
+    await act(async () => trigger.focus());
+    await act(async () => trigger.blur());
+    expect(form.touched).toEqual({ country: true });
+    expect(form.values.country).toBe("fr");
+    expect(trigger.hasAttribute("name")).toBe(false);
+    expect(trigger.name).toBe("");
+    expect([...new FormData(container.querySelector("form"))]).toEqual([["country", "fr"]]);
     expect(errors).not.toHaveBeenCalled();
   });
 });

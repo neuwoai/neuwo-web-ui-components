@@ -40,7 +40,8 @@
 - `<neuwo-segmented>` now dispatches `input` just before `change`, once each per pick, with the
   element as `event.target`; setting `value` still fires nothing, and the new `commit(value)` picks as
   the user does. Home and End now move to the first and last enabled option, beside the arrow keys
-  and Space.
+  and Space, and in a right-to-left context ArrowLeft and ArrowRight now move to the next and the
+  previous option, read from the element's `direction` when the key is pressed.
 - Breaking: the segmented control is always horizontal. Its radiogroup always carries
   `aria-orientation="horizontal"`, where it said `vertical` unless `orientation="horizontal"` was set,
   and the `orientation` attribute is gone from its docs and types; one left on the element is ignored.
@@ -49,8 +50,9 @@
 - Through the JSX runtime, `<neuwo-segmented>` behaves like the combobox: `value` makes it controlled,
   so a pick the `onChange` handler ignores is never shown, `defaultValue` starts an uncontrolled one,
   and `onInput` and `onChange` fire once per pick with the element as `event.target`. React Hook Form's
-  `register` reads it through `value` and resets it by setting `value`. The JSX types gain `form` and
-  lose `orientation`.
+  `register` reads it through `value` and resets it by setting `value`, and while an option loses
+  focus the option's `name` reads as the element's, as the combobox's trigger does, so `register`'s
+  `onBlur` finds the field and marks it touched. The JSX types gain `form` and lose `orientation`.
 - Breaking: `<neuwo-radio>` and `<neuwo-radio-group>` render into their own light DOM from one template
   each, so a server-rendered radio group is styled from the first paint, and the group's recipe,
   `components/selection/radio/radio-group.css`, joins `neuwo-components.css`. The group renders the

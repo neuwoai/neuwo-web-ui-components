@@ -49,6 +49,7 @@ export class NeuwoCombobox extends NeuwoFieldElement {
       if (!this.#open) this.#revertText();
     },
     attributes: ["value", "data-placeholder", "aria-selected"],
+    named: (target) => (target === this.trigger ? this.trigger : null),
   });
 
   #reposition = () => this.#position();
@@ -175,8 +176,6 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     this.addEventListener("toggle", this.#onToggle, true);
     this.addEventListener("focus", this.#onFocus, true);
     this.addEventListener("blur", this.#onBlur, true);
-    this.addEventListener("blur", this.#lendName, true);
-    this.addEventListener("focusout", this.#lendName, true);
     this.#widget.connect();
   }
 
@@ -190,8 +189,6 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     this.removeEventListener("toggle", this.#onToggle, true);
     this.removeEventListener("focus", this.#onFocus, true);
     this.removeEventListener("blur", this.#onBlur, true);
-    this.removeEventListener("blur", this.#lendName, true);
-    this.removeEventListener("focusout", this.#lendName, true);
     this.#widget.disconnect();
     clearTimeout(this.#typeaheadTimer);
   }
@@ -468,20 +465,6 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   /** @param {FocusEvent} event */
   #onBlur = (event) => {
     if (event.target === this.trigger && !this.#open) this.#revertText();
-  };
-
-  /**
-   * Form libraries find a blurred field by `event.target.name`, so the trigger reads as named for that dispatch only.
-   * @param {FocusEvent} event
-   */
-  #lendName = (event) => {
-    const trigger = this.trigger;
-    if (!trigger || event.target !== trigger) return;
-    Object.defineProperty(trigger, "name", {
-      configurable: true,
-      get: () => (event.eventPhase === Event.NONE ? (trigger.getAttribute("name") ?? "") : this.name),
-      set: (value) => trigger.setAttribute("name", value),
-    });
   };
 }
 
