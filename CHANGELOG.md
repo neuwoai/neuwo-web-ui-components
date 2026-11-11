@@ -45,6 +45,11 @@
   every click with the inner checkbox as `event.target`. The JSX types give an element with a `checked`
   attribute `checked` and `defaultChecked` as booleans, `value` as a string or a number and an `onChange`
   whose target is typed as the element, and refuse `defaultValue` on it.
+- `<neuwo-checkbox>` and `<neuwo-toggle>` have a read-only `type` of `"checkbox"`, and `defaultChecked`
+  reads the starting state the JSX runtime rendered from `defaultChecked`, so React Hook Form's `register`
+  reads and resets them as a native checkbox: a checked one gives its `value`, or `true` without one, and
+  an unchecked one `false`. It used to read `"on"` whatever the state, and its reset wrote the default
+  into a `value` attribute on the element.
 - Breaking: `<neuwo-input>` renders into its own light DOM from one template, so a server-rendered
   input is styled from the first paint, and its recipe, `components/fields/field.css`, joins
   `neuwo-components.css`. Its classes are prefixed: `.field` is now `.neuwo-field` (with

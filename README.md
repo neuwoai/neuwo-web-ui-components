@@ -570,6 +570,10 @@ value props:
 - `defaultChecked` gives an uncontrolled one with a starting state, which keeps the user's choice
   across re-renders. `value` is the value submitted while it is checked, as on a native checkbox,
   and `defaultValue` is a type error.
+- A click on an indeterminate controlled checkbox clears `indeterminate` even when your handler
+  rejects the change, as on React's own checkbox; set it again from your state.
+- React Hook Form's `register` reads and resets them as it does a native checkbox: a checked one
+  gives its `value`, or `true` without one, and an unchecked one `false`.
 - In Server Components `checked` is the starting state.
 
 `<neuwo-combobox>` follows the same two models:
@@ -889,7 +893,10 @@ submits nothing.
 - **`checked` is the starting state**, as on a native checkbox. Changing the
   attribute moves a checkbox the user has not clicked yet, and `form.reset()`
   returns to it. The `checked` property reads and writes the state shown now and
-  never touches the attribute; `defaultChecked` reflects the attribute.
+  never touches the attribute; `defaultChecked` reads the starting state, the
+  attribute's or the one `defaultChecked` gave in React, and sets the attribute.
+  `type` reads `checkbox`, as on the inner input, which is how form libraries
+  such as React Hook Form tell a checkbox apart.
 - **The checkbox's own events** reach your listeners: `input` and `change` on
   every click, both bubbling through the element, with the inner `<input>` as
   `event.target`. The element dispatches none of its own.

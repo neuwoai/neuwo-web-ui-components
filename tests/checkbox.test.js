@@ -156,6 +156,16 @@ describe("<neuwo-checkbox>", () => {
     expect(labelOf(el).textContent).toBe("Accept");
   });
 
+  it("names the native control's type, read-only, as a native checkbox does", () => {
+    for (const tag of ["neuwo-checkbox", "neuwo-toggle"]) {
+      const el = document.createElement(tag);
+      expect(el.type, tag).toBe("checkbox");
+      expect(() => {
+        el.type = "radio";
+      }, tag).toThrow(TypeError);
+    }
+  });
+
   it("focuses the native checkbox", () => {
     const el = make(`<neuwo-checkbox></neuwo-checkbox>`);
     el.focus();
@@ -215,6 +225,7 @@ describe("<neuwo-checkbox> under React", () => {
     expect(host[CONTROLLED]).toBe(false);
     expect(host.hasAttribute("checked")).toBe(false);
     expect(host.hasAttribute("defaultchecked")).toBe(false);
+    expect(host.defaultChecked).toBe(true);
     expect(control.checked).toBe(true);
     expect(control.value).toBe("yes");
     await act(async () => control.click());
@@ -261,6 +272,17 @@ describe("<neuwo-checkbox> under React", () => {
     expect(control.checked).toBe(true);
     expect(errorOf(host).id).toBe(id);
     expect(control.getAttribute("aria-describedby")).toBe(id);
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it("clears indeterminate on a click the consumer rejects, as React's own checkbox does", async () => {
+    const errors = vi.spyOn(console, "error");
+    const { container } = await render(jsx("neuwo-checkbox", { checked: false, onChange() {}, children: "All" }));
+    const host = container.querySelector("neuwo-checkbox");
+    host.indeterminate = true;
+    await act(async () => inputOf(host).click());
+    expect(inputOf(host).checked).toBe(false);
+    expect(host.indeterminate).toBe(false);
     expect(errors).not.toHaveBeenCalled();
   });
 });

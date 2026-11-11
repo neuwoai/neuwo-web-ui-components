@@ -33,6 +33,15 @@ export class NeuwoChoiceElement extends NeuwoControlElement {
     return null;
   }
 
+  /**
+   * The native control's type, which form libraries such as React Hook Form read to treat the element as a
+   * checkbox: they then read and write `checked`, and read `value` only while it is checked.
+   * @returns {string}
+   */
+  get type() {
+    return "checkbox";
+  }
+
   /** @returns {boolean} */
   get checked() {
     const control = this.control;
@@ -46,9 +55,13 @@ export class NeuwoChoiceElement extends NeuwoControlElement {
     else this.#pending = Boolean(value);
   }
 
-  /** @returns {boolean} */
+  /**
+   * The starting state: the control's, which the JSX runtime renders from `defaultChecked` without a host
+   * attribute, else the `checked` attribute. Setting it sets the attribute.
+   * @returns {boolean}
+   */
   get defaultChecked() {
-    return this.hasAttribute("checked");
+    return this.control?.defaultChecked ?? this.hasAttribute("checked");
   }
   /** @param {boolean} value */
   set defaultChecked(value) {
