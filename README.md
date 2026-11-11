@@ -548,6 +548,10 @@ value props:
 - `defaultValue` gives an uncontrolled field with a starting value, which keeps what the user
   types across re-renders.
 - In Server Components there is no state to hold, so `value` is the starting value there.
+- With React Hook Form's `register`, give a `<neuwo-range>` its starting value as `defaultValue`
+  too, or pass the values to `reset(values)` once it has mounted. `defaultValues` alone leaves a
+  range that has no value at its midpoint, which React Hook Form takes for the user's edit, and a
+  bare `reset()` returns it there through the form's native reset. A native range behaves the same.
 
 `<neuwo-combobox>` follows the same two models:
 
