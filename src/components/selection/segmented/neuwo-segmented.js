@@ -31,7 +31,6 @@ const isShown = (button) => isChecked(button) && !button.disabled;
  * @attr name - form field name, carried onto the native input.
  * @attr value - the starting value, carried onto the native input as its default; the live value is the `value` property.
  * @attr {boolean} disabled - disables every option and removes the control from submission.
- * @attr form - id of the form the control submits with, when it sits outside it.
  * @attr {boolean} required - an option must be selected for the control to be valid.
  * @attr label - accessible name of the radiogroup.
  * @attr error - error message; shows the red accent, the message, and aria-invalid.
@@ -119,6 +118,13 @@ export class NeuwoSegmented extends NeuwoControlElement {
   /** @param {string} value */
   set defaultValue(value) {
     this.setAttribute("value", String(value));
+  }
+
+  get noErrorLine() {
+    return this.hasAttribute("no-error-line");
+  }
+  set noErrorLine(value) {
+    this.toggleAttribute("no-error-line", Boolean(value));
   }
 
   /**

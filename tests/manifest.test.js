@@ -127,6 +127,26 @@ describe("custom-elements.json", () => {
     expect(declByTag(manifest, "neuwo-radio").events.map((e) => e.name)).toEqual(expect.arrayContaining(["input", "change"]));
   });
 
+  it("gives noErrorLine to every control that renders an error line, and not to the radio", () => {
+    const has = (tag) => declByTag(manifest, tag).members.some((member) => member.name === "noErrorLine");
+    for (const tag of ["neuwo-input", "neuwo-textarea", "neuwo-combobox", "neuwo-range", "neuwo-checkbox", "neuwo-toggle", "neuwo-radio-group", "neuwo-segmented"]) {
+      expect(has(tag), tag).toBe(true);
+    }
+    expect(has("neuwo-radio")).toBe(false);
+    expect(declByName(manifest, "NeuwoControlElement").members.some((member) => member.name === "noErrorLine")).toBe(false);
+  });
+
+  it("documents the form attribute once, on the control base, which only the radio restates", () => {
+    const own = (name) => declByName(manifest, name).attributes?.find((attribute) => attribute.name === "form" && !attribute.inheritedFrom);
+    expect(own("NeuwoControlElement")?.description).toMatch(/id of the form/);
+    for (const name of ["NeuwoFieldElement", "NeuwoCheckableElement", "NeuwoRadioGroup", "NeuwoSegmented"]) expect(own(name), name).toBeUndefined();
+    const shared = own("NeuwoControlElement").description;
+    for (const tag of ["neuwo-input", "neuwo-checkbox", "neuwo-radio-group", "neuwo-segmented"]) {
+      expect(declByTag(manifest, tag).attributes.find((attribute) => attribute.name === "form").description, tag).toBe(shared);
+    }
+    expect(declByTag(manifest, "neuwo-radio").attributes.find((attribute) => attribute.name === "form").description).toMatch(/inside one, the group's applies/);
+  });
+
   it("documents the badge's six axes", () => {
     const attrs = attributesFor(manifest, "neuwo-badge");
     for (const a of ["variant", "size", "borderless", "motion", "intensity", "glow"]) expect(attrs).toContain(a);

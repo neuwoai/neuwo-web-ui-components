@@ -300,3 +300,59 @@ describe("a renamed copy of a rendered radio appended to the same form, in jsdom
     ]);
   });
 });
+
+describe("a property set on a light element before it is defined, in jsdom", () => {
+  let count = 0;
+  /** A tag of its own for each test, defined only when the test says so, as a page's deferred module does. */
+  async function later() {
+    const { NeuwoButton } = await import("../src/components/button/neuwo-button.js");
+    const tag = `early-${++count}-button`;
+    return { tag, define: () => customElements.define(tag, class extends NeuwoButton {}) };
+  }
+
+  /** @param {Element} el */
+  const shown = (el) => {
+    const button = /** @type {HTMLButtonElement} */ (el.querySelector(".neuwo-btn"));
+    return { disabled: button.disabled, busy: button.getAttribute("aria-busy"), loading: button.classList.contains("neuwo-btn--loading") };
+  };
+
+  it("puts disabled and loading on a <neuwo-button> once it upgrades", async () => {
+    const { tag, define } = await later();
+    const holder = form("");
+    const el = holder.appendChild(document.createElement(tag));
+    el.disabled = true;
+    el.loading = true;
+    expect(Object.hasOwn(el, "disabled")).toBe(true);
+    define();
+    expect(Object.keys(el)).toEqual([]);
+    expect([el.disabled, el.loading]).toEqual([true, true]);
+    expect([el.hasAttribute("disabled"), el.hasAttribute("loading")]).toEqual([true, true]);
+    expect(shown(el)).toEqual({ disabled: true, busy: "true", loading: true });
+  });
+
+  it("holds them for a <neuwo-button> upgraded while detached, and renders them when it connects", async () => {
+    const { tag, define } = await later();
+    const el = document.createElement(tag);
+    el.loading = true;
+    el.disabled = true;
+    define();
+    customElements.upgrade(el);
+    expect(Object.keys(el)).toEqual([]);
+    await Promise.resolve();
+    expect([el.disabled, el.loading]).toEqual([true, true]);
+    expect(el.querySelector(".neuwo-btn")).toBeNull();
+    form("").append(el);
+    expect(shown(el)).toEqual({ disabled: true, busy: "true", loading: true });
+  });
+
+  it("leaves a property with no setter on the element alone", async () => {
+    const { tag, define } = await later();
+    const el = form("").appendChild(document.createElement(tag));
+    el.extra = 1;
+    el.template = "mine";
+    define();
+    expect(el.extra).toBe(1);
+    expect(Object.getOwnPropertyDescriptor(el, "template")?.value).toBe("mine");
+    expect(el.querySelector(".neuwo-btn")).not.toBeNull();
+  });
+});

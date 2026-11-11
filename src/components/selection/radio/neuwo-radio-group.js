@@ -17,7 +17,6 @@ const RADIO = "neuwo-radio > .neuwo-form-check > .neuwo-form-check__input";
  * @attr name - form field name, carried onto every radio, which is what groups them; a group without one warns in the console.
  * @attr {boolean} disabled - disables every radio and removes the group from submission.
  * @attr value - the value of the radio that starts checked, carried onto the radios as their default; the live value is the `value` property.
- * @attr form - id of the form the radios submit with, when the group sits outside it.
  * @attr {boolean} required - a radio must be checked for the group to be valid.
  * @attr label - visible legend that names the group.
  * @attr {horizontal|vertical} orientation - lays the radios out in a row or a column (default: a column).
@@ -92,6 +91,13 @@ export class NeuwoRadioGroup extends NeuwoControlElement {
   /** @param {string} value */
   set defaultValue(value) {
     this.setAttribute("value", String(value));
+  }
+
+  get noErrorLine() {
+    return this.hasAttribute("no-error-line");
+  }
+  set noErrorLine(value) {
+    this.toggleAttribute("no-error-line", Boolean(value));
   }
 
   connect() {

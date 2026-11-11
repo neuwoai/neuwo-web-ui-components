@@ -21,6 +21,20 @@ const relevantAttributes = (el) =>
     .join("\n");
 
 /**
+ * Whether the nearest definition of `name` on the prototype chain has a setter.
+ * @param {object | null} proto
+ * @param {string} name
+ * @returns {boolean}
+ */
+function settable(proto, name) {
+  for (let each = proto; each; each = Object.getPrototypeOf(each)) {
+    const descriptor = Object.getOwnPropertyDescriptor(each, name);
+    if (descriptor) return typeof descriptor.set === "function";
+  }
+  return false;
+}
+
+/**
  * Whether React rendered or hydrated the element, so its markup is React's to write.
  * @param {Element} el
  * @returns {boolean}
@@ -67,8 +81,18 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
   /** @type {string | null} */
   #within = null;
 
+  /** @type {Map<string, unknown>} */
+  #early = new Map();
+
   constructor() {
     super();
+    // A script that sets a property before the element is defined leaves an own property hiding the accessor.
+    for (const name of Object.keys(this)) {
+      if (!settable(Object.getPrototypeOf(this), name)) continue;
+      this.#early.set(name, Reflect.get(this, name));
+      Reflect.deleteProperty(this, name);
+    }
+    if (this.#early.size) queueMicrotask(() => this.#restore());
     const within = /** @type {typeof NeuwoElement} */ (this.constructor).template?.within;
     if (within) readers.set(within, (readers.get(within) ?? new Set()).add(this.localName));
     if (!this.hasAttributes() && !this.hasChildNodes()) return;
@@ -116,8 +140,15 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
       this.#observer.observe(this, { childList: true, attributes: true });
       this.#started = true;
     }
+    this.#restore();
     this.connect();
     if (restart) this.updated();
+  }
+
+  #restore() {
+    const early = Array.from(this.#early);
+    this.#early.clear();
+    for (const [name, value] of early) Reflect.set(this, name, value);
   }
 
   #changedWhileAway() {
@@ -218,7 +249,10 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
     this.disconnect();
   }
 
-  /** Hook for listeners and observers. It writes nothing on adoption, except to re-apply properties set before definition. */
+  /**
+   * Hook for listeners and observers. It writes nothing on adoption. It runs just after the element has re-applied,
+   * through their setters, the properties a script set before the element was defined.
+   */
   connect() {}
 
   /** Hook to release whatever `connect` set up. */

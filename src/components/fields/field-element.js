@@ -11,7 +11,6 @@ import { NeuwoControlElement } from "../control-element.js";
  * @summary Base class for Neuwo field controls.
  * @attr value - the starting value, carried onto the native control as its default; the live value is the `value` property.
  * @attr placeholder - placeholder text shown when empty.
- * @attr form - id of the form the control submits with, when the field sits outside it.
  * @attr {boolean} required - the field must have a value to be valid.
  * @attr {boolean} readonly - the value is shown but cannot be edited.
  * @attr autocomplete - native autocomplete hint carried onto the control.
@@ -72,6 +71,13 @@ export class NeuwoFieldElement extends NeuwoControlElement {
   }
   set defaultValue(value) {
     this.setAttribute("value", String(value));
+  }
+
+  get noErrorLine() {
+    return this.hasAttribute("no-error-line");
+  }
+  set noErrorLine(value) {
+    this.toggleAttribute("no-error-line", Boolean(value));
   }
 
   get size() {

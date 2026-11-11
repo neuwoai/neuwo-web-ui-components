@@ -297,6 +297,16 @@ describe("<neuwo-radio-group> and <neuwo-radio>", () => {
     expect(el.value).toBe("free");
   });
 
+  it("reflects noErrorLine on the group, which renders the error line, and gives the radio none", () => {
+    const el = make(`<neuwo-radio-group name="plan" no-error-line>${RADIOS}</neuwo-radio-group>`);
+    expect(el.noErrorLine).toBe(true);
+    expect(errorOf(el)).toBeNull();
+    el.noErrorLine = false;
+    expect(el.hasAttribute("no-error-line")).toBe(false);
+    expect(errorOf(el)).not.toBeNull();
+    expect("noErrorLine" in radiosOf(el)[0]).toBe(false);
+  });
+
   it("lays the radios out in a row for orientation horizontal", () => {
     const el = make(`<neuwo-radio-group name="size" orientation="horizontal">${RADIOS}</neuwo-radio-group>`);
     expect(groupOf(el).classList.contains("neuwo-radio-group--horizontal")).toBe(true);

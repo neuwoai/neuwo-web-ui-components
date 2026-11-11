@@ -151,9 +151,6 @@
   and `title` are still copied, and a later change or removal now reaches the inner checkbox too.
 - The transition on the box of `<neuwo-checkbox>` now stops under `prefers-reduced-motion: reduce`, as
   the toggle's already did.
-- A property a script sets on a field, a checkbox or a toggle before its element is defined, such as
-  `checked` or `value` from an inline script on a page whose module is deferred, now reaches the element
-  when it is defined; it used to hide the element's own property and never reach the control.
 - Through the JSX runtime, `<neuwo-checkbox>` and `<neuwo-toggle>` behave like React's own checkbox:
   `checked` makes one controlled, `defaultChecked` starts an uncontrolled one, and `onChange` fires on
   every click with the inner checkbox as `event.target`. The JSX types give an element with a `checked`
@@ -384,6 +381,10 @@
   `<neuwo-radio-group>` or a `<neuwo-radio>` appended to the same form leaves the original's checked radio
   alone. An `aria-*`, `title` or `role` the element carries onto its control applies when the copy is
   inserted. A change to an element a script took out of the page applies at once in the same way.
+- A property a script sets on any Neuwo element before the element is defined, such as `loading` on a
+  button or `checked` on a checkbox from an inline script on a page whose module is deferred, now reaches
+  the element when it is defined, through the element's own setter; it used to hide that property and
+  never reach the markup or the control.
 - Light DOM elements have a `refresh()` method, which fits the markup to the current attributes and
   children at once instead of in that microtask, and an `updated()` hook for component classes, which
   runs after every reconcile in the page and after every reconnect, but not after the first render or

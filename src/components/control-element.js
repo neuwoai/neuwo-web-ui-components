@@ -1,20 +1,6 @@
 import { NeuwoElement } from "../core/element.js";
 
 /**
- * Whether the nearest definition of `name` on the prototype chain has a setter.
- * @param {object | null} proto
- * @param {string} name
- * @returns {boolean}
- */
-function settable(proto, name) {
-  for (let each = proto; each; each = Object.getPrototypeOf(each)) {
-    const descriptor = Object.getOwnPropertyDescriptor(each, name);
-    if (descriptor) return typeof descriptor.set === "function";
-  }
-  return false;
-}
-
-/**
  * Base for the light DOM elements built on native form controls: the fields, the selection controls and the radio
  * group, whose radios are its controls. The template renders the controls, which do the form work. The element
  * reflects the shared attributes, follows its form's reset, and delegates the validity API and focus to the
@@ -23,28 +9,15 @@ function settable(proto, name) {
  * @summary Base class for Neuwo form controls.
  * @attr name - form field name, carried onto the native control.
  * @attr {boolean} disabled - disables the control and removes it from submission.
+ * @attr form - id of the form the control submits with, when the element sits outside it.
  */
 export class NeuwoControlElement extends NeuwoElement {
-  /** @type {Map<string, unknown>} */
-  #early = new Map();
-
   /** @type {HTMLFormElement | null} */
   #form = null;
 
   #onReset = () => {
     setTimeout(() => this.formReset(), 0);
   };
-
-  constructor() {
-    super();
-    // A script that sets a property before the element is defined leaves an own property hiding the accessor.
-    for (const name of Object.keys(this)) {
-      if (!settable(Object.getPrototypeOf(this), name)) continue;
-      this.#early.set(name, Reflect.get(this, name));
-      Reflect.deleteProperty(this, name);
-    }
-    if (this.#early.size) queueMicrotask(() => this.#restore());
-  }
 
   /**
    * The native control this element renders; each control names its own.
@@ -76,13 +49,6 @@ export class NeuwoControlElement extends NeuwoElement {
   }
   set disabled(value) {
     this.toggleAttribute("disabled", Boolean(value));
-  }
-
-  get noErrorLine() {
-    return this.hasAttribute("no-error-line");
-  }
-  set noErrorLine(value) {
-    this.toggleAttribute("no-error-line", Boolean(value));
   }
 
   /**
@@ -134,7 +100,6 @@ export class NeuwoControlElement extends NeuwoElement {
   }
 
   connect() {
-    this.#restore();
     this.#bindForm();
   }
 
@@ -152,12 +117,6 @@ export class NeuwoControlElement extends NeuwoElement {
    * It must write only values that differ from the DOM.
    */
   formReset() {}
-
-  #restore() {
-    const early = Array.from(this.#early);
-    this.#early.clear();
-    for (const [name, value] of early) Reflect.set(this, name, value);
-  }
 
   #bindForm() {
     const form = this.control?.form ?? null;

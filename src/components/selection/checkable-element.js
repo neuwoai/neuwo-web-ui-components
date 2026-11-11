@@ -12,7 +12,6 @@ import { NeuwoControlElement } from "../control-element.js";
  * @summary Base class for Neuwo checkable controls.
  * @attr value - the value submitted while the control is checked (default `on`), carried onto the native control.
  * @attr {boolean} checked - the starting state, carried onto the native control as its default; the live state is the `checked` property.
- * @attr form - id of the form the control submits with, when the element sits outside it.
  * @attr {boolean} required - the control must be checked to be valid.
  * @fires {Event} input - the user checked or unchecked the control; the native control's own `input`, bubbling through the element.
  * @fires {Event} change - the user checked or unchecked the control; the native control's own `change`, bubbling through the element.

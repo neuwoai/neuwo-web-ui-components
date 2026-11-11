@@ -11,4 +11,11 @@ import { NeuwoCheckableElement } from "./checkable-element.js";
  */
 export class NeuwoChoiceElement extends NeuwoCheckableElement {
   static observedAttributes = [...NeuwoCheckableElement.observedAttributes, "error", "error-muted", "no-error-line"];
+
+  get noErrorLine() {
+    return this.hasAttribute("no-error-line");
+  }
+  set noErrorLine(value) {
+    this.toggleAttribute("no-error-line", Boolean(value));
+  }
 }
