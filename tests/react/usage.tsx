@@ -71,6 +71,14 @@ export function Usage() {
       <neuwo-input type="number" min={0} max="10" step={0.5} minlength={1} maxlength="5" />
       <neuwo-range min="0" max={100} step={10} />
       <neuwo-textarea rows="4" minlength={2} maxlength={200} />
+      <neuwo-input onChange={(e) => e.currentTarget.noErrorLine} />
+      <neuwo-combobox onChange={(e) => e.target.open()} />
+      {/* @ts-expect-error the input's change event comes from its inner control, which has no noErrorLine */}
+      <neuwo-input onChange={(e) => e.target.noErrorLine} />
+      {/* @ts-expect-error the checkbox's change event comes from its inner control, which has no focusTarget */}
+      <neuwo-checkbox onChange={(e) => e.target.focusTarget} />
+      {/* @ts-expect-error the combobox dispatches on itself, so its target is no inner control with a list */}
+      <neuwo-combobox onChange={(e) => e.target.list} />
       {/* @ts-expect-error a checkbox starts from defaultChecked, not defaultValue */}
       <neuwo-checkbox defaultValue="on" />
       {/* @ts-expect-error a radio's error belongs on its group */}

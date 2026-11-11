@@ -3,6 +3,22 @@ import { fileURLToPath } from "node:url";
 
 const PRIMITIVES = new Set(["string", "number", "boolean"]);
 
+// The element a change event comes from. An element not listed here dispatches on itself.
+export const CHANGE_TARGETS = {
+  "neuwo-checkbox": "HTMLInputElement",
+  "neuwo-input": "HTMLInputElement",
+  "neuwo-radio": "HTMLInputElement",
+  "neuwo-radio-group": "HTMLInputElement",
+  "neuwo-range": "HTMLInputElement",
+  "neuwo-textarea": "HTMLTextAreaElement",
+  "neuwo-toggle": "HTMLInputElement",
+};
+
+function changeHandler(declaration) {
+  const target = CHANGE_TARGETS[declaration.tagName];
+  return `onChange?: NeuwoChangeHandler<${declaration.name}${target ? `, ${target}` : ""}>;`;
+}
+
 function propKey(name) {
   return /^[A-Za-z_$][\w$]*$/.test(name) ? name : JSON.stringify(name);
 }
@@ -39,8 +55,8 @@ function elementProps(declaration) {
     lines.push(`${propKey(name)}?: ${propType(name, type?.text, { checkable, form })};`);
   }
   // React's own HTML props allow defaultValue on every element, so a checkable one refuses it explicitly.
-  if (checkable) lines.push("defaultChecked?: boolean;", "defaultValue?: never;", `onChange?: React.ChangeEventHandler<${declaration.name}>;`);
-  else if (form) lines.push("defaultValue?: string | number;", `onChange?: React.ChangeEventHandler<${declaration.name}>;`);
+  if (checkable) lines.push("defaultChecked?: boolean;", "defaultValue?: never;", changeHandler(declaration));
+  else if (form) lines.push("defaultValue?: string | number;", changeHandler(declaration));
   // React 19 binds an on* prop on a custom element to the event of exactly that name, case and all.
   for (const { name, type } of declaration.events ?? []) {
     if (!name || !type?.text.startsWith("CustomEvent")) continue;
@@ -64,6 +80,8 @@ export function jsxElementsTypes(manifest) {
 import type { ${elements.map((d) => d.name).join(", ")} } from "../index.js";
 
 type NeuwoElementProps<E extends HTMLElement, P> = Omit<React.DetailedHTMLProps<React.HTMLAttributes<E>, E>, keyof P> & P;
+
+type NeuwoChangeHandler<E extends HTMLElement, T extends EventTarget = E> = React.EventHandler<React.SyntheticEvent<E> & { target: EventTarget & T }>;
 
 declare module "react" {
   namespace JSX {

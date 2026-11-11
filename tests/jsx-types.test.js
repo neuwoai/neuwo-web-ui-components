@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { jsxElementsTypes, jsxRuntimeTypes } from "../scripts/jsx-types.js";
+import "../src/index.js";
+import { CHANGE_TARGETS, jsxElementsTypes, jsxRuntimeTypes } from "../scripts/jsx-types.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const manifest = JSON.parse(readFileSync(join(__dirname, "../custom-elements.json"), "utf8"));
@@ -72,7 +73,7 @@ describe("JSX types", () => {
     const input = block("neuwo-input");
     expect(input).toContain("value?: string | number;");
     expect(input).toContain("defaultValue?: string | number;");
-    expect(input).toContain("onChange?: React.ChangeEventHandler<NeuwoInput>;");
+    expect(input).toContain("onChange?: NeuwoChangeHandler<NeuwoInput, HTMLInputElement>;");
     expect(input.match(/\bvalue\?:/g)).toHaveLength(1);
     expect(types).toContain('import type * as React from "react";');
   });
@@ -91,9 +92,9 @@ describe("JSX types", () => {
         },
       ],
     });
-    expect(generated).toContain("onChange?: React.ChangeEventHandler<Own>;");
-    expect(generated).toContain("onChange?: React.ChangeEventHandler<Inherited>;");
-    expect(generated).not.toContain("React.ChangeEventHandler<Plain>");
+    expect(generated).toContain("onChange?: NeuwoChangeHandler<Own>;");
+    expect(generated).toContain("onChange?: NeuwoChangeHandler<Inherited>;");
+    expect(generated).not.toContain("NeuwoChangeHandler<Plain>");
   });
 
   it("gives a checkable element React's checkbox props, typing the target as the element, and refuses defaultValue", () => {
@@ -101,7 +102,7 @@ describe("JSX types", () => {
       const props = block(tag);
       expect(props).toContain("checked?: boolean;");
       expect(props).toContain("defaultChecked?: boolean;");
-      expect(props).toContain(`onChange?: React.ChangeEventHandler<${name}>;`);
+      expect(props).toContain(`onChange?: NeuwoChangeHandler<${name}, HTMLInputElement>;`);
       expect(props).toContain("defaultValue?: never;");
       expect(props).not.toMatch(/defaultValue\?: string/);
       expect(props.match(/\bchecked\?:/g)).toHaveLength(1);
@@ -120,7 +121,7 @@ describe("JSX types", () => {
       "required?: boolean;",
       "defaultChecked?: boolean;",
       "defaultValue?: never;",
-      "onChange?: React.ChangeEventHandler<NeuwoRadio>;",
+      "onChange?: NeuwoChangeHandler<NeuwoRadio, HTMLInputElement>;",
     ])
       expect(props).toContain(line);
     expect(props).not.toMatch(/error/);
@@ -132,7 +133,7 @@ describe("JSX types", () => {
       "name?: string;",
       "value?: string | number;",
       "defaultValue?: string | number;",
-      "onChange?: React.ChangeEventHandler<NeuwoRadioGroup>;",
+      "onChange?: NeuwoChangeHandler<NeuwoRadioGroup, HTMLInputElement>;",
       'orientation?: "horizontal" | "vertical";',
       "form?: string;",
       "label?: string;",
@@ -152,7 +153,7 @@ describe("JSX types", () => {
       "name?: string;",
       "value?: string | number;",
       "defaultValue?: string | number;",
-      "onChange?: React.ChangeEventHandler<NeuwoSegmented>;",
+      "onChange?: NeuwoChangeHandler<NeuwoSegmented>;",
       "form?: string;",
       "label?: string;",
       "required?: boolean;",
@@ -178,8 +179,8 @@ describe("JSX types", () => {
     });
     expect(generated).toContain("checked?: boolean;");
     expect(generated).not.toContain("checked?: string;");
-    expect(generated).toContain("onChange?: React.ChangeEventHandler<Check>;");
-    expect(generated).toContain("onChange?: React.ChangeEventHandler<Lone>;");
+    expect(generated).toContain("onChange?: NeuwoChangeHandler<Check>;");
+    expect(generated).toContain("onChange?: NeuwoChangeHandler<Lone>;");
     expect(generated).not.toContain("defaultValue?: string | number;");
   });
 
@@ -208,4 +209,44 @@ describe("JSX types", () => {
     expect(runtime).toContain('export { Fragment, jsxDEV } from "react/jsx-dev-runtime";');
     expect(runtime).toContain('export type { JSX } from "react/jsx-dev-runtime";');
   });
+});
+
+describe("JSX change targets", () => {
+  const OPTIONS = '<option value="a">A</option><option value="b">B</option>';
+  const ACTIONS = {
+    "neuwo-checkbox": ["", (host) => host.control.click()],
+    "neuwo-toggle": ["", (host) => host.control.click()],
+    "neuwo-radio": ["", (host) => host.control.click()],
+    "neuwo-radio-group": ['<neuwo-radio value="a">A</neuwo-radio><neuwo-radio value="b">B</neuwo-radio>', (host) => host.querySelector("input[value=b]").click()],
+    "neuwo-input": ["", (host) => host.control.dispatchEvent(new Event("change", { bubbles: true }))],
+    "neuwo-range": ["", (host) => host.control.dispatchEvent(new Event("change", { bubbles: true }))],
+    "neuwo-textarea": ["", (host) => host.control.dispatchEvent(new Event("change", { bubbles: true }))],
+    "neuwo-combobox": [OPTIONS, (host) => (host.open(), host.querySelector('.neuwo-combobox__option[data-value="b"]').click())],
+    "neuwo-segmented": [OPTIONS, (host) => host.querySelector('.neuwo-segmented__option[data-value="b"]').click()],
+  };
+
+  it("lists every element with a change event, so a new one must decide its target", () => {
+    const tags = manifest.modules
+      .flatMap((module) => module.declarations ?? [])
+      .filter((declaration) => declaration.tagName && (declaration.events ?? []).some(({ name }) => name === "change"))
+      .map((declaration) => declaration.tagName);
+    expect(Object.keys(ACTIONS).sort()).toEqual(tags.sort());
+  });
+
+  for (const [tag, [children, act]] of Object.entries(ACTIONS)) {
+    it(`types the target of ${tag} as the element the browser dispatches from`, () => {
+      const holder = document.createElement("div");
+      holder.innerHTML = `<${tag}>${children}</${tag}>`;
+      document.body.append(holder);
+      const host = holder.firstElementChild;
+      /** @type {EventTarget | null} */
+      let target = null;
+      host.addEventListener("change", (event) => (target = event.target), { once: true });
+      act(host);
+      holder.remove();
+      const typed = CHANGE_TARGETS[tag];
+      if (typed) expect(target?.constructor.name).toBe(typed);
+      else expect(target).toBe(host);
+    });
+  }
 });
