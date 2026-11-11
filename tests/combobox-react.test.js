@@ -511,8 +511,10 @@ describe("<neuwo-combobox> server rendered", () => {
       () => combobox({ defaultValue: "fr", name: "a", searchable: true }),
     ];
     for (const [index, tree] of trees.entries()) {
+      // Several roots share the page, so each takes its own prefix for its ids, as React requires.
+      const identifierPrefix = `t${index}-`;
       const parsed = document.createElement("div");
-      parsed.innerHTML = renderToString(tree());
+      parsed.innerHTML = renderToString(tree(), { identifierPrefix });
       const container = attach(document.createElement("div"));
       container.append(...parsed.childNodes);
       const host = container.querySelector("neuwo-combobox");
@@ -521,7 +523,7 @@ describe("<neuwo-combobox> server rendered", () => {
       const recoverable = [];
       let root;
       act(() => {
-        root = hydrateRoot(container, tree(), { onRecoverableError: (thrown) => void recoverable.push(String(thrown?.message ?? thrown)) });
+        root = hydrateRoot(container, tree(), { identifierPrefix, onRecoverableError: (thrown) => void recoverable.push(String(thrown?.message ?? thrown)) });
       });
       cleanup.push(() => act(() => root.unmount()));
       await settled();
@@ -570,13 +572,14 @@ describe("<neuwo-combobox> server rendered", () => {
       ["later", "France"],
       ["never", "Finland"],
     ]) {
+      const identifierPrefix = `${accept}-`;
       const parsed = document.createElement("div");
-      parsed.innerHTML = renderToString(jsx(Form, { accept }));
+      parsed.innerHTML = renderToString(jsx(Form, { accept }), { identifierPrefix });
       const container = attach(document.createElement("div"));
       container.append(...parsed.childNodes);
       let root;
       act(() => {
-        root = hydrateRoot(container, jsx(Form, { accept }));
+        root = hydrateRoot(container, jsx(Form, { accept }), { identifierPrefix });
       });
       cleanup.push(() => act(() => root.unmount()));
       const host = container.querySelector("neuwo-combobox");

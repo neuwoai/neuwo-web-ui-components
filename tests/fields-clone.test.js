@@ -1,0 +1,74 @@
+import { afterEach, describe, expect, it } from "vitest";
+import "../src/index.js";
+import { expand } from "../src/server/index.js";
+
+const REFERENCES = ["for", "aria-describedby", "aria-controls", "aria-labelledby", "aria-activedescendant"];
+const FIELDS =
+  `<neuwo-input name="email" label="Email" error="Bad"></neuwo-input>` +
+  `<neuwo-combobox name="plan" label="Plan" error="Pick one"><option>A</option><optgroup label="Paid"><option>B</option></optgroup></neuwo-combobox>`;
+
+const cleanup = [];
+afterEach(() => {
+  while (cleanup.length) cleanup.pop()();
+});
+
+function form(html) {
+  const holder = document.createElement("form");
+  holder.innerHTML = html;
+  document.body.append(holder);
+  cleanup.push(() => holder.remove());
+  return holder;
+}
+
+/** @param {Element} host */
+const referencesOf = (host) =>
+  Array.from(host.querySelectorAll("*")).flatMap((el) => REFERENCES.flatMap((name) => el.getAttribute(name)?.split(/\s+/).filter(Boolean) ?? []));
+
+/** @param {Element} host */
+const controlOf = (host) => host.querySelector(host.localName === "neuwo-combobox" ? ".neuwo-combobox__trigger" : ".neuwo-input");
+
+function expectOwnIds(hosts) {
+  const ids = Array.from(document.querySelectorAll("[id]"), (el) => el.id);
+  expect(ids.filter((id, index) => ids.indexOf(id) !== index)).toEqual([]);
+  for (const host of hosts) {
+    expect(referencesOf(host).length).toBeGreaterThan(0);
+    for (const id of referencesOf(host)) expect(host.contains(document.getElementById(id)), `${host.localName} ${id}`).toBe(true);
+  }
+}
+
+describe("fields copied with cloneNode(true)", () => {
+  for (const [source, html] of [
+    ["rendered by the elements", FIELDS],
+    ["served", expand(FIELDS)],
+  ]) {
+    for (const where of ["after", "before"]) {
+      it(`give a copy of fields ${source} its own ids when it goes ${where} the originals`, () => {
+        const holder = form(html);
+        const originals = Array.from(holder.children);
+        const copies = originals.map((host) => /** @type {Element} */ (host.cloneNode(true)));
+        if (where === "after") holder.append(...copies);
+        else holder.prepend(...copies);
+        const hosts = [...originals, ...copies];
+        expectOwnIds(hosts);
+        const clicked = [];
+        for (const host of hosts) controlOf(host).addEventListener("click", () => clicked.push(host));
+        for (const host of hosts) {
+          const label = host.querySelector("label");
+          expect(label.control).toBe(controlOf(host));
+          label.click();
+          expect(clicked.splice(0)).toEqual([host]);
+          host.close?.();
+        }
+      });
+    }
+  }
+
+  it("keeps the copy's ids through a later change", async () => {
+    const holder = form(FIELDS);
+    const copies = Array.from(holder.children, (host) => /** @type {Element} */ (host.cloneNode(true)));
+    holder.append(...copies);
+    for (const copy of copies) copy.setAttribute("error", "Still bad");
+    await Promise.resolve();
+    expectOwnIds(Array.from(holder.children));
+  });
+});

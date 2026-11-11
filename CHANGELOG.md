@@ -196,6 +196,10 @@
 - A script can still set `textContent` or `innerHTML` on a rendered light DOM element, append a child
   with a `slot`, or change its `aria-*`, `title` and `role`: the element fits the change into its
   markup in a microtask, so read the markup back after an `await`. Hosts React owns are left to React.
+- A copy of a rendered field made with `cloneNode(true)` gets ids of its own when it is inserted, and its
+  label, `aria-describedby`, `aria-controls`, `aria-labelledby` and `aria-activedescendant` follow them, so
+  the copy's label focuses the copy's control instead of the original's. Any light DOM element that adopts
+  markup whose ids another element in the same document or shadow root already has does the same.
 - Light DOM elements have a `refresh()` method, which fits the markup to the current attributes and
   children at once instead of in that microtask, and an `updated()` hook for component classes, which
   runs after every reconcile but not after the first render or adoption, to re-apply live state the

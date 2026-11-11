@@ -32,6 +32,7 @@ import { idScope } from "../ids.js";
 const SVG = "http://www.w3.org/2000/svg";
 const ELEMENT = 1;
 const TEXT = 3;
+const REFERENCES = ["id", "for", "aria-describedby", "aria-controls", "aria-labelledby", "aria-activedescendant"];
 
 const newIds = idScope("neuwo-c");
 /** @type {WeakMap<Element, HostState>} */
@@ -265,6 +266,49 @@ function mapIds(state, blocks, el, node) {
 }
 
 /**
+ * @param {HostState} state
+ * @param {Element} el
+ * @param {Map<string, string>} fresh
+ */
+function rename(state, el, fresh) {
+  const record = /** @type {Seen} */ (seen.get(el));
+  for (const name of REFERENCES) {
+    const value = el.getAttribute(name);
+    if (value === null) continue;
+    const next = value.replace(/\S+/g, (token) => fresh.get(token) ?? token);
+    if (next === value) continue;
+    el.setAttribute(name, next);
+    record.attrs[name] = next;
+  }
+  if (wrapperKey(state, el) === undefined) for (const child of Array.from(el.children)) rename(state, child, fresh);
+}
+
+/**
+ * Gives each adopted template id that another element in the host's root also has, as on a copy made with
+ * `cloneNode`, the id the host issued for it, and points every reference to it there too.
+ * @param {Element} host
+ * @param {HostState} state
+ */
+function separateIds(host, state) {
+  if (!state.ids.size || !state.root) return;
+  const taken = new Set(state.ids.values());
+  /** @type {Map<string, number>} */
+  const counts = new Map();
+  for (const el of Array.from(/** @type {ParentNode} */ (host.getRootNode()).querySelectorAll("[id]"))) {
+    const id = el.getAttribute("id") ?? "";
+    if (taken.has(id)) counts.set(id, (counts.get(id) ?? 0) + 1);
+  }
+  /** @type {Map<string, string>} */
+  const fresh = new Map();
+  for (const [issued, existing] of state.ids) {
+    if ((counts.get(existing) ?? 0) < 2) continue;
+    fresh.set(existing, issued);
+    state.ids.delete(issued);
+  }
+  if (fresh.size) rename(state, state.root, fresh);
+}
+
+/**
  * @param {TemplateNode} node
  * @param {Run} run
  * @param {boolean} [svg]
@@ -476,6 +520,7 @@ export function adopt(host, template) {
   const { nodes, regionIn } = authorNodes(host, state);
   const full = template(attrs, { id: state.id, children: describe(nodes, regionIn(state.wrappers)) });
   mapIds(state, blocksOf(full), root, full);
+  separateIds(host, state);
 }
 
 /**

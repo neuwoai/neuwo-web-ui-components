@@ -261,6 +261,53 @@ describe("adopt()", () => {
     expect(host.querySelector(`[id="${reference}"]`).className).toBe("neuwo-f__error");
   });
 
+  it("gives a copy fresh ids for the ids another element in its root has, moving every reference with them", () => {
+    const field = (a, ctx) =>
+      h(
+        "div",
+        { class: "neuwo-f" },
+        h("label", { class: "neuwo-f__label", id: ctx.id("label"), for: ctx.id("input") }, region("label")),
+        h("input", { class: "neuwo-f__input", id: ctx.id("input"), "aria-describedby": `${ctx.id("hint")} ${ctx.id("error")}`, "aria-controls": ctx.id("list") }),
+        h("ul", { class: "neuwo-f__list", id: ctx.id("list"), "aria-labelledby": ctx.id("label") }, h("li", { class: "neuwo-f__row", id: ctx.id("row") })),
+        h("p", { class: "neuwo-f__hint", id: ctx.id("hint") }, "Hint"),
+        h("p", { class: "neuwo-f__error", id: ctx.id("error") }, "Error"),
+      );
+    const original = make(renderElement("neuwo-f", {}, [], field, idScope("neuwo-s")));
+    adopt(original, field);
+    const input = original.querySelector("input");
+    input.setAttribute("aria-activedescendant", original.querySelector("li").id);
+    const copy = original.cloneNode(true);
+    original.before(copy);
+    adopt(copy, field);
+    const unique = () => {
+      const ids = Array.from(document.querySelectorAll("[id]"), (el) => el.id);
+      return new Set(ids).size === ids.length;
+    };
+    expect(unique()).toBe(true);
+    expect(original.querySelector("label").id).toBe("neuwo-s1-label");
+    for (const host of [original, copy]) {
+      const references = Array.from(host.querySelectorAll("*")).flatMap((el) =>
+        ["for", "aria-describedby", "aria-controls", "aria-labelledby", "aria-activedescendant"].flatMap((name) => el.getAttribute(name)?.split(" ") ?? []),
+      );
+      expect(references).toHaveLength(6);
+      for (const id of references) expect(host.contains(document.getElementById(id))).toBe(true);
+    }
+    copy.setAttribute("title", "x");
+    reconcile(copy, field);
+    expect(unique()).toBe(true);
+    expect(copy.querySelector("label").htmlFor).toBe(copy.querySelector("input").id);
+  });
+
+  it("keeps the ids of server markup that no other element in its root has, writing nothing", () => {
+    const field = (a, ctx) => h("div", { class: "neuwo-f" }, h("label", { class: "neuwo-f__label", for: ctx.id("input") }), h("input", { class: "neuwo-f__input", id: ctx.id("input") }));
+    const scope = idScope("neuwo-s");
+    const container = make(`<div>${renderElement("neuwo-f", {}, [], field, scope)}${renderElement("neuwo-f", {}, [], field, scope)}</div>`);
+    const observer = watch(container);
+    for (const host of Array.from(container.children)) adopt(host, field);
+    expect(observer.takeRecords()).toHaveLength(0);
+    expect(Array.from(container.querySelectorAll("input"), (input) => input.id)).toEqual(["neuwo-s1-input", "neuwo-s2-input"]);
+  });
+
   it("maps ids afresh when someone else replaced the markup", () => {
     const template = (a, ctx) =>
       h("span", { class: "neuwo-t", "aria-describedby": has(a, "hint") && ctx.id("hint") }, h("i", { class: "neuwo-t__hint", id: ctx.id("hint") }));
