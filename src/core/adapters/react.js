@@ -186,11 +186,25 @@ function textOf(node) {
 }
 
 /**
+ * @param {Record<string, unknown>} style
+ * @returns {string}
+ */
+const cssOf = (style) =>
+  Object.entries(style)
+    .filter(([, value]) => value != null && value !== "" && typeof value !== "boolean")
+    .map(([name, value]) => `${name.startsWith("--") ? name : name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}: ${value}`)
+    .join("; ");
+
+/**
  * The attributes React props stand for, named as the markup names them, as the other adapters report them.
  * @param {Record<string, unknown>} props
  * @returns {Record<string, string>}
  */
-const attributesOf = (props) => normalizeProps(Object.fromEntries(Object.entries(props).map(([name, value]) => [ATTRIBUTES.get(name) ?? name, value])));
+const attributesOf = (props) => {
+  const attrs = normalizeProps(Object.fromEntries(Object.entries(props).map(([name, value]) => [ATTRIBUTES.get(name) ?? name, value])));
+  if (props.style && typeof props.style === "object") attrs.style = cssOf(/** @type {Record<string, unknown>} */ (props.style));
+  return attrs;
+};
 
 /**
  * Describes the items as a template sees them, through the wrappers `lend()` passes through, whose children are

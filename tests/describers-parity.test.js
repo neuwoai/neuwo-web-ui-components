@@ -39,6 +39,11 @@ const CASES = {
     react: [jsx("template", { children: jsx("i", { children: "x" }) })],
     expected: [el("template", {}, [])],
   },
+  "a style": {
+    html: '<b style="color: red; background-color: blue; --tint: 1">x</b>',
+    react: [jsx("b", { style: { color: "red", backgroundColor: "blue", "--tint": "1" }, children: "x" })],
+    expected: [el("b", { style: "color: red; background-color: blue; --tint: 1" }, [text("x")])],
+  },
   "React's prop names": {
     html: '<label for="a" class="c" tabindex="1" readonly>x</label><input checked value="v">',
     react: [

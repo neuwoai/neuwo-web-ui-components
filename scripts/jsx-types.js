@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 
 const PRIMITIVES = new Set(["string", "number", "boolean"]);
 
-// The element a change event comes from. An element not listed here dispatches on itself.
+// A native change event bubbles from the inner control, which the combobox and segmented control do not have to dispatch from.
 export const CHANGE_TARGETS = {
   "neuwo-checkbox": "HTMLInputElement",
   "neuwo-input": "HTMLInputElement",
@@ -81,7 +81,9 @@ import type { ${elements.map((d) => d.name).join(", ")} } from "../index.js";
 
 type NeuwoElementProps<E extends HTMLElement, P> = Omit<React.DetailedHTMLProps<React.HTMLAttributes<E>, E>, keyof P> & P;
 
-type NeuwoChangeHandler<E extends HTMLElement, T extends EventTarget = E> = React.EventHandler<React.SyntheticEvent<E> & { target: EventTarget & T }>;
+export type NeuwoChangeEvent<E extends HTMLElement, T extends EventTarget = E> = React.SyntheticEvent<E> & { target: EventTarget & T };
+
+type NeuwoChangeHandler<E extends HTMLElement, T extends EventTarget = E> = React.EventHandler<NeuwoChangeEvent<E, T>>;
 
 declare module "react" {
   namespace JSX {
@@ -96,6 +98,7 @@ ${entries.join("\n")}
 export function jsxRuntimeTypes(runtime) {
   const entry = runtime === "jsx-dev-runtime" ? "jsxDEV" : "jsx, jsxs";
   return `import "./jsx-elements.js";
+export type { NeuwoChangeEvent } from "./jsx-elements.js";
 export { Fragment, ${entry} } from "react/${runtime}";
 export type { JSX } from "react/${runtime}";
 `;

@@ -1,4 +1,5 @@
 import type { NeuwoButton, NeuwoInput } from "@neuwo/web-ui-library--demo";
+import type { NeuwoChangeEvent } from "@neuwo/web-ui-library--demo/jsx-runtime";
 import { useRef, useState } from "react";
 
 // React Hook Form's own shape, declared here so the repository does not depend on it.
@@ -17,6 +18,8 @@ type UseFormRegisterReturn = {
   disabled?: boolean;
 };
 declare const register: (name: string) => UseFormRegisterReturn;
+
+const onInputChange = (e: NeuwoChangeEvent<NeuwoInput, HTMLInputElement>) => e.target.checkValidity() && e.currentTarget.noErrorLine;
 
 export function Usage() {
   const button = useRef<NeuwoButton>(null);
@@ -72,6 +75,7 @@ export function Usage() {
       <neuwo-range min="0" max={100} step={10} />
       <neuwo-textarea rows="4" minlength={2} maxlength={200} />
       <neuwo-input onChange={(e) => e.currentTarget.noErrorLine} />
+      <neuwo-input onChange={onInputChange} />
       <neuwo-combobox onChange={(e) => e.target.open()} />
       {/* @ts-expect-error the input's change event comes from its inner control, which has no noErrorLine */}
       <neuwo-input onChange={(e) => e.target.noErrorLine} />
