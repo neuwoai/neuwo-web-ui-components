@@ -151,14 +151,22 @@
 
 /* Forced colours replace these colours with Canvas, so the chevron, the selection and the active row would not show; Chromium's text backplate would hide the rows' labels. */
 @media (forced-colors: active) {
+  /* The theme's palette, light or dark, rather than the dark one the list declares for its scrollbar. */
+  .neuwo-combobox__popup {
+    color-scheme: light dark;
+  }
+
   .neuwo-combobox__chevron {
     background: CanvasText;
   }
 
+  /* The inset ring tells the selected row from the active one where a theme gives both the same colour. */
   .neuwo-combobox__option[aria-selected="true"] {
     forced-color-adjust: none;
     background: SelectedItem;
     color: SelectedItemText;
+    outline: 2px solid CanvasText;
+    outline-offset: -2px;
   }
 
   .neuwo-combobox__option.neuwo-combobox__option--active {

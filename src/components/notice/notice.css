@@ -187,8 +187,6 @@ neuwo-notice {
   padding-inline-end: calc(var(--neuwo-space-3) + var(--neuwo-space-8));
 }
 
-/* Reduced motion keeps the card still: it already announces itself by arriving,
-   and the hover colour change is what marks the close button. */
 /* Forced colours replace the cross's colour with Canvas, the button's own, so it would vanish. */
 @media (forced-colors: active) {
   .neuwo-notice__dismiss::before {
@@ -196,6 +194,8 @@ neuwo-notice {
   }
 }
 
+/* Reduced motion keeps the card still: it already announces itself by arriving,
+   and the hover colour change is what marks the close button. */
 @media (prefers-reduced-motion: reduce) {
   .neuwo-notice {
     animation: none;

@@ -4,13 +4,29 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { LIGHT_COMPONENT_CSS } from "../scripts/light-css.js";
 import { flatRules } from "./fixtures/css-rules.js";
+import { closing } from "./fixtures/specificity.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (file) => readFileSync(join(root, file), "utf8");
 const strip = (css) => css.replace(/\/\*[\s\S]*?\*\//g, "");
 
+/** @param {string} css */
+function outsideForced(css) {
+  let out = css;
+  for (let at = out.search(/@media \(forced-colors: active\)\s*\{/); at >= 0; at = out.search(/@media \(forced-colors: active\)\s*\{/)) {
+    out = out.slice(0, at) + out.slice(closing(out, out.indexOf("{", at), "{", "}") + 1);
+  }
+  return out;
+}
+
 /** @param {string} file */
-const forcedRules = (file) => flatRules(strip(read(file)).match(/@media \(forced-colors: active\) \{([\s\S]*?\})\s*\}/)?.[1] ?? "");
+function forcedRules(file) {
+  const css = strip(read(file));
+  return Array.from(css.matchAll(/@media \(forced-colors: active\)\s*\{/g)).flatMap(({ index }) => {
+    const open = css.indexOf("{", index);
+    return flatRules(css.slice(open + 1, closing(css, open, "{", "}")));
+  });
+}
 
 /**
  * @param {string} file
@@ -31,7 +47,7 @@ describe("forced colours", () => {
     for (const file of LIGHT_COMPONENT_CSS) {
       const css = strip(read(file));
       expect(css, file).not.toMatch(/outline:\s*(none|0)\s*;/);
-      for (const rule of flatRules(css)) {
+      for (const rule of flatRules(outsideForced(css))) {
         const focused = rule.selectors.some((selector) => selector.includes(":focus-visible") && !/::[\w-]+$/.test(selector));
         if (!focused || !rule.declarations.has("box-shadow")) continue;
         rings++;
@@ -40,6 +56,41 @@ describe("forced colours", () => {
       }
     }
     expect(rings).toBe(8);
+  });
+
+  it("reads every forced colours block of a sheet", () => {
+    const blocks = (file) => (strip(read(file)).match(/@media \(forced-colors: active\)/g) ?? []).length;
+    for (const file of LIGHT_COMPONENT_CSS) {
+      if (!blocks(file)) continue;
+      const css = strip(read(file));
+      const inside = Array.from(css.matchAll(/@media \(forced-colors: active\)\s*\{/g)).reduce((count, { index }) => {
+        const open = css.indexOf("{", index);
+        return count + (css.slice(open + 1, closing(css, open, "{", "}")).match(/\{/g) ?? []).length;
+      }, 0);
+      expect(forcedRules(file).length, file).toBe(inside);
+    }
+  });
+
+  it("restates a system outline, without the ring, on a focusable control that a forced block opts out of forced colours", () => {
+    let checked = 0;
+    for (const file of LIGHT_COMPONENT_CSS) {
+      const focusRings = flatRules(outsideForced(strip(read(file))))
+        .flatMap((rule) => (rule.declarations.has("box-shadow") ? rule.selectors : []))
+        .filter((selector) => /:focus-visible$/.test(selector));
+      const forcedBlock = forcedRules(file);
+      for (const rule of forcedBlock.filter((candidate) => candidate.declarations.get("forced-color-adjust") === "none")) {
+        for (const selector of rule.selectors.filter((candidate) => !candidate.includes("::"))) {
+          for (const ring of focusRings.filter((focus) => selector.startsWith(focus.replace(/:focus-visible$/, "")))) {
+            checked++;
+            const restated = forcedBlock.find((candidate) => candidate.selectors.includes(ring));
+            expect(restated, `${file} ${ring}`).toBeDefined();
+            expect(restated.declarations.get("outline-color"), ring).toMatch(/^(CanvasText|ButtonText|Highlight)$/);
+            expect(restated.declarations.get("box-shadow"), ring).toBe("none");
+          }
+        }
+      }
+    }
+    expect(checked).toBeGreaterThan(0);
   });
 
   it("marks the selected segmented option and its pill in the highlight colours, opted out of Chromium's text backplate, which would hide the label", () => {
@@ -55,16 +106,24 @@ describe("forced colours", () => {
       "background-color": "GrayText",
       "background-image": "linear-gradient(Highlight, Highlight)",
     });
+    expect(forced(file, ".neuwo-range::-webkit-slider-thumb")).toEqual({ "forced-color-adjust": "auto" });
     expect(forced(file, ".neuwo-range::-moz-range-track")).toEqual({ background: "GrayText" });
     expect(forced(file, ".neuwo-range::-moz-range-progress")).toEqual({ background: "Highlight" });
   });
 
-  it("marks the combobox's selected option as a selected item and its active option, which wins, as a highlight, without the text backplate", () => {
+  it("marks the combobox's selected option with an inset ring as well, which tells it from the active one where the two colours match, and the active one, which wins, as a highlight", () => {
     const file = "src/components/fields/combobox/combobox.css";
     const rules = forcedRules(file);
     const selected = rules.findIndex((rule) => rule.selectors.includes('.neuwo-combobox__option[aria-selected="true"]'));
     const active = rules.findIndex((rule) => rule.selectors.includes(".neuwo-combobox__option.neuwo-combobox__option--active"));
-    expect(Object.fromEntries(rules[selected].declarations)).toEqual({ "forced-color-adjust": "none", background: "SelectedItem", color: "SelectedItemText" });
+    expect(Object.fromEntries(rules[selected].declarations)).toEqual({
+      "forced-color-adjust": "none",
+      background: "SelectedItem",
+      color: "SelectedItemText",
+      outline: "2px solid CanvasText",
+      "outline-offset": "-2px",
+    });
+    expect(forced(file, ".neuwo-combobox__popup")).toEqual({ "color-scheme": "light dark" });
     expect(Object.fromEntries(rules[active].declarations)).toEqual({ "forced-color-adjust": "none", background: "Highlight", color: "HighlightText" });
     expect(active).toBeGreaterThan(selected);
   });

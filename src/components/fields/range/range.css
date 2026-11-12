@@ -109,14 +109,17 @@
   box-shadow: var(--neuwo-shadow-focus);
 }
 
-/* Reduced motion keeps a static thumb; the focus ring and the filled track
-   already signal state without any movement. */
 /* Forced colours replace the track's colours with Canvas and drop WebKit's fill gradient, so neither would show. */
 @media (forced-colors: active) {
   .neuwo-range::-webkit-slider-runnable-track {
     forced-color-adjust: none;
     background-color: GrayText;
     background-image: linear-gradient(Highlight, Highlight);
+  }
+
+  /* The thumb sits inside the track, whose opt-out it would inherit. */
+  .neuwo-range::-webkit-slider-thumb {
+    forced-color-adjust: auto;
   }
 
   .neuwo-range::-moz-range-track {
@@ -128,6 +131,8 @@
   }
 }
 
+/* Reduced motion keeps a static thumb; the focus ring and the filled track
+   already signal state without any movement. */
 @media (prefers-reduced-motion: reduce) {
   .neuwo-range::-webkit-slider-thumb {
     transition: none;

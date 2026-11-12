@@ -105,6 +105,12 @@ neuwo-segmented:not([hidden]) {
   .neuwo-segmented__indicator {
     background: Highlight;
   }
+
+  /* The checked option opts out above, so its focus outline would stay transparent and its ring would show. */
+  .neuwo-segmented__option:focus-visible {
+    outline-color: CanvasText;
+    box-shadow: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
