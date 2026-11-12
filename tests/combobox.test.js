@@ -1012,6 +1012,19 @@ describe("<neuwo-combobox searchable>", () => {
     expect([el.popup.style.top, el.popup.style.bottom]).toEqual(["474px", "auto"]);
   });
 
+  it("follows a form reset whose event a React root stops before it hydrates the element", async () => {
+    const form = make(`<form><neuwo-combobox value="b">${OPTS}</neuwo-combobox></form>`);
+    const el = form.querySelector("neuwo-combobox");
+    el.value = "a";
+    expect(shownOf(el)).toBe("Apple");
+    const stop = (event) => event.stopPropagation();
+    document.addEventListener("reset", stop, true);
+    cleanup.push(() => document.removeEventListener("reset", stop, true));
+    form.reset();
+    await nextTask();
+    expect([el.value, shownOf(el)]).toEqual(["b", "Banana"]);
+  });
+
   it("filters options as you type", () => {
     const el = make(`<neuwo-combobox searchable>${FRUIT}</neuwo-combobox>`);
     type(triggerOf(el), "ap");

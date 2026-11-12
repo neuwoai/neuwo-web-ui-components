@@ -257,6 +257,26 @@ describe("<neuwo-segmented> server rendered", () => {
     expect(errors).not.toHaveBeenCalled();
   });
 
+  it("draws the form value it holds once hydrated, when React held back the event that wrote it", async () => {
+    const errors = vi.spyOn(console, "error");
+    const tree = () => segmented({ defaultValue: "json", name: "a" });
+    const parsed = document.createElement("div");
+    parsed.innerHTML = renderToString(tree());
+    const container = attach(document.createElement("div"));
+    container.append(...parsed.childNodes);
+    const host = container.querySelector("neuwo-segmented");
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(formValueOf(host), "table");
+    let root;
+    act(() => {
+      root = hydrateRoot(container, tree());
+    });
+    cleanup.push(() => act(() => root.unmount()));
+    await settled();
+    expect(container.querySelector("neuwo-segmented")).toBe(host);
+    expect([host.value, checkedOf(host), stopOf(host), formValueOf(host).defaultValue]).toEqual(["table", ["table"], ["table"], "json"]);
+    expect(errors).not.toHaveBeenCalled();
+  });
+
   it("hydrates with no warning over a value a script set before hydration, keeping it", async () => {
     const errors = vi.spyOn(console, "error");
     const trees = [() => segmented({ defaultValue: "json", name: "a" }), () => segmented({ name: "a" })];

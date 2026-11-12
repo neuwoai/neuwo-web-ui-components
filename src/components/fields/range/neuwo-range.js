@@ -33,6 +33,14 @@ export class NeuwoRange extends NeuwoFieldElement {
     if (event.target === this.control) this.#syncFill();
   };
 
+  /** @type {Window | null} */
+  #window = null;
+
+  // React stops the input event of a tree it has not hydrated at its root, which a listener on the window precedes.
+  #onEarlyInput = (/** @type {Event} */ event) => {
+    if (event.target === this.control && !ownedByReact(this)) this.#syncFill();
+  };
+
   /** @returns {string} */
   get value() {
     return super.value;
@@ -45,6 +53,8 @@ export class NeuwoRange extends NeuwoFieldElement {
   connect() {
     super.connect();
     this.addEventListener("input", this.#onInput);
+    this.#window = this.ownerDocument.defaultView;
+    this.#window?.addEventListener("input", this.#onEarlyInput, true);
     const control = this.control;
     if (!ownedByReact(this)) this.#syncFill();
     // Every host watches, since React can hydrate one after it connected and then write the template's fill back.
@@ -58,6 +68,8 @@ export class NeuwoRange extends NeuwoFieldElement {
     super.disconnect();
     this.#styleObserver?.disconnect();
     this.removeEventListener("input", this.#onInput);
+    this.#window?.removeEventListener("input", this.#onEarlyInput, true);
+    this.#window = null;
   }
 
   updated() {

@@ -16,7 +16,13 @@ import { CONTROLLED, REACT } from "../marks.js";
 /** @typedef {typeof import("react/jsx-dev-runtime").jsxDEV} JsxDEV */
 /** @typedef {{ jsx: Jsx, jsxs: Jsxs } | { jsxDEV: JsxDEV }} Factory */
 /** @typedef {(type: ElementType, props: Parameters<Jsx>[1], key: Parameters<Jsx>[2], isStatic: boolean, source?: unknown, self?: unknown) => ReactElement} Create */
-/** @typedef {{ host: Record<string, unknown>, controlled: boolean }} Form */
+/**
+ * @typedef {object} Form
+ * @property {Record<string, unknown>} host
+ * @property {boolean} controlled
+ * @property {TemplateNode} [start] the control as the starting value renders it, when the template draws another
+ * @property {((el: Element | null) => void) | null} [watch] the ref that reads the control's live value once mounted
+ */
 /** @typedef {{ attrs: Record<string, string>, controlled: boolean, hasOnChange: boolean }} Within */
 
 // React DOM's boolean props, copied from its setProp: it reads "" as false for these.
@@ -350,9 +356,42 @@ const heldState = (control, hasOnChange) => ({
 });
 
 /**
+ * The value a template gives a value-carrying control: a textarea's text, else its `value`.
+ * @param {TemplateNode} node
+ * @returns {string | undefined}
+ */
+const valueOf = (node) => (node.tag === "textarea" ? node.children.filter((child) => typeof child === "string").join("") || undefined : (node.props.value === undefined ? undefined : String(node.props.value)));
+
+/**
+ * Whether the element draws an uncontrolled control's value into its markup, so React draws it again from the
+ * control's live value once mounted: any control that carries a value, not a checkbox or radio, which CSS draws.
+ * @param {TemplateNode} node
+ * @returns {boolean}
+ */
+const carriesValue = (node) => !isCheckable(node) && !FIXED_VALUE.has(inputTypeOf(node));
+
+/**
+ * A ref for an uncontrolled control that reads its live value once React has mounted it, so a value the user or the
+ * browser gave the control while React held back the events of a tree it had not hydrated is drawn too.
+ * @param {boolean} enabled
+ * @param {string | undefined} start the value the control was rendered with
+ * @param {(value: string) => void} draw
+ */
+function useWatch(enabled, start, draw) {
+  return useCallback(
+    /** @param {Element | null} el */
+    (el) => {
+      const value = /** @type {{ value?: unknown } | null} */ (el)?.value;
+      if (enabled && typeof value === "string" && value !== (start ?? "")) draw(value);
+    },
+    [enabled, start, draw],
+  );
+}
+
+/**
  * Gives a form element its state the way React expects: the consumer's own on the control of a controlled host,
  * as the template resolved it, and the template's as a default everywhere else, so the browser keeps what the user
- * types.
+ * types. A control drawn from its live value keeps its starting value as the default.
  * @param {TemplateNode} node
  * @param {Record<string, unknown>} props
  * @param {ReactNode[]} children
@@ -360,6 +399,7 @@ const heldState = (control, hasOnChange) => ({
  */
 function bindForm(node, props, children, form) {
   const live = node.control === true && form.controlled;
+  const start = node.control === true ? form.start : undefined;
   const checkable = isCheckable(node);
   if (checkable) {
     delete props.checked;
@@ -368,9 +408,11 @@ function bindForm(node, props, children, form) {
   } else if (!FIXED_VALUE.has(inputTypeOf(node))) {
     const value = node.tag === "textarea" && children.length ? children.splice(0).join("") : props.value;
     delete props.value;
+    const given = start ? valueOf(start) : value;
     if (live) props.value = value === undefined || String(value) === String(form.host.value) ? form.host.value : value;
-    else if (value !== undefined) props.defaultValue = value;
+    else if (given !== undefined) props.defaultValue = given;
   }
+  if (node.control === true && form.watch) props.ref = form.watch;
   const handled = typeof form.host.onChange === "function" || (!checkable && typeof form.host.onInput === "function");
   if (live && handled) props.onChange = noop;
 }
@@ -544,19 +586,28 @@ function hostFor(tag, template, { markHost, server, readers, dev, warned, create
     const { defaultValue, defaultChecked, ...host } = props;
     const within = lentTo.get(props);
     const scope = `neuwo${useId().replace(/[^\w-]/g, "")}-`;
+    // Server Components have no state; the runtime is fixed per build, so the hooks are called the same every time.
+    /** @type {[string | null, (value: string) => void]} */
+    const [drawn, draw] = server ? [null, noop] : React.useState(/** @type {string | null} */ (null));
     const items = flatten(/** @type {ReactNode} */ (props.children));
     const attrs = normalizeProps({ ...host, value: props.value ?? defaultValue, checked: props.checked ?? defaultChecked });
-    const node = template(attrs, { id: (suffix) => scope + suffix, children: describe(items), within: within?.attrs ?? null });
+    /** @type {import("../template.js").TemplateContext} */
+    const ctx = { id: (suffix) => scope + suffix, children: describe(items), within: within?.attrs ?? null };
+    const node = template(drawn === null ? attrs : { ...attrs, value: drawn }, ctx);
     if (dev) unlisted(node, items);
     const control = controlOf(node);
     const held = !server && within?.controlled === true && control ? control : null;
     // An enclosing element such as a radio group holds a value its template has no control for.
     const controlled = !server && (provider ? props.value != null : held !== null || isControlled(props, control));
+    const start = drawn === null ? control : controlOf(template(attrs, ctx));
+    const watch = server ? null : useWatch(!controlled && control !== undefined && carriesValue(control), start && valueOf(start), draw);
     const mark = markHost && { ref: useMark(props.ref, controlled, takeHandlers(host), dev && enclosing && !within ? unlent : null) };
     const blocks = blocksOf(node);
     const lent = provider && { attrs, controlled, hasOnChange: typeof props.onChange === "function" };
     const placed = lent ? /** @type {ReactNode[]} */ (lend(items, tag, lent, dev ? expanded : null)) : items;
-    const form = held ? { host: heldState(held, within?.hasOnChange === true || typeof props.onChange === "function"), controlled } : { host: props, controlled };
+    const form = held
+      ? { host: heldState(held, within?.hasOnChange === true || typeof props.onChange === "function"), controlled }
+      : { host: props, controlled, start: drawn === null ? undefined : start, watch };
     const root = toReact(node, distribute(node, placed, slotOf), blocks, keyOf(node, blocks), form, create);
     const fixed = control?.tag === "input" && FIXED_VALUE.has(inputTypeOf(control));
     // A field assigns a value it is handed to its live control, which would overwrite what the user typed.

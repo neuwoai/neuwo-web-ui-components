@@ -33,5 +33,14 @@ const check = (a) =>
     control(h("input", { class: "x-check__input", type: "checkbox", name: a.name, value: a.value, checked: has(a, "checked") })),
   );
 
+/** @type {Template} */
+const dial = (a) =>
+  h(
+    "div",
+    { class: "x-dial" },
+    control(h("input", { class: "x-dial__input", name: a.name, value: a.value })),
+    h("span", { class: "x-dial__shown" }, `shows ${a.value ?? ""}`),
+  );
+
 /** @type {Record<string, Template>} */
-export const formTemplates = { "x-field": field, "x-notes": notes, "x-check": check };
+export const formTemplates = { "x-field": field, "x-notes": notes, "x-check": check, "x-dial": dial };

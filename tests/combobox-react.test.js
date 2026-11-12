@@ -574,6 +574,28 @@ describe("<neuwo-combobox> server rendered", () => {
     expect(errors).not.toHaveBeenCalled();
   });
 
+  it("draws the form value it holds once hydrated, when React held back the event that wrote it", async () => {
+    const errors = vi.spyOn(console, "error");
+    for (const [index, tree] of [() => combobox({ defaultValue: "fi", name: "a", placeholder: "Pick" }), () => combobox({ defaultValue: "fi", name: "a", searchable: true })].entries()) {
+      const parsed = document.createElement("div");
+      parsed.innerHTML = renderToString(tree());
+      const container = attach(document.createElement("div"));
+      container.append(...parsed.childNodes);
+      const host = container.querySelector("neuwo-combobox");
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(formValueOf(host), "se");
+      let root;
+      act(() => {
+        root = hydrateRoot(container, tree());
+      });
+      cleanup.push(() => act(() => root.unmount()));
+      await settled();
+      expect(container.querySelector("neuwo-combobox"), String(index)).toBe(host);
+      expect([host.value, index === 1 ? triggerOf(host).value : shownOf(host), selectedOf(host)], String(index)).toEqual(["se", "Sweden", ["se"]]);
+      expect(formValueOf(host).defaultValue, String(index)).toBe("fi");
+    }
+    expect(errors).not.toHaveBeenCalled();
+  });
+
   it("keeps a hydrated uncontrolled pick when React re-renders the placeholder", async () => {
     const errors = vi.spyOn(console, "error");
     const tree = (placeholder) => combobox({ placeholder });

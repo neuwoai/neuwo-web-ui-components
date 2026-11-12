@@ -334,6 +334,54 @@ describe("<neuwo-range> under React", () => {
     expect(renderToString(jsx("neuwo-range", { min: 0, max: 200, value: 50, onChange() {} }))).toContain("--neuwo-range-fill:25%");
   });
 
+  it("follows a move whose input event a React root stops before it hydrates the element", () => {
+    const host = make(`<neuwo-range min="0" max="100" value="20"></neuwo-range>`);
+    // React's root listener stops the input event of a tree it has not hydrated, in the capture phase.
+    const stop = (event) => event.stopPropagation();
+    document.addEventListener("input", stop, true);
+    cleanup.push(() => document.removeEventListener("input", stop, true));
+    drag(rangeOf(host), "45");
+    expect(fillOf(host)).toBe("45%");
+  });
+
+  it("follows a form reset whose event a React root stops before it hydrates the element", async () => {
+    const form = make(`<form><neuwo-range min="0" max="100" value="20"></neuwo-range></form>`);
+    const host = form.querySelector("neuwo-range");
+    drag(rangeOf(host), "45");
+    expect(fillOf(host)).toBe("45%");
+    const stop = (event) => event.stopPropagation();
+    document.addEventListener("reset", stop, true);
+    cleanup.push(() => document.removeEventListener("reset", stop, true));
+    form.reset();
+    await nextTask();
+    expect([rangeOf(host).value, fillOf(host)]).toEqual(["20", "20%"]);
+  });
+
+  it("redraws its fill from the live value once hydrated, after a move React held back, and resets to its start", async () => {
+    const errors = vi.spyOn(console, "error");
+    const tree = () => jsx("form", { children: jsx("neuwo-range", { name: "r", defaultValue: 20 }) });
+    const parsed = document.createElement("div");
+    parsed.innerHTML = renderToString(tree());
+    const container = attach(document.createElement("div"));
+    container.append(...parsed.childNodes);
+    const host = container.querySelector("neuwo-range");
+    // React stops the input event of a tree it has not hydrated, so the element never hears this move.
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(rangeOf(host), "45");
+    expect(fillOf(host)).toBe("20%");
+    let root;
+    act(() => {
+      root = hydrateRoot(container, tree());
+    });
+    cleanup.push(() => act(() => root.unmount()));
+    await settled();
+    expect(container.querySelector("neuwo-range")).toBe(host);
+    expect([rangeOf(host).value, fillOf(host), rangeOf(host).defaultValue]).toEqual(["45", "45%", "20"]);
+    act(() => container.querySelector("form").reset());
+    await nextTask();
+    expect([rangeOf(host).value, fillOf(host)]).toEqual(["20", "20%"]);
+    expect(errors).not.toHaveBeenCalled();
+  });
+
   it("hydrates with no warning over a value restored, moved or set by a script before hydration, keeping its fill", async () => {
     const errors = vi.spyOn(console, "error");
     const trees = [() => jsx("neuwo-range", { name: "r", defaultValue: 20 }), () => jsx("neuwo-range", { name: "r", value: 20, onChange() {} })];

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, useState } from "react";
-import { createRoot } from "react-dom/client";
+import { createRoot, hydrateRoot } from "react-dom/client";
 import { renderToString } from "react-dom/server";
 import { control, h } from "../src/core/template.js";
 import { createRuntime } from "./fixtures/runtime.js";
@@ -236,6 +236,56 @@ describe("React adapter: an uncontrolled form control", () => {
     await rerender(jsx("x-check", { value: "yes", defaultChecked: true, name: "b" }));
     expect(input.name).toBe("b");
     expect(input.checked).toBe(false);
+    expect(errors).not.toHaveBeenCalled();
+  });
+});
+
+describe("React adapter: a value the control took before React hydrated it", () => {
+  /**
+   * Server markup hydrated after its control's value changed with no event, as a value does that the user enters
+   * while React holds back the events of a tree it has not hydrated.
+   * @param {unknown} tree
+   * @param {(holder: HTMLElement) => void} change
+   */
+  async function hydrateAfter(tree, change) {
+    const container = document.body.appendChild(document.createElement("div"));
+    cleanups.push(() => container.remove());
+    container.innerHTML = renderToString(tree);
+    change(container);
+    const recoverable = [];
+    let root;
+    await act(async () => {
+      root = hydrateRoot(container, tree, { onRecoverableError: (thrown) => void recoverable.push(String(thrown)) });
+    });
+    cleanups.unshift(() => act(() => root.unmount()));
+    return { container, recoverable };
+  }
+
+  const setValue = (control, value) => Object.getOwnPropertyDescriptor(Object.getPrototypeOf(control), "value").set.call(control, value);
+
+  it("draws the live value of an uncontrolled control once hydrated, keeping its starting value as the default", async () => {
+    const errors = vi.spyOn(console, "error");
+    const { container, recoverable } = await hydrateAfter(jsx("x-dial", { defaultValue: "a", name: "q" }), (holder) => setValue(holder.querySelector(".x-dial__input"), "b"));
+    const input = container.querySelector(".x-dial__input");
+    expect(recoverable).toEqual([]);
+    expect(container.querySelector(".x-dial__shown").textContent).toBe("shows b");
+    expect(input.value).toBe("b");
+    expect(input.defaultValue).toBe("a");
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it("leaves a controlled control to the consumer's state", async () => {
+    const errors = vi.spyOn(console, "error");
+    const { container } = await hydrateAfter(jsx("x-dial", { value: "a", onChange() {}, name: "q" }), (holder) => setValue(holder.querySelector(".x-dial__input"), "b"));
+    expect(container.querySelector(".x-dial__shown").textContent).toBe("shows a");
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it("draws nothing new for a control whose value did not change", async () => {
+    const errors = vi.spyOn(console, "error");
+    const { container } = await hydrateAfter(jsx("x-dial", { defaultValue: "a", name: "q" }), () => {});
+    expect(container.querySelector(".x-dial__shown").textContent).toBe("shows a");
+    expect(container.querySelector(".x-dial__input").defaultValue).toBe("a");
     expect(errors).not.toHaveBeenCalled();
   });
 });
