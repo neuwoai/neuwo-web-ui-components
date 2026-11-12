@@ -76,6 +76,30 @@ describe("positionPopup", () => {
     }
   });
 
+  it("measures the viewport from the scrolling element, which is the body in a page without a doctype", () => {
+    Object.defineProperty(document.documentElement, "clientHeight", { value: 3000, configurable: true });
+    Object.defineProperty(document.documentElement, "clientWidth", { value: 1400, configurable: true });
+    Object.defineProperty(document, "scrollingElement", { value: { clientHeight: 600, clientWidth: 900 }, configurable: true });
+    try {
+      const p = popup(170, 300);
+      positionPopup(trigger({ left: 700, right: 800, top: 470, bottom: 510, width: 100 }), p);
+      expect(p.style.top).toBe("auto");
+      expect(p.style.bottom).toBe("134px");
+      expect(p.style.maxWidth).toBe("884px");
+      expect(p.style.left).toBe("592px");
+    } finally {
+      delete document.documentElement.clientHeight;
+      delete document.documentElement.clientWidth;
+      delete document.scrollingElement;
+    }
+  });
+
+  it("returns the side it placed the popup on", () => {
+    expect(positionPopup(trigger({ left: 0, right: 200, top: 200, bottom: 240, width: 200 }), popup())).toBe("bottom");
+    expect(positionPopup(trigger({ left: 0, right: 200, top: 700, bottom: 740, width: 200 }), popup(200))).toBe("top");
+    expect(positionPopup({}, popup())).toBeUndefined();
+  });
+
   it("caps the popup to the viewport less a margin on each side, and its matched width with it", () => {
     const p = popup();
     positionPopup(trigger({ left: 0, right: 1000, top: 200, bottom: 240, width: 1000 }), p);

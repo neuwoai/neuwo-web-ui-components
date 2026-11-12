@@ -51,6 +51,8 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   #pressed = false;
   /** @type {number | null} */
   #entrance = null;
+  /** @type {"bottom" | "top" | undefined} */
+  #side;
   /** @type {Node | null} */
   #root = null;
 
@@ -305,10 +307,11 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     if (trigger.value !== label) trigger.value = label;
   }
 
-  #position() {
+  /** @param {"bottom" | "top"} [placement] the side to keep while the list fits there */
+  #position(placement) {
     const trigger = this.trigger;
     const popup = this.popup;
-    if (this.#open && trigger && popup) positionPopup(trigger, popup);
+    if (this.#open && trigger && popup) this.#side = positionPopup(trigger, popup, { placement });
   }
 
   /** @returns {number[]} */
@@ -504,9 +507,10 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     event.stopPropagation();
     if (event.type !== "input") return;
     this.#filter = trigger.value;
-    if (!this.#open) this.open();
+    const opening = !this.#open;
+    if (opening) this.open();
     this.#applyFilter();
-    this.#position();
+    this.#position(opening ? undefined : this.#side);
   };
 
   /** @param {Event} event */

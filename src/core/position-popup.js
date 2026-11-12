@@ -15,21 +15,23 @@ const EDGE = 8;
  * @param {HTMLElement} trigger - the element to position against.
  * @param {HTMLElement} popup - the popup to move.
  * @param {{ placement?: "bottom" | "top", align?: "start" | "end", gap?: number, matchWidth?: boolean }} [options]
- *   `placement` is the preferred side (default bottom), `align` the trigger edge
- *   the popup lines up with (default start), in the trigger's own direction, so
- *   start is its right edge when it runs right to left, `gap` the offset in px (default 4),
- *   `matchWidth` sets the popup's `min-width` to the trigger's width (default
- *   true); pass false when the popup wants its own width floor instead of
- *   matching a possibly-narrower trigger.
+ *   `placement` is the preferred side (default bottom); pass the side a popup is already on to keep it there
+ *   while it fits. `align` is the trigger edge the popup lines up with (default start), in the trigger's own
+ *   direction, so start is its right edge when it runs right to left, `gap` the offset in px (default 4),
+ *   `matchWidth` sets the popup's `min-width` to the trigger's width (default true); pass false when the popup
+ *   wants its own width floor instead of matching a possibly-narrower trigger.
+ * @returns {"bottom" | "top" | undefined} the side the popup is placed on, or undefined for a trigger that cannot
+ *   be measured.
  */
 export function positionPopup(trigger, popup, options = {}) {
   if (!trigger || typeof trigger.getBoundingClientRect !== "function") return;
   const { placement = "bottom", align = "start", gap = 4, matchWidth = true } = options;
   const r = trigger.getBoundingClientRect();
 
-  // A fixed popup's right and bottom are measured inside classic scrollbars, which innerWidth and innerHeight include.
-  const viewport = document.documentElement.clientWidth || window.innerWidth;
-  const viewportHeight = document.documentElement.clientHeight || window.innerHeight;
+  // The viewport inside classic scrollbars, where a fixed popup's right and bottom are measured; without a doctype the root's is the document's.
+  const frame = document.scrollingElement ?? document.documentElement;
+  const viewport = frame.clientWidth || window.innerWidth;
+  const viewportHeight = frame.clientHeight || window.innerHeight;
   const room = Math.max(0, viewport - 2 * EDGE);
   popup.style.position = "fixed";
   popup.style.maxWidth = `${room}px`;
@@ -66,4 +68,5 @@ export function positionPopup(trigger, popup, options = {}) {
     popup.style.bottom = "auto";
     popup.style.top = `${r.bottom + gap}px`;
   }
+  return onTop ? "top" : "bottom";
 }

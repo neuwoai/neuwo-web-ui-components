@@ -979,6 +979,39 @@ describe("<neuwo-combobox searchable>", () => {
     expect(el.popup.style.left).toBe(`${viewport - 120}px`);
   });
 
+  it("keeps a list on the side it opened on while a filter changes it, until that side no longer fits", () => {
+    const el = make(`<neuwo-combobox searchable>${FRUIT}</neuwo-combobox>`);
+    Object.defineProperty(document.documentElement, "clientHeight", { value: 600, configurable: true });
+    cleanup.push(() => delete document.documentElement.clientHeight);
+    let rect = { left: 40, right: 240, top: 430, bottom: 470, width: 200, height: 40 };
+    let height = 300;
+    triggerOf(el).getBoundingClientRect = () => rect;
+    Object.defineProperty(el.popup, "offsetHeight", { get: () => height, configurable: true });
+    el.open();
+    expect([el.popup.style.top, el.popup.style.bottom]).toEqual(["auto", "174px"]);
+    height = 60;
+    type(triggerOf(el), "ban");
+    expect([el.popup.style.top, el.popup.style.bottom]).toEqual(["auto", "174px"]);
+    height = 300;
+    type(triggerOf(el), "");
+    expect([el.popup.style.top, el.popup.style.bottom]).toEqual(["auto", "174px"]);
+    rect = { left: 40, right: 240, top: 40, bottom: 80, width: 200, height: 40 };
+    height = 60;
+    type(triggerOf(el), "ap");
+    expect([el.popup.style.top, el.popup.style.bottom]).toEqual(["84px", "auto"]);
+  });
+
+  it("places a list that typing opens by the rows the filter leaves", () => {
+    const el = make(`<neuwo-combobox searchable>${FRUIT}</neuwo-combobox>`);
+    Object.defineProperty(document.documentElement, "clientHeight", { value: 600, configurable: true });
+    cleanup.push(() => delete document.documentElement.clientHeight);
+    triggerOf(el).getBoundingClientRect = () => ({ left: 40, right: 240, top: 430, bottom: 470, width: 200, height: 40 });
+    Object.defineProperty(el.popup, "offsetHeight", { get: () => rowsOf(el).filter((row) => !row.hidden).length * 100, configurable: true });
+    type(triggerOf(el), "ban");
+    expect(el.isOpen).toBe(true);
+    expect([el.popup.style.top, el.popup.style.bottom]).toEqual(["474px", "auto"]);
+  });
+
   it("filters options as you type", () => {
     const el = make(`<neuwo-combobox searchable>${FRUIT}</neuwo-combobox>`);
     type(triggerOf(el), "ap");
