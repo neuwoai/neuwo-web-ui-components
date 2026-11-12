@@ -38,8 +38,8 @@ adapters turn into the same markup. Follow `<neuwo-button>`.
    `within` to that tag and read `ctx.within`. A control that renders its own error line extends
    `NeuwoErrorMixin(...)` from `src/components/error-mixin.js`, which documents `error`,
    `error-muted` and `no-error-line` and adds `noErrorLine`, and lists the three in its
-   `observedAttributes`; one whose `value` attribute is its starting value applies
-   `NeuwoDefaultValueMixin` from `src/components/default-value-mixin.js` too. Follow the
+   `observedAttributes`; one whose native control takes its `value` attribute as its default
+   applies `NeuwoDefaultValueMixin` from `src/components/default-value-mixin.js` too. Follow the
    React-owned rules: write nothing to a host `ownedByReact()` reports, and drop a value written
    while the host carries the `CONTROLLED` mark from `src/core/marks.js`, since React holds it.
    `connect()` may re-apply a property set before the control rendered, as the field base puts a

@@ -33,9 +33,3 @@ neuwo-radio > .neuwo-form-check {
   flex-wrap: wrap;
   gap: var(--neuwo-space-5);
 }
-
-/* The :not() spares the radios of a nested group with no error of its own; :where() keeps both at no weight. */
-.neuwo-radio-group--error :where(neuwo-radio > .neuwo-form-check) > .neuwo-form-check__input:not(:where(.neuwo-radio-group--error .neuwo-radio-group:not(.neuwo-radio-group--error) *)) {
-  border-color: var(--neuwo-color-red);
-  box-shadow: var(--neuwo-shadow-danger);
-}

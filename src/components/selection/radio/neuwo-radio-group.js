@@ -1,7 +1,6 @@
 import { define, ownedByReact } from "../../../core/element.js";
 import { CONTROLLED } from "../../../core/marks.js";
 import { NeuwoControlElement } from "../../control-element.js";
-import { NeuwoDefaultValueMixin } from "../../default-value-mixin.js";
 import { NeuwoErrorMixin } from "../../error-mixin.js";
 import { radioGroupTemplate } from "./radio-group.template.js";
 
@@ -22,12 +21,14 @@ const RADIO = "neuwo-radio > .neuwo-form-check > .neuwo-form-check__input";
  * @attr {boolean} required - a radio must be checked for the group to be valid.
  * @attr label - visible legend that names the group.
  * @attr {horizontal|vertical} orientation - lays the radios out in a row or a column (default: a column).
+ * @attr error - error message; shows the red accent on each of the group's own radios, the message, and aria-invalid on the group.
+ * @attr {boolean} no-error-line - drop the reserved error message row (for a non-validated group); setting `error` alongside it is a misconfiguration.
  * @fires {Event} input - the user picked a radio; the radio's own `input`, bubbling through the group.
  * @fires {Event} change - the user picked a radio; the radio's own `change`, bubbling through the group with that radio as its target.
  * @slot - the `<neuwo-radio>` elements, directly or inside other markup.
  * @cssprop --neuwo-color-blue - brand accent (checked fill, focus ring); re-theme by setting it on :root.
  */
-export class NeuwoRadioGroup extends NeuwoErrorMixin(NeuwoDefaultValueMixin(NeuwoControlElement)) {
+export class NeuwoRadioGroup extends NeuwoErrorMixin(NeuwoControlElement) {
   static template = radioGroupTemplate;
   static observedAttributes = ["name", "value", "disabled", "form", "required", "label", "orientation", "error", "error-muted", "no-error-line"];
 
@@ -88,10 +89,9 @@ export class NeuwoRadioGroup extends NeuwoErrorMixin(NeuwoDefaultValueMixin(Neuw
     if (!radios.length) return this.getAttribute("value") ?? "";
     return radios.find((radio) => radio.defaultChecked)?.value ?? "";
   }
-  // A getter alone would hide the inherited setter.
   /** @param {string} value */
   set defaultValue(value) {
-    super.defaultValue = value;
+    this.setAttribute("value", String(value));
   }
 
   /**

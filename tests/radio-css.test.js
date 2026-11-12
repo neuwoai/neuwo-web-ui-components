@@ -41,9 +41,9 @@ describe("radio-group.css recipe", () => {
     expect(css).toMatch(/neuwo-radio > \.neuwo-form-check\s*\{\s*flex: 1 1 auto;\s*\}/);
   });
 
-  it("rings the group's radios on an error, never the legend, with no hex colour literals", () => {
-    expect(css).toMatch(/\.neuwo-radio-group--error :where\(neuwo-radio > \.neuwo-form-check\) > \.neuwo-form-check__input:not\([^{]*\)\s*\{[^}]*border-color: var\(--neuwo-color-red\);[^}]*box-shadow: var\(--neuwo-shadow-danger\);/);
-    expect(css).not.toMatch(/__legend[^{}]*\{[^}]*--neuwo-color-red/);
+  it("leaves the radios' accent to their own label's error modifier, never the legend, with no hex colour literals", () => {
+    expect(css).not.toContain(".neuwo-form-check__input");
+    expect(css).not.toContain("--neuwo-color-red");
     expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
   });
 
@@ -64,6 +64,14 @@ describe("radio-group.css recipe", () => {
     }
     for (const id of ["checkbox", "toggle", "nested", "outer", "muted"]) expect(accentedBy(input(id)), id).toEqual([]);
     expect(accentedBy(document.querySelector("#toggle .neuwo-form-toggle__track"))).toEqual([]);
+    document.body.innerHTML = "";
+  });
+
+  it("accents each radio by its nearest group alone, at any depth", () => {
+    const group = (name, error, inner) => `<neuwo-radio-group name="${name}"${error ? ' error="x"' : ""}>${inner}</neuwo-radio-group>`;
+    document.body.innerHTML = expand(group("a", 1, radio("a1") + group("b", 0, radio("b1") + group("c", 1, radio("c1") + group("d", 0, radio("d1") + group("e", 1, radio("e1")))))));
+    const accented = Object.fromEntries(["a1", "b1", "c1", "d1", "e1"].map((id) => [id, accentedBy(document.querySelector(`#${id} .neuwo-form-check__input`)).length === 1]));
+    expect(accented).toEqual({ a1: true, b1: false, c1: true, d1: false, e1: true });
     document.body.innerHTML = "";
   });
 

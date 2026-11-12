@@ -77,6 +77,7 @@ export class NeuwoCopy extends NeuwoElement {
     else this.setAttribute("failed-label", String(value));
   }
 
+  /** @returns {string} */
   get text() { return readable(this.#own("content") ?? this).trim(); }
 
   /**

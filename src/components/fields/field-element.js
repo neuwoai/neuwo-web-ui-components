@@ -18,6 +18,7 @@ import { NeuwoErrorMixin } from "../error-mixin.js";
  * @attr autocomplete - native autocomplete hint carried onto the control.
  * @attr {sm} size - compact density step for the control, label and error line (default: the standard size when the attribute is absent).
  * @attr label - visible label text rendered above the control, unless a `slot="label"` child replaces it.
+ * @attr {boolean} error-muted - softens a shown error: drops the border/box-shadow accent while the red message and invalid state stay.
  * @fires {Event} input - the value changed as the user typed or moved it; the native control's own `input`, bubbling through the element.
  * @fires {Event} change - the user committed a new value; the native control's own `change`, bubbling through the element.
  * @slot label - rich label content (a help link, a badge, emphasis) replacing the `label` attribute text, inside the associated `<label>`. The required marker still follows it.

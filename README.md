@@ -848,12 +848,12 @@ properties, or target the children you passed in.
 | `.neuwo-choice--flush` | the radio group's wrapper, which keeps the error line right under the full-width radiogroup |
 | `.neuwo-choice__error` | the reserved error line; it was `.control-error` and `::part(error)` |
 | `.neuwo-form-check` | the checkbox's or radio's `<label>`, around the box and the label content; it was `::part(field)` |
-| `.neuwo-form-check--error` | the checkbox's label, by `error` unless `error-muted` or `no-error-line` is set |
+| `.neuwo-form-check--error` | the checkbox's label, by `error` unless `error-muted` or `no-error-line` is set, and a radio's label while its nearest group has it; it rings the box |
 | `.neuwo-form-check__input` | the native checkbox or radio; it was `::part(input)` |
 | `.neuwo-form-check__label` | the wrapper around the checkbox's or radio's children; it was `::part(label)` |
 | `.neuwo-radio-group` | the radio group's `role="radiogroup"` `<div>`, around the legend and the radios; it was `.radio-group` and `::part(group)` |
 | `.neuwo-radio-group--horizontal` | the radiogroup, by `orientation="horizontal"`, which lays the radios out in a row |
-| `.neuwo-radio-group--error` | the radiogroup, by `error` unless `error-muted` or `no-error-line` is set; it rings the box of each of its own radios, not those of a group nested in it |
+| `.neuwo-radio-group--error` | the radiogroup, by `error` unless `error-muted` or `no-error-line` is set; its own radios, not those of a group nested in it, carry `.neuwo-form-check--error` meanwhile |
 | `.neuwo-radio-group__legend` | the visible label, `hidden` while `label` is not set; it was `::part(legend)` |
 | `.neuwo-radio-group__options` | the wrapper around the group's children, the radios; it was `::part(options)` |
 | `.neuwo-form-toggle` | the toggle's `<label>`, around the switch, the track and the label content; it was `::part(field)` |
@@ -899,9 +899,9 @@ selection controls (`<neuwo-checkbox>`, `<neuwo-toggle>`,
 checkable API under [Checkbox and toggle](#checkbox-and-toggle), the radio
 group and its radios are under [Radio group](#radio-group), and the segmented
 control is under [Segmented control](#segmented-control). The generated
-`.d.ts` shows these on the base class each control `extends`, and `noErrorLine`
-and `defaultValue` on the `NeuwoErrorMixin` and `NeuwoDefaultValueMixin` that base
-applies.
+`.d.ts` shows these on the base class each control `extends`. `noErrorLine`, and
+`defaultValue` on the fields and the segmented control, come from mixins, so the
+`.d.ts` of the base lists them in the type it extends, not in its class body.
 
 `<neuwo-input>`, `<neuwo-textarea>` and `<neuwo-range>` render a native `<input>`
 or `<textarea>` into their own light DOM, and that control is the form control. The element carries `name`, `value`, `required`,
@@ -1186,6 +1186,11 @@ The sub wrapper is a `<div>`, so a paragraph works as the sub line. The field wr
 element, or removing one from inside its wrapper, updates it in a microtask. A `<neuwo-input>` in
 the field is rendered with the band, so a server-rendered capture form is styled, and submits,
 before the bundle has loaded.
+
+The band warns in the console when it has no headline or no button in `actions`.
+It checks a band from the page's markup or the server when it starts, an empty one too, and a band
+a script fills after inserting it once a change adds to its children. A band a script builds and
+inserts already complete is not checked.
 
 ## Notices
 

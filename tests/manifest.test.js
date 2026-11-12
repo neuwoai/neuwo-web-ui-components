@@ -153,16 +153,37 @@ describe("custom-elements.json", () => {
     expect(declByTag(manifest, "neuwo-radio").mixins).toBeUndefined();
   });
 
-  it("shares the starting value accessor of the fields, the radio group and the segmented control through one mixin", () => {
+  it("shares the starting value accessor of the fields and the segmented control through one mixin, the radio group keeping its own", () => {
     const mixin = declByName(manifest, "NeuwoDefaultValueMixin");
     expect(mixin.kind).toBe("mixin");
     expect(mixin.members.map((member) => member.name)).toEqual(["defaultValue"]);
-    for (const name of ["NeuwoFieldElement", "NeuwoRadioGroup", "NeuwoSegmented"]) {
+    for (const name of ["NeuwoFieldElement", "NeuwoSegmented"]) {
       expect(declByName(manifest, name).mixins?.map((applied) => applied.name), name).toContain("NeuwoDefaultValueMixin");
     }
+    const group = declByTag(manifest, "neuwo-radio-group").members.find((member) => member.name === "defaultValue");
+    expect(group.inheritedFrom).toBeUndefined();
+    expect(group.description).toMatch(/the value of the radio that starts checked/);
     for (const tag of ["neuwo-checkbox", "neuwo-toggle", "neuwo-radio"]) {
       expect(declByTag(manifest, tag).members.some((member) => member.name === "defaultValue"), tag).toBe(false);
     }
+  });
+
+  it("keeps a field's inherited attributes in its base's order and wording, the error attributes after the label", () => {
+    const names = (tag) => declByTag(manifest, tag).attributes.map((attribute) => attribute.name);
+    const base = ["name", "value", "placeholder", "disabled", "form", "required", "readonly", "autocomplete", "size", "label", "error", "error-muted", "no-error-line"];
+    expect(names("neuwo-input")).toEqual(["type", "min", "max", "step", "pattern", "minlength", "maxlength", "inputmode", ...base]);
+    expect(names("neuwo-combobox")).toEqual(["searchable", ...base]);
+    for (const tag of ["neuwo-input", "neuwo-textarea", "neuwo-combobox", "neuwo-range"]) {
+      const muted = declByTag(manifest, tag).attributes.find((attribute) => attribute.name === "error-muted");
+      expect(muted.description, tag).toMatch(/border\/box-shadow accent/);
+    }
+  });
+
+  it("keeps the radio group's and the segmented control's own wording for the error attributes", () => {
+    const description = (tag, name) => declByTag(manifest, tag).attributes.find((attribute) => attribute.name === name).description;
+    expect(description("neuwo-radio-group", "error")).toMatch(/on each of the group's own radios/);
+    expect(description("neuwo-radio-group", "no-error-line")).toMatch(/non-validated group/);
+    expect(description("neuwo-segmented", "no-error-line")).toMatch(/such as a toolbar/);
   });
 
   it("documents the form attribute once, on the control base, which only the radio restates", () => {

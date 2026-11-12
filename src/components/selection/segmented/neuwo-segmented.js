@@ -35,6 +35,7 @@ const isShown = (button) => isChecked(button) && !button.disabled;
  * @attr {boolean} disabled - disables every option and removes the control from submission.
  * @attr {boolean} required - an option must be selected for the control to be valid.
  * @attr label - accessible name of the radiogroup.
+ * @attr {boolean} no-error-line - drop the reserved error message row (for a non-validated control, such as a toolbar); setting `error` alongside it is a misconfiguration.
  * @fires {Event} input - the user picked a new value; dispatched just before `change`.
  * @fires {Event} change - the user picked a new value.
  * @slot - the `<option>` elements, one per segment.

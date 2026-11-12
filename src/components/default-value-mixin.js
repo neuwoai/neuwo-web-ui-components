@@ -4,11 +4,11 @@ import { NeuwoControlElement } from "./control-element.js";
  * @template {typeof NeuwoControlElement} T
  * @overload
  * @param {T} Base
- * @returns {{ new (): InstanceType<T> & { get defaultValue(): string, set defaultValue(value: string) }, prototype: InstanceType<T> & { get defaultValue(): string, set defaultValue(value: string) } } & Omit<T, "prototype">}
+ * @returns {{ new (): InstanceType<T> & { defaultValue: string }, prototype: InstanceType<T> & { defaultValue: string } } & Omit<T, "prototype">}
  */
 /**
- * The starting value of every control whose `value` attribute holds it: the fields, the radio group and the
- * segmented control.
+ * The starting value of the controls whose `value` attribute holds it and whose native control carries it as its
+ * default: the fields and the segmented control.
  *
  * @mixin
  * @summary Starting value for Neuwo form controls.

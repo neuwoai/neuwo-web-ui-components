@@ -33,7 +33,7 @@ describe("NeuwoControlElement", () => {
     expect(Object.getPrototypeOf(NeuwoControlElement)).toBe(NeuwoElement);
     expect(ancestry(NeuwoFieldElement)).toEqual(["NeuwoErrorMixin", "NeuwoDefaultValueMixin", "NeuwoControlElement", "NeuwoElement"]);
     expect(ancestry(NeuwoChoiceElement)).toEqual(["NeuwoErrorMixin", "NeuwoCheckableElement", "NeuwoControlElement", "NeuwoElement"]);
-    expect(ancestry(NeuwoRadioGroup)).toEqual(["NeuwoErrorMixin", "NeuwoDefaultValueMixin", "NeuwoControlElement", "NeuwoElement"]);
+    expect(ancestry(NeuwoRadioGroup)).toEqual(["NeuwoErrorMixin", "NeuwoControlElement", "NeuwoElement"]);
   });
 });
 

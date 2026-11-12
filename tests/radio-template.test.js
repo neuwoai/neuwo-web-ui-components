@@ -20,6 +20,16 @@ function find(node, name) {
 const inputOf = (attrs, within = null) => find(radioTemplate(attrs, ctx(within)), "neuwo-form-check__input").props;
 
 describe("radioTemplate()", () => {
+  it("marks its label with the error modifier while its own group shows the error accent", () => {
+    const label = (within) => radioTemplate({ value: "a" }, ctx(within)).props.class;
+    expect(label({ name: "g", error: "Pick one" })).toBe("neuwo-form-check neuwo-form-check--error");
+    expect(label({ name: "g", error: "" })).toBe("neuwo-form-check neuwo-form-check--error");
+    for (const within of [null, { name: "g" }, { error: "x", "error-muted": "" }, { error: "x", "no-error-line": "" }]) {
+      expect(label(within), JSON.stringify(within)).toBe("neuwo-form-check");
+    }
+    expect(radioTemplate({ value: "a", error: "x" }, ctx()).props.class).toBe("neuwo-form-check");
+  });
+
   it("reads its enclosing <neuwo-radio-group> and is registered under its tag", () => {
     expect(radioTemplate.within).toBe("neuwo-radio-group");
     expect(templates["neuwo-radio"]).toBe(radioTemplate);

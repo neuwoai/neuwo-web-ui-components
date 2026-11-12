@@ -1,10 +1,12 @@
 import { control, h, has, region } from "../../../core/template.js";
 import { forwardedAttrs } from "../../fields/field.template.js";
+import { errorAccent } from "../choice.template.js";
 
 /**
  * A native radio inside its label. In a `<neuwo-radio-group>` it takes the group's `name`, or its own when the group
  * has none, the group's `required` and `form`, is disabled with the group, and starts checked when the group's
- * `value` is its own, so the browser groups the radios. Outside a group it takes its own.
+ * `value` is its own, so the browser groups the radios. Its label takes the error modifier while that group shows the
+ * error accent. Outside a group it takes its own.
  * @param {Record<string, string>} attrs
  * @param {import("../../../core/template.js").TemplateContext} ctx
  * @returns {import("../../../core/template.js").TemplateNode}
@@ -23,7 +25,7 @@ export function radioTemplate(attrs, ctx) {
   if (has(owner, "form")) props.form = owner.form;
   return h(
     "label",
-    { class: "neuwo-form-check" },
+    { class: group && errorAccent(group) ? "neuwo-form-check neuwo-form-check--error" : "neuwo-form-check" },
     control(h("input", { ...props, ...forwardedAttrs(attrs) })),
     h("span", { class: "neuwo-form-check__label" }, region()),
   );

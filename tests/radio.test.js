@@ -66,7 +66,7 @@ describe("<neuwo-radio-group> and <neuwo-radio>", () => {
     expect(customElements.get("neuwo-radio")).toBe(NeuwoRadio);
     expect(customElements.get("neuwo-radio-group")).toBe(NeuwoRadioGroup);
     expect(Object.getPrototypeOf(NeuwoRadio)).toBe(NeuwoCheckableElement);
-    expect(ancestry(NeuwoRadioGroup)).toEqual(["NeuwoErrorMixin", "NeuwoDefaultValueMixin", "NeuwoControlElement", "NeuwoElement"]);
+    expect(ancestry(NeuwoRadioGroup)).toEqual(["NeuwoErrorMixin", "NeuwoControlElement", "NeuwoElement"]);
     expect(NeuwoRadioGroup.prototype).toBeInstanceOf(NeuwoControlElement);
     expect(NeuwoRadioGroup.formAssociated).toBeUndefined();
     const el = make(`<neuwo-radio-group name="plan" label="Plan">${RADIOS}</neuwo-radio-group>`);
@@ -281,12 +281,15 @@ describe("<neuwo-radio-group> and <neuwo-radio>", () => {
     expect(inputsOf(el).every((input) => input.required)).toBe(true);
   });
 
-  it("keeps the user's pick through an error change, which writes nothing inside the radios", () => {
+  it("keeps the user's pick through an error change, which writes only the error modifier of each radio's label", () => {
     const el = make(`<neuwo-radio-group name="plan" value="pro" label="Plan">${RADIOS}</neuwo-radio-group>`);
     inputOf(radiosOf(el)[0]).click();
     const stops = radiosOf(el).map(watch);
     el.setAttribute("error", "Pick again");
-    expect(stops.flatMap((stop) => stop())).toEqual([]);
+    const records = stops.flatMap((stop) => stop());
+    expect(records.map((record) => [record.type, record.attributeName, record.target.className])).toEqual(
+      radiosOf(el).map(() => ["attributes", "class", "neuwo-form-check neuwo-form-check--error"]),
+    );
     expect(el.value).toBe("free");
     expect(groupOf(el).classList.contains("neuwo-radio-group--error")).toBe(true);
     expect(groupOf(el).getAttribute("aria-invalid")).toBe("true");
@@ -411,6 +414,39 @@ describe("<neuwo-radio-group> and <neuwo-radio>", () => {
     expect(el.getAttribute("error")).toBe("Pick one");
   });
 
+  it("marks the labels of its own radios while it shows the error accent, at any depth, and leaves a nested group's to it", () => {
+    const el = make(
+      `<neuwo-radio-group name="outer"><div><neuwo-radio value="a">A</neuwo-radio></div>` +
+        `<neuwo-radio-group name="inner"><neuwo-radio value="b">B</neuwo-radio></neuwo-radio-group></neuwo-radio-group>`,
+    );
+    const inner = el.querySelector("neuwo-radio-group");
+    const marked = () => radiosOf(el).map((radio) => radio.querySelector(":scope > .neuwo-form-check").classList.contains("neuwo-form-check--error"));
+    expect(marked()).toEqual([false, false]);
+    el.setAttribute("error", "Pick one");
+    expect(marked()).toEqual([true, false]);
+    inner.setAttribute("error", "Pick one too");
+    expect(marked()).toEqual([true, true]);
+    el.setAttribute("error-muted", "");
+    expect(marked()).toEqual([false, true]);
+    el.removeAttribute("error-muted");
+    el.removeAttribute("error");
+    inner.setAttribute("no-error-line", "");
+    expect(marked()).toEqual([false, false]);
+  });
+
+  it("adopts the served markup of an errored group, nested groups included, without a mutation", async () => {
+    const holder = document.createElement("div");
+    holder.innerHTML = expand(
+      `<neuwo-radio-group name="plan" error="Pick one">${RADIOS}<neuwo-radio-group name="inner"><neuwo-radio value="i">I</neuwo-radio></neuwo-radio-group></neuwo-radio-group>`,
+    );
+    const labels = Array.from(holder.querySelectorAll(".neuwo-form-check"), (label) => label.className);
+    expect(labels).toEqual([...Array(3).fill("neuwo-form-check neuwo-form-check--error"), "neuwo-form-check"]);
+    const stop = watch(holder);
+    attach(holder);
+    await Promise.resolve();
+    expect(stop()).toEqual([]);
+  });
+
   it("adopts server markup without a mutation and keeps the server's ids through later changes", () => {
     const holder = document.createElement("div");
     holder.innerHTML = expand(`<neuwo-radio-group name="plan" value="pro" label="Plan">${RADIOS}</neuwo-radio-group><neuwo-radio name="solo" value="x">Solo</neuwo-radio>`);
@@ -495,6 +531,20 @@ describe("<neuwo-radio-group> under React", () => {
     create.jsx("neuwo-radio", { value: "pro", children: "Pro" }, "pro"),
     create.jsx("neuwo-radio", { value: "team", disabled: true, children: "Team" }, "team"),
   ];
+
+  it("lends its error accent to its radios, and takes it back on a re-render", async () => {
+    const errors = vi.spyOn(console, "error");
+    const tree = (error) => jsxs("neuwo-radio-group", { name: "plan", defaultValue: "pro", error, children: radios() });
+    const { container, rerender } = await render(tree("Pick one"));
+    const group = container.querySelector("neuwo-radio-group");
+    const marked = () => radiosOf(group).map((radio) => radio.querySelector(":scope > .neuwo-form-check").classList.contains("neuwo-form-check--error"));
+    expect(marked()).toEqual([true, true, true]);
+    await rerender(tree(undefined));
+    expect(marked()).toEqual([false, false, false]);
+    await rerender(tree("Again"));
+    expect(marked()).toEqual([true, true, true]);
+    expect(errors).not.toHaveBeenCalled();
+  });
 
   it("calls the group's onChange once per pick with the radio as target, and keeps a value the consumer rejects", async () => {
     const errors = vi.spyOn(console, "error");
