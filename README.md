@@ -71,6 +71,39 @@ rules after the stylesheet. To avoid a swap on first paint, preload a file:
       href="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.1/dist/fonts/outfit-variable.woff2" />
 ```
 
+With a bundler, preload the URL the bundler gives the file, which is the fingerprinted one the
+stylesheet points at, so the browser downloads the file once. Import the file from the package and
+hand it to React's `preload` in the root layout:
+
+```tsx
+// app/layout.tsx
+import { preload } from "react-dom";
+import notoSans from "@neuwo/web-ui-library--demo/fonts/noto-sans-variable.woff2";
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  preload(notoSans, { as: "font", type: "font/woff2", crossOrigin: "anonymous" });
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+- Next.js 16 with Turbopack and Vite 8 import the file as that URL with no configuration. With
+  webpack (`next build --webpack`), add a rule so that a script may import it:
+  `config.module.rules.push({ test: /\.woff2$/, issuer: /\.[jt]sx?$/, type: "asset/resource" })`
+  in `next.config`'s `webpack` function.
+- TypeScript needs a declaration for the import. Vite's `vite/client` types have one; in Next.js
+  add `declare module "*.woff2" { const src: string; export default src; }` to a `.d.ts` file.
+- Preload what the first screen shows: Noto Sans for text, and Outfit when a heading is in view.
+  A preload helps where the page is rendered on the server; in an app rendered only in the browser,
+  the font is requested as soon as text needs it either way.
+
+Until a font arrives, text is drawn in Arial, or in Liberation Sans or Arimo where Arial is missing,
+sized to match the font's metrics, with Arial Bold from weight 550, so the swap barely moves the
+page.
+
 ## Consume
 
 Components need the stylesheet and the script. Link `neuwo-components.css`, which holds the

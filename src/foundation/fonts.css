@@ -25,25 +25,44 @@
        url('fonts/noto-sans-italic-variable.woff2') format('woff2');
 }
 
-/* Metric-adjusted system fallbacks -- minimise CLS during font swap.
-   Values approximate the real font metrics so layout barely shifts when
-   the variable WOFF2 finishes loading. Refine with tools like Fontaine
-   (github.com/danielroe/fontaine) if you want exact numbers. */
+/* Capsize's method against Arial (2048 units, ascent 1854, descent 434, line gap 67, average width 904) and Arial Bold (average width 978): Outfit at weights 400 and 700, Noto Sans at 400 and 600. */
 
 @font-face {
   font-family: 'Outfit Fallback';
+  font-weight: 100 549;
   src: local('Arial'), local('Liberation Sans'), local('Arimo'), local('Arimo Regular');
-  size-adjust: 100.4%;
-  ascent-override: 96%;
-  descent-override: 25%;
+  size-adjust: 99.61%;
+  ascent-override: 100.39%;
+  descent-override: 26.1%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'Outfit Fallback';
+  font-weight: 550 900;
+  src: local('Arial Bold'), local('Arial-BoldMT'), local('Liberation Sans Bold'), local('Arimo Bold');
+  size-adjust: 95.22%;
+  ascent-override: 105.02%;
+  descent-override: 27.31%;
   line-gap-override: 0%;
 }
 
 @font-face {
   font-family: 'Noto Sans Fallback';
+  font-weight: 100 549;
   src: local('Arial'), local('Liberation Sans'), local('Arimo'), local('Arimo Regular');
-  size-adjust: 107%;
-  ascent-override: 100.5%;
-  descent-override: 27.4%;
+  size-adjust: 106.9%;
+  ascent-override: 100%;
+  descent-override: 27.41%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'Noto Sans Fallback';
+  font-weight: 550 900;
+  src: local('Arial Bold'), local('Arial-BoldMT'), local('Liberation Sans Bold'), local('Arimo Bold');
+  size-adjust: 102.82%;
+  ascent-override: 103.97%;
+  descent-override: 28.5%;
   line-gap-override: 0%;
 }
