@@ -1,17 +1,28 @@
 const READY_TIMEOUT = 30_000;
 const STEP_TIMEOUT = 5_000;
 const FIRST_ECHO = { email: "", plan: "free", terms: false, volume: "30" };
+const FIRST_FIELDS = { email: "", plan: "Free", terms: false, volume: "30" };
 const LAST_ECHO = { email: "abc", plan: "pro", terms: true, volume: "31" };
+const LAST_FIELDS = { email: "abc", plan: "Pro", terms: true, volume: "31" };
 const DEFAULTS = { name: "Ada", plan: "pro", news: "on", volume: "60" };
 const CHANGED = { name: "Ada Lovelace", plan: "team", volume: "59" };
 
-function readEcho() {
-  return document.querySelector("#controlled-echo")?.textContent ?? null;
+function readControlled() {
+  const find = (selector) => document.querySelector(`#controlled ${selector}`);
+  return {
+    echo: find("#controlled-echo")?.textContent ?? null,
+    fields: {
+      email: find("neuwo-input input")?.value ?? null,
+      plan: find(".neuwo-combobox__value")?.textContent.trim() ?? null,
+      terms: find("neuwo-checkbox input")?.checked ?? null,
+      volume: find("neuwo-range input")?.value ?? null,
+    },
+  };
 }
 
 function readResult() {
   const text = (selector) => document.querySelector(selector)?.textContent.trim() ?? null;
-  return { submitted: text("#uncontrolled-result"), shown: text("#uncontrolled .neuwo-combobox__value") };
+  return { submitted: text("#uncontrolled-result"), entries: text("#uncontrolled-entries"), shown: text("#uncontrolled .neuwo-combobox__value") };
 }
 
 function parse(text) {
@@ -24,6 +35,7 @@ function parse(text) {
 
 const holds = (actual, expected) => Boolean(actual) && Object.entries(expected).every(([key, value]) => actual[key] === value);
 const equals = (actual, expected) => holds(actual, expected) && Object.keys(actual).length === Object.keys(expected).length;
+const once = (entries, expected) => Array.isArray(entries) && entries.length === Object.keys(expected).length && new Set(entries.map(([name]) => name)).size === entries.length;
 
 async function until(page, step, read, accept, describe) {
   const deadline = Date.now() + STEP_TIMEOUT;
@@ -48,23 +60,27 @@ async function nudge(page, form, key) {
 }
 
 async function controlled(page) {
-  const echo = (step, expected) => until(page, step, readEcho, (text) => holds(parse(text), expected), (text) => `the echo reads ${text}`);
-  await echo("the first render", FIRST_ECHO);
+  const shows = async (step, echo, fields) => {
+    const accept = (state) => holds(parse(state.echo), echo) && holds(state.fields, fields);
+    const state = await until(page, step, readControlled, accept, (state) => `the echo reads ${state.echo}, the fields show ${JSON.stringify(state.fields)}`);
+    return state.echo;
+  };
+  await shows("the first render", FIRST_ECHO, FIRST_FIELDS);
   await page.type("#controlled neuwo-input input", "abc");
-  await echo('typing "abc"', { email: "abc" });
+  await shows('typing "abc"', { email: "abc" }, { email: "abc" });
   await pick(page, "controlled", "pro");
-  await echo("picking a combobox option", { plan: "pro" });
+  await shows("picking a combobox option", { plan: "pro" }, { plan: "Pro" });
   await page.click("#controlled neuwo-checkbox label");
-  await echo("ticking the checkbox", { terms: true });
+  await shows("ticking the checkbox", { terms: true }, { terms: true });
   await nudge(page, "controlled", "ArrowRight");
-  return echo("moving the range", LAST_ECHO);
+  return shows("moving the range", LAST_ECHO, LAST_FIELDS);
 }
 
 async function uncontrolled(page) {
   const submit = async (step, expected, shown) => {
     await page.click('#uncontrolled button[type="submit"]');
-    const accept = (state) => equals(parse(state.submitted), expected) && (!shown || state.shown === shown);
-    const state = await until(page, step, readResult, accept, (state) => `submitted ${state.submitted || "nothing"}, with ${state.shown} shown`);
+    const accept = (state) => equals(parse(state.submitted), expected) && once(parse(state.entries), expected) && (!shown || state.shown === shown);
+    const state = await until(page, step, readResult, accept, (state) => `submitted ${state.entries || "nothing"}, with ${state.shown} shown`);
     return state.submitted;
   };
   await submit("submitting the defaults", DEFAULTS);

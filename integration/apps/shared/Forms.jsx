@@ -6,7 +6,7 @@ export default function Forms() {
   const [plan, setPlan] = useState("free");
   const [terms, setTerms] = useState(false);
   const [volume, setVolume] = useState("30");
-  const [submitted, setSubmitted] = useState("");
+  const [entries, setEntries] = useState(null);
 
   useEffect(() => {
     forms.current.dataset.ready = "";
@@ -14,7 +14,7 @@ export default function Forms() {
 
   const submit = (event) => {
     event.preventDefault();
-    setSubmitted(JSON.stringify(Object.fromEntries(new FormData(event.currentTarget))));
+    setEntries([...new FormData(event.currentTarget)]);
   };
 
   return (
@@ -44,7 +44,8 @@ export default function Forms() {
         </neuwo-checkbox>
         <neuwo-range label="Volume" name="volume" defaultValue="60" />
         <neuwo-button type="submit">Submit</neuwo-button> <neuwo-button type="reset" variant="outline">Reset</neuwo-button>
-        <output id="uncontrolled-result">{submitted}</output>
+        <output id="uncontrolled-result">{entries && JSON.stringify(Object.fromEntries(entries))}</output>
+        <output id="uncontrolled-entries">{entries && JSON.stringify(entries)}</output>
       </form>
     </div>
   );

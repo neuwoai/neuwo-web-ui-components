@@ -40,6 +40,7 @@ export async function startNext(name, command, { work, log }) {
 }
 
 export async function interact(page, url) {
-  await page.goto(url, { waitUntil: "load", timeout: NAVIGATION_TIMEOUT });
+  const response = await page.goto(url, { waitUntil: "load", timeout: NAVIGATION_TIMEOUT });
+  if (!response?.ok()) return [{ check: "forms", status: "fail", detail: `HTTP ${response?.status() ?? "no response"} for ${url}` }];
   return [await checkForms(page)];
 }

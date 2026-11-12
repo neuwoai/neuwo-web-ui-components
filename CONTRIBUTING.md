@@ -118,9 +118,9 @@ definition. The target's server delays the bundle, so both browsers run the held
 The `next-dev` and `next-prod` targets run the app in `integration/apps/next` under `next dev`, and
 under `next build` then `next start`. Besides the four checks they run `forms` on the `Forms`
 component in `integration/apps/shared/`, once React has hydrated it. In its controlled form, typing,
-a combobox pick, a checkbox tick and a range move must each reach React's state; its uncontrolled
-form must submit its defaults, then the values the user changed, then its defaults again after a
-reset. The runner copies `apps/shared/` into each app as `shared/`, so its imports resolve from that
+a combobox pick, a checkbox tick and a range move must each reach React's state and show in the
+field; its uncontrolled form must submit its defaults, then the values the user changed, then its
+defaults again after a reset, each time with no name submitted twice. The runner copies `apps/shared/` into each app as `shared/`, so its imports resolve from that
 app's own `node_modules`. Next.js runs with telemetry off and behind a proxy that refuses every
 connection, because `next dev` asks the npm registry for its latest version; the run logs each
 request it refused.
