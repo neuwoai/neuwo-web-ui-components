@@ -730,7 +730,12 @@ describe("<neuwo-combobox searchable>", () => {
     };
     document.addEventListener("pointerup", dismiss, true);
     cleanup.push(() => document.removeEventListener("pointerup", dismiss, true));
-    return { animation: () => animations[0] };
+    // A browser hides a popover that leaves the document without firing either event.
+    const drop = () => {
+      shown = false;
+      animations = [];
+    };
+    return { animation: () => animations[0], drop };
   }
 
   const pointer = (target, type, pointerType) => target.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, pointerType }));
@@ -802,6 +807,68 @@ describe("<neuwo-combobox searchable>", () => {
     trigger.blur();
     trigger.focus();
     expect(animation()).toMatchObject({ currentTime: 0, finished: false });
+  });
+
+  it("never carries a resumed entrance's time to a later re-show", async () => {
+    const el = make(`<neuwo-combobox searchable>${FRUIT}</neuwo-combobox>`);
+    const { animation, drop } = popover(el);
+    const trigger = triggerOf(el);
+    pointer(trigger, "pointerdown", "mouse");
+    mouse(trigger, "mousedown");
+    trigger.focus();
+    animation().currentTime = 80;
+    pointer(trigger, "pointerup", "mouse");
+    mouse(trigger, "mouseup");
+    mouse(trigger, "click");
+    expect(animation()).toMatchObject({ currentTime: 80, finished: false });
+    await nextTask();
+    drop();
+    click(trigger);
+    expect(el.popup.matches(":popover-open")).toBe(true);
+    expect(animation()).toMatchObject({ currentTime: 0, finished: true });
+  });
+
+  it("closes at once on a later light dismiss after a press on its text field is dragged off it", async () => {
+    const el = make(`<neuwo-combobox searchable>${FRUIT}</neuwo-combobox>`);
+    popover(el);
+    const trigger = triggerOf(el);
+    click(trigger);
+    await nextTask();
+    pointer(trigger, "pointerdown", "mouse");
+    mouse(trigger, "mousedown");
+    pointer(document.body, "pointerup", "mouse");
+    mouse(document.body, "mouseup");
+    mouse(document.body, "click");
+    await nextTask();
+    expect(el.isOpen).toBe(false);
+    el.open();
+    await nextTask();
+    el.popup.hidePopover();
+    expect(el.isOpen).toBe(false);
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+  });
+
+  it("closes at once on a later light dismiss after a press on its text field is cancelled", async () => {
+    const el = make(`<neuwo-combobox searchable>${FRUIT}</neuwo-combobox>`);
+    popover(el);
+    const trigger = triggerOf(el);
+    click(trigger);
+    await nextTask();
+    pointer(trigger, "pointerdown", "touch");
+    pointer(trigger, "pointercancel", "touch");
+    el.popup.hidePopover();
+    expect(el.isOpen).toBe(false);
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+  });
+
+  it("stops listening for clicks and presses on its root once disconnected", () => {
+    const added = vi.spyOn(document, "addEventListener");
+    const removed = vi.spyOn(document, "removeEventListener");
+    const el = make(`<neuwo-combobox searchable>${FRUIT}</neuwo-combobox>`);
+    const own = added.mock.calls.filter(([, , capture]) => capture === true);
+    expect(own.map(([type]) => type).sort()).toEqual(["click", "pointercancel", "pointerdown", "pointerup"]);
+    el.remove();
+    for (const [type, listener] of own) expect(removed).toHaveBeenCalledWith(type, listener, true);
   });
 
   it("closes at once when light dismiss hides the popup for a press elsewhere", async () => {

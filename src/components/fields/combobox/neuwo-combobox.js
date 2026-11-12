@@ -161,6 +161,7 @@ export class NeuwoCombobox extends NeuwoFieldElement {
         if (this.#entrance === null) animation.finish();
         else animation.currentTime = this.#entrance;
       }
+      this.#entrance = null;
       return;
     }
     if (this.#active < 0) this.#activeStart();
@@ -195,6 +196,8 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     this.#root = this.getRootNode();
     this.#root.addEventListener("click", this.#onLabelClick, true);
     this.#root.addEventListener("pointerdown", this.#onPress, true);
+    this.#root.addEventListener("pointerup", this.#onRelease, true);
+    this.#root.addEventListener("pointercancel", this.#onRelease, true);
     this.addEventListener("click", this.#onClick);
     this.addEventListener("keydown", this.#onKeydown);
     this.addEventListener("input", this.#onInputOrChange, true);
@@ -211,6 +214,8 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     this.close();
     this.#root?.removeEventListener("click", this.#onLabelClick, true);
     this.#root?.removeEventListener("pointerdown", this.#onPress, true);
+    this.#root?.removeEventListener("pointerup", this.#onRelease, true);
+    this.#root?.removeEventListener("pointercancel", this.#onRelease, true);
     this.#root = null;
     this.removeEventListener("click", this.#onClick);
     this.removeEventListener("keydown", this.#onKeydown);
@@ -505,6 +510,11 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   /** @param {Event} event */
   #onPress = (event) => {
     this.#pressed = Boolean(this.trigger?.contains(/** @type {Node} */ (event.target)));
+  };
+
+  /** @param {Event} event */
+  #onRelease = (event) => {
+    if (event.type === "pointercancel" || !this.trigger?.contains(/** @type {Node} */ (event.target))) this.#pressed = false;
   };
 
   /** @param {Event} event */
