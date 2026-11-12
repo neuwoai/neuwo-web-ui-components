@@ -124,12 +124,20 @@ a combobox pick, a checkbox tick and a range move must each reach React's state 
 field; its uncontrolled form must submit its defaults, then the values the user changed, then its
 defaults again after a reset, each time with no name submitted twice. An app lists the folders of
 `integration/apps/` it imports under `neuwoIntegration.copy` in its `package.json`, as the Next.js
-app lists `shared`, and the runner copies each into the app, so their imports resolve from that
-app's own `node_modules`. Next.js runs with telemetry off and behind a proxy that refuses every
+and Vite apps list `shared`, and the runner copies each into the app, so their imports resolve from
+that app's own `node_modules`. Next.js runs with telemetry off and behind a proxy that refuses every
 connection, because `next dev` asks the npm registry for its latest version; the run logs each
 request it refused. Before Next.js starts, a child process fetches `http://neuwo.invalid/` with the
 proxy's settings, and the target fails unless the proxy saw it, so a Node that ignores
 `NODE_USE_ENV_PROXY` cannot reach the network.
+
+The `vite` target prerenders the app in `integration/apps/vite` with its `prerender.mjs`, which runs
+a Vite client build and a Vite SSR build, then writes the SSR entry's `renderToString` output into
+`dist/index.html` at its `<!--app-->` marker. The target serves `dist` and runs the four checks and
+`forms`, so the client entry's `hydrateRoot` must take over the prerendered markup with no error and
+no write. The app sets `jsxImportSource` through `@vitejs/plugin-react`, imports the stylesheet and
+the library at the client entry, and preloads its fonts with React's `preload`, which puts the
+`<link>` elements at the start of the root element. Vite needs no network.
 
 After changing a check, run `npm run integration -- --self-test`. It serves the pages in
 `integration/self-test/`, expanded with `expand`. `good.html` must pass every check that runs, each

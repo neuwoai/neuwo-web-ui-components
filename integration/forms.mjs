@@ -1,3 +1,4 @@
+const NAVIGATION_TIMEOUT = 60_000;
 const READY_TIMEOUT = 30_000;
 const STEP_TIMEOUT = 5_000;
 const FIRST_ECHO = { email: "", plan: "free", terms: false, volume: "30" };
@@ -105,4 +106,10 @@ export async function checkForms(page) {
   } catch (error) {
     return { check: "forms", status: "fail", detail: error.message };
   }
+}
+
+export async function interact(page, url) {
+  const response = await page.goto(url, { waitUntil: "load", timeout: NAVIGATION_TIMEOUT });
+  if (!response?.ok()) return [{ check: "forms", status: "fail", detail: `HTTP ${response?.status() ?? "no response"} for ${url}` }];
+  return [await checkForms(page)];
 }

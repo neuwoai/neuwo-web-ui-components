@@ -1,8 +1,5 @@
 import { join } from "node:path";
-import { checkForms } from "./forms.mjs";
 import { blockNetwork, runCommand, serveCommand } from "./serve.mjs";
-
-const NAVIGATION_TIMEOUT = 60_000;
 
 export async function startNext(name, command, { work, log }) {
   const app = join(work, "apps", "next");
@@ -33,10 +30,4 @@ export async function startNext(name, command, { work, log }) {
     await close();
     throw error;
   }
-}
-
-export async function interact(page, url) {
-  const response = await page.goto(url, { waitUntil: "load", timeout: NAVIGATION_TIMEOUT });
-  if (!response?.ok()) return [{ check: "forms", status: "fail", detail: `HTTP ${response?.status() ?? "no response"} for ${url}` }];
-  return [await checkForms(page)];
 }
