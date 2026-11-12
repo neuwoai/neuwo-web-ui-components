@@ -20,6 +20,7 @@ const STOP_TIMEOUT = 10_000;
 const POLL = 50;
 const OUTPUT_LIMIT = 4000;
 const PROBE_HOST = "neuwo.invalid";
+const OVERDUE = Symbol("overdue");
 const commands = new Set();
 let closing = null;
 
@@ -144,6 +145,14 @@ function launch(command, args, { cwd, env = {} }) {
   return { child, exited, stop };
 }
 
+function pause(ms) {
+  let timer;
+  const done = new Promise((resolve) => {
+    timer = setTimeout(resolve, ms, OVERDUE);
+  });
+  return { done, cancel: () => clearTimeout(timer) };
+}
+
 export function closeCommands() {
   closing ??= Promise.allSettled([...commands].map((stop) => stop()));
   return closing;
@@ -157,13 +166,19 @@ export async function runCommand(command, args, { cwd, env, timeout = RUN_TIMEOU
   };
   child.stdout.setEncoding("utf8").on("data", read);
   child.stderr.setEncoding("utf8").on("data", read);
-  let late = false;
-  const timer = setTimeout(() => {
-    late = true;
-    stop();
-  }, timeout);
-  const status = await exited;
-  clearTimeout(timer);
+  const overdue = pause(timeout);
+  let status = await Promise.race([exited, overdue.done]);
+  overdue.cancel();
+  const late = status === OVERDUE;
+  if (late) {
+    await stop();
+    const grace = pause(STOP_TIMEOUT);
+    status = await Promise.race([exited, grace.done]);
+    grace.cancel();
+    // A process left running in another session can hold the pipes open, which would keep the harness alive.
+    child.stdout.destroy();
+    child.stderr.destroy();
+  }
   await stop();
   if (status === 0) return output;
   if (closing) throw new Finishing();
