@@ -16,10 +16,26 @@ function watchWrites() {
     return null;
   };
   const name = (node) => (node.nodeType === 1 ? `${node.localName}${node.classList[0] ? `.${node.classList[0]}` : ""}` : node.nodeName);
+  const unchanged = (records) => {
+    const same = new Set();
+    const later = new Map();
+    for (const record of [...records].reverse()) {
+      if (record.type !== "attributes") continue;
+      const key = `${record.attributeNamespace} ${record.attributeName}`;
+      if (!later.has(record.target)) later.set(record.target, new Map());
+      const values = later.get(record.target);
+      // A record keeps only the old value; its new one is the next record's old value, or the current one.
+      const value = values.has(key) ? values.get(key) : record.target.getAttributeNS(record.attributeNamespace, record.attributeName);
+      if (value === record.oldValue) same.add(record);
+      values.set(key, record.oldValue);
+    }
+    return same;
+  };
   const judge = (records, parsing) => {
+    const same = unchanged(records);
     for (const record of records) {
       const host = hostOf(record.target);
-      if (!host) continue;
+      if (!host || same.has(record)) continue;
       // The parser only adds nodes; a script's rebuild also removes them, or writes after parsing.
       if (parsing && record.type === "childList" && record.removedNodes.length === 0) continue;
       const what = record.type === "attributes" ? `attribute ${record.attributeName}` : record.type;
@@ -27,7 +43,7 @@ function watchWrites() {
     }
   };
   const observer = new MutationObserver((records) => judge(records, document.readyState === "loading"));
-  observer.observe(document, { subtree: true, childList: true, attributes: true, characterData: true });
+  observer.observe(document, { subtree: true, childList: true, attributes: true, attributeOldValue: true, characterData: true });
   // Firefox delivers the parser's records only after the document stops loading, so take them as it stops.
   document.addEventListener("readystatechange", () => {
     if (document.readyState === "interactive") judge(observer.takeRecords(), true);

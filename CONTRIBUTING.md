@@ -105,7 +105,9 @@ exits 1 on any `fail` or on a browser it cannot launch.
 - `noScript`: with JavaScript off, the first `.neuwo-btn` has the background it has with JavaScript
   on, not the browser default. Puppeteer cannot turn JavaScript off in Firefox, so it is `n/a` there.
 - `adoption`: each `neuwo-*` element still holds the markup served for it, and nothing rewrote it
-  after parsing, even with the same content.
+  after parsing: no node inside it was added, removed or given new text, even with the same
+  content, and no attribute changed its value. An attribute set again to the value it holds is not
+  a write, since React's hydration does that to every `<input>`.
 
 The `demo` target serves the repository root, so it checks the demo page against the `dist/` that
 `npm run build` made, not the tarball. It runs `console`, then asserts that the page's `.btn` and

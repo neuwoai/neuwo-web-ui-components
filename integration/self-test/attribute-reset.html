@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Self-test: attribute reset</title>
+<link rel="icon" href="data:,">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/dist/fonts/noto-sans-variable.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/dist/fonts/outfit-variable.woff2">
+<link rel="stylesheet" href="/dist/neuwo-components.css">
+<script type="module" src="/dist/neuwo.js"></script>
+</head>
+<body>
+<neuwo-button variant="solid">Get started</neuwo-button>
+<neuwo-badge>Live</neuwo-badge>
+<neuwo-checkbox name="terms">I agree</neuwo-checkbox>
+<script type="module">
+  await customElements.whenDefined("neuwo-button");
+  const host = document.querySelector("neuwo-button");
+  host.setAttribute("variant", host.getAttribute("variant"));
+  const button = host.querySelector(".neuwo-btn");
+  button.setAttribute("type", button.getAttribute("type"));
+</script>
+</body>
+</html>
