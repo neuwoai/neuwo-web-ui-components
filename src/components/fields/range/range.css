@@ -44,6 +44,11 @@
   background-repeat: no-repeat;
 }
 
+/* Chromium runs the slider from the right in a right-to-left context, so the fill grows from there too. */
+.neuwo-range:dir(rtl)::-webkit-slider-runnable-track {
+  background-position: right;
+}
+
 .neuwo-range::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;

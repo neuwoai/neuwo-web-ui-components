@@ -38,7 +38,7 @@ neuwo-combobox:not([hidden]) {
 }
 
 .neuwo-field__required {
-  margin-left: var(--neuwo-space-1);
+  margin-inline-start: var(--neuwo-space-1);
   color: var(--neuwo-color-red);
 }
 

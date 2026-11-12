@@ -44,13 +44,13 @@ neuwo-toggle:not([hidden]) {
   content: "";
   position: absolute;
   top: 50%;
-  left: 0.25rem;
+  inset-inline-start: 0.25rem;
   width: 1.125rem;
   height: 1.125rem;
   background: var(--neuwo-color-heading);
   border-radius: var(--neuwo-radius-full);
   transform: translateY(-50%);
-  transition: transform var(--neuwo-transition-fast);
+  transition: inset-inline-start var(--neuwo-transition-fast);
 }
 
 /* Checked: the track fills solid --neuwo-color-blue and the thumb stays
@@ -61,7 +61,7 @@ neuwo-toggle:not([hidden]) {
 }
 
 .neuwo-form-toggle__input:checked + .neuwo-form-toggle__track::after {
-  transform: translateY(-50%) translateX(1.5rem);
+  inset-inline-start: 1.75rem;
 }
 
 .neuwo-form-toggle__input:focus-visible + .neuwo-form-toggle__track {

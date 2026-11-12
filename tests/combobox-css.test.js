@@ -55,8 +55,8 @@ describe("combobox.css recipe", () => {
   });
 
   it("tightens the chevron gutter at the compact size", () => {
-    expect(rule(".neuwo-field--sm .neuwo-combobox__trigger")).toContain("padding-right: var(--neuwo-space-8)");
-    expect(rule(".neuwo-field--sm .neuwo-combobox__chevron")).toContain("right: var(--neuwo-space-3)");
+    expect(rule(".neuwo-field--sm .neuwo-combobox__trigger")).toContain("padding-inline-end: var(--neuwo-space-8)");
+    expect(rule(".neuwo-field--sm .neuwo-combobox__chevron")).toContain("inset-inline-end: var(--neuwo-space-3)");
   });
 
   it("lays the form value invisibly over the trigger, where the browser anchors its validation message", () => {
@@ -69,7 +69,7 @@ describe("combobox.css recipe", () => {
     const trigger = rule(".neuwo-combobox__trigger");
     for (const declaration of [
       "cursor: pointer",
-      "text-align: left",
+      "text-align: start",
       "text-transform: none",
       "letter-spacing: normal",
       "word-spacing: normal",

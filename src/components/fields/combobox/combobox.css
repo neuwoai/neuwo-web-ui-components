@@ -10,8 +10,8 @@
   justify-content: space-between;
   gap: var(--neuwo-space-2);
   width: 100%;
-  padding-right: var(--neuwo-space-10);
-  text-align: left;
+  padding-inline-end: var(--neuwo-space-10);
+  text-align: start;
   cursor: pointer;
   /* The text defaults the inputs beside it keep; the light reset would hand a button the page's. */
   text-transform: none;
@@ -29,11 +29,11 @@
 /* Compact: the gutter and the chevron move together, so the gap between the
    value and the chevron is unchanged at the smaller padding. */
 .neuwo-field--sm .neuwo-combobox__trigger {
-  padding-right: var(--neuwo-space-8);
+  padding-inline-end: var(--neuwo-space-8);
 }
 
 .neuwo-field--sm .neuwo-combobox__chevron {
-  right: var(--neuwo-space-3);
+  inset-inline-end: var(--neuwo-space-3);
 }
 
 .neuwo-combobox__trigger[aria-expanded="true"] ~ .neuwo-combobox__chevron {
@@ -55,7 +55,7 @@
 .neuwo-combobox__chevron {
   position: absolute;
   top: 50%;
-  right: var(--neuwo-space-4);
+  inset-inline-end: var(--neuwo-space-4);
   width: 1rem;
   height: 1rem;
   transform: translateY(-50%);

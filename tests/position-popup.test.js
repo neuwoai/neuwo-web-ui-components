@@ -35,6 +35,22 @@ describe("positionPopup", () => {
     expect(p.style.left).toBe("auto");
   });
 
+  it("lines up with the trigger's inline start and end in a right-to-left trigger, its right and left edges", () => {
+    const rtl = document.createElement("div");
+    rtl.style.direction = "rtl";
+    rtl.getBoundingClientRect = () => ({ left: 120, right: 320, top: 200, bottom: 240, width: 200 });
+    document.body.append(rtl);
+    const start = popup();
+    positionPopup(rtl, start);
+    expect(start.style.right).toBe("680px");
+    expect(start.style.left).toBe("auto");
+    const end = popup();
+    positionPopup(rtl, end, { align: "end" });
+    expect(end.style.left).toBe("120px");
+    expect(end.style.right).toBe("auto");
+    rtl.remove();
+  });
+
   it("places the popup above the trigger when placement is top", () => {
     const p = popup();
     positionPopup(trigger({ left: 0, right: 200, top: 400, bottom: 440, width: 200 }), p, {

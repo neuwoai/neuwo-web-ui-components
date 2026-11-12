@@ -135,15 +135,13 @@ neuwo-button[disabled] {
 /* --- Modifier: wide --- */
 
 .neuwo-btn--wide {
-  padding-left: var(--neuwo-space-10);
-  padding-right: var(--neuwo-space-10);
+  padding-inline: var(--neuwo-space-10);
 }
 
 /* --- Modifier: extra wide --- */
 
 .neuwo-btn--xwide {
-  padding-left: var(--neuwo-space-16);
-  padding-right: var(--neuwo-space-16);
+  padding-inline: var(--neuwo-space-16);
 }
 
 /* --- Modifier: block (stretch to the container) --- */

@@ -119,12 +119,12 @@
   border-color: var(--neuwo-color-blue);
 }
 
-/* A panel wrapped for copying keeps its top-right corner clear, so a long first
+/* A panel wrapped for copying keeps the top corner at its line end clear, so a long first
    line scrolls rather than running under the control. Derived from the control's
    own size and inset, so the two cannot drift.
    It lives here because this sheet gives the panel its padding; the component never styles what it wraps. */
 .neuwo-markdown neuwo-copy pre {
-  padding-right: calc(var(--neuwo-space-8) + var(--neuwo-space-3) * 2);
+  padding-inline-end: calc(var(--neuwo-space-8) + var(--neuwo-space-3) * 2);
 }
 
 /* --- Tables --- */
