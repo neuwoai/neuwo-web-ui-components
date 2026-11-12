@@ -27,7 +27,7 @@
   color: var(--neuwo-color-text);
   line-height: var(--neuwo-line-height-body);
   margin-bottom: var(--neuwo-space-4);
-  padding-left: var(--neuwo-space-6);
+  padding-inline-start: var(--neuwo-space-6);
 }
 
 .neuwo-markdown li {
@@ -56,8 +56,8 @@
 
 .neuwo-markdown blockquote {
   margin: var(--neuwo-space-6) 0;
-  padding-left: var(--neuwo-space-4);
-  border-left: 3px solid var(--neuwo-color-blue);
+  padding-inline-start: var(--neuwo-space-4);
+  border-inline-start: 3px solid var(--neuwo-color-blue);
   color: var(--neuwo-color-text-muted);
   font-style: italic;
 }
@@ -142,7 +142,7 @@
 .neuwo-markdown td {
   padding: var(--neuwo-space-2) var(--neuwo-space-3);
   border-bottom: 1px solid var(--neuwo-glass-border);
-  text-align: left;
+  text-align: start;
   vertical-align: top;
 }
 
@@ -178,7 +178,7 @@
      would beat the value a consumer inherits in from `:root` or a wrapper. The
      modifiers below declare it, so they still win on specificity. */
   background: color-mix(in srgb, var(--neuwo-callout-accent, var(--neuwo-color-blue)) 8%, transparent);
-  border-left: 3px solid var(--neuwo-callout-accent, var(--neuwo-color-blue));
+  border-inline-start: 3px solid var(--neuwo-callout-accent, var(--neuwo-color-blue));
   border-radius: var(--neuwo-radius-md);
 }
 

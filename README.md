@@ -887,6 +887,10 @@ host-driven event without a persistent `error`, is a rule on the same classes:
 }
 ```
 
+The components and the Markdown surface mirror in a right-to-left page or container; set the `dir`
+attribute there, as HTML recommends, not only the CSS `direction` property, since the range's fill
+in Chromium follows the attribute.
+
 ## Form fields share one API
 
 `<neuwo-input>`, `<neuwo-textarea>`, `<neuwo-combobox>` and `<neuwo-range>`

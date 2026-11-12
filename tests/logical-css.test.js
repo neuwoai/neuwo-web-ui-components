@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { LIGHT_COMPONENT_CSS } from "../scripts/light-css.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+const FOUNDATION_CSS = readdirSync(join(root, "src/foundation"))
+  .filter((file) => file.endsWith(".css"))
+  .map((file) => `src/foundation/${file}`);
 
 const PHYSICAL = [
   /^(left|right)$/,
@@ -49,6 +52,12 @@ const ALLOWED = {
   "src/components/selection/segmented/segmented.css": {
     "left: 0": "the pill's origin for the script's physical offsetLeft translate, which already follows the options' order",
   },
+  "src/foundation/navigation.css": {
+    "left: var(--neuwo-nav-link-gutter)": "the underline spans the link between equal gutters, the same in either direction",
+    "right: var(--neuwo-nav-link-gutter)": "the other gutter of that span",
+    "transform: scaleX(0)": "the underline grows from its middle, the same in either direction",
+    "transform: scaleX(1)": "the grown underline",
+  },
 };
 
 /**
@@ -72,7 +81,7 @@ function physical(declaration) {
   return PHYSICAL.some((pattern) => pattern.test(property)) || PHYSICAL_VALUE.some((pattern) => pattern.test(declaration));
 }
 
-describe("component recipes in either direction", () => {
+describe("component and foundation sheets in either direction", () => {
   it("reads selectors and declarations, spotting physical inline sides and directional transforms", () => {
     expect(declarations(".a { left: 0; padding: 0 1px } .b:hover { color: red; }")).toEqual(["left: 0", "padding: 0 1px", "color: red"]);
     for (const declaration of ["right: 1px", "margin-left: 2px", "border-right-width: 1px", "border-top-left-radius: 2px", "text-align: left", "transform: translateX(2px)", "background-position: right"]) {
@@ -83,7 +92,11 @@ describe("component recipes in either direction", () => {
     }
   });
 
-  for (const file of LIGHT_COMPONENT_CSS) {
+  it("covers every published foundation sheet", () => {
+    expect(FOUNDATION_CSS).toEqual(expect.arrayContaining(["src/foundation/markdown.css", "src/foundation/navigation.css", "src/foundation/typography.css"]));
+  });
+
+  for (const file of [...LIGHT_COMPONENT_CSS, ...FOUNDATION_CSS]) {
     it(`${file} uses logical inline properties, outside a justified list of physical ones`, () => {
       const found = declarations(readFileSync(join(root, file), "utf8")).filter(physical);
       expect([...new Set(found)].sort()).toEqual(Object.keys(ALLOWED[file] ?? {}).sort());

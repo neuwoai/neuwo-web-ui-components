@@ -51,7 +51,7 @@ describe("markdown stylesheet", () => {
     const lists = css.match(/\.neuwo-markdown ul,\n\.neuwo-markdown ol \{[^}]*\}/)[0];
     expect(lists).toMatch(/color:\s*var\(--neuwo-color-text\)/);
     expect(lists).toMatch(/line-height:\s*var\(--neuwo-line-height-body\)/);
-    expect(lists).toMatch(/padding-left:\s*var\(--neuwo-space-6\)/);
+    expect(lists).toMatch(/padding-inline-start:\s*var\(--neuwo-space-6\)/);
     const nested = css.match(/\.neuwo-markdown li > ul,\n\.neuwo-markdown li > ol \{[^}]*\}/)[0];
     expect(nested).toMatch(/margin-top:\s*var\(--neuwo-space-2\)/);
     expect(nested).toMatch(/margin-bottom:\s*0/);
@@ -65,7 +65,7 @@ describe("markdown stylesheet", () => {
 
   it("marks a quote with the brand blue edge and muted italic ink", () => {
     const rule = css.match(/\.neuwo-markdown blockquote \{[^}]*\}/)[0];
-    expect(rule).toMatch(/border-left:\s*3px solid var\(--neuwo-color-blue\)/);
+    expect(rule).toMatch(/border-inline-start:\s*3px solid var\(--neuwo-color-blue\)/);
     expect(rule).toMatch(/color:\s*var\(--neuwo-color-text-muted\)/);
     expect(rule).toMatch(/font-style:\s*italic/);
   });
@@ -183,7 +183,7 @@ describe("callout recipe", () => {
   it("reads the accent as a knob rather than declaring it on the block", () => {
     const rule = css.match(/(?:^|\n)\.neuwo-callout \{[^}]*\}/)[0];
     expect(rule).not.toMatch(/--neuwo-callout-accent:/);
-    expect(rule).toMatch(/border-left:\s*3px solid var\(--neuwo-callout-accent, var\(--neuwo-color-blue\)\)/);
+    expect(rule).toMatch(/border-inline-start:\s*3px solid var\(--neuwo-callout-accent, var\(--neuwo-color-blue\)\)/);
     expect(rule).toMatch(
       /background:\s*color-mix\(in srgb, var\(--neuwo-callout-accent, var\(--neuwo-color-blue\)\) 8%, transparent\)/
     );
