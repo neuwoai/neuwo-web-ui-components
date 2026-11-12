@@ -1,8 +1,9 @@
-import { spawn } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import { createServer } from "node:http";
 import { createServer as createSocketServer } from "node:net";
 import { readFile, stat } from "node:fs/promises";
 import { extname, join, resolve, sep } from "node:path";
+import { promisify } from "node:util";
 
 const TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -17,6 +18,8 @@ const TYPES = {
 const READY_TIMEOUT = 120_000;
 const STOP_TIMEOUT = 10_000;
 const POLL = 50;
+const PROBE_HOST = "neuwo.invalid";
+const exec = promisify(execFile);
 const commands = new Set();
 
 async function listen(server) {
@@ -80,15 +83,25 @@ export async function blockNetwork() {
   });
   const url = `http://127.0.0.1:${await listen(proxy)}`;
   const local = "127.0.0.1,localhost,::1";
-  return {
-    env: { NODE_USE_ENV_PROXY: "1", HTTP_PROXY: url, HTTPS_PROXY: url, NO_PROXY: local, http_proxy: url, https_proxy: url, no_proxy: local },
-    attempts,
-    close: () =>
-      new Promise((done) => {
-        for (const socket of sockets) socket.destroy();
-        proxy.close(() => done());
-      }),
-  };
+  const env = { NODE_USE_ENV_PROXY: "1", HTTP_PROXY: url, HTTPS_PROXY: url, NO_PROXY: local, http_proxy: url, https_proxy: url, no_proxy: local };
+  const close = () =>
+    new Promise((done) => {
+      for (const socket of sockets) socket.destroy();
+      proxy.close(() => done());
+    });
+  try {
+    await exec(process.execPath, ["-e", `fetch("http://${PROBE_HOST}/").catch(() => {})`], { env: { ...process.env, ...env }, timeout: STOP_TIMEOUT });
+  } catch (error) {
+    await close();
+    throw error;
+  }
+  const reached = attempts.findIndex((line) => line.includes(PROBE_HOST));
+  if (reached === -1) {
+    await close();
+    throw new Error(`the network guard is not in force: a child's fetch of ${PROBE_HOST} never reached its proxy, so this Node ignores NODE_USE_ENV_PROXY`);
+  }
+  attempts.splice(reached, 1);
+  return { env, attempts, close };
 }
 
 export async function stopCommands() {
