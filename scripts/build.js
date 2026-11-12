@@ -3,6 +3,7 @@ import { cp, mkdir, rm, readFile, writeFile } from "node:fs/promises";
 import { watch } from "node:fs";
 import path from "node:path";
 import { LIGHT_COMPONENT_CSS } from "./light-css.js";
+import { pruneChunks } from "./prune-chunks.js";
 
 const serve = process.argv.includes("--serve");
 
@@ -72,6 +73,15 @@ const componentsCssModule = {
   },
 };
 
+const pruneBundlerChunks = {
+  name: "prune-bundler-chunks",
+  setup(build) {
+    build.onEnd((result) => {
+      if (result.metafile) pruneChunks("dist/bundler", Object.keys(result.metafile.outputs));
+    });
+  },
+};
+
 const shared = {
   bundle: true,
   format: "esm",
@@ -96,6 +106,8 @@ const builds = [
     outdir: "dist/bundler",
     splitting: true,
     chunkNames: "chunk-[hash]",
+    metafile: true,
+    plugins: [rawText, pruneBundlerChunks],
     external: ["react"],
   },
   { ...shared, entryPoints: ["src/react/jsx-runtime.react-server.js"], outfile: "dist/jsx-runtime.react-server.js", external: ["react"] },
