@@ -72,6 +72,32 @@ function layoutShift() {
   };
 }
 
+async function compareServed() {
+  const hostsOf = (root) => [...root.querySelectorAll("*")].filter((element) => element.localName.startsWith("neuwo-"));
+  const live = hostsOf(document);
+  const response = await fetch(location.href, { cache: "no-store" });
+  if (!response.ok) return { hosts: live.length, difference: `fetching the page again gave HTTP ${response.status}` };
+  const served = hostsOf(new DOMParser().parseFromString(await response.text(), "text/html"));
+  if (served.length !== live.length) return { hosts: live.length, difference: `${served.length} neuwo-* elements served, ${live.length} live` };
+  const markup = (node) => {
+    if (node.nodeType === Node.TEXT_NODE) return node.data;
+    if (node.nodeType === Node.COMMENT_NODE) return `<!--${node.data}-->`;
+    if (node.nodeType !== Node.ELEMENT_NODE) return "";
+    const attributes = [...node.attributes].map(({ name, value }) => ` ${name}="${value}"`).sort().join("");
+    return `<${node.localName}${attributes}>${[...node.childNodes].map(markup).join("")}</${node.localName}>`;
+  };
+  for (const [index, host] of live.entries()) {
+    const before = markup(served[index]);
+    const after = markup(host);
+    if (before === after) continue;
+    let at = 0;
+    while (before[at] === after[at]) at++;
+    const from = Math.max(0, at - 30);
+    return { hosts: live.length, difference: `${host.localName} #${index + 1} differs from its served markup at "${before.slice(from, at + 30)}", now "${after.slice(from, at + 30)}"` };
+  }
+  return { hosts: live.length, difference: null };
+}
+
 async function loadLive(context, url) {
   const page = await context.newPage();
   await page.setViewport(VIEWPORT);
@@ -90,7 +116,7 @@ async function loadLive(context, url) {
     messages: [...messages],
     shift: await page.evaluate(layoutShift),
     writes: await page.evaluate(() => (window.__neuwoWrites ? [...window.__neuwoWrites] : null)),
-    hosts: await page.evaluate(() => [...document.querySelectorAll("*")].filter((element) => element.localName.startsWith("neuwo-")).length),
+    served: await page.evaluate(compareServed),
     background: await page.evaluate(buttonBackground),
   };
 }
@@ -120,11 +146,14 @@ function judgeLayoutShift({ shift }, browserName) {
   return { status: "fail", detail: `${Number(shift.total.toPrecision(3))} from ${shift.sources.join(", ")}` };
 }
 
-function judgeAdoption({ writes, hosts }) {
+function judgeAdoption({ writes, served }) {
   if (!writes) return { status: "fail", detail: "the mutation observer never ran" };
-  if (hosts === 0) return { status: "fail", detail: "no neuwo-* element on the page" };
-  if (writes.length === 0) return { status: "pass", detail: `no writes inside ${hosts} neuwo-* elements` };
-  return { status: "fail", detail: `${writes.length} write(s); first: ${writes[0]}` };
+  if (served.hosts === 0) return { status: "fail", detail: "no neuwo-* element on the page" };
+  const problems = [];
+  if (writes.length) problems.push(`${writes.length} write(s); first: ${writes[0]}`);
+  if (served.difference) problems.push(served.difference);
+  if (problems.length) return { status: "fail", detail: problems.join("; ") };
+  return { status: "pass", detail: `${served.hosts} neuwo-* elements as served, with no writes` };
 }
 
 function judgeNoScript(live, offline) {

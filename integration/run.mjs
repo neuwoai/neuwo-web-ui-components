@@ -18,6 +18,7 @@ const SELF_TEST = {
   "console-error.html": "console",
   "layout-shift.html": "layoutShift",
   "rebuild.html": "adoption",
+  "loading-write.html": "adoption",
   "unstyled.html": "noScript",
 };
 const USAGE = "Usage: node integration/run.mjs [--self-test] [--browser=chromium|firefox|all] [--keep] [target ...]";
@@ -74,14 +75,18 @@ async function selfTest(browsers) {
   const { expand } = await import(pathToFileURL(join(ROOT, "dist", "server.js")).href);
   const server = await serveStatic(ROOT, { html: expand });
   const broken = [];
+  const skipped = new Map(CHECKS.map((check) => [check, new Set()]));
+  const own = new Map(Object.keys(SELF_TEST).map((page) => [page, []]));
   try {
     for (const [name, browser] of browsers) {
-      for (const [page, own] of Object.entries(SELF_TEST)) {
+      for (const [page, check] of Object.entries(SELF_TEST)) {
         for (const result of await runChecks(browser, name, `${server.url}/integration/self-test/${page}`, CHECKS)) {
           print("self-test", name, page, result);
-          const expected = result.check === own ? "fail" : "pass";
+          if (result.status === "n/a") skipped.get(result.check).add(name);
+          if (result.check === check) own.get(page).push(result.status);
+          const expected = result.check === check ? "fail" : "pass";
           if (result.status !== expected && result.status !== "n/a") {
-            broken.push(`${name} ${page} ${result.check}: expected ${expected}, got ${result.status}`);
+            broken.push(`broken: ${name} ${page} ${result.check}: expected ${expected}, got ${result.status}`);
           }
         }
       }
@@ -89,8 +94,15 @@ async function selfTest(browsers) {
   } finally {
     await server.stop();
   }
-  if (broken.length === 0) console.log("self-test: good.html passed every check and each other page failed only its own");
-  for (const line of broken) console.log(`self-test broken: ${line}`);
+  for (const [page, check] of Object.entries(SELF_TEST)) {
+    if (check && own.get(page).every((status) => status === "n/a")) {
+      broken.push(`unproven: ${check} on ${page} (n/a in ${[...skipped.get(check)].join(", ")})`);
+    }
+  }
+  for (const line of broken) console.log(`self-test ${line}`);
+  if (broken.length === 0) console.log("self-test held: every page met its expectation, and each check failed on its own page in at least one browser");
+  const notApplicable = [...skipped].filter(([, names]) => names.size).map(([check, names]) => `${check} in ${[...names].join(", ")}`);
+  if (notApplicable.length) console.log(`self-test n/a: ${notApplicable.join("; ")}`);
   return broken.length === 0;
 }
 

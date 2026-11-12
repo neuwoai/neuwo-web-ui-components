@@ -104,11 +104,13 @@ exits 1 on any `fail` or on a browser it cannot launch.
   is `n/a` in Firefox.
 - `noScript`: with JavaScript off, the first `.neuwo-btn` has the background it has with JavaScript
   on, not the browser default. Puppeteer cannot turn JavaScript off in Firefox, so it is `n/a` there.
-- `adoption`: nothing writes inside a `neuwo-*` element, so each adopts its server markup as it is.
+- `adoption`: each `neuwo-*` element still holds the markup served for it, and nothing rewrote it
+  after parsing, even with the same content.
 
 After changing a check, run `npm run integration -- --self-test`. It serves the pages in
-`integration/self-test/`, expanded with `expand`: `good.html` must pass every check, and each other
-page must fail only the check it is named for.
+`integration/self-test/`, expanded with `expand`. `good.html` must pass every check that runs, each
+other page must fail only its own check, and every check must fail on its own page in at least one
+browser. So the self-test fails in Firefox alone, where two checks are `n/a`.
 
 The apps are installed with `npm install`. To install only from the npm cache, here and in the
 one-time install above, set `npm_config_offline=true`:
