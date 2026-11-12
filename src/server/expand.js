@@ -220,12 +220,6 @@ function rewrite(page, nodes, from, to) {
 }
 
 /**
- * Expands every registered `<neuwo-*>` element in an HTML document in place. Elements that already hold their
- * rendered markup, and anything inside `<template>`, `<script>`, `<style>` or `<textarea>`, are left alone, as
- * is anything a browser parses as SVG or MathML: inside `<svg>` or `<math>`, but for the points where the parser
- * returns to HTML. So is every byte outside the elements it expands, but one: a `<p>` that holds nothing but
- * elements whose markup is block content, whitespace and comments, as Markdown writes around such elements, is
- * replaced by what it holds.
  * @param {string} html
  * @param {Record<string, Template>} registry
  * @param {string} prefix
