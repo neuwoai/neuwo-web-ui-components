@@ -1001,6 +1001,22 @@ describe("<neuwo-combobox searchable>", () => {
     expect([el.popup.style.top, el.popup.style.bottom]).toEqual(["84px", "auto"]);
   });
 
+  it("keeps an open list on its side when its options change, as an async search swaps them per keystroke", async () => {
+    const el = make(`<neuwo-combobox searchable>${FRUIT}</neuwo-combobox>`);
+    Object.defineProperty(document.documentElement, "clientHeight", { value: 600, configurable: true });
+    cleanup.push(() => delete document.documentElement.clientHeight);
+    triggerOf(el).getBoundingClientRect = () => ({ left: 40, right: 240, top: 430, bottom: 470, width: 200, height: 40 });
+    Object.defineProperty(el.popup, "offsetHeight", { get: () => rowsOf(el).filter((row) => !row.hidden).length * 100, configurable: true });
+    el.open();
+    expect([el.popup.style.top, el.popup.style.bottom]).toEqual(["auto", "174px"]);
+    type(triggerOf(el), "b");
+    el.querySelector(".neuwo-combobox__options").replaceChildren(...Array.from(new DOMParser().parseFromString(`<select><option value="blueberry">Blueberry</option></select>`, "text/html").querySelectorAll("option")));
+    await settled();
+    expect(rowsOf(el).map((row) => row.dataset.value)).toEqual(["blueberry"]);
+    expect(el.isOpen).toBe(true);
+    expect([el.popup.style.top, el.popup.style.bottom]).toEqual(["auto", "174px"]);
+  });
+
   it("places a list that typing opens by the rows the filter leaves", () => {
     const el = make(`<neuwo-combobox searchable>${FRUIT}</neuwo-combobox>`);
     Object.defineProperty(document.documentElement, "clientHeight", { value: 600, configurable: true });

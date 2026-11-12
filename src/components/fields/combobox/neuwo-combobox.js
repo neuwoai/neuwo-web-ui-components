@@ -240,7 +240,7 @@ export class NeuwoCombobox extends NeuwoFieldElement {
       if (this.#filter) this.#applyFilter();
       else if (this.#row(this.#active)) this.#setActive(this.#active);
       else this.#activeStart();
-      this.#position();
+      this.#position(this.#side);
     }
   }
 
