@@ -3,6 +3,8 @@ import { h, has, region } from "../../core/template.js";
 /** @typedef {import("../../core/template.js").TemplateNode} TemplateNode */
 /** @typedef {import("../../core/template.js").TemplateContext} TemplateContext */
 
+const BOOLEAN = new Set(["required", "readonly"]);
+
 /**
  * The classes of a field's control: `neuwo-input`, with `--sm` for `size="sm"` and `--error` while an error
  * shows unmuted on a field that keeps its error line.
@@ -47,8 +49,8 @@ export function ariaAttrs(attrs, ctx) {
 }
 
 /**
- * The attributes of a field's control: its id, the host attributes in `names` that are present, `disabled`,
- * `form`, and the `ariaAttrs`.
+ * The attributes of a field's control: its id, the host attributes in `names` that are present, a boolean one as
+ * present whatever its value, `disabled`, `form`, and the `ariaAttrs`.
  * @param {Record<string, string>} attrs
  * @param {TemplateContext} ctx
  * @param {string[]} names
@@ -57,7 +59,7 @@ export function ariaAttrs(attrs, ctx) {
 export function controlAttrs(attrs, ctx, names) {
   /** @type {Record<string, string | true>} */
   const props = { id: ctx.id("control") };
-  for (const name of names) if (has(attrs, name)) props[name] = attrs[name];
+  for (const name of names) if (has(attrs, name)) props[name] = BOOLEAN.has(name) ? true : attrs[name];
   if (has(attrs, "disabled")) props.disabled = true;
   if (has(attrs, "form")) props.form = attrs.form;
   return Object.assign(props, ariaAttrs(attrs, ctx));

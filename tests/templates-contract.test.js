@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { isBooleanAttribute } from "../src/core/adapters/react.js";
 import { blocksOf, classesOf, keyClassOf } from "../src/core/template.js";
 import { templates } from "../src/templates.js";
 import { cases, renderChildren } from "./fixtures/template-cases.js";
@@ -58,6 +59,14 @@ describe("template contract", () => {
             const { root } = output(tag, testCase);
             const blocks = blocksOf(root);
             for (const node of elements(root)) expect(keyClassOf(node, blocks), `<${node.tag} class="${node.props.class ?? ""}">`).toEqual(expect.any(String));
+          });
+
+          it("gives a boolean attribute only the value true, which the React adapter renders as present", () => {
+            for (const node of output(tag, testCase).all) {
+              for (const [name, value] of Object.entries(node.props)) {
+                if (isBooleanAttribute(name)) expect(value, `<${node.tag} ${name}>`).toBe(true);
+              }
+            }
           });
 
           it("marks at most one control", () => {

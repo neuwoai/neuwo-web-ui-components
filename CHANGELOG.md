@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed: `<neuwo-input>` and `<neuwo-textarea>` give their native control `required` and `readonly` as present attributes with no value, whatever value the element's own carry, as the JSX runtime already rendered them, so served and React markup now match for a field written `required="required"`.
 - Changed: `connect()`, `disconnect()`, `updated()` and `formReset()` are protected in the `.d.ts` types and the manifest, as hooks a subclass overrides, so calling one from outside an element is a type error. The manifest names `HTMLElement`, a global, as the superclass of `NeuwoElement`, and no longer lists an attribute a class documents itself as inherited: the radio's `name`, `checked`, `disabled`, `form` and `required`, the radio group's `name`, `disabled`, `error` and `no-error-line`, the segmented control's `name`, `disabled` and `no-error-line`, and the field base's `error-muted`, which the input, textarea, combobox and range now list as inherited from the field base. The JSX types are unchanged.
 - Internal: the standalone bundle adopts its sheet before it defines the elements, so each element's first `connect()` meets styled markup, where the sheet came after every element had upgraded.
 - Internal: the package no longer ships `dist/types/css-raw.d.ts`, which declared the build's own raw imports and which no published declaration referenced.

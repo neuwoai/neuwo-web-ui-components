@@ -203,12 +203,10 @@ describe("inputTemplate()", () => {
     expect(input({ type }).props.type).toBe("text");
   });
 
-  it("forwards the value and the native constraint attributes", () => {
+  it("forwards the value and the native constraint attributes, the boolean ones as present", () => {
     const attrs = {
       name: "q",
       placeholder: "Search",
-      required: "",
-      readonly: "",
       autocomplete: "off",
       min: "1",
       max: "9",
@@ -219,7 +217,7 @@ describe("inputTemplate()", () => {
       inputmode: "numeric",
       value: "5",
     };
-    expect(input(attrs).props).toMatchObject(attrs);
+    expect(input({ ...attrs, required: "required", readonly: "" }).props).toMatchObject({ ...attrs, required: true, readonly: true });
   });
 
   it("keeps the field's own attributes off the control", () => {

@@ -42,6 +42,14 @@ const NAMES = new Map([
   ["inputmode", "inputMode"],
   ...BOOLEAN.map((name) => /** @type {[string, string]} */ ([name.toLowerCase(), name])),
 ]);
+
+/**
+ * Whether React DOM reads a template attribute as a boolean, so the adapter renders it present whatever it holds.
+ * @param {string} name
+ * @returns {boolean}
+ */
+export const isBooleanAttribute = (name) => BOOLEANS.has(NAMES.get(name) ?? name);
+
 const ATTRIBUTES = new Map([
   ...Array.from(NAMES, ([attribute, prop]) => /** @type {[string, string]} */ ([prop, attribute])),
   ["defaultChecked", "checked"],
@@ -430,8 +438,7 @@ function toReact(node, regions, blocks, key, form, create) {
   /** @type {Record<string, unknown>} */
   const props = {};
   for (const [name, value] of Object.entries(node.props)) {
-    const prop = NAMES.get(name) ?? name;
-    props[prop] = BOOLEANS.has(prop) ? true : value === true ? "" : value;
+    props[NAMES.get(name) ?? name] = isBooleanAttribute(name) ? true : value === true ? "" : value;
   }
   if (typeof props.style === "string") props.style = styleOf(props.style);
   if (node.live) props.suppressHydrationWarning = true;
