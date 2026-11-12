@@ -130,6 +130,11 @@ async function runTarget(name, browsers, context) {
     print(name, "-", "-", { check: "start", status: "fail", detail: error.message });
     return false;
   }
+  if (!app.pages?.length) {
+    await app.stop();
+    print(name, "-", "-", { check: "start", status: "fail", detail: "the target returned no pages" });
+    return false;
+  }
   let passed = true;
   try {
     for (const [browserName, browser] of browsers) {
@@ -172,7 +177,7 @@ async function main() {
       if (!(await runTarget(name, browsers, { tarball, work, log }))) passed = false;
     }
   } finally {
-    await Promise.all([...browsers.values()].map((browser) => browser.close()));
+    await Promise.allSettled([...browsers.values()].map((browser) => browser.close()));
     if (options.keep) log(`Kept the work folder ${work}`);
     else await rm(work, { recursive: true, force: true });
   }

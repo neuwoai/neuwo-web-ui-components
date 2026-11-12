@@ -41,7 +41,11 @@ async function settle(timeout) {
   if ((await Promise.race([Promise.all(tags.map((tag) => customElements.whenDefined(tag))), expired])) === "expired") {
     return `never defined: ${tags.filter((tag) => !customElements.get(tag)).join(", ")}`;
   }
-  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  const frame = () => new Promise((resolve) => requestAnimationFrame(resolve));
+  await frame();
+  await document.fonts.ready;
+  await frame();
+  await frame();
   return null;
 }
 
@@ -137,7 +141,7 @@ async function loadWithoutScript(context, url) {
 
 function judgeConsole({ messages }) {
   if (messages.length === 0) return { status: "pass", detail: "" };
-  return { status: "fail", detail: `${messages.length} message(s); first: ${messages[0]}` };
+  return { status: "fail", detail: `${messages.length} message(s): ${messages.slice(0, 3).join("; ")}` };
 }
 
 function judgeLayoutShift({ shift }, browserName) {
