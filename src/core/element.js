@@ -168,6 +168,8 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
     const owned = ownedByReact(this);
     const restart = this.#started && !owned;
     if (!owned) {
+      // A change made out of the page in the same task as this reconnect is still in the observer's queue.
+      if (this.#observer && this.#take(this.#observer.takeRecords())) this.#dirty = true;
       // A move such as React's Suspense reveal reconnects served markup its attributes alone would not render.
       if (!restart || this.#changedWhileAway()) this.#write(isRendered(this, template) ? adopt : render);
       else this.#write(separate);
@@ -243,7 +245,8 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
   #watch() {
     const observer = (this.#observer ??= new MutationObserver((records) => this.#changed(records)));
     observer.disconnect();
-    observer.observe(this, { childList: true, attributes: true });
+    // Out of the page the host's own children and attributes are compared on its restart, which ignores whitespace.
+    if (this.isConnected) observer.observe(this, { childList: true, attributes: true });
     const found = regions(this);
     this.#wrappers = new Set(found?.wrappers);
     if (!found) return;
@@ -321,7 +324,10 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
     if (ownedByReact(this)) {
       this.#observer?.disconnect();
       this.#observer = null;
-    } else if (this.#take(records)) this.#reconcile();
+    } else if (this.#take(records)) {
+      if (this.#writable()) this.#reconcile();
+      else this.#dirty = true;
+    }
   }
 
   /**
@@ -354,11 +360,16 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
   }
 
   disconnectedCallback() {
-    // Disconnecting the observer drops a change made just before the move, so it is kept as a dirty mark.
+    // Watching again drops a change made just before the move, so it is kept as a dirty mark.
     if (this.#observer && this.#take(this.#observer.takeRecords())) this.#dirty = true;
     if (this.#started) this.#away = relevantAttributes(this);
-    this.#observer?.disconnect();
-    this.#observer = null;
+    if (ownedByReact(this)) {
+      this.#observer?.disconnect();
+      this.#observer = null;
+    } else if (this.#observer) {
+      // The wrappers stay watched, so a change a script makes inside them out of the page is fitted at once.
+      this.#watch();
+    }
     if (this.#loaded) {
       this.ownerDocument.removeEventListener("DOMContentLoaded", this.#loaded);
       this.#loaded = null;

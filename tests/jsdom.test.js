@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { NeuwoElement, define } from "../src/core/element.js";
 import { REACT } from "../src/core/marks.js";
 import { h, region } from "../src/core/template.js";
@@ -806,5 +806,88 @@ describe("what an observed attribute change, and refresh(), do in each lifecycle
     el.append(child);
     /** @type {NeuwoElement} */ (el).refresh();
     expect(child.parentElement !== el).toBe(expected === "writes now");
+  });
+});
+
+describe("a started <neuwo-notice> changed while out of the page, in jsdom", () => {
+  const settled = async () => {
+    for (let turn = 0; turn < 3; turn++) await Promise.resolve();
+  };
+  const part = (/** @type {Element} */ el, /** @type {string} */ name) => /** @type {Element} */ (el.querySelector(`.neuwo-notice__${name}`));
+  const isEmpty = (/** @type {Element} */ el, /** @type {string} */ name) => part(el, name).classList.contains(`neuwo-notice__${name}--empty`);
+
+  /** @param {string} html */
+  async function started(html) {
+    await import("../src/index.js");
+    const { NeuwoNotice } = await import("../src/components/notice/neuwo-notice.js");
+    const holder = document.createElement("div");
+    holder.innerHTML = html;
+    document.body.append(holder);
+    cleanup.push(() => holder.remove());
+    const template = vi.spyOn(NeuwoNotice, "template");
+    cleanup.push(() => template.mockRestore());
+    return { el: /** @type {Element} */ (holder.firstElementChild), holder, template };
+  }
+
+  it("restores --empty on a wrapper emptied while the notice is out of the page", async () => {
+    const { el, holder, template } = await started(`<neuwo-notice><span slot="title">T</span>Body<button slot="actions">Go</button></neuwo-notice>`);
+    el.remove();
+    part(el, "actions").replaceChildren();
+    await settled();
+    expect(isEmpty(el, "actions")).toBe(true);
+    expect(template).toHaveBeenCalled();
+    template.mockClear();
+    holder.append(el);
+    await settled();
+    expect(isEmpty(el, "actions")).toBe(true);
+    expect(template).not.toHaveBeenCalled();
+
+    part(el, "actions").append(document.createElement("button"));
+    await settled();
+    expect(isEmpty(el, "actions")).toBe(false);
+    el.remove();
+    part(el, "actions").replaceChildren();
+    holder.append(el);
+    expect(isEmpty(el, "actions")).toBe(true);
+    template.mockClear();
+    await settled();
+    expect(template).not.toHaveBeenCalled();
+  });
+
+  it("moves a child whose slot changed while the notice is out of the page", async () => {
+    const { el, holder, template } = await started(`<neuwo-notice><span slot="title">T</span>Body</neuwo-notice>`);
+    const title = /** @type {HTMLElement} */ (el.querySelector('[slot="title"]'));
+    el.remove();
+    title.slot = "actions";
+    await settled();
+    expect(title.parentElement).toBe(part(el, "actions"));
+    expect([isEmpty(el, "title"), isEmpty(el, "actions")]).toEqual([true, false]);
+    expect(template).toHaveBeenCalled();
+    template.mockClear();
+    holder.append(el);
+    await settled();
+    expect(title.parentElement).toBe(part(el, "actions"));
+    expect(template).not.toHaveBeenCalled();
+
+    el.remove();
+    title.slot = "title";
+    holder.append(el);
+    expect(title.parentElement).toBe(part(el, "title"));
+    expect([isEmpty(el, "title"), isEmpty(el, "actions")]).toEqual([false, true]);
+    template.mockClear();
+    await settled();
+    expect(template).not.toHaveBeenCalled();
+  });
+
+  it("leaves a notice whose markup a script replaced out of the page for its restart, when a wrapper it held changes", async () => {
+    const { el, holder } = await started(`<neuwo-notice><span slot="title">T</span>Body<button slot="actions">Go</button></neuwo-notice>`);
+    const actions = part(el, "actions");
+    el.remove();
+    el.textContent = "Hi";
+    actions.append(document.createElement("i"));
+    await settled();
+    expect(el.innerHTML).toBe("Hi");
+    holder.append(el);
+    expect(part(el, "message").textContent).toBe("Hi");
   });
 });

@@ -535,7 +535,7 @@ describe("NeuwoElement (light DOM)", () => {
       expect(el.innerHTML).toBe('<span class="neuwo-t neuwo-t--b"><span class="neuwo-t__start"><i slot="start"></i></span><span class="neuwo-t__body">hi</span></span>');
     });
 
-    it("stops observing when disconnected and observes again, with one observer, when reconnected", async () => {
+    it("stops observing its own children when disconnected and observes them again, with the same observer, when reconnected", async () => {
       const counts = countObservers();
       const el = mount(server()).firstElementChild;
       el.remove();
@@ -544,7 +544,7 @@ describe("NeuwoElement (light DOM)", () => {
       expect(el.innerHTML).toBe("y");
       expect(counts.calls).toBe(0);
       mount("").appendChild(el);
-      expect(counts.created).toBe(2);
+      expect(counts.created).toBe(1);
       el.textContent = "z";
       await settled();
       expect(counts.calls).toBe(1);

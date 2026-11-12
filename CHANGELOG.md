@@ -408,7 +408,10 @@
   element's wrappers, or change its `aria-*`, `title` and `role`: the element fits the change into its
   markup in a microtask, so read the markup back after an `await`. A child whose `slot` changes moves to
   the wrapper of its new slot, and a wrapper a script empties gets its `--empty` modifier back, where
-  both used to wait for the element's next change. Hosts React owns are left to React.
+  both used to wait for the element's next change. An element a script took out of the page, as a toast
+  does between messages, fits a change inside its wrappers or to a placed child's `slot` in a microtask
+  too, and a change to its own children, `aria-*`, `title` or `role` when it is put back. Hosts React
+  owns are left to React.
 - A copy of a rendered field made with `cloneNode(true)` gets ids of its own when it is inserted, and its
   label, `aria-describedby`, `aria-controls`, `aria-labelledby` and `aria-activedescendant` follow them, so
   the copy's label focuses the copy's control instead of the original's. Any light DOM element that adopts
@@ -428,6 +431,10 @@
   told from one a script built: a clone of a `<template>`'s `content` (`template.content.cloneNode(true)`),
   and served rows cloned and renamed, say with a new `name`, before the elements are defined. Their
   markup keeps the attributes it was written with; set the attribute after the elements are defined.
+- A copy of a rendered light DOM element made with `cloneNode(true)` adopts its markup as written too, as
+  a change a script made inside its wrappers, or to a placed child's `slot`, before the copy was first
+  inserted cannot be told from markup served that way. Call `refresh()` on the copy after such a change:
+  it fits the markup at once, in the page or out of it.
 - A property a script sets on any Neuwo element before the element is defined, such as `loading` on a
   button or `checked` on a checkbox from an inline script on a page whose module is deferred, now reaches
   the element when it is defined, through the element's own setter; it used to hide that property and
