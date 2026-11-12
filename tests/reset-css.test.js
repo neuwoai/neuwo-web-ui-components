@@ -126,6 +126,25 @@ describe("components reset", () => {
     expect(Array.from(document.querySelectorAll("span"), reached)).toEqual([true, true, false, false]);
   });
 
+  it("reverts every property of non-SVG block nodes and their ::before and ::after to the browser's, before the explicit list", () => {
+    const at = rules.findIndex((rule) => rule.declarations.get("all") === "revert");
+    expect(at).toBeGreaterThanOrEqual(0);
+    expect([...rules[at].declarations.keys()]).toEqual(["all"]);
+    expect(rules[at].selectors.map(pseudoOf).sort()).toEqual(["", "::after", "::before"]);
+    for (const selector of rules[at].selectors) expect(baseOf(selector)).toMatch(/:is\([^)]*\):where\(:not\(svg, svg \*\)\)$/);
+    expect(at).toBeLessThan(rules.findIndex((rule) => rule.declarations.get("margin") === "0"));
+  });
+
+  it("keeps a hidden block node hidden after the revert, which drops the attribute's own display: none", () => {
+    document.body.innerHTML = `<neuwo-combobox><ul class="neuwo-combobox__listbox"><li class="neuwo-combobox__empty" hidden></li><li class="neuwo-combobox__option"></li></ul></neuwo-combobox>`;
+    const [empty, option] = document.querySelectorAll("li");
+    expect(winner(empty, "display")).toBe("none");
+    expect(winner(option, "display")).toBeUndefined();
+    const revertAt = rules.findIndex((rule) => rule.declarations.get("all") === "revert");
+    const hiddenAt = rules.findIndex((rule) => rule.declarations.get("display") === "none" && rule.selectors.every((selector) => selector.includes(":is(")));
+    expect(hiddenAt).toBeGreaterThan(revertAt);
+  });
+
   it("sets every reset property on block nodes and their ::before and ::after", () => {
     const blockRules = rules.filter((rule) => rule.selectors.every((selector) => selector.includes(":is(")));
     for (const [property, value] of Object.entries({ ...INHERITED, ...BOX, ...SIZING })) {

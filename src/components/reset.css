@@ -26,6 +26,18 @@
     .neuwo-status-dot, [class*="neuwo-status-dot__"], [class*="neuwo-status-dot--"],
     .neuwo-textarea, [class*="neuwo-textarea__"], [class*="neuwo-textarea--"]
   ) {
+    /* Not on svg: revert would drop its presentation attributes, which browsers apply in the author origin. */
+    &:where(:not(svg, svg *)),
+    &:where(:not(svg, svg *))::before,
+    &:where(:not(svg, svg *))::after {
+      all: revert;
+    }
+
+    /* revert drops the hidden attribute's display: none too, which browsers also apply in the author origin. */
+    &:where([hidden]) {
+      display: none;
+    }
+
     &,
     &::before,
     &::after {
