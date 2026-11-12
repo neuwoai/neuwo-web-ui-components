@@ -110,13 +110,21 @@ describe("browser bundles", () => {
 describe("bundler build", () => {
   const SPINNER = "neuwo-btn__spinner";
   const ENTRIES = ["neuwo.js", "jsx-runtime.js", "jsx-dev-runtime.js"];
+  const IMPORTS = /(?:\bfrom|\bimport)\s*["']\.\.?\/|\bimport\s*\(/;
   const bundler = () => readdirSync(join(root, "dist/bundler")).filter((file) => file.endsWith(".js"));
   const text = (file) => readFileSync(distFile(`bundler/${file}`), "utf8");
 
   it("keeps the CDN bundles self-contained", () => {
     for (const file of ["neuwo.js", "neuwo-standalone.js"]) {
-      expect(readFileSync(distFile(file), "utf8"), file).not.toMatch(/["']\.\/chunk-/);
+      expect(readFileSync(distFile(file), "utf8"), file).not.toMatch(IMPORTS);
     }
+  });
+
+  it("the self-containment check refuses a relative or dynamic import under any file name, as in the bundler entry", () => {
+    const refused = [`import{a as b}from"./templates-Q2.js";`, `import "../shared.js";`, `export*from'./chunk-X.js'`, `await import("./lazy.js")`, `import ( "https://cdn.example/x.js" )`];
+    for (const code of refused) expect(code, code).toMatch(IMPORTS);
+    expect(text("neuwo.js"), "bundler/neuwo.js").toMatch(IMPORTS);
+    for (const code of [`new URL("./fonts/a.woff2", import.meta.url)`, `const from = "./x";`]) expect(code, code).not.toMatch(IMPORTS);
   });
 
   it("holds the shared template code once in the bundler build", () => {

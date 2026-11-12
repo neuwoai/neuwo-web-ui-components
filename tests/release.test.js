@@ -41,6 +41,11 @@ describe("release", () => {
     expect(heading?.[0]).toBe(`## ${version}`);
   });
 
+  it("the lockfile's top-level version fields are the package version", () => {
+    const lock = JSON.parse(read("package-lock.json"));
+    expect({ version: lock.version, root: lock.packages[""].version }).toEqual({ version, root: version });
+  });
+
   it("every README CDN URL names a built file at the package's minor version", () => {
     const { urls, problems } = checkCdnUrls(read("README.md"));
     expect(urls).toBeGreaterThan(0);
