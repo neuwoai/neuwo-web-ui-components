@@ -20,6 +20,20 @@ describe("form-check.css recipe", () => {
     expect(css).toContain('.neuwo-form-check__input[type="radio"]:checked');
   });
 
+  it("draws the tick, the dash and the radio dot as masks over the white token, on the input's ::before", () => {
+    expect(css.replace(/\/\*[\s\S]*?\*\//g, "").replaceAll("var(--neuwo-color-white)", "")).not.toMatch(/white/i);
+    expect(css).not.toContain("background-image");
+    const body = (selectors) => css.match(new RegExp(`(?<!,\\n)^${selectors.replace(/[[\]().*]/g, "\\$&")}\\s*\\{([^}]*)\\}`, "m"))?.[1] ?? "";
+    for (const state of ['[type="checkbox"]:checked', '[type="checkbox"]:indeterminate', '[type="radio"]:checked']) {
+      const mark = body(`.neuwo-form-check__input${state}::before`);
+      expect(mark, state).toMatch(/(^|\s)mask: url\("data:image\/svg\+xml,[^"]*"\)/);
+      expect(mark, state).toMatch(/-webkit-mask: url\("data:image\/svg\+xml,[^"]*"\)/);
+    }
+    const shared = body('.neuwo-form-check__input:checked::before,\n.neuwo-form-check__input[type="checkbox"]:indeterminate::before');
+    expect(shared).toContain('content: "";');
+    expect(shared).toContain("background: var(--neuwo-color-white);");
+  });
+
   it("uses the disabled token and a red error accent, with no hex colour literals", () => {
     expect(css).toContain("var(--neuwo-opacity-disabled)");
     expect(css).toContain(".neuwo-form-check--error > .neuwo-form-check__input");
