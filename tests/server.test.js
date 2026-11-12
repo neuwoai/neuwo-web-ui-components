@@ -107,13 +107,15 @@ describe("expand()", () => {
   it("keeps fragments expanded with different prefixes apart", () => {
     const a = ids(expand(FIELD, { prefix: "a" }));
     const b = ids(expand(FIELD, { prefix: "b" }));
+    expect(a.length).toBeGreaterThan(0);
+    expect(b.length).toBeGreaterThan(0);
     expect(a.filter((id) => b.includes(id))).toEqual([]);
   });
 
   it("rejects a prefix that could collide", () => {
-    for (const prefix of ["", "1a", "a b", "a1", "neuwo-c", "neuwo-cx", 'a"b']) {
-      expect(() => expand(FIELD, { prefix }), prefix).toThrow(TypeError);
-      expect(() => expand(FIELD, { prefix }), prefix).toThrow(/prefix/);
+    for (const prefix of ["", "1a", "a b", "a1", "neuwo-c", "neuwo-cx", 'a"b', ["a"], 1]) {
+      expect(() => expand(FIELD, { prefix }), String(prefix)).toThrow(TypeError);
+      expect(() => expand(FIELD, { prefix }), String(prefix)).toThrow(/^The prefix /);
     }
   });
 });

@@ -9,14 +9,16 @@ const PREFIX = /^[A-Za-z](?:[A-Za-z0-9_-]*[A-Za-z_-])?$/;
  * is anything a browser parses as SVG or MathML: inside `<svg>` or `<math>`, but for the points where the parser
  * returns to HTML. So is every byte outside the elements it expands, but one: a `<p>` that holds nothing but
  * elements whose markup is block content, whitespace and comments, as Markdown writes around such elements, is
- * replaced by what it holds. Ids are named from `prefix`; give each separately expanded fragment its own, so the ids never collide on a page.
+ * replaced by what it holds. Ids are named from `prefix`; give each separately expanded fragment its own, so
+ * the ids never collide on a page.
  * @param {string} html
- * @param {{ prefix?: string }} [options] - `prefix` starts with a letter, ends with a letter, `_` or `-`, holds only letters, digits, `_` and `-`, and does not start with `neuwo-c`. Defaults to `neuwo-s`.
+ * @param {{ prefix?: string }} [options] - `prefix` starts with a letter, ends with a letter, `_` or `-`, holds
+ * only letters, digits, `_` and `-`, and does not start with `neuwo-c`. Defaults to `neuwo-s`.
  * @returns {string}
  */
 export function expand(html, options = {}) {
   const prefix = options.prefix ?? "neuwo-s";
-  if (!PREFIX.test(prefix) || prefix.startsWith("neuwo-c")) {
+  if (typeof prefix !== "string" || !PREFIX.test(prefix) || prefix.startsWith("neuwo-c")) {
     throw new TypeError(`The prefix ${JSON.stringify(prefix)} must start with a letter, end with a letter, "_" or "-", hold only letters, digits, "_" and "-", and not start with "neuwo-c".`);
   }
   return expandWith(html, templates, prefix);
