@@ -14,8 +14,7 @@ neuwo-copy {
 
 .neuwo-copy__button {
   position: absolute;
-  /* Read with a fallback rather than declared, so a consumer can pull the
-     control further in without fighting a declaration on this element. */
+  /* Read with a fallback, not declared, so a consumer's inset is not fought by a declaration here. */
   top: var(--neuwo-copy-inset, var(--neuwo-space-3));
   inset-inline-end: var(--neuwo-copy-inset, var(--neuwo-space-3));
   display: inline-flex;
@@ -29,10 +28,7 @@ neuwo-copy {
   border: 1px solid var(--neuwo-glass-border);
   border-radius: var(--neuwo-radius-md);
   cursor: pointer;
-  /* Visible at rest, so the affordance is found without hunting for it, and
-     solid on hover. Deliberately not a hover-only reveal: a tap leaves a touch
-     screen in :hover with nothing to take it out, so a control that only exists
-     on hover either never appears or never leaves. */
+  /* Never a hover-only reveal: a tap leaves a touch screen in :hover with nothing to take it out. */
   opacity: 0.45;
   transition: opacity var(--neuwo-transition-fast), color var(--neuwo-transition-fast),
     border-color var(--neuwo-transition-fast);
@@ -51,9 +47,7 @@ neuwo-copy {
   box-shadow: var(--neuwo-shadow-focus);
 }
 
-/* The glyph is a mask over the button's own colour, as on the notice's close
-   control, so it follows the hover and any consumer re-colour without a second
-   asset and without the JS building an icon. */
+/* A mask over currentColor, so the glyph follows the hover and a consumer's colour. */
 .neuwo-copy__button::before {
   content: "";
   width: 0.875rem;
@@ -86,9 +80,7 @@ neuwo-copy[data-neuwo-state="failed"] > .neuwo-copy > .neuwo-copy__button::befor
   -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 6L6 18M6 6l12 12'/%3E%3C/svg%3E");
 }
 
-/* The outcome, for a screen reader only. The button's own name stays put:
-   relabelling a control the user has just activated is announced
-   inconsistently, where a live region is announced reliably. */
+/* A live region rather than a relabelled button, which screen readers announce inconsistently. */
 .neuwo-copy__status {
   position: absolute;
   width: 1px;

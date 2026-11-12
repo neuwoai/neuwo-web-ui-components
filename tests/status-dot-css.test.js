@@ -40,8 +40,7 @@ describe("status-dot.css recipe", () => {
 
   it("defines the glow-intensity presets as currentColor drop-shadows that stack over the ring", () => {
     for (const level of ["s", "m", "l"]) expect(css).toContain(`.neuwo-status-dot--glow-${level}`);
-    // Glow lives on `filter`, not `box-shadow`, so it composes with the base
-    // ring and the halo axis instead of overriding them.
+    // On `filter`, so it composes with the ring and the halo instead of overriding them.
     expect(css).toMatch(/\.neuwo-status-dot--glow-[sml]\s*{\s*filter: drop-shadow/);
     expect(css).toContain("drop-shadow(0 0 0.5rem currentColor)");
     expect(css).not.toMatch(/\.neuwo-status-dot--glow-[sml][^}]*box-shadow/);

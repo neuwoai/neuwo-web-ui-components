@@ -172,8 +172,7 @@ export class OptionWidget {
   };
 
   /**
-   * Form libraries find a blurred field by `event.target.name`, so the focusable part reads as named for that
-   * dispatch only.
+   * Form libraries find a blurred field by `event.target.name`, so the focused part is named for that dispatch only.
    * @param {Event} event
    */
   #lendName = (event) => {

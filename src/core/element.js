@@ -51,7 +51,7 @@ export function ownedByReact(el) {
 }
 
 /**
- * Listens in the capture phase, on the window and on a containing shadow root, before an unhydrated React root stops the event.
+ * Captures on the window before an unhydrated React root stops the event, and on a containing shadow root, as `input` leaves it retargeted to the host and `reset` not at all.
  * @param {Element} el
  * @param {string} type
  * @param {(event: Event) => void} listener

@@ -3,20 +3,16 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-// Read the CSS off disk rather than via `import ... ?raw`: Vitest does not
-// transform `?raw` for CSS here (it yields an empty string).
+// Off disk, since Vitest resolves a CSS `?raw` import to an empty string.
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const css = readFileSync(join(__dirname, "../src/foundation/markdown.css"), "utf8");
 const tokensCss = readFileSync(join(__dirname, "../src/foundation/tokens.css"), "utf8");
 const typographyCss = readFileSync(join(__dirname, "../src/foundation/typography.css"), "utf8");
-// Declarations only, for the assertions that a term appears nowhere: the
-// comments discuss both !important and colour literals by name.
+// Comments stripped, so a term a comment names cannot fail the assertions that it appears nowhere.
 const declarations = css.replace(/\/\*[\s\S]*?\*\//g, "");
 
 describe("markdown stylesheet", () => {
-  // Scoped, not bare-tag: a list in a nav must not take the article treatment.
-  // `.neuwo-callout` is a class, so it carries its own scope and works outside a
-  // rendered document too.
+  // Scoped, so a list in a nav does not take the article treatment.
   it("scopes every element rule under .neuwo-markdown, and every other rule under a class", () => {
     const selectors = declarations
       .split("}")
@@ -30,17 +26,12 @@ describe("markdown stylesheet", () => {
     }
   });
 
-  // typography.css owns headings and paragraphs; restating them here would be
-  // the duplication this sheet exists to remove.
   it("never restates a heading or a paragraph typography.css already styles", () => {
     expect(declarations).not.toMatch(/\.neuwo-markdown h[1-6]\s*[,{]/);
     expect(declarations).not.toMatch(/\.neuwo-markdown p\s*\{/);
     expect(typographyCss).toMatch(/(?:^|\n)p \{/);
   });
 
-  // Where the column sits and how wide it is are page decisions, as in
-  // background.css and navigation.css. The only max-width is an image fitting
-  // its container, never a reading measure.
   it("owns no box: no rule on the container itself, and no measure", () => {
     expect(declarations).not.toMatch(/\.neuwo-markdown \{/);
     const widths = [...declarations.matchAll(/max-width:\s*([^;]+);/g)].map((m) => m[1].trim());
@@ -161,8 +152,7 @@ describe("markdown stylesheet", () => {
   });
 });
 
-// Same sheet: the callout is part of the Markdown surface, and nothing about it
-// is a component, so it ships here rather than as a second file to link.
+// Same sheet, since nothing about the callout is a component that would justify a second file to link.
 describe("callout recipe", () => {
   it("contains its children's margins so the padding holds", () => {
     const rule = css.match(/(?:^|\n)\.neuwo-callout \{[^}]*\}/)[0];
@@ -172,14 +162,12 @@ describe("callout recipe", () => {
     expect(css).toMatch(/\.neuwo-callout > :last-child \{[^}]*margin-bottom:\s*0/);
   });
 
-  // The callout follows the element rules, so a callout ending in a list keeps
-  // its own bottom padding: the two tie on specificity and the later one wins.
+  // The two tie on specificity, so the callout must come later to keep its padding after a list.
   it("is ordered after the element rules it has to beat", () => {
     expect(css.indexOf(".neuwo-markdown ul,")).toBeLessThan(css.indexOf(".neuwo-callout > :last-child"));
   });
 
-  // Read with a fallback, never declared on `.neuwo-callout` itself: a declaration
-  // here would beat the value a consumer inherits in from :root or a wrapper.
+  // A declaration on `.neuwo-callout` would beat a consumer's accent set on :root or a wrapper.
   it("reads the accent as a knob rather than declaring it on the block", () => {
     const rule = css.match(/(?:^|\n)\.neuwo-callout \{[^}]*\}/)[0];
     expect(rule).not.toMatch(/--neuwo-callout-accent:/);
@@ -209,8 +197,7 @@ describe("callout recipe", () => {
     }
   });
 
-  // The brand has no amber, so a warning modifier would have to invent one.
-  // A consumer needing it sets --neuwo-callout-accent on its own class instead.
+  // The brand has no amber, so a consumer sets --neuwo-callout-accent on its own class instead.
   it("ships no warning intent, because no warning colour exists", () => {
     expect(declarations).not.toContain(".neuwo-callout--warning");
     expect(tokensCss).not.toMatch(/--neuwo-color-(amber|orange|yellow|warning)\s*:/);

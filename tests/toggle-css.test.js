@@ -51,14 +51,12 @@ describe("toggle.css recipe", () => {
   });
 
   it("rings an unchecked switch when the pulse axis is on", () => {
-    // Only while off: the ring is an invitation to flip it, so switching it on
-    // ends the animation through the selector rather than through JS.
+    // Only while off, so switching it on ends the animation through the selector rather than script.
     expect(css).toMatch(/\.neuwo-form-toggle--pulse \.neuwo-form-toggle__input:not\(:checked\) \+ \.neuwo-form-toggle__track::before/);
     expect(css).toContain("animation: neuwo-toggle-pulse 3s ease-in-out infinite");
     expect(css).toContain("@keyframes neuwo-toggle-pulse");
     expect(css).not.toMatch(/@keyframes toggle-pulse/);
-    // The ring reads in the brand accent, like the CTA's, not in the track's
-    // own muted colour, which would barely register against the glass.
+    // In the brand accent, since the track's own muted colour barely registers against the glass.
     expect(css).toMatch(/@keyframes neuwo-toggle-pulse[\s\S]*var\(--neuwo-color-blue\)/);
     expect(css).toContain("var(--neuwo-toggle-pulse-spread, 12px)");
     expect(css).toContain("var(--neuwo-toggle-pulse-alpha, 40%)");

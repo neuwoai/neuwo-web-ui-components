@@ -3,8 +3,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-// Read the CSS off disk rather than via `import ... ?raw`: Vitest does not
-// transform `?raw` for CSS here (it yields an empty string).
+// Off disk, since Vitest resolves a CSS `?raw` import to an empty string.
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const css = readFileSync(join(__dirname, "../src/components/copy/copy.css"), "utf8");
 const tokensCss = readFileSync(join(__dirname, "../src/foundation/tokens.css"), "utf8");
@@ -23,8 +22,6 @@ const ruleFor = (selector) => {
 };
 
 describe("copy.css recipe", () => {
-  // The wrapper must not change how the content it wraps lays out, so the host
-  // carries the positioning context and nothing else.
   it("keeps the element-name rule to the outer box, with every visual on the prefixed classes", () => {
     expect(declarations).not.toMatch(/:host|::part|::slotted/);
     const host = ruleFor("neuwo-copy");
@@ -51,8 +48,7 @@ describe("copy.css recipe", () => {
     expect(rule).toMatch(/height:\s*var\(--neuwo-space-8\)/);
   });
 
-  // A hover-only reveal would either never appear or never leave on a touch
-  // screen, where a tap sticks :hover with nothing to clear it.
+  // A tap leaves a touch screen in :hover, so a hover-only reveal would never appear or never leave.
   it("shows the control at rest and strengthens it on hover, never reveals it", () => {
     expect(ruleFor(".neuwo-copy__button")).toMatch(/opacity:\s*0\.45/);
     const strong = ruleFor(".neuwo-copy__button:hover,\n.neuwo-copy__button:focus-visible");

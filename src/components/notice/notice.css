@@ -3,19 +3,14 @@ neuwo-notice {
 }
 
 .neuwo-notice {
-  /* How far the card travels on entrance, flipped by the top modifier so it
-     always arrives from the edge it is docked to. Internal, unlike the two
-     knobs below, so it is declared rather than read with a fallback. */
+  /* Declared, unlike the knobs below, because the top modifier flips it to arrive from the docked edge. */
   --neuwo-notice-rise: 0.5rem;
 
   position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--neuwo-space-4);
-  /* The two knobs worth setting from outside: how wide the card may grow, and
-     how much air a fixed card keeps from the viewport edges. Both are read with
-     a fallback rather than declared here, because a declaration on this element
-     would beat the value a consumer inherits in from `:root` or the host. */
+  /* Knobs are read with a fallback, since a declaration here would beat one a consumer sets on `:root` or the host. */
   max-width: var(--neuwo-notice-max-width, 24rem);
   padding: var(--neuwo-space-5);
   color: var(--neuwo-color-text);
@@ -28,8 +23,7 @@ neuwo-notice {
   animation: neuwo-notice-in var(--neuwo-transition-base) both;
 }
 
-/* The entrance rides on `translate`, not on `transform`: the centred placement
-   owns `transform`, and the two properties compose instead of overwriting. */
+/* On `translate`, not `transform`, which the centred placement owns and this would overwrite. */
 @keyframes neuwo-notice-in {
   from {
     opacity: 0;
@@ -104,8 +98,6 @@ neuwo-notice {
   display: none;
 }
 
-/* Actions beside the text once there is room for both. A narrow viewport always
-   stacks, whatever the layout asks for. */
 @media (min-width: 48rem) {
   .neuwo-notice--row {
     flex-direction: row;
@@ -142,8 +134,7 @@ neuwo-notice {
   transition: color var(--neuwo-transition-fast);
 }
 
-/* The cross is a mask over the button's own colour, so it follows the hover and
-   any consumer re-colour without a second asset. */
+/* A mask over currentColor, so the cross follows the hover and a consumer's colour. */
 .neuwo-notice__dismiss::before {
   content: "";
   width: 0.875rem;
@@ -164,8 +155,7 @@ neuwo-notice {
   box-shadow: var(--neuwo-shadow-focus);
 }
 
-/* The button's corner is reserved on the card, not on the first line, so
-   nothing can collide with it in either layout. */
+/* Reserved on the card, not the first line, so nothing collides with the button in either layout. */
 .neuwo-notice--dismissible {
   padding-inline-end: calc(var(--neuwo-space-3) + var(--neuwo-space-8));
 }
@@ -177,8 +167,6 @@ neuwo-notice {
   }
 }
 
-/* Reduced motion keeps the card still: it already announces itself by arriving,
-   and the hover colour change is what marks the close button. */
 @media (prefers-reduced-motion: reduce) {
   .neuwo-notice {
     animation: none;

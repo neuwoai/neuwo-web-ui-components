@@ -29,8 +29,7 @@ const rulesIn = (source) =>
   }));
 
 /**
- * The value the reset then the recipe, outside any media query, give the element: the heaviest matching selector,
- * the later one on a tie.
+ * The value the reset then the recipe give the element outside media queries: the heaviest selector, the later on a tie.
  * @param {Element} el
  * @param {string} property
  */

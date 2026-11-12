@@ -21,9 +21,7 @@ function declByName(m, name) {
       if (dec.name === name) return dec;
   return null;
 }
-// Attributes resolved up the superclass chain. The analyzer flattens inherited
-// attributes onto each subclass declaration; the chain walk below is a defensive
-// fallback in case a future analyzer version changes that behaviour.
+// The analyzer flattens inherited attributes today; the chain walk covers a version that stops.
 function attributesFor(m, tag) {
   const names = new Set();
   let dec = declByTag(m, tag);
@@ -58,11 +56,7 @@ const EXPECTED_TAGS = [
   "neuwo-status-dot", "neuwo-cta", "neuwo-notice", "neuwo-logo", "neuwo-copy",
 ];
 
-// Elements deliberately removed. `neuwo-select` wrapped a native <select>, so its
-// popup was drawn by the OS and could not be styled; the styled combobox replaces it.
-// `neuwo-dropdown` bundled a disclosure toggle with the nav-link styling, which made
-// it too rigid for site navigation; `foundation/navigation.css` publishes the styling
-// on its own so the consumer owns the structure and any collapsing.
+// Removed on purpose: the combobox replaces `neuwo-select`, and `foundation/navigation.css` `neuwo-dropdown`.
 const REMOVED_TAGS = ["neuwo-select", "neuwo-dropdown"];
 
 describe("custom-elements.json", () => {

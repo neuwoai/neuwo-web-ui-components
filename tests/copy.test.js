@@ -60,8 +60,7 @@ describe("<neuwo-copy>", () => {
     expect(button.hasAttribute("title")).toBe(false);
   });
 
-  // Reading and tab order follow the visual order, so the control comes after
-  // the content it acts on.
+  // Reading and tab order follow the visual order, so the control comes after the content.
   it("renders into its light DOM, the content wrapper before the control and the live region", () => {
     const el = make(CODE);
     expect(el.shadowRoot).toBeNull();
@@ -86,8 +85,7 @@ describe("<neuwo-copy>", () => {
     expect(el.hasAttribute("data-neuwo-state")).toBe(false);
   });
 
-  // The newline and spaces around the nested <pre> are the author's formatting,
-  // not part of the sample.
+  // The whitespace around the nested <pre> is the author's formatting, not part of the sample.
   it("keeps indented markup's whitespace inside the content wrapper and copies the text trimmed of it", async () => {
     const el = make(CODE);
     const content = part(el, "content");

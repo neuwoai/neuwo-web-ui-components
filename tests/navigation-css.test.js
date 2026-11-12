@@ -3,13 +3,11 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-// Read the CSS off disk rather than via `import ... ?raw`: Vitest does not
-// transform `?raw` for CSS here (it yields an empty string).
+// Off disk, since Vitest resolves a CSS `?raw` import to an empty string.
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const css = readFileSync(join(__dirname, "../src/foundation/navigation.css"), "utf8");
 const tokensCss = readFileSync(join(__dirname, "../src/foundation/tokens.css"), "utf8");
-// Declarations only, for the assertions that a term appears nowhere: the
-// comments discuss both !important and colour literals by name.
+// Comments stripped, so a term a comment names cannot fail the assertions that it appears nowhere.
 const declarations = css.replace(/\/\*[\s\S]*?\*\//g, "");
 
 describe("navigation stylesheet", () => {
@@ -30,8 +28,6 @@ describe("navigation stylesheet", () => {
     expect(rule).toMatch(/line-height:\s*var\(--neuwo-line-height-body\)/);
   });
 
-  // The gutter drives the padding and the underline's span from one value, so
-  // the bar cannot drift from the text above it.
   it("derives the padding and the underline endpoints from one gutter property", () => {
     expect(css).toMatch(/--neuwo-nav-link-gutter:\s*var\(--neuwo-space-4\)/);
     expect(css).toMatch(/padding:\s*0 var\(--neuwo-nav-link-gutter\)/);
@@ -51,9 +47,7 @@ describe("navigation stylesheet", () => {
     expect(css).toMatch(/\.neuwo-nav-link--sm::after \{[^}]*bottom:\s*0;/);
   });
 
-  // A transform rather than two insets meeting at 50%: `left`/`right` are layout
-  // properties, and a pair of them at 50% leaves a sub-pixel residue at rest on
-  // a link of fractional width. scaleX(0) composites, and is exactly nothing.
+  // Animated insets run layout every frame and leave a sub-pixel residue at rest; scaleX(0) is exactly nothing.
   it("grows the bar with a transform, never by animating layout", () => {
     const rule = css.match(/(?:^|\n)\.neuwo-nav-link::after \{[^}]*\}/)[0];
     expect(rule).toMatch(/transform:\s*scaleX\(0\)/);
@@ -71,23 +65,19 @@ describe("navigation stylesheet", () => {
       /\.neuwo-nav-link:hover,\n\.neuwo-nav-link:focus-visible,\n\.neuwo-nav-link\[aria-current\],\n\.neuwo-nav-link--active \{[^}]*\}/
     )[0];
     expect(rule).toMatch(/color:\s*var\(--neuwo-color-heading\)/);
-    // In a horizontal bar the current page is marked, not offered, so the bar
-    // is withheld from `aria-current` alone.
+    // A horizontal bar marks the current page rather than offering it, so `aria-current` alone shows no bar.
     const shown = css.match(/\.neuwo-nav-link:hover::after,[^{]*\{/)[0];
     expect(shown).not.toContain("aria-current");
   });
 
-  // A vertical nav wants the bar held open on the current page and on the
-  // section it sits under, which `aria-current` alone cannot express.
+  // A vertical nav holds the bar open on the page and the section above it, which `aria-current` cannot say.
   it("holds the bar open for an active entry, composing with aria-current", () => {
     const shown = css.match(/\.neuwo-nav-link:hover::after,[^{]*\{[^}]*\}/)[0];
     expect(shown).toContain(".neuwo-nav-link--active::after");
     expect(shown).toMatch(/transform:\s*scaleX\(1\)/);
   });
 
-  // The class beats typography.css's `a` (0,1,0 over 0,0,1) and its `a:hover`
-  // (0,2,0 over 0,1,1), so nothing here has to be important, and a consumer can
-  // still override every property from a document stylesheet.
+  // The class beats `a` (0,1,0 over 0,0,1) and `a:hover` (0,2,0 over 0,1,1), so a consumer can still override it.
   it("wins against the bare anchor treatment without !important", () => {
     expect(declarations).not.toContain("!important");
   });

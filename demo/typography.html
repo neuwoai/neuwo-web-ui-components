@@ -9,17 +9,14 @@
     <script type="module" src="/dist/neuwo.js"></script>
 
     <style>
-      /* Page chrome only. Everything visible in a specimen comes from
-         typography.css and the tokens, never from this block. */
+      /* Page chrome only: a specimen takes nothing from this block. */
       body {
         margin: 0 auto;
         padding: var(--neuwo-space-12) var(--neuwo-space-6) var(--neuwo-space-24);
         max-width: 64rem;
       }
 
-      /* The page surface, wired exactly as the main website wires it: the
-         library ships the visuals (`.neuwo-body`, `.neuwo-background__gradient`), the
-         consumer owns where the wash sits and how it stacks. */
+      /* Wired as the main website wires it: the consumer owns where the wash sits and how it stacks. */
       .background {
         position: fixed;
         top: 0;
@@ -95,9 +92,7 @@
         color: var(--neuwo-color-text);
       }
 
-      /* Line-height samples need to wrap, unlike the single-line scale samples.
-         Overflow goes back to visible so a tight line-height (1.05) is not
-         clipped into a scroll box. */
+      /* Overflow visible, so a tight line-height such as 1.05 is not clipped into a scroll box. */
       .demo-row__sample--block {
         white-space: normal;
         overflow: visible;

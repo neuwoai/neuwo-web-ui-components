@@ -3,9 +3,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-// Read the CSS off disk rather than via `import ... ?raw`: the build resolves
-// `?raw` through an esbuild plugin, but Vitest does not transform it here (it
-// yields an empty string), so these assertions need the real file contents.
+// Off disk, since Vitest resolves a CSS `?raw` import to an empty string.
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const typographyCss = readFileSync(join(__dirname, "../src/foundation/typography.css"), "utf8");
 const tokensCss = readFileSync(join(__dirname, "../src/foundation/tokens.css"), "utf8");
@@ -21,8 +19,7 @@ describe("typography stylesheet", () => {
   });
 
   it("leaves h1 at normal tracking, since the display value is hero-only", () => {
-    // --neuwo-letter-spacing-display is tuned for a hero title, not for whatever h1
-    // a page happens to have, so the sheet must not apply it automatically.
+    // Tuned for a hero title, not any h1, so the sheet must not apply it.
     const [h1Rule] = typographyCss.match(/(?:^|\n)h1 \{[^}]*\}/);
     expect(h1Rule).toContain("var(--neuwo-font-size-6xl)");
     expect(h1Rule).not.toContain("letter-spacing");
@@ -46,8 +43,7 @@ describe("typography stylesheet", () => {
   });
 
   it("ships both link hover treatments off one recipe", () => {
-    // The bare element and .neuwo-link share the resting rule, so the recipe is
-    // authored once rather than restated for the class.
+    // The element and the class share one resting rule, so the recipe is authored once.
     expect(typographyCss).toMatch(/^a,\n\.neuwo-link \{$/m);
     expect(typographyCss).toMatch(/^a:hover,\n\.neuwo-link:hover \{$/m);
     expect(typographyCss).toMatch(
@@ -56,8 +52,7 @@ describe("typography stylesheet", () => {
     expect(typographyCss).toMatch(
       /\.neuwo-link--hover-green:hover \{[^}]*color:\s*var\(--neuwo-color-green\)/
     );
-    // The green modifier outranks a:hover on specificity, so it must not need
-    // !important, which a consumer could then not override at all.
+    // !important here would leave a consumer no way to override it.
     expect(typographyCss).not.toMatch(/\.neuwo-link--hover-green:hover \{[^}]*!important/);
   });
 

@@ -31,9 +31,7 @@ neuwo-cta {
   line-height: 1.5;
 }
 
-/* An inline field in the text column: an email capture, a search box. The cap
-   is read with a fallback rather than declared, because a declaration here
-   would beat the value a consumer inherits in from :root or the host. */
+/* The cap is read with a fallback, since a declaration here would beat one a consumer sets on :root or the host. */
 .neuwo-cta__field {
   max-width: var(--neuwo-cta-field-width, 24rem);
   margin-top: var(--neuwo-space-4);
@@ -43,9 +41,7 @@ neuwo-cta {
   display: none;
 }
 
-/* Feedback after the band's action (a capture confirmation, a failure). The
-   paragraph is always present so its live region announces reliably; empty, it
-   has no line boxes and drops its margin, so it costs no space until used. */
+/* Always rendered, so its live region announces reliably, and free of margin while empty. */
 .neuwo-cta__status {
   margin-top: var(--neuwo-space-2);
   font-size: var(--neuwo-font-size-sm);
@@ -85,9 +81,7 @@ neuwo-cta[pulse] .neuwo-cta__actions > neuwo-button:first-of-type {
   animation: neuwo-cta-button-pulse 5.5s ease-in-out infinite;
 }
 
-/* Intensity axis: how loud the ring is. m (the rule above) is the base; s is a
-   restrained ring for a repeated in-page band, l a pronounced one for a hero.
-   Custom properties only, because a modifier cannot reach inside @keyframes. */
+/* Custom properties only, because a modifier cannot reach inside @keyframes. */
 neuwo-cta[pulse][intensity="s"] .neuwo-cta__actions > neuwo-button:first-of-type {
   --neuwo-cta-pulse-spread: 8px;
   --neuwo-cta-pulse-alpha: 28%;
@@ -104,9 +98,7 @@ neuwo-cta[pulse][intensity="l"] .neuwo-cta__actions > neuwo-button:first-of-type
   45%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--neuwo-color-blue) var(--neuwo-cta-pulse-alpha), transparent); }
 }
 
-/* On hover the idle pulse yields to the hover state. Guarded, because a tap on
-   a touch screen leaves the element in :hover with nothing to take it out
-   again, and that would silence the pulse for the rest of the page's life. */
+/* Guarded, as a tap leaves a touch screen in :hover for good and would silence the pulse. */
 @media (hover: hover) {
   neuwo-cta[pulse]:hover .neuwo-cta__actions > neuwo-button:first-of-type {
     animation: none;
@@ -147,14 +139,7 @@ neuwo-cta[pulse][intensity="l"] .neuwo-cta__actions > neuwo-button:first-of-type
   box-shadow: 0 0.25rem 1rem var(--neuwo-tint-blue-20), 0 0 2rem var(--neuwo-tint-blue-10);
 }
 
-/* On hover the idle shimmer pauses, so the hover glow reads cleanly.
-
-   Guarded, and so are the spotlight's three below. A tap on a touch screen
-   leaves the element in :hover with nothing to take it out again, which for a
-   rule that only changes a colour is invisible, but these four start or stop an
-   animation: without the guard one tap kills this shimmer for the rest of the
-   page's life. The plain colour and shadow hovers elsewhere stay unguarded on
-   purpose, since sticking costs them nothing. */
+/* Every hover that starts or stops an animation is guarded, as a tap leaves a touch screen in :hover for good. */
 @media (hover: hover) {
   .neuwo-cta--banner:hover::after {
     animation: none;
@@ -174,8 +159,6 @@ neuwo-cta[pulse][intensity="l"] .neuwo-cta__actions > neuwo-button:first-of-type
   .neuwo-cta--banner .neuwo-cta__actions {
     justify-content: center;
   }
-  /* One centred column at this width, so the field centres with the text
-     instead of hugging the left edge. */
   .neuwo-cta--banner .neuwo-cta__field {
     max-width: none;
     margin-inline: auto;
@@ -229,8 +212,7 @@ neuwo-cta[pulse][intensity="l"] .neuwo-cta__actions > neuwo-button:first-of-type
   transition: opacity var(--neuwo-transition-base);
 }
 
-/* The halo is the same case: revealed and spun by hover, so it needs the guard
-   to stay hidden on a touch screen. */
+/* Guarded too, so the halo stays hidden on a touch screen. */
 @media (hover: hover) {
   .neuwo-cta--spotlight:hover .neuwo-cta__glow {
     opacity: 0.4;

@@ -101,8 +101,7 @@ const reader = (create, label = "One", key = undefined) => create.jsx("x-item", 
 const Theme = createContext("light");
 
 /**
- * Where a reader sits inside `<x-group name="size" value="m">`, as markup and as React children, with what each
- * reader shows.
+ * Where a reader sits inside `<x-group name="size" value="m">`, as markup and as React children, and what each shows.
  * @type {Array<[string, string, (create: Factories) => unknown, string[]]>}
  */
 const WRAPPERS = [

@@ -16,8 +16,5 @@ neuwo-deal-id {
   border-radius: var(--neuwo-radius-md);
 }
 
-/* Size axis (density): a bounded scale. m (default, no class) is sm; s is the
-   responsive xs drop, l grows to base. Font-size only, composes with nothing
-   else here. */
 .neuwo-deal-id--s { font-size: var(--neuwo-font-size-xs); }
 .neuwo-deal-id--l { font-size: var(--neuwo-font-size-base); }

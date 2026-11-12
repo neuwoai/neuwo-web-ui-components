@@ -12,8 +12,6 @@
   margin-bottom: var(--neuwo-space-2);
 }
 
-/* A nested list belongs to its parent item, so it closes flush and the gap
-   above it matches the gap between siblings. */
 .neuwo-markdown li > ul,
 .neuwo-markdown li > ol {
   margin-top: var(--neuwo-space-2);
@@ -22,9 +20,7 @@
 
 /* --- Emphasis --- */
 
-/* Bold text is the one inline run that reads as a heading, so it takes the
-   heading ink. Semibold rather than bold: the body face at 700 next to 400 is
-   a wider jump than long-form copy wants. */
+/* Semibold, not bold: 700 beside the body's 400 is a wider jump than long-form copy wants. */
 .neuwo-markdown strong {
   color: var(--neuwo-color-heading);
   font-weight: var(--neuwo-font-weight-semibold);
@@ -54,8 +50,6 @@
   vertical-align: middle;
 }
 
-/* A standalone image is its own block and takes the panel radius; an inline
-   badge or icon sharing a paragraph with text does not. */
 .neuwo-markdown p > img:only-child {
   display: block;
   margin: var(--neuwo-space-6) 0;
@@ -69,10 +63,7 @@
   font-size: var(--neuwo-font-size-sm);
 }
 
-/* Inline only. A sample inside `pre` already sits on the panel, and the chrome
-   would double up. `anywhere` counts towards the min-content width, unlike
-   `break-word`, so a long identifier in a table cell or a list item lets its box
-   fit the column instead of forcing the page sideways. */
+/* `anywhere`, unlike `break-word`, lowers the min-content width, so a long identifier cannot widen its cell. */
 .neuwo-markdown :not(pre) > code {
   padding: var(--neuwo-space-1) var(--neuwo-space-2);
   background: var(--neuwo-color-grey-100);
@@ -104,9 +95,6 @@
 
 /* --- Tables --- */
 
-/* Sized by its container, so a table wider than the column scrolls its own
-   wrapper rather than the page. The wrapper is the consumer's: most Markdown
-   renderers can emit one, and this sheet owns no structure. */
 .neuwo-markdown table {
   width: 100%;
   border-collapse: collapse;
@@ -127,44 +115,24 @@
   font-weight: var(--neuwo-font-weight-semibold);
 }
 
-/* --- Callout ---
-   The tinted aside that sits in the middle of a document: a note, a tip, a
-   caveat.
-
-   Not `<neuwo-notice>`. That is a docked glass card with an entrance animation,
-   for a message the visitor did not ask for. This is a static block at the full
-   measure of the column, and it is part of the document.
-
-   Not a custom element either. Nothing here needs behaviour, a Markdown renderer
-   can emit the markup at build time, and body content is exactly where an
-   element's upgrade shift costs most: a class paints with the first frame.
-
-   It follows the element rules above so a callout ending in a list keeps its own
-   bottom padding; the two rules tie on specificity, and the later one wins. */
-
+/* After the element rules it ties on specificity, so a callout ending in a list keeps its padding. */
 .neuwo-callout {
-  /* Contains the children's margins, so the padding is not collapsed through
-     by a leading heading or a trailing paragraph. */
+  /* Contains the children's margins, so a leading heading or trailing paragraph cannot collapse the padding. */
   display: flow-root;
   margin: var(--neuwo-space-6) 0;
   padding: var(--neuwo-space-4) var(--neuwo-space-5);
   color: var(--neuwo-color-text);
-  /* The one knob, read with a fallback rather than declared: a declaration here
-     would beat the value a consumer inherits in from `:root` or a wrapper. The
-     modifiers below declare it, so they still win on specificity. */
+  /* Read with a fallback, since a declaration here would beat one a consumer sets on `:root` or a wrapper. */
   background: color-mix(in srgb, var(--neuwo-callout-accent, var(--neuwo-color-blue)) 8%, transparent);
   border-inline-start: 3px solid var(--neuwo-callout-accent, var(--neuwo-color-blue));
   border-radius: var(--neuwo-radius-md);
 }
 
-/* The block's own padding is the bottom gap; the last child's margin would
-   double it. */
 .neuwo-callout > :last-child {
   margin-bottom: 0;
 }
 
-/* Optional label line. A span rather than a heading, so it never enters the
-   document outline: a callout is an aside, not a section. */
+/* A span rather than a heading, so an aside never enters the document outline. */
 .neuwo-callout__title {
   display: block;
   margin-bottom: var(--neuwo-space-2);

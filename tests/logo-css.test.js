@@ -36,8 +36,7 @@ describe("logo.css recipe", () => {
 });
 
 describe("published logo assets", () => {
-  // The four files are the brand's own exports, kept byte-identical so a future
-  // export can be diffed against them. They differ only in their two fills.
+  // The brand's own exports, kept byte-identical so a new export can be diffed against them.
   const INK = {
     "bg-light": ["#0AA5C3", "#1E1E0A"],
     "bg-dark": ["white", "#0AA5C3"],

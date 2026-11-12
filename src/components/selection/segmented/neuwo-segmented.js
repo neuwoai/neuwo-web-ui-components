@@ -179,8 +179,7 @@ export class NeuwoSegmented extends NeuwoErrorMixin(NeuwoDefaultValueMixin(Neuwo
   }
 
   /**
-   * Writes which button is checked and which is the tab stop, as the template does for a starting value, and moves
-   * a placed pill. It writes only what differs.
+   * Writes the checked button, the tab stop and a placed pill as the template would, only where they differ.
    * @param {string} value
    */
   #show(value) {
@@ -216,8 +215,7 @@ export class NeuwoSegmented extends NeuwoErrorMixin(NeuwoDefaultValueMixin(Neuwo
   }
 
   /**
-   * Once a pick has armed it, moves the pill under the selected button, or hides it when none is selected or the
-   * selected one is disabled, which then shows its own dimmed background.
+   * Moves an armed pill under the selected button, hiding it with none selected or a disabled one, which draws its own.
    */
   #follow() {
     const indicator = this.#indicator();
@@ -280,8 +278,7 @@ export class NeuwoSegmented extends NeuwoErrorMixin(NeuwoDefaultValueMixin(Neuwo
   };
 
   /**
-   * How far an arrow key moves the selection: 1 to the next option, -1 to the previous, else 0. ArrowLeft and
-   * ArrowRight follow the element's text direction at the time of the key.
+   * How far an arrow key moves the selection, ArrowLeft and ArrowRight read in the text direction at the time of the key.
    * @param {string} key
    * @returns {number}
    */

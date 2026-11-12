@@ -375,8 +375,7 @@ function describe(child) {
 const PROVIDERS = new Set(Object.values(templates).flatMap((template) => template.within ?? []));
 
 /**
- * Expands the markup of a child as it sits in its host, so an element that reads the host as its `within` gets
- * the host's attributes; the host itself is left as it is.
+ * Expands a child inside its host, so a reader of the host as its `within` gets its attributes; the host stays as it is.
  * @param {string} html
  * @param {{ tag: string, attrs: Record<string, string> }} host
  */
@@ -388,8 +387,7 @@ function expandIn(html, { tag, attrs }) {
 }
 
 /**
- * The children as the HTML adapter receives them from the server, nested registered elements already expanded,
- * inside `host` when one is given.
+ * The children as the HTML adapter receives them, nested elements already expanded, inside `host` when given.
  * @param {Child[]} children
  * @param {{ tag: string, attrs: Record<string, string> }} [host]
  */

@@ -17,8 +17,7 @@ export const NESTED = {
 };
 
 /**
- * A `.neuwo-x` block inside the `.neuwo-f` root, holding the default region. Modifiers come first on purpose:
- * a block modifier on the box, and element modifiers, toggled by `invalid`, on the input and the region's select.
+ * Modifiers come before the key classes on purpose, so a key class is never found by taking the first class.
  * @param {Record<string, string>} attrs
  * @param {import("../../src/core/template.js").TemplateContext} ctx
  */

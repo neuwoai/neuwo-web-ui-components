@@ -6,10 +6,6 @@ import { LIGHT_COMPONENT_CSS } from "./light-css.js";
 
 const serve = process.argv.includes("--serve");
 
-// Make `import x from "./y.css?raw"` return the file's text (matches Vite's ?raw).
-// Also covers .svg, which the logo inlines. Vitest resolves ?raw itself, but only
-// honours it for the SVG: a CSS import there yields an empty string, which is why
-// the CSS specs read their file off disk.
 const rawText = {
   name: "raw-text",
   setup(build) {
@@ -28,9 +24,7 @@ await rm("dist", { recursive: true, force: true });
 await mkdir("dist", { recursive: true });
 await cp("src/foundation/fonts", "dist/fonts", { recursive: true });
 
-// The logo element inlines these, but they are published too: an <img> is the
-// better choice wherever the logo is the LCP element, and the design system
-// hands the files out.
+// Published as well as inlined, for an <img> where the logo is the LCP element.
 await cp("src/foundation/logos", "dist/logos", { recursive: true });
 
 const read = (file) => readFile(file, "utf8");

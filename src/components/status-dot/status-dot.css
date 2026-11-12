@@ -7,8 +7,7 @@ neuwo-status-dot {
   width: 0.625rem;
   height: 0.625rem;
   border-radius: 50%;
-  /* `color` drives both the core and the ring, so the colour axis is one line
-     and the ring stays in step with any variant (currentColor == the dot hue). */
+  /* The core and the ring both read currentColor, so a variant changes only `color`. */
   color: var(--neuwo-color-green);
   background: currentColor;
   box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 25%, transparent);
@@ -39,10 +38,7 @@ neuwo-status-dot {
               0 0 8px 2px color-mix(in srgb, currentColor 35%, transparent);
 }
 
-/* Glow intensity (static): a saturated bloom in the dot's own colour. On
-   `filter`, not `box-shadow`, so it stacks over the base ring and the halo
-   axis (which own box-shadow) instead of replacing them. currentColor keeps it
-   colour-agnostic. Default (absent/none) adds no class, so no glow. */
+/* On `filter`, not `box-shadow`, so it stacks over the ring and the halo instead of replacing them. */
 .neuwo-status-dot--glow-s { filter: drop-shadow(0 0 0.25rem currentColor); }
 .neuwo-status-dot--glow-m { filter: drop-shadow(0 0 0.5rem currentColor); }
 .neuwo-status-dot--glow-l {

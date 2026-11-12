@@ -29,8 +29,7 @@ describe("range.css recipe", () => {
   });
 
   it("fills the track in both engines", () => {
-    // WebKit has no progress pseudo-element: the component-written --neuwo-range-fill
-    // sizes a gradient over a neutral base, so the unfilled side is never blue.
+    // WebKit has no progress pseudo-element, so --neuwo-range-fill sizes a gradient over a neutral base.
     expect(css).toContain("::-webkit-slider-runnable-track");
     expect(css).toContain("background-size: var(--neuwo-range-fill, 0%) 100%");
     expect(css).toContain("::-moz-range-progress");
@@ -55,8 +54,7 @@ describe("range.css recipe", () => {
   });
 
   it("insets the track horizontally so the error ring clears the thumb halo", () => {
-    // Unconditional, not tied to the error state: this padding sizes the track,
-    // so applying it only on error would resize the slider as the error appears.
+    // This padding sizes the track, so tying it to the error would resize the slider as the error appears.
     expect(css).toMatch(/\.neuwo-range\s*\{[^}]*padding:\s*0 var\(--neuwo-space-2\)/);
   });
 

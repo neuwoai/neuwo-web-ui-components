@@ -278,8 +278,7 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   }
 
   /**
-   * Writes the displayed value: the shown label or placeholder, and which row is selected. It writes only what
-   * differs.
+   * Writes the shown label or placeholder and the selected row, only where they differ.
    * @param {string} value
    */
   #show(value) {

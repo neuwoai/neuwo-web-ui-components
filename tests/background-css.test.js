@@ -3,8 +3,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-// Read the CSS off disk rather than via `import ... ?raw`: Vitest does not
-// transform `?raw` for CSS here (it yields an empty string).
+// Off disk, since Vitest resolves a CSS `?raw` import to an empty string.
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const css = readFileSync(join(__dirname, "../src/foundation/background.css"), "utf8");
 const tokensCss = readFileSync(join(__dirname, "../src/foundation/tokens.css"), "utf8");
@@ -20,8 +19,7 @@ describe("page surface stylesheet", () => {
     expect(css).toMatch(/\.neuwo-body \{[^}]*-moz-osx-font-smoothing:\s*grayscale/);
   });
 
-  // The geometry is copied verbatim from the main website, so a future change
-  // there shows up here as a failing assertion rather than as visual drift.
+  // Copied from the main website, so a change there fails here instead of drifting unseen.
   it("stacks the four brand blobs at their published geometry", () => {
     const layers = [...css.matchAll(/radial-gradient\(ellipse ([^,]+),/g)].map((m) => m[1].trim());
     expect(layers).toEqual([
@@ -45,8 +43,6 @@ describe("page surface stylesheet", () => {
     expect(css).not.toMatch(/rgba?\(/);
   });
 
-  // The brief was visuals only: where the wash sits, how tall it is and how it
-  // stacks are the consumer's decisions, so none of them belong in the recipe.
   it("owns no box, no position and no stacking", () => {
     expect(css).not.toMatch(/(^|[\s;{])position:/);
     expect(css).not.toMatch(/z-index:/);

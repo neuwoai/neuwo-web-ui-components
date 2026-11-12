@@ -46,8 +46,7 @@
   /* Disabled state */
   --neuwo-opacity-disabled: 0.4;
 
-  /* Brand tints (transparent overlays of the brand colours).
-     Suffix is the percentage of the brand colour mixed with transparent. */
+  /* Brand tints: the suffix is the percentage of the brand colour mixed with transparent. */
   --neuwo-tint-blue-5:   color-mix(in srgb, var(--neuwo-color-blue) 5%, transparent);
   --neuwo-tint-blue-8:   color-mix(in srgb, var(--neuwo-color-blue) 8%, transparent);
   --neuwo-tint-blue-10:  color-mix(in srgb, var(--neuwo-color-blue) 10%, transparent);
@@ -120,8 +119,7 @@
   /* Typography */
   --neuwo-font-text: 'Noto Sans', 'Noto Sans Fallback', system-ui, -apple-system, sans-serif;
   --neuwo-font-heading: 'Outfit', 'Outfit Fallback', sans-serif;
-  /* Code. The brand ships no monospace face, so this is a system stack: the
-     platform's own UI mono first, then the developer faces most likely present. */
+  /* The brand ships no monospace face, so code takes a system stack. */
   --neuwo-font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Consolas, monospace;
   --neuwo-font-size-2xs: 0.625rem;
   --neuwo-font-size-xs: 0.75rem;

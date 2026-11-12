@@ -97,9 +97,7 @@ describe("cta.css recipe", () => {
     expect(declarations).not.toContain("neuwo-button[variant=");
   });
 
-  // A tap leaves the element in :hover with nothing to take it out again. For a
-  // colour that is invisible; for a rule that starts or stops an animation it
-  // sticks for the life of the page, so every one of those is guarded.
+  // A tap leaves a touch screen in :hover for good, which shows only where a hover starts or stops an animation.
   it("guards every hover rule that starts or stops an animation", () => {
     const guarded = blocks("hover: hover");
     for (const selector of [

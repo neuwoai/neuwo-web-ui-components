@@ -128,8 +128,7 @@ function flatten(children, prefix = "", out = []) {
 }
 
 /**
- * Whether the element passes its children through to the DOM: an element, one of React's own wrappers, a context
- * provider or a Neuwo element.
+ * Whether the element passes its children to the DOM: an element, a React wrapper, a context provider or a Neuwo element.
  * @param {AnyElement} el
  * @returns {boolean}
  */
@@ -143,8 +142,7 @@ const isTransparent = (el) =>
  * @param {ReactNode} node
  * @param {string} tag
  * @param {Within} within
- * @param {((tag: string) => void) | null} rendered called with the tag of each element that arrives already
- *   rendered, as a Server Component's output does
+ * @param {((tag: string) => void) | null} rendered called with the tag of each element that arrives rendered, as from a Server Component
  * @returns {ReactNode}
  */
 function lend(node, tag, within, rendered) {
@@ -336,8 +334,7 @@ function wrapperOf(node, name) {
 }
 
 /**
- * Whether React holds the state, decided as React decides for its own inputs: a checkbox or radio by `checked`,
- * any other control by `value`.
+ * Whether React holds the state, decided as for its own inputs: a checkbox or radio by `checked`, others by `value`.
  * @param {Record<string, unknown>} props
  * @param {TemplateNode | undefined} control
  * @returns {boolean}
@@ -348,8 +345,7 @@ function isControlled(props, control) {
 }
 
 /**
- * The state a control renders, as the props `bindForm` reads from a controlled host: how a reader of a controlled
- * element, such as a radio in a controlled group, holds what its template made of that element's state.
+ * The state a control renders, as `bindForm` reads it, for a reader of a controlled element such as a radio in a group.
  * @param {TemplateNode} control
  * @param {boolean} hasOnChange
  * @returns {Record<string, unknown>}
@@ -484,8 +480,7 @@ function takeHandlers(props) {
 }
 
 /**
- * Marks the element as React's and binds its own event handlers, which React's hydration leaves unbound until the
- * next update.
+ * Marks the element as React's and binds its own event handlers, which hydration leaves unbound until the next update.
  * @param {unknown} authorRef
  * @param {boolean} controlled
  * @param {Record<string, (event: Event) => void>} handlers

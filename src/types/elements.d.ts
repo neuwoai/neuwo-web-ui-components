@@ -1,6 +1,4 @@
-// Hand-authored package type entry. Re-exports the generated class declarations
-// and augments the global tag map. Keep the map in lockstep with src/index.js:
-// a new neuwo-* tag with no entry here ships untyped.
+// Keep the map in step with src/index.js: a neuwo-* tag with no entry here ships untyped.
 export * from "../index.js";
 
 import type { NeuwoButton } from "../components/button/neuwo-button.js";

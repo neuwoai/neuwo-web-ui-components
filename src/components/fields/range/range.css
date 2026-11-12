@@ -12,12 +12,7 @@
   width: 100%;
   height: 1.5rem;
   cursor: pointer;
-  /* Reset the shared field chrome: a slider paints its own track and thumb, so
-     the input box itself carries no border or fill. The radius is kept because
-     the error ring is drawn on this box, and so is the horizontal padding: it
-     keeps that ring clear of the thumb's halo at either end of the travel.
-     Padding here shrinks the track, so it is unconditional rather than tied to
-     the error state, otherwise showing an error would resize the slider. */
+  /* Keeps the error ring clear of the thumb's halo, and is never tied to the error, which would resize the track. */
   padding: 0 var(--neuwo-space-2);
   border: 0;
   border-radius: var(--neuwo-radius-full);
@@ -127,8 +122,6 @@
   }
 }
 
-/* Reduced motion keeps a static thumb; the focus ring and the filled track
-   already signal state without any movement. */
 @media (prefers-reduced-motion: reduce) {
   .neuwo-range::-webkit-slider-thumb {
     transition: none;

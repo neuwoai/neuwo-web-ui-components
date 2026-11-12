@@ -71,8 +71,6 @@ neuwo-combobox:not([hidden]) {
   font-size: var(--neuwo-font-size-sm);
 }
 
-/* A compact control under a full-size label reads wrong, so the whole column
-   tightens: the gap closes and the label and error line drop one step. */
 .neuwo-field--sm {
   gap: var(--neuwo-space-1);
 }
@@ -90,8 +88,7 @@ neuwo-combobox:not([hidden]) {
   animation: neuwo-field-shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97);
 }
 
-/* Always present and reserving one line, so showing or hiding the message
-   never shifts the surrounding layout. */
+/* Reserves its line even while empty, so showing a message never shifts the layout. */
 .neuwo-field__error {
   min-height: 1lh;
   font-size: var(--neuwo-font-size-sm);

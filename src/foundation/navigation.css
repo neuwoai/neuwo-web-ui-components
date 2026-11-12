@@ -1,7 +1,5 @@
 .neuwo-nav-link {
-  /* Drives the horizontal padding and the underline's endpoints together, so
-     the bar cannot drift from the text it sits under. Retune it in one place
-     (for a denser desktop bar, say) and both follow. */
+  /* Drives both the padding and the underline's endpoints, so the bar cannot drift from the text. */
   --neuwo-nav-link-gutter: var(--neuwo-space-4);
   display: block;
   position: relative;
@@ -18,8 +16,6 @@
   transition: color var(--neuwo-transition-fast);
 }
 
-/* A nested entry: compact, so it takes its height from the line rather than a
-   tap target of its own. */
 .neuwo-nav-link--sm {
   min-height: auto;
   line-height: var(--neuwo-line-height-body);
@@ -27,16 +23,7 @@
   font-size: var(--neuwo-font-size-sm);
 }
 
-/* Centre-out underline. A pseudo-element rather than a gradient background,
-   which the light DOM allows: the bar is laid out at its full span between the
-   gutters, so it covers the text and not the padding, and grows into it from
-   the middle.
-
-   The growth is a transform, not a pair of insets meeting at 50%. `left` and
-   `right` are layout properties, so animating them ran layout on every frame of
-   every hover; and two insets at 50% resolve independently at sub-pixel
-   precision, so on a link of fractional width the resting bar kept a hair of
-   width instead of none. `scaleX(0)` composites, and is exactly nothing. */
+/* Grows by transform: animated insets run layout every frame and leave a sub-pixel hair at rest. */
 .neuwo-nav-link::after {
   content: "";
   position: absolute;
@@ -56,8 +43,7 @@
   bottom: 0;
 }
 
-/* The class outranks `a` and `a:hover` from typography.css on specificity, so
-   these are normal declarations and a consumer can still override any of them. */
+/* The class outranks typography.css's `a` and `a:hover`, so these need no !important. */
 .neuwo-nav-link:hover,
 .neuwo-nav-link:focus-visible,
 .neuwo-nav-link[aria-current],

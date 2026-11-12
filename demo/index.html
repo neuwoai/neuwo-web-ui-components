@@ -10,9 +10,7 @@
         padding: 3rem;
       }
 
-      /* The page surface, wired exactly as the main website wires it: the
-         library ships the visuals (`.neuwo-body`, `.neuwo-background__gradient`), the
-         consumer owns where the wash sits and how it stacks. */
+      /* Wired as the main website wires it: the consumer owns where the wash sits and how it stacks. */
       .background {
         position: fixed;
         top: 0;
@@ -121,8 +119,6 @@
         background: linear-gradient(100deg, #0aa5c3, #8acb46);
         color: #0f172a;
       }
-      /* The published file, sized by hand. A published-CSS consumer would use the
-         .neuwo-logo class on the <img>. */
       .logo-file {
         display: block;
         height: 1.75rem;
@@ -135,8 +131,7 @@
         align-items: center;
         margin-block: 1.5rem;
       }
-      /* The corner control assumes a panel with room to spare. A chip has none,
-         so the consumer supplies the clearance: the library owns no box. */
+      /* A chip has no room for the corner control, so the consumer supplies the clearance. */
       .copy-chip {
         display: inline-block;
         padding-right: 2rem;
@@ -149,15 +144,12 @@
         opacity: 1 !important;
         width: 4rem !important;
       }
-      /* The library ships no warning intent, because the brand has no amber. This
-         is a consumer supplying one through the recipe's own knob: a raw colour
-         here on purpose, since the point is that the value comes from outside. */
+      /* A raw colour on purpose: the brand has no amber, so a consumer brings its own through the knob. */
       .callout--warning-demo {
         --neuwo-callout-accent: #d99a2b;
       }
 
-      /* Consumer-owned nav structure: foundation/navigation.css ships the two link
-         recipes and nothing else, so the list reset and the placement live here. */
+      /* navigation.css ships only the link recipes, so the list reset and placement are the consumer's. */
       .nav-demo ul {
         list-style: none;
         margin: 0;
@@ -184,9 +176,7 @@
         margin-top: 1rem;
       }
 
-      /* .neuwo-nav-link sets display: block, which is the documented way to strip a
-         summary's disclosure triangle. Put it back, inside the content box so the
-         underline still spans the label. */
+      /* display: block strips a summary's triangle, so it is put back inside the box the underline spans. */
       .nav-demo summary.neuwo-nav-link {
         display: list-item;
         list-style-position: inside;
@@ -200,9 +190,7 @@
         margin-top: 2.5rem;
       }
     </style>
-    <!-- One link for all three foundation layers: tokens, typography, page
-         surface. Tokens are therefore present at first paint, so the page's own
-         chrome above can use them. -->
+    <!-- Linked in the head, so the tokens the page's own chrome above uses are there at first paint. -->
     <link rel="stylesheet" href="/dist/neuwo.css" />
     <script type="module" src="/dist/neuwo.js"></script>
   </head>
@@ -895,16 +883,12 @@
       <neuwo-status-dot halo="s"></neuwo-status-dot>
       <neuwo-status-dot halo="m"></neuwo-status-dot>
       <neuwo-status-dot halo="l"></neuwo-status-dot>
-      <!-- halo="l" is a wide, translucent ring; add motion="blink" to animate it.
-           The animation comes from motion, not colour: same blink on green and blue. -->
       <neuwo-status-dot halo="l" motion="blink"></neuwo-status-dot>
       <neuwo-status-dot variant="blue" halo="l" motion="blink"></neuwo-status-dot>
     </div>
 
     <h2>neuwo-status-dot glow intensity (saturated bloom; default none, composes with every axis)</h2>
     <div class="row">
-      <!-- glow is a static, saturated bloom in the dot's own colour (currentColor),
-           unlike the translucent halo ring. none/absent = no bloom. -->
       <neuwo-status-dot glow="none"></neuwo-status-dot>
       <neuwo-status-dot glow="s"></neuwo-status-dot>
       <neuwo-status-dot glow="m"></neuwo-status-dot>
@@ -1013,8 +997,6 @@
       the buttons below dock live ones to the viewport.
     </p>
     <div style="display: grid; gap: 1.5rem; max-width: 48rem">
-      <!-- Language hint: a headline with an inline link, and nothing else.
-           The link is page markup, so typography.css styles it. -->
       <neuwo-notice position="static" dismissible dismiss-label="Close">
         <span slot="title">Read this page in <a class="neuwo-link" href="#">Polski</a>?</span>
       </neuwo-notice>
@@ -1126,8 +1108,5 @@
 
     <h2>Eyebrow utility (opt-in typography)</h2>
     <p class="neuwo-eyebrow">Kicker label</p>
-
-    <!-- Transient field-error flash from the host page (supported escape hatch):
-         neuwo-input[data-flash] .neuwo-input { border-color: var(--neuwo-color-red); } -->
   </body>
 </html>

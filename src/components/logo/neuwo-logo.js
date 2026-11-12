@@ -29,8 +29,7 @@ export class NeuwoLogo extends NeuwoElement {
   }
   get label() { return this.getAttribute("label") ?? DEFAULT_LABEL; }
   set label(value) {
-    // Unlike the other string attributes, an empty label is meaningful (it marks
-    // the logo decorative), so only null removes the attribute.
+    // An empty label marks the logo decorative, so only null removes the attribute.
     if (value == null) this.removeAttribute("label");
     else this.setAttribute("label", String(value));
   }

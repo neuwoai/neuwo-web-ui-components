@@ -10,10 +10,7 @@ function make(html) {
   return host.firstElementChild;
 }
 
-// The brand's own fills, in document order: the first three paths (n e u) carry
-// the lead ink, the last two (w o) the trail. The pair identifies which of the
-// four files was inlined, so these assertions test the drawing and not just the
-// class name. Unlike a CSS `?raw` import, an SVG one resolves under Vitest.
+// The fills tell which file was inlined, since unlike a CSS `?raw` import an SVG one resolves under Vitest.
 const INK = {
   "bg-light": ["#0AA5C3", "#1E1E0A"],
   "bg-dark": ["white", "#0AA5C3"],
@@ -113,8 +110,7 @@ describe("<neuwo-logo>", () => {
   it("keeps an empty label as an attribute, and only removes it for null", () => {
     const el = make(`<neuwo-logo></neuwo-logo>`);
     el.label = "";
-    // Empty means decorative, so it must survive as an attribute where the
-    // other string axes would have removed themselves.
+    // Empty marks the logo decorative, so it survives where the other string attributes remove themselves.
     expect(el.getAttribute("label")).toBe("");
     expect(svgOf(el).getAttribute("aria-hidden")).toBe("true");
     el.label = null;
