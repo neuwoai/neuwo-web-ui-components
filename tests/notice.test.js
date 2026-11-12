@@ -414,7 +414,7 @@ describe("<neuwo-notice> under React", () => {
       expect(observer.takeRecords().length, `React wrote nothing for ${title}`).toBeGreaterThan(0);
       await settled();
       expect(observer.takeRecords(), `the element wrote after React rendered ${title}`).toEqual([]);
-      expect(normalise(container.innerHTML)).toBe(normalise(renderToStaticMarkup(tree(title))));
+      expect(normalise(container.innerHTML, false)).toBe(normalise(renderToStaticMarkup(tree(title)), true));
       return container.firstElementChild;
     };
 

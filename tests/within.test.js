@@ -181,9 +181,9 @@ describe("enclosing-element attributes (within) across the HTML, React and DOM a
   for (const [name, spec] of CASES) {
     it(name, () => {
       const errors = vi.spyOn(console, "error");
-      const html = normalise(expand(markup(spec), withinTemplates));
+      const html = normalise(expand(markup(spec), withinTemplates), true);
       expect(html).toContain(`<${spec.tag}`);
-      expect(normalise(renderToStaticMarkup(toReact(spec)))).toBe(html);
+      expect(normalise(renderToStaticMarkup(toReact(spec)), true)).toBe(html);
       expect(normalise(viaDom(markup(spec)), false)).toBe(html);
       expect(errors).not.toHaveBeenCalled();
     });
@@ -193,9 +193,9 @@ describe("enclosing-element attributes (within) across the HTML, React and DOM a
     it(`gives a reader ${name} its group's attributes`, () => {
       const errors = vi.spyOn(console, "error");
       const source = `<x-group name="size" value="m">${inner}</x-group>`;
-      const html = normalise(expand(source, withinTemplates));
+      const html = normalise(expand(source, withinTemplates), true);
       expect(Array.from(mount(html).querySelectorAll(".x-item__group"), (el) => el.textContent)).toEqual(shown);
-      expect(normalise(renderToStaticMarkup(groupOf(runtime, children(runtime))))).toBe(html);
+      expect(normalise(renderToStaticMarkup(groupOf(runtime, children(runtime))), true)).toBe(html);
       expect(normalise(viaDom(source), false)).toBe(html);
       expect(errors).not.toHaveBeenCalled();
     });

@@ -468,7 +468,7 @@ describe("<neuwo-cta> under React", () => {
       expect(observer.takeRecords().length, `React wrote nothing for field=${field}`).toBeGreaterThan(0);
       await settled();
       expect(observer.takeRecords(), `the element wrote after React rendered field=${field}`).toEqual([]);
-      expect(normalise(container.innerHTML)).toBe(normalise(renderToStaticMarkup(tree(field))));
+      expect(normalise(container.innerHTML, false)).toBe(normalise(renderToStaticMarkup(tree(field)), true));
       return container.firstElementChild;
     };
 

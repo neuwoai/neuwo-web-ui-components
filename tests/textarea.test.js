@@ -48,7 +48,7 @@ function type(control, value) {
 // A browser's parser drops the newline right after `<textarea>`; happy-dom's does not.
 const parsedValue = (control) => (control.value.startsWith("\n") ? control.value.slice(1) : control.value);
 
-const VALUES = ["\nlead", "a</textarea>b", "x & y < z", "line one\nline two"];
+const VALUES = ["\nlead", "a</textarea>b", "x & y < z", "1 > 0", "line one\nline two"];
 
 describe("<neuwo-textarea>", () => {
   it("registers a light DOM field element with a native textarea carrying the multi-line class", () => {

@@ -31,6 +31,17 @@ async function settled() {
 
 const nextTask = () => new Promise((resolve) => setTimeout(resolve, 0));
 
+// Runs the reset's deferred hook in this task: happy-dom holds an observer's callback in a WeakRef, which a GC between tasks drops.
+function resetNow(form) {
+  vi.useFakeTimers({ toFake: ["setTimeout"] });
+  try {
+    form.reset();
+    vi.runOnlyPendingTimers();
+  } finally {
+    vi.useRealTimers();
+  }
+}
+
 function watch(target) {
   const records = [];
   const observer = new MutationObserver((list) => records.push(...list));
@@ -229,29 +240,27 @@ describe("<neuwo-combobox> form", () => {
     expect(el.isOpen).toBe(true);
   });
 
-  it("returns to the selected option and its display when its form resets", async () => {
+  it("returns to the selected option and its display when its form resets", () => {
     const form = make(`<form><neuwo-combobox name="fruit"><option value="a">Apple</option><option value="b" selected>Banana</option></neuwo-combobox></form>`);
     const el = form.querySelector("neuwo-combobox");
     el.open();
     rowOf(el, "a").click();
     expect(el.value).toBe("a");
     expect(shownOf(el)).toBe("Apple");
-    form.reset();
-    await nextTask();
+    resetNow(form);
     expect(el.value).toBe("b");
     expect(shownOf(el)).toBe("Banana");
     expect(rowOf(el, "b").getAttribute("aria-selected")).toBe("true");
     expect(rowOf(el, "a").getAttribute("aria-selected")).toBe("false");
   });
 
-  it("re-applies the placeholder after a reset to nothing, and the searchable label", async () => {
+  it("re-applies the placeholder after a reset to nothing, and the searchable label", () => {
     const form = make(`<form><neuwo-combobox placeholder="Pick">${OPTS}</neuwo-combobox><neuwo-combobox searchable value="a">${OPTS}</neuwo-combobox></form>`);
     const [plain, search] = form.querySelectorAll("neuwo-combobox");
     plain.value = "b";
     search.value = "b";
     expect(triggerOf(search).value).toBe("Banana");
-    form.reset();
-    await nextTask();
+    resetNow(form);
     expect(plain.value).toBe("");
     expect(shownOf(plain)).toBe("Pick");
     expect(triggerOf(plain).hasAttribute("data-placeholder")).toBe(true);

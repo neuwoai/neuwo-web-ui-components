@@ -115,7 +115,7 @@ describe("custom-elements.json", () => {
       expect(attrs).toContain(a);
   });
 
-  it("documents the shared checkable attributes, the native events on the checkbox and the toggle", () => {
+  it("documents the shared checkable attributes and the native events on the checkbox and the toggle", () => {
     for (const tag of ["neuwo-checkbox", "neuwo-toggle"]) {
       const attrs = attributesFor(manifest, tag);
       for (const a of ["name", "value", "checked", "disabled", "form", "required", "error", "error-muted", "no-error-line"])
@@ -125,7 +125,7 @@ describe("custom-elements.json", () => {
     expect(attributesFor(manifest, "neuwo-toggle").has("pulse")).toBe(true);
   });
 
-  it("documents the radio group's attributes, the native events", () => {
+  it("documents the radio group's attributes and the native events", () => {
     const attrs = attributesFor(manifest, "neuwo-radio-group");
     for (const a of ["name", "value", "disabled", "form", "required", "label", "orientation", "error", "error-muted", "no-error-line"])
       expect(attrs).toContain(a);
@@ -139,7 +139,7 @@ describe("custom-elements.json", () => {
       expect(attrs).toContain(a);
   });
 
-  it("documents the input's type and constraint attributes, its change event", () => {
+  it("documents the input's type and constraint attributes and its change event", () => {
     const attrs = attributesFor(manifest, "neuwo-input");
     for (const a of ["type", "min", "max", "step", "pattern", "minlength", "maxlength", "inputmode"])
       expect(attrs).toContain(a);
@@ -151,19 +151,19 @@ describe("custom-elements.json", () => {
     for (const a of ["min", "max", "step", "value", "label", "disabled"]) expect(attrs).toContain(a);
   });
 
-  it("documents the combobox's searchable attribute, its input and change events", () => {
+  it("documents the combobox's searchable attribute and its input and change events", () => {
     const attrs = attributesFor(manifest, "neuwo-combobox");
     for (const a of ["searchable", "name", "value", "placeholder", "required", "disabled", "form"]) expect(attrs).toContain(a);
     expect(declByTag(manifest, "neuwo-combobox").events.map((e) => e.name)).toEqual(expect.arrayContaining(["input", "change"]));
   });
 
-  it("documents the segmented control's attributes, with no orientation, its input and change events", () => {
+  it("documents the segmented control's attributes, with no orientation, and its input and change events", () => {
     const attrs = attributesFor(manifest, "neuwo-segmented");
     expect([...attrs].sort()).toEqual(["disabled", "error", "error-muted", "form", "label", "name", "no-error-line", "required", "value"]);
     expect(declByTag(manifest, "neuwo-segmented").events.map((e) => e.name)).toEqual(expect.arrayContaining(["input", "change"]));
   });
 
-  it("documents the radio's checkable attributes, none of the error line's, the native events", () => {
+  it("documents the radio's checkable attributes, none of the error line's, and the native events", () => {
     const attrs = attributesFor(manifest, "neuwo-radio");
     expect([...attrs].sort()).toEqual(["checked", "disabled", "form", "name", "required", "value"]);
     expect(declByTag(manifest, "neuwo-radio").events.map((e) => e.name)).toEqual(expect.arrayContaining(["input", "change"]));
@@ -269,7 +269,7 @@ describe("custom-elements.json", () => {
     for (const a of ["position", "layout", "dismissible", "dismiss-label"]) expect(attrs).toContain(a);
   });
 
-  it("documents the logo's variant, label", () => {
+  it("documents the logo's variant and label", () => {
     const attrs = attributesFor(manifest, "neuwo-logo");
     for (const a of ["variant", "label"]) expect(attrs).toContain(a);
   });

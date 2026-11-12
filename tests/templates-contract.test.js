@@ -6,6 +6,7 @@ import { cases, renderChildren } from "./fixtures/template-cases.js";
 
 const isNode = (child) => typeof child === "object" && "tag" in child;
 const isRegion = (child) => typeof child === "object" && "region" in child;
+const isRaw = (child) => typeof child === "object" && "raw" in child;
 
 function elements(node, out = []) {
   out.push(node);
@@ -73,8 +74,11 @@ describe("template contract", () => {
             expect(output(tag, testCase).all.filter((node) => node.control === true).length).toBeLessThanOrEqual(1);
           });
 
-          it("emits no <neuwo-*> tag", () => {
-            for (const node of output(tag, testCase).all) expect(node.tag, `<${node.tag}>`).not.toMatch(/^neuwo-/);
+          it("emits no <neuwo-*> tag, in raw() markup either", () => {
+            for (const node of output(tag, testCase).all) {
+              expect(node.tag, `<${node.tag}>`).not.toMatch(/^neuwo-/);
+              for (const child of node.children.filter(isRaw)) expect(child.raw, `raw() in <${node.tag}>`).not.toMatch(/<neuwo-/i);
+            }
           });
 
           it("keeps every region the only child of its wrapper", () => {

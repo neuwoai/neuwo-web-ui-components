@@ -31,7 +31,16 @@ async function settled() {
   for (let turn = 0; turn < 3; turn++) await Promise.resolve();
 }
 
-const nextTask = () => new Promise((resolve) => setTimeout(resolve, 0));
+// Runs the reset's deferred hook in this task: happy-dom holds an observer's callback in a WeakRef, which a GC between tasks drops.
+function resetNow(form) {
+  vi.useFakeTimers({ toFake: ["setTimeout"] });
+  try {
+    form.reset();
+    vi.runOnlyPendingTimers();
+  } finally {
+    vi.useRealTimers();
+  }
+}
 
 function watch(target) {
   const records = [];
@@ -381,14 +390,13 @@ describe("<neuwo-segmented> form", () => {
     expect(form.checkValidity()).toBe(true);
   });
 
-  it("returns to the starting option on a form reset and keeps error", async () => {
+  it("returns to the starting option on a form reset and keeps error", () => {
     const form = make(`<form><neuwo-segmented name="view" error="Pick one"><option value="a">A</option><option value="b" selected>B</option></neuwo-segmented></form>`);
     const el = form.querySelector("neuwo-segmented");
     expect(el.form).toBe(form);
     buttonOf(el, "a").click();
     expect(el.value).toBe("a");
-    form.reset();
-    await nextTask();
+    resetNow(form);
     expect(el.value).toBe("b");
     expect(checkedOf(el)).toEqual(["b"]);
     expect(stopOf(el)).toEqual(["b"]);
@@ -464,7 +472,7 @@ describe("<neuwo-segmented> indicator", () => {
     vi.stubGlobal("ResizeObserver", FakeResizeObserver);
   };
 
-  it("is not placed on connect, adoption, a value set from a script or a reset, so the selected option shows its own background", async () => {
+  it("is not placed on connect, adoption, a value set from a script or a reset, so the selected option shows its own background", () => {
     stubResize();
     const form = make(`<form><neuwo-segmented value="json">${OPTS}</neuwo-segmented></form>`);
     const el = form.querySelector("neuwo-segmented");
@@ -472,8 +480,7 @@ describe("<neuwo-segmented> indicator", () => {
     holder.innerHTML = expand(`<neuwo-segmented value="json">${OPTS}</neuwo-segmented>`);
     attach(holder);
     el.value = "table";
-    form.reset();
-    await nextTask();
+    resetNow(form);
     for (const each of [el, holder.firstElementChild]) {
       expect(placed(each)).toBe(false);
       expect(indicatorOf(each).getAttribute("style")).toBeNull();

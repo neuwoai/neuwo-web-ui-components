@@ -1,9 +1,11 @@
 // @vitest-environment node
 import { afterEach, describe, expect, it } from "vitest";
+import { JSDOM } from "jsdom";
 import { h, region } from "../src/core/template.js";
 import { renderElement as htmlRenderElement } from "../src/core/adapters/html.js";
 import { templates } from "../src/templates.js";
 import { eleventyPlugin, expand, renderElement } from "../src/server/index.js";
+import { cases, markup } from "./fixtures/template-cases.js";
 
 const testTemplate = (a, ctx) =>
   h(
@@ -74,6 +76,12 @@ describe("expand()", () => {
       '<neuwo-i><span class="neuwo-i" id="neuwo-s1-x"></span></neuwo-i><neuwo-i><span class="neuwo-i" id="neuwo-s2-x"></span></neuwo-i>';
     expect(expand(html, withId)).toBe(expected);
     expect(expand(html, withId)).toBe(expected);
+  });
+
+  it("numbers an element's ids before those of the elements inside it, in document order", () => {
+    const withId = { "neuwo-i": (a, ctx) => h("span", { class: "neuwo-i", id: ctx.id(a.n) }, h("span", { class: "neuwo-i__body" }, region())) };
+    const html = '<neuwo-i n="outer"><neuwo-i n="inner"></neuwo-i></neuwo-i><neuwo-i n="next"></neuwo-i>';
+    expect([...expand(html, withId).matchAll(/ id="([^"]+)"/g)].map((match) => match[1])).toEqual(["neuwo-s1-outer", "neuwo-s2-inner", "neuwo-s3-next"]);
   });
 
   it("expands only what the library registry owns by default", () => {
@@ -234,6 +242,27 @@ describe("expand() on a paragraph Markdown wrapped around an element", () => {
     const out = expand(html);
     expect(out).toMatch(/^<p>/);
     expect(out).toMatch(/<\/p>$/);
+  });
+
+  it("keeps a paragraph only around an element a browser parses inside it, for every template case", () => {
+    const { document } = new JSDOM("").window;
+    const parse = (tag, html) => Object.assign(document.createElement(tag), { innerHTML: html });
+    let kept = 0;
+    for (const [tag, list] of Object.entries(cases)) {
+      for (const testCase of list) {
+        const source = markup({ tag, attrs: testCase.attrs, children: testCase.children });
+        const element = expand(source);
+        const out = expand(`<p>${source}</p>`);
+        if (out === element) continue;
+        kept += 1;
+        const label = `${tag}: ${testCase.name}`;
+        expect(out, label).toBe(`<p>${element}</p>`);
+        const body = parse("body", out);
+        expect(body.children.length, label).toBe(1);
+        expect(body.firstElementChild.innerHTML, label).toBe(parse("div", element).innerHTML);
+      }
+    }
+    expect(kept).toBeGreaterThan(0);
   });
 
   it("leaves an element that already holds its markup where it is, and stays idempotent", () => {

@@ -200,17 +200,17 @@ describe("<neuwo-range>", () => {
 });
 
 describe("<neuwo-range> under React", () => {
-  async function render(element) {
+  function render(element) {
     const container = attach(document.createElement("div"));
     const root = createRoot(container);
     cleanup.push(() => act(() => root.unmount()));
-    await act(async () => root.render(element));
-    return { container, rerender: (next) => act(async () => root.render(next)) };
+    act(() => root.render(element));
+    return { container, rerender: (next) => act(() => root.render(next)) };
   }
 
   it("shows the consumer's fill after a re-render, and writes none itself", async () => {
     const errors = vi.spyOn(console, "error");
-    const { container, rerender } = await render(jsx("neuwo-range", { min: 0, max: 100, value: 20, onChange() {} }));
+    const { container, rerender } = render(jsx("neuwo-range", { min: 0, max: 100, value: 20, onChange() {} }));
     const host = container.querySelector("neuwo-range");
     const control = rangeOf(host);
     expect(host[CONTROLLED]).toBe(true);
@@ -218,7 +218,7 @@ describe("<neuwo-range> under React", () => {
     await act(async () => drag(control, "70"));
     expect(control.value).toBe("20");
     expect(fillOf(host)).toBe("20%");
-    await rerender(jsx("neuwo-range", { min: 0, max: 100, value: 60, onChange() {} }));
+    rerender(jsx("neuwo-range", { min: 0, max: 100, value: 60, onChange() {} }));
     expect(control.value).toBe("60");
     expect(fillOf(host)).toBe("60%");
     expect(errors).not.toHaveBeenCalled();
@@ -226,7 +226,7 @@ describe("<neuwo-range> under React", () => {
 
   it("follows the thumb when uncontrolled", async () => {
     const errors = vi.spyOn(console, "error");
-    const { container } = await render(jsx("neuwo-range", { min: 0, max: 100, defaultValue: 20 }));
+    const { container } = render(jsx("neuwo-range", { min: 0, max: 100, defaultValue: 20 }));
     const host = container.querySelector("neuwo-range");
     expect(host[CONTROLLED]).toBe(false);
     expect(fillOf(host)).toBe("20%");
@@ -238,12 +238,13 @@ describe("<neuwo-range> under React", () => {
   it("keeps the live fill after a bound change", async () => {
     const errors = vi.spyOn(console, "error");
     const tree = (max) => jsx("neuwo-range", { min: 0, max, defaultValue: 20 });
-    const { container, rerender } = await render(tree(100));
+    const { container, rerender } = render(tree(100));
     const host = container.querySelector("neuwo-range");
-    await act(async () => drag(rangeOf(host), "70"));
+    act(() => drag(rangeOf(host), "70"));
+    await settled();
     expect(fillOf(host)).toBe("70%");
-    await rerender(tree(200));
-    await nextTask();
+    rerender(tree(200));
+    await settled();
     expect(rangeOf(host).value).toBe("70");
     expect(fillOf(host)).toBe("35%");
     expect(errors).not.toHaveBeenCalled();
@@ -252,11 +253,11 @@ describe("<neuwo-range> under React", () => {
   it("keeps the live fill after a defaultValue change", async () => {
     const errors = vi.spyOn(console, "error");
     const tree = (defaultValue) => jsx("neuwo-range", { min: 0, max: 100, defaultValue });
-    const { container, rerender } = await render(tree(20));
+    const { container, rerender } = render(tree(20));
     const host = container.querySelector("neuwo-range");
-    await act(async () => drag(rangeOf(host), "70"));
-    await rerender(tree(30));
-    await nextTask();
+    act(() => drag(rangeOf(host), "70"));
+    rerender(tree(30));
+    await settled();
     expect(rangeOf(host).value).toBe("70");
     expect(fillOf(host)).toBe("70%");
     expect(errors).not.toHaveBeenCalled();
@@ -265,17 +266,17 @@ describe("<neuwo-range> under React", () => {
   it("keeps the live fill across an unrelated parent re-render", async () => {
     const errors = vi.spyOn(console, "error");
     const tree = (name) => jsx("neuwo-range", { min: 0, max: 100, defaultValue: 20, name });
-    const { container, rerender } = await render(tree("a"));
+    const { container, rerender } = render(tree("a"));
     const host = container.querySelector("neuwo-range");
-    await act(async () => drag(rangeOf(host), "70"));
-    await rerender(tree("b"));
-    await nextTask();
+    act(() => drag(rangeOf(host), "70"));
+    rerender(tree("b"));
+    await settled();
     expect(fillOf(host)).toBe("70%");
     expect(errors).not.toHaveBeenCalled();
   });
 
   it("never writes the fill on a controlled host, from the setter or updated()", async () => {
-    const { container } = await render(jsx("neuwo-range", { min: 0, max: 100, value: 20, onChange() {} }));
+    const { container } = render(jsx("neuwo-range", { min: 0, max: 100, value: 20, onChange() {} }));
     const host = container.querySelector("neuwo-range");
     const set = vi.spyOn(rangeOf(host).style, "setProperty");
     Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(rangeOf(host), "80");
@@ -288,12 +289,12 @@ describe("<neuwo-range> under React", () => {
   it("is uncontrolled with value={null} and a defaultValue, as React's own input is", async () => {
     const errors = vi.spyOn(console, "error");
     const tree = (name) => jsx("neuwo-range", { min: 0, max: 100, value: null, defaultValue: 40, name });
-    const { container, rerender } = await render(tree("a"));
+    const { container, rerender } = render(tree("a"));
     const host = container.querySelector("neuwo-range");
     expect(host[CONTROLLED]).toBe(false);
     expect(rangeOf(host).value).toBe("40");
     await act(async () => drag(rangeOf(host), "70"));
-    await rerender(tree("b"));
+    rerender(tree("b"));
     expect(rangeOf(host).name).toBe("b");
     expect(rangeOf(host).value).toBe("70");
     expect(errors).not.toHaveBeenCalled();

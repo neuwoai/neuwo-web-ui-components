@@ -57,10 +57,10 @@ describe("template parity across the HTML, React and DOM adapters", () => {
       for (const testCase of list) {
         it(testCase.name, () => {
           const errors = vi.spyOn(console, "error").mockImplementation(() => {});
-          const html = normalise(renderHtml(tag, testCase));
+          const html = normalise(renderHtml(tag, testCase), true);
           expect(html).toContain(`<${tag}`);
-          expect(normalise(expand(markup({ tag, attrs: testCase.attrs, children: testCase.children })))).toBe(html);
-          expect(normalise(viaReact(tag, testCase))).toBe(html);
+          expect(normalise(expand(markup({ tag, attrs: testCase.attrs, children: testCase.children })), true)).toBe(html);
+          expect(normalise(viaReact(tag, testCase), true)).toBe(html);
           expect(normalise(viaDom(tag, testCase), false)).toBe(html);
           expect(errors.mock.calls.filter(([message]) => !String(message).includes(SELECTED_WARNING))).toEqual([]);
         });

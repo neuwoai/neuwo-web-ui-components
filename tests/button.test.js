@@ -398,7 +398,7 @@ describe("<neuwo-button> under React", () => {
       flushSync(() => root.render(jsx("neuwo-button", { ...props, children: "Save" })));
       const host = container.firstElementChild;
       expect(host).toBeInstanceOf(NeuwoButton);
-      expect(normalise(container.innerHTML)).toBe(normalise(server(normalizeProps(props), "Save")));
+      expect(normalise(container.innerHTML, false)).toBe(normalise(server(normalizeProps(props), "Save"), true));
       const records = observer.takeRecords();
       expect(records.length, `React wrote nothing for ${JSON.stringify(props)}`).toBeGreaterThan(0);
       const last = records.at(-1);

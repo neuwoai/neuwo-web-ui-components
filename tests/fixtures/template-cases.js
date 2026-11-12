@@ -407,13 +407,14 @@ let blank;
 
 /**
  * Sorts attributes and renumbers ids by first appearance, so adapters that mint ids differently compare equal.
- * A browser's parser drops the newline right after `<textarea>`, which happy-dom's does not, so markup that
- * went through a parser (`parsed`, the default) loses one here; a serialised DOM tree already holds the value.
+ * A browser's parser drops the newline right after `<textarea>`, which happy-dom's does not, so markup a browser
+ * would parse (`parsed` true) loses one here; a DOM tree happy-dom built or serialised (`parsed` false) keeps it.
  * @param {string} html
- * @param {boolean} [parsed]
+ * @param {boolean} parsed
  * @returns {string}
  */
-export function normalise(html, parsed = true) {
+export function normalise(html, parsed) {
+  if (typeof parsed !== "boolean") throw new TypeError("normalise() needs parsed: true for markup a browser would parse, false for a DOM tree");
   // happy-dom upgrades elements in a template's content, which browsers never do, so it parses where none is defined.
   blank ??= new Window();
   const holder = blank.document.createElement("template");
