@@ -3,6 +3,9 @@
 How to develop the Neuwo Web UI Library and keep the Neuwo Design System in sync. This covers
 the **library side only**; the design system's own procedure lives in that repo.
 
+Develop on a Node version that `devEngines.runtime` in `package.json` accepts, which jsdom and
+htmlparser2 set; npm warns on any other.
+
 ## Principles
 
 - One source of truth. Tokens live once in `src/foundation/tokens.css`; each component's CSS

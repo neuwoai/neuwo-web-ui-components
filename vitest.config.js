@@ -1,5 +1,5 @@
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-  test: { environment: "happy-dom" },
+  test: { environment: "happy-dom", globalSetup: ["tests/setup/dist.js"] },
 });

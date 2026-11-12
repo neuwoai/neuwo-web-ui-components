@@ -1,5 +1,6 @@
 import { sheet } from "./sheet.js";
 
+// happy-dom keeps a computed style it read before a sheet was adopted, so there the marker alone would adopt it again.
 let adopted = false;
 
 /**

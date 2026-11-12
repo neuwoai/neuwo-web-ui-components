@@ -1,6 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { execFileSync } from "node:child_process";
-import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { act } from "react";
@@ -11,11 +10,11 @@ import "../src/index.js";
 import { jsx } from "../src/react/jsx-runtime.js";
 import { jsxDEV } from "../src/react/jsx-dev-runtime.js";
 import { templates } from "../src/templates.js";
+import { distFile } from "./setup/dist.js";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const built = existsSync(join(root, "dist/jsx-runtime.react-server.js"));
 
 /**
  * @param {string} fixture
@@ -49,17 +48,18 @@ describe("JSX runtime in React Server Components", () => {
   );
   let found;
   beforeAll(() => {
-    if (built) found = JSON.parse(runServer("flight-render.mjs", blocks));
+    distFile("jsx-runtime.react-server.js");
+    found = JSON.parse(runServer("flight-render.mjs", blocks));
   });
 
-  it.runIf(built)("renders every light element through jsx and jsxDEV with no error", () => {
+  it("renders every light element through jsx and jsxDEV with no error", () => {
     const classes = Object.values(blocks);
     expect(classes).toContain("neuwo-btn");
     expect(found.jsx).toEqual(classes);
     expect(found.jsxDEV).toEqual(classes);
   });
 
-  it.runIf(built)("lets React keep live state on exactly the nodes an element writes it into, through jsx and jsxDEV", () => {
+  it("lets React keep live state on exactly the nodes an element writes it into, through jsx and jsxDEV", () => {
     const expected = [
       "button.neuwo-combobox__trigger",
       "span.neuwo-combobox__value",
@@ -73,7 +73,7 @@ describe("JSX runtime in React Server Components", () => {
     expect(found.live).toEqual({ jsx: expected, jsxDEV: expected });
   });
 
-  it.runIf(built)("renders <neuwo-input value> through the built runtime as an uncontrolled control with no function", () => {
+  it("renders <neuwo-input value> through the built runtime as an uncontrolled control with no function", () => {
     const expected = {
       control: { className: "neuwo-input", type: "text", id: expect.stringMatching(/-control$/), name: "n", defaultValue: "a" },
       functions: [],
@@ -81,7 +81,7 @@ describe("JSX runtime in React Server Components", () => {
     expect(found.input).toEqual({ jsx: expected, jsxDEV: expected });
   });
 
-  it.runIf(built)("renders <neuwo-combobox value> through the built runtime with the value as its default and no function", () => {
+  it("renders <neuwo-combobox value> through the built runtime with the value as its default and no function", () => {
     for (const name of ["jsx", "jsxDEV"]) {
       const rendered = found.combobox[name];
       expect(rendered.hostValue, name).toBeUndefined();
@@ -92,7 +92,7 @@ describe("JSX runtime in React Server Components", () => {
     }
   });
 
-  it.runIf(built)("keeps a <neuwo-combobox> pick when the server sends a new placeholder", async () => {
+  it("keeps a <neuwo-combobox> pick when the server sends a new placeholder", async () => {
     const decode = (payload) => createFromReadableStream(new Response(payload).body, { serverConsumerManifest: { moduleMap: {}, moduleLoading: null } });
     const [first, second] = await Promise.all(found.combobox.payloads.map(decode));
     const error = vi.spyOn(console, "error");
@@ -115,7 +115,7 @@ describe("JSX runtime in React Server Components", () => {
     expect(error).not.toHaveBeenCalled();
   });
 
-  it.runIf(built)("renders a form control's value as its default, with no function, through the server runtime", () => {
+  it("renders a form control's value as its default, with no function, through the server runtime", () => {
     const expected = {
       input: { className: "x-field__input", name: "q", defaultValue: "a" },
       textarea: { className: "x-notes__input", defaultValue: "n" },
@@ -124,12 +124,12 @@ describe("JSX runtime in React Server Components", () => {
     expect(found.form).toEqual({ jsx: expected, jsxDEV: expected });
   });
 
-  it.runIf(built)("gives an item its group's attributes through the server runtime, with nothing lent showing on an element and no function", () => {
+  it("gives an item its group's attributes through the server runtime, with nothing lent showing on an element and no function", () => {
     const expected = { shown: ["size=m", "size=m", "none"], values: ["m", "m", null], leaked: false, functions: [] };
     expect(found.within).toEqual({ jsx: expected, jsxDEV: expected });
   });
 
-  it.runIf(built)("renders a radio group's radios with its name and value as their default, in other markup too, with no function", () => {
+  it("renders a radio group's radios with its name and value as their default, in other markup too, with no function", () => {
     const input = (extra) => ({ className: "neuwo-form-check__input", type: "radio", ...extra });
     const expected = {
       inputs: [
@@ -144,12 +144,12 @@ describe("JSX runtime in React Server Components", () => {
     expect(found.radio).toEqual({ jsx: expected, jsxDEV: expected });
   });
 
-  it.runIf(built)("keeps a radio's own value on the host", () => {
+  it("keeps a radio's own value on the host", () => {
     const expected = { "neuwo-radio": ["pro", null], "neuwo-checkbox": ["yes", null], "neuwo-input": [null, null] };
     for (const name of ["jsx", "jsxDEV"]) expect(found.fixed[name], name).toMatchObject(expected);
   });
 
-  it.runIf(built)("keeps what a group lends its items out of the development Flight payload", () => {
+  it("keeps what a group lends its items out of the development Flight payload", () => {
     for (const name of ["jsx", "jsxDEV"]) {
       const { named, components } = found.lent[name];
       expect(named, name).toBe(false);
@@ -157,12 +157,12 @@ describe("JSX runtime in React Server Components", () => {
     }
   });
 
-  it.runIf(built)("names each element's component after its tag in the development Flight payload", () => {
+  it("names each element's component after its tag in the development Flight payload", () => {
     expect(found.lent.jsx.components.map(([component]) => component).sort()).toEqual(["Page", "x-group", "x-item", "x-item", "x-item"]);
     for (const name of ["jsx", "jsxDEV"]) expect(found.fixed[name].components.sort(), name).toEqual(["Page", "neuwo-checkbox", "neuwo-input", "neuwo-radio"]);
   });
 
-  it.runIf(built)("warns once in development when a client radio group meets radios a Server Component rendered outside it", async () => {
+  it("warns once in development when a client radio group meets radios a Server Component rendered outside it", async () => {
     const decode = (payload) => createFromReadableStream(new Response(payload).body, { serverConsumerManifest: { moduleMap: {}, moduleLoading: null } });
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const error = vi.spyOn(console, "error");
@@ -193,7 +193,7 @@ describe("JSX runtime in React Server Components", () => {
     expect(error).not.toHaveBeenCalled();
   });
 
-  it.runIf(built)("renders <neuwo-segmented value> with its option checked and the value as the form value's default, with no function", () => {
+  it("renders <neuwo-segmented value> with its option checked and the value as the form value's default, with no function", () => {
     const expected = {
       hostValue: null,
       formValue: expect.objectContaining({ className: "neuwo-segmented__form-value", name: "view", defaultValue: "json" }),
@@ -210,7 +210,7 @@ describe("JSX runtime in React Server Components", () => {
 });
 
 describe("Server Component output reconciled in the browser", () => {
-  it.runIf(built)("leaves React's markup alone when a refresh changes two attributes at once and swaps the slotted icon", async () => {
+  it("leaves React's markup alone when a refresh changes two attributes at once and swaps the slotted icon", async () => {
     const steps = [
       { props: { variant: "solid" }, icon: "plus" },
       { props: { variant: "outline", loading: true }, icon: "check" },

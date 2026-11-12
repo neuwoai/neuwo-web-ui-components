@@ -54,6 +54,7 @@ const writeStylesheets = async () => {
   await writeFile("dist/neuwo-components.css", componentsCss);
   await writeFile("dist/neuwo.css", [componentsCss, ...(await Promise.all(FOUNDATION_CSS.map(read)))].join("\n"));
 
+  await rm("dist/components", { recursive: true, force: true });
   await cp("src/components", "dist/components", {
     recursive: true,
     filter: (src) => !src.endsWith(".js"),
@@ -62,8 +63,8 @@ const writeStylesheets = async () => {
 
 await writeStylesheets();
 
-// Ship the hand-authored declaration files (the ?raw ambient and the tag map).
-await cp("src/types", "dist/types", { recursive: true });
+await mkdir("dist/types", { recursive: true });
+await cp("src/types/elements.d.ts", "dist/types/elements.d.ts");
 
 const componentsCssModule = {
   name: "components-css",
@@ -108,13 +109,17 @@ if (serve) {
   const { port } = await contexts[0].serve({ servedir: ".", port: 8000 });
 
   let timer;
+  let rewriting = Promise.resolve();
   const rewriteStylesheets = (_event, file) => {
     if (!file?.endsWith(".css")) return;
     clearTimeout(timer);
-    timer = setTimeout(() => writeStylesheets().catch((error) => console.error(error)), 50);
+    timer = setTimeout(() => {
+      rewriting = rewriting.then(writeStylesheets).catch((error) => console.error(error));
+    }, 50);
   };
-  watch("src/foundation", { recursive: true }, rewriteStylesheets);
-  watch("src/components", { recursive: true }, rewriteStylesheets);
+  for (const folder of ["src/foundation", "src/components"]) {
+    watch(folder, { recursive: true }, rewriteStylesheets).on("error", (error) => console.error(error));
+  }
   console.log(`Serving demo at http://localhost:${port}/demo/`);
 } else {
   await Promise.all(builds.map((options) => esbuild.build(options)));

@@ -1,13 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join, posix } from "node:path";
 import { LIGHT_COMPONENT_CSS } from "../scripts/light-css.js";
 import { templates } from "../src/templates.js";
+import { distFile } from "./setup/dist.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const dist = join(root, "dist");
-const components = join(dist, "neuwo-components.css");
+const components = () => readFileSync(distFile("neuwo-components.css"), "utf8");
 
 const COMPONENTS = "src/components";
 const folders = readdirSync(join(root, COMPONENTS), { recursive: true })
@@ -28,29 +28,29 @@ function recipesOf(tag) {
 }
 
 describe("combined stylesheets", () => {
-  it.runIf(existsSync(components))("opens the components sheet with the marker", () => {
-    expect(readFileSync(components, "utf8").trimStart()).toMatch(/^(\/\*[\s\S]*?\*\/\s*)?:root \{ --neuwo-components: 1; \}/);
+  it("opens the components sheet with the marker", () => {
+    expect(components().trimStart()).toMatch(/^(\/\*[\s\S]*?\*\/\s*)?:root \{ --neuwo-components: 1; \}/);
   });
 
-  it.runIf(existsSync(components))("declares the font faces before the first token", () => {
-    const css = readFileSync(components, "utf8");
+  it("declares the font faces before the first token", () => {
+    const css = components();
     expect(css.indexOf("@font-face")).toBeGreaterThan(-1);
     expect(css.indexOf("@font-face")).toBeLessThan(css.indexOf("--neuwo-color"));
   });
 
-  it.runIf(existsSync(components))("publishes fonts.css with urls relative to its folder", () => {
-    const css = readFileSync(join(dist, "foundation/fonts.css"), "utf8");
+  it("publishes fonts.css with urls relative to its folder", () => {
+    const css = readFileSync(distFile("foundation/fonts.css"), "utf8");
     expect(css).toContain("url('../fonts/");
     expect(css).not.toContain("url('fonts/");
   });
 
-  it.runIf(existsSync(components))("keeps bare element rules out of the components sheet", () => {
+  it("keeps bare element rules out of the components sheet", () => {
     const strip = (css) => css.replace(/\/\*[\s\S]*?\*\//g, "");
     const bare = /(^|[},])\s*(h1|p|a)\s*[{,:]/m;
-    expect(strip(readFileSync(components, "utf8"))).not.toMatch(bare);
-    const full = readFileSync(join(dist, "neuwo.css"), "utf8");
+    expect(strip(components())).not.toMatch(bare);
+    const full = readFileSync(distFile("neuwo.css"), "utf8");
     expect(full).toMatch(/(^|[},\s])h1\b[^{]*\{/);
-    expect(full.startsWith(readFileSync(components, "utf8"))).toBe(true);
+    expect(full.startsWith(components())).toBe(true);
   });
 
   it("composes the reset first, then the recipes of every registered template and nothing else", () => {
@@ -68,5 +68,41 @@ describe("combined stylesheets", () => {
         if (posix.dirname(below).startsWith(`${folder}/`)) expect(index, `${file} before ${below}`).toBeLessThan(other);
       }
     }
+  });
+});
+
+describe("browser bundles", () => {
+  it("leaves the font faces and the components marker out of the main bundle", () => {
+    const js = readFileSync(distFile("neuwo.js"), "utf8");
+    expect(js).not.toMatch(/@font-face|\.woff2/);
+    expect(js).not.toContain("--neuwo-components");
+  });
+
+  describe("the standalone bundle", () => {
+    /** @type {string[]} */
+    const sheets = [];
+    /** @type {number[]} */
+    const adoptedAtDefine = [];
+
+    beforeAll(async () => {
+      const define = customElements.define.bind(customElements);
+      vi.spyOn(customElements, "define").mockImplementation((...args) => {
+        adoptedAtDefine.push(document.adoptedStyleSheets.length);
+        define(...args);
+      });
+      vi.spyOn(CSSStyleSheet.prototype, "replaceSync").mockImplementation((text) => void sheets.push(text));
+      await import(distFile("neuwo-standalone.js"));
+      vi.restoreAllMocks();
+    });
+
+    it("embeds the components sheet, its font urls resolved beside the bundle", () => {
+      expect(sheets).toHaveLength(1);
+      expect(sheets[0]).not.toContain("url('fonts/");
+      expect(sheets[0].replace(/url\('[^']*\/dist\/fonts\//g, "url('fonts/")).toBe(components());
+    });
+
+    it("adopts the sheet before it defines the first element", () => {
+      expect(adoptedAtDefine).toEqual(Object.keys(templates).map(() => 1));
+    });
   });
 });

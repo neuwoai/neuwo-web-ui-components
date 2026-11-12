@@ -1,7 +1,4 @@
-import css from "neuwo:components-css";
-import { resolveFontUrls } from "./core/fonts.js";
-import { applyComponentsStylesheet } from "./core/stylesheet.js";
+// First, so the sheet is adopted before index.js defines the elements and their first connect meets styled markup.
+import "./standalone-sheet.js";
 
 export * from "./index.js";
-
-applyComponentsStylesheet(resolveFontUrls(css));

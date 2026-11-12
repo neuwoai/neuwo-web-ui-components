@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { distFile } from "./setup/dist.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const built = existsSync(join(root, "dist/jsx-runtime.react-server.js"));
 
 const importsOf = (file) =>
-  [...readFileSync(join(root, "dist", file), "utf8").matchAll(/(?:\bfrom|\bimport)\s*"([^"]+)"/g)].map((match) => match[1]).sort();
+  [...readFileSync(distFile(file), "utf8").matchAll(/(?:\bfrom|\bimport)\s*"([^"]+)"/g)].map((match) => match[1]).sort();
 
 describe("built JSX runtimes", () => {
   for (const [file, own] of [
@@ -17,7 +17,7 @@ describe("built JSX runtimes", () => {
     ["jsx-dev-runtime.js", "react/jsx-dev-runtime"],
     ["jsx-dev-runtime.react-server.js", "react/jsx-dev-runtime"],
   ]) {
-    it.runIf(built)(`imports only its own React runtime: ${file}`, () => {
+    it(`imports only its own React runtime: ${file}`, () => {
       expect([...new Set(importsOf(file))]).toEqual(["react", own].sort());
     });
   }
@@ -33,7 +33,7 @@ const run = (file, env, conditions, source) =>
 
 const probe = (file) => `
 import { Writable } from "node:stream";
-const runtime = await import(${JSON.stringify(join(root, "dist", file))});
+const runtime = await import(${JSON.stringify(distFile(file))});
 const create = runtime.jsx ?? ((type, props, key) => runtime.jsxDEV(type, props, key, false));
 const page = () => create("main", { children: [create("div", { children: "Hi" }), create("neuwo-button", { children: "Go" })] });
 if (process.execArgv.includes("--conditions=react-server")) {
@@ -60,7 +60,7 @@ describe("built JSX runtimes in use", () => {
     ["jsx-dev-runtime.react-server.js", ["development"], ["--conditions=react-server"]],
   ]) {
     for (const env of envs) {
-      it.runIf(built)(`creates a plain and a Neuwo element: ${file} under ${env}`, () => {
+      it(`creates a plain and a Neuwo element: ${file} under ${env}`, () => {
         expect(run(file, env, conditions, probe).trim()).toBe("ok");
       });
     }
