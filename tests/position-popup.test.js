@@ -62,6 +62,20 @@ describe("positionPopup", () => {
     }
   });
 
+  it("measures from the edge above a classic horizontal scrollbar when it opens above the trigger", () => {
+    Object.defineProperty(document.documentElement, "clientHeight", { value: 785, configurable: true });
+    try {
+      const p = popup();
+      positionPopup(trigger({ left: 0, right: 200, top: 400, bottom: 440, width: 200 }), p, { placement: "top" });
+      expect(p.style.bottom).toBe("389px");
+      const flipped = popup(200);
+      positionPopup(trigger({ left: 0, right: 200, top: 600, bottom: 640, width: 200 }), flipped);
+      expect(flipped.style.bottom).toBe("189px");
+    } finally {
+      delete document.documentElement.clientHeight;
+    }
+  });
+
   it("caps the popup to the viewport less a margin on each side, and its matched width with it", () => {
     const p = popup();
     positionPopup(trigger({ left: 0, right: 1000, top: 200, bottom: 240, width: 1000 }), p);

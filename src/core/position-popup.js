@@ -27,8 +27,9 @@ export function positionPopup(trigger, popup, options = {}) {
   const { placement = "bottom", align = "start", gap = 4, matchWidth = true } = options;
   const r = trigger.getBoundingClientRect();
 
-  // A fixed popup's right is measured inside a classic vertical scrollbar, which innerWidth includes.
+  // A fixed popup's right and bottom are measured inside classic scrollbars, which innerWidth and innerHeight include.
   const viewport = document.documentElement.clientWidth || window.innerWidth;
+  const viewportHeight = document.documentElement.clientHeight || window.innerHeight;
   const room = Math.max(0, viewport - 2 * EDGE);
   popup.style.position = "fixed";
   popup.style.maxWidth = `${room}px`;
@@ -50,7 +51,7 @@ export function positionPopup(trigger, popup, options = {}) {
     popup.style.left = `${left}px`;
   }
 
-  const below = window.innerHeight - r.bottom;
+  const below = viewportHeight - r.bottom;
   const above = r.top;
   const height = popup.offsetHeight || 0;
   // Flip only when the preferred side cannot fit AND the other side is roomier.
@@ -60,7 +61,7 @@ export function positionPopup(trigger, popup, options = {}) {
 
   if (onTop) {
     popup.style.top = "auto";
-    popup.style.bottom = `${window.innerHeight - r.top + gap}px`;
+    popup.style.bottom = `${viewportHeight - r.top + gap}px`;
   } else {
     popup.style.bottom = "auto";
     popup.style.top = `${r.bottom + gap}px`;

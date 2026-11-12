@@ -966,6 +966,19 @@ describe("<neuwo-combobox searchable>", () => {
     expect(el.isOpen).toBe(false);
   });
 
+  it("places the list against its trigger again as a filter narrows it", () => {
+    const el = make(`<neuwo-combobox searchable>${FRUIT}</neuwo-combobox>`);
+    const viewport = document.documentElement.clientWidth || window.innerWidth;
+    let width = 300;
+    triggerOf(el).getBoundingClientRect = () => ({ left: viewport - 120, right: viewport - 20, top: 100, bottom: 140, width: 100, height: 40 });
+    Object.defineProperty(el.popup, "offsetWidth", { get: () => width, configurable: true });
+    el.open();
+    expect(el.popup.style.left).toBe(`${viewport - 8 - 300}px`);
+    width = 100;
+    type(triggerOf(el), "ban");
+    expect(el.popup.style.left).toBe(`${viewport - 120}px`);
+  });
+
   it("filters options as you type", () => {
     const el = make(`<neuwo-combobox searchable>${FRUIT}</neuwo-combobox>`);
     type(triggerOf(el), "ap");

@@ -506,6 +506,7 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     this.#filter = trigger.value;
     if (!this.#open) this.open();
     this.#applyFilter();
+    this.#position();
   };
 
   /** @param {Event} event */
