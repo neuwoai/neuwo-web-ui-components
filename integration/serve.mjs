@@ -115,7 +115,7 @@ function launch(command, args, { cwd, env = {} }) {
   if (closing) throw new Finishing();
   const child = spawn(command, args, { cwd, env: { ...process.env, ...env }, stdio: ["ignore", "pipe", "pipe"], detached: true });
   const exited = new Promise((done) => {
-    child.once("exit", (code, signal) => done(signal ?? code));
+    child.once("close", (code, signal) => done(signal ?? code));
     child.once("error", (error) => done(error));
   });
   const signal = (name) => {
