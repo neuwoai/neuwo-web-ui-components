@@ -19,7 +19,7 @@ out.
 | `neuwo.js` carried every component's styles, adopted the tokens and injected the font faces; `neuwo.css` held the foundation layers only | `neuwo-components.css` holds the font faces, the tokens and every component's styles, and the first paint needs it; `neuwo.css` is that plus typography, the page surface, navigation links and the Markdown surface | Link one of them on every page, or import it where you import the library, in a bundler too. A `<style data-neuwo-fonts>` is no longer needed or read. |
 | `neuwo.js` was the one script for every page | `neuwo.js` is the lean build, with no CSS in it; `neuwo-standalone.js` embeds `neuwo-components.css` | Load `neuwo.js` beside the linked stylesheet. A page that can only add a script loads `neuwo-standalone.js` instead. |
 | React rendered a bare `<neuwo-*>` tag and the element drew itself | The library's JSX runtime renders each element's markup, on the server too | Set `"jsxImportSource": "@neuwo/web-ui-library--demo"` in `tsconfig.json`, and in MDX's own options if you use MDX. Without it, a `<neuwo-*>` tag React renders stays bare. |
-| The fields, checkbox, toggle, radio group, segmented control and button were form-associated through `ElementInternals` and dispatched their own `change`; the checkbox, toggle, radio, radio group and segmented control kept their `checked` or `value` attribute in step with the user | A native control inside each element does the form work, in server-rendered markup before the script loads too, and each value is submitted once. The `value` and `checked` attributes are starting values, as on native controls. `input` and `change` come from the inner control, with it as `event.target`, except on the combobox and the segmented control, which dispatch their own | Read the element from `event.currentTarget`, and its current state from the `value` or `checked` property rather than the attribute. The other consequences are under Breaking. |
+| The fields, checkbox, toggle, radio group, segmented control and button were form-associated through `ElementInternals`, and all but the button dispatched their own `change`; the checkbox, toggle, radio, radio group and segmented control kept their `checked` or `value` attribute in step with the user | A native control inside each element does the form work, in server-rendered markup before the script loads too, and each value is submitted once. The `value` and `checked` attributes are starting values, as on native controls. `input` and `change` come from the inner control, with it as `event.target`, except on the combobox and the segmented control, which dispatch their own | Read the element from `event.currentTarget`, and its current state from the `value` or `checked` property rather than the attribute. The other consequences are under Breaking. |
 | In React, `onChange` on a field fired when the user committed a value | `onChange` fires on every keystroke, as on React's own `<input>`, and `value` and `checked` make a field controlled | Update your state in `onChange`, as for a native input, or use `defaultValue` or `defaultChecked` for an uncontrolled field. |
 | `--badge-shimmer-width: 35%` | `--neuwo-badge-shimmer-percent: 35` | Use the new name with a unitless number. A value with a unit removes the sweep, and neither the old name nor `--neuwo-badge-shimmer-width` is read. |
 | `defaultValue` on a `<neuwo-range>` without a `value` read `""` | It reads the midpoint between `min` and `max`, where a native range starts | Expect the midpoint, or set `value`. |
@@ -78,12 +78,22 @@ Each part became a class, in the order listed:
     inner `.neuwo-btn`, or `form.requestSubmit()`.
   - A `<neuwo-radio-group>` needs a `name` to group its radios, as native radios do. Without one, a
     radio that carries no `name` of its own stands alone, and the group warns once in the console.
-  - The hidden form value of `<neuwo-combobox>` is a text field, and so is the trigger of a
-    `searchable` one, so a form whose only other field is one text input, with no submit button, no
-    longer submits when the user presses Enter in that input. Add a submit button to keep it.
+  - A `value` on `<neuwo-segmented>` that names a disabled or missing option is neither shown nor
+    submitted. It resolves as the combobox's does, to the first enabled option marked `selected`,
+    else to nothing, which submits an empty value; in 0.1 that option showed as selected and the
+    form submitted the value.
+  - The hidden form values of `<neuwo-combobox>` and `<neuwo-segmented>` are text fields, and so is
+    the trigger of a `searchable` combobox, so a form whose only other field is one text input, with
+    no submit button, no longer submits when the user presses Enter in that input. Add a submit
+    button to keep it.
   - In React, write the `<option>` and `<optgroup>` elements of a combobox or segmented control in
     place, with only fragments, context providers or React's own wrappers such as `Suspense` around
-    them. Options a component of yours renders are never listed.
+    them; options a component of yours renders are never listed. Write the `<neuwo-radio>` elements
+    of a radio group in place too, where elements, fragments and React's own wrappers may sit
+    around them: a radio inside a component of yours, rendered through a portal or by another React
+    root, or passed as `children` from a Server Component to the Client Component that renders the
+    group gets none of the group's attributes, so the browser does not group it. Client development
+    builds warn about each case.
 - An indeterminate `<neuwo-checkbox>` no longer writes `aria-checked="mixed"` onto its checkbox, since
   the native indeterminate state is announced as mixed. `indeterminate` is the inner checkbox's own
   property, which a click clears.
@@ -241,9 +251,11 @@ Each part became a class, in the order listed:
   a cross in the error colour, where only a screen reader learned of the failure.
 - `<neuwo-cta>` no longer warns about a missing headline or action in a band a script inserts and
   fills later, such as one that gets its buttons after an `await`: it checks such a band once a
-  change adds to its children. Its scan line sweeps with `transform` instead of `left`, so a visible
-  CTA no longer shifts layout, and the spotlight isolates its stacking context, so the hover glow
-  stays behind the card instead of disappearing behind a page section's background.
+  change adds to its children. A band a script inserts empty and never fills no longer warns at all,
+  where 0.1 warned when it connected; only the console output changes. Its scan line sweeps with
+  `transform` instead of `left`, so a visible CTA no longer shifts layout, and the spotlight isolates
+  its stacking context, so the hover glow stays behind the card instead of disappearing behind a
+  page section's background.
 - The `<neuwo-badge>` shimmer sweeps with `transform` instead of `left`, so it no longer shifts
   layout.
 - A property a script sets on an element before the element is defined, such as `loading` on a
