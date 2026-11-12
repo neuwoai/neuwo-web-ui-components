@@ -155,8 +155,11 @@ button. `good.html` must pass every check that runs, each other page must fail o
 listed in `SELF_TEST` in `integration/run.mjs`, and every check must fail on its own page in at least
 one browser. So the self-test fails in Firefox alone, where two checks are `n/a`.
 
-The apps are installed with `npm install`. To install only from the npm cache, here and in the
-one-time install above, set `npm_config_offline=true`:
+The apps are installed with `npm install`, from the `package-lock.json` each app keeps, so every run
+installs the same versions. The lockfiles leave the library out; the runner adds it from the tarball
+and npm keeps every other locked version. After changing an app's dependencies, update its lockfile
+with `npm install --package-lock-only` in its folder. To install only from the npm cache, here and
+in the one-time install above, set `npm_config_offline=true`:
 
 ```bash
 npm_config_offline=true npm run integration
