@@ -25,7 +25,7 @@
        url('fonts/noto-sans-italic-variable.woff2') format('woff2');
 }
 
-/* Capsize's method against Arial (2048 units, ascent 1854, descent 434, line gap 67, average width 904), Arial Bold (978) and their italics, each face sized to the font at its token weight. */
+/* From `npm run fonts:fallback`: Capsize's method, each face sized to the font at its token weight by advance widths weighted by English letter frequency with spaces as 18% of characters, against Arial (2048 units, ascent 1854, descent 434, line gap 67, average width 904), Arial Bold (977.7) and their italics. */
 
 @font-face {
   font-family: 'Outfit Fallback';
@@ -101,7 +101,7 @@
   font-family: 'Noto Sans Fallback';
   font-weight: 550 649;
   src: local('Arial Bold'), local('Arial-BoldMT'), local('Liberation Sans Bold'), local('Arimo Bold');
-  size-adjust: 102.82%;
+  size-adjust: 102.81%;
   ascent-override: 103.97%;
   descent-override: 28.5%;
   line-gap-override: 0%;
@@ -121,7 +121,7 @@
   font-family: 'Noto Sans Fallback';
   font-weight: 750 900;
   src: local('Arial Bold'), local('Arial-BoldMT'), local('Liberation Sans Bold'), local('Arimo Bold');
-  size-adjust: 106.97%;
+  size-adjust: 106.96%;
   ascent-override: 99.94%;
   descent-override: 27.39%;
   line-gap-override: 0%;
@@ -132,9 +132,9 @@
   font-style: italic;
   font-weight: 100 549;
   src: local('Arial Italic'), local('Arial-ItalicMT'), local('Liberation Sans Italic'), local('Arimo Italic');
-  size-adjust: 100.77%;
+  size-adjust: 100.78%;
   ascent-override: 106.08%;
-  descent-override: 29.08%;
+  descent-override: 29.07%;
   line-gap-override: 0%;
 }
 

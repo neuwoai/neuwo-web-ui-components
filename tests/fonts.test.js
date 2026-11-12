@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
-import { brotliDecompressSync } from "node:zlib";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { resolveFontUrls } from "../src/core/fonts.js";
+import { fallbackCss, readTables } from "../scripts/fallback-metrics.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const fontsCss = readFileSync(join(__dirname, "../src/foundation/fonts.css"), "utf8");
@@ -48,45 +48,19 @@ const ITALIC = "src: local('Arial Italic'), local('Arial-ItalicMT'), local('Libe
 const BOLD_ITALIC = "src: local('Arial Bold Italic'), local('Arial-BoldItalicMT'), local('Liberation Sans Bold Italic'), local('Arimo Bold Italic');";
 
 /**
- * The vertical metrics of a woff2 file, read from its `head` and `hhea` tables, which woff2 never transforms.
+ * The vertical metrics of a woff2 file, from its `head` and `hhea` tables.
  * @param {string} file
  */
 function verticalMetrics(file) {
-  const buf = readFileSync(join(__dirname, "../src/foundation", file));
-  const known = ["cmap", "head", "hhea"];
-  let at = 48;
-  const base128 = () => {
-    let value = 0;
-    for (let byte = 0x80; byte & 0x80; ) {
-      byte = buf[at++];
-      value = value * 128 + (byte & 0x7f);
-    }
-    return value;
-  };
-  const tables = [];
-  for (let index = 0; index < buf.readUInt16BE(12); index++) {
-    const flags = buf[at++];
-    const tag = (flags & 0x3f) === 63 ? buf.toString("latin1", at, (at += 4)) : (known[flags & 0x3f] ?? String(flags & 0x3f));
-    const length = base128();
-    const version = flags >> 6;
-    const transformed = (flags & 0x3f) === 10 || (flags & 0x3f) === 11 ? version !== 3 : version !== 0;
-    tables.push({ tag, length: transformed ? base128() : length });
-  }
-  const data = brotliDecompressSync(buf.subarray(at, at + buf.readUInt32BE(20)));
-  const table = (tag) => {
-    let offset = 0;
-    for (const entry of tables) {
-      if (entry.tag === tag) return data.subarray(offset, offset + entry.length);
-      offset += entry.length;
-    }
-    throw new Error(`${file} has no ${tag}`);
-  };
-  const head = table("head");
-  const hhea = table("hhea");
+  const { head, hhea } = readTables(join(__dirname, "../src/foundation", file));
   return { unitsPerEm: head.readUInt16BE(18), ascender: hhea.readInt16BE(4), descender: hhea.readInt16BE(6), lineGap: hhea.readInt16BE(8) };
 }
 
 describe("fallback faces", () => {
+  it("are the ones scripts/fallback-metrics.js computes from the woff2 files", () => {
+    expect(fontsCss.endsWith(fallbackCss())).toBe(true);
+  });
+
   it.each(["Outfit Fallback", "Noto Sans Fallback"])("%s has a face per token weight, meeting at the midpoints, Arial up to 500 and Arial Bold from 600", (family) => {
     const faces = facesOf(family);
     expect(faces.map((face) => face.match(/font-weight: ([\d ]+);/)?.[1])).toEqual(["100 449", "450 549", "550 649", "650 749", "750 900"]);
