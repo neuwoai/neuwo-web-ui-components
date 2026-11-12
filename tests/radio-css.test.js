@@ -83,6 +83,6 @@ describe("radio-group.css recipe", () => {
   it("joins the light stylesheets and the reset's tag and block lists", () => {
     expect(LIGHT_COMPONENT_CSS).toContain("src/components/selection/radio/radio-group.css");
     expect(reset).toContain("neuwo-radio, neuwo-radio-group,");
-    expect(reset).toContain('[class^="neuwo-radio-group"], [class*=" neuwo-radio-group"]');
+    expect(reset).toContain('.neuwo-radio-group, [class*="neuwo-radio-group__"], [class*="neuwo-radio-group--"]');
   });
 });

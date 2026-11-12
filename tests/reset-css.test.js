@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { templates } from "../src/templates.js";
 import { cases, renderChildren } from "./fixtures/template-cases.js";
+import { flatRules } from "./fixtures/css-rules.js";
 import { closing, compare, splitTopLevel, weight } from "./fixtures/specificity.js";
 
 const css = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "../src/components/reset.css"), "utf8");
@@ -45,16 +46,14 @@ const SIZING = {
   "max-height": "none",
 };
 
-const rules = Array.from(css.replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/([^{}]+)\{([^{}]*)\}/g), ([, selectors, body]) => ({
-  selectors: splitTopLevel(selectors),
-  declarations: new Map(
-    body
-      .split(";")
-      .map((declaration) => declaration.split(":").map((part) => part.trim()))
-      .filter(([property]) => property)
-      .map(([property, ...value]) => [property, value.join(":")]),
-  ),
-}));
+const rules = flatRules(css);
+const source = css.replace(/\/\*[\s\S]*?\*\//g, "");
+
+/** @param {string} opener */
+const listsAfter = (opener) =>
+  Array.from(source.matchAll(new RegExp(opener.replace(/[()]/g, "\\$&"), "g")), ({ index }) =>
+    splitTopLevel(source.slice(index + opener.length, closing(source, index + opener.length - 1, "(", ")"))),
+  );
 
 const PSEUDO_ELEMENT = /::(before|after)$/;
 const baseOf = (selector) => selector.replace(PSEUDO_ELEMENT, "");
@@ -93,13 +92,14 @@ function winner(el, property) {
 }
 
 describe("components reset", () => {
-  it("scopes every rule to exactly the elements that have a template", () => {
-    const lists = Array.from(css.matchAll(/^:where\(([^)]*)\)/gm), ([, list]) => list.split(",").map((tag) => tag.trim()));
-    expect(lists.length).toBeGreaterThan(0);
-    for (const list of lists) expect(list).toEqual(Object.keys(templates).sort());
+  it("lists the elements once, exactly those that have a template", () => {
+    const lists = listsAfter(":where(").filter((list) => list.some((entry) => entry.startsWith("neuwo-")));
+    expect(lists).toHaveLength(1);
+    expect(lists[0]).toEqual(Object.keys(templates).sort());
+    for (const rule of rules) for (const selector of rule.selectors) expect(selector).toMatch(/^:where\(neuwo-badge, /);
   });
 
-  it("matches nodes by every block any template case renders", () => {
+  it("lists every block any template case renders once, matching the block, its elements and its modifiers", () => {
     const classesIn = (node) => [
       ...String(node.props.class ?? "").trim().split(/\s+/),
       ...node.children.filter((child) => typeof child === "object" && "tag" in child).flatMap(classesIn),
@@ -112,10 +112,18 @@ describe("components reset", () => {
         for (const name of classesIn(root)) if (name && !name.includes("__") && !name.includes("--")) blocks.add(name);
       }
     }
-    const pairs = [...blocks].sort().flatMap((block) => [`[class^="${block}"]`, `[class*=" ${block}"]`]);
-    const lists = Array.from(css.matchAll(/:is\(/g), ({ index }) => splitTopLevel(css.slice(index + 4, closing(css, index + 3, "(", ")"))));
-    expect(lists.length).toBeGreaterThan(0);
-    for (const list of lists) expect(list).toEqual(pairs);
+    const exact = [...blocks].sort().flatMap((block) => [`.${block}`, `[class*="${block}__"]`, `[class*="${block}--"]`]);
+    const lists = listsAfter(":is(").filter((list) => list.some((entry) => entry.includes("neuwo-")));
+    expect(lists).toHaveLength(1);
+    expect(lists[0]).toEqual(exact);
+  });
+
+  it("resets a block's own nodes but not a class that only starts with a block's name", () => {
+    document.body.innerHTML =
+      `<neuwo-button><span class="neuwo-btn__label"></span><span class="neuwo-btn--solid"></span>` +
+      `<span class="neuwo-btnx"></span><span class="neuwo-buttons"></span></neuwo-button>`;
+    const reached = (el) => rules.some((rule) => rule.declarations.get("margin") === "0" && rule.selectors.some((selector) => el.matches(selector)));
+    expect(Array.from(document.querySelectorAll("span"), reached)).toEqual([true, true, false, false]);
   });
 
   it("sets every reset property on block nodes and their ::before and ::after", () => {
@@ -166,7 +174,7 @@ describe("components reset", () => {
     const nativeAt = rules.findIndex((rule) => rule.declarations.get("text-align") === "start");
     expect(nativeAt).toBeGreaterThan(inheritAt);
     expect(rules[nativeAt].selectors).toHaveLength(1);
-    expect(rules[nativeAt].selectors[0]).toContain(":where(input, textarea, select):is(");
+    expect(rules[nativeAt].selectors[0]).toMatch(/:is\([^)]*\):where\(input, textarea, select\)$/);
     expect(Object.fromEntries(rules[nativeAt].declarations)).toEqual(NATIVE);
   });
 

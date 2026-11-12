@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { LIGHT_COMPONENT_CSS } from "../scripts/light-css.js";
+import { flatRules } from "./fixtures/css-rules.js";
 import { compare, splitTopLevel, weight } from "./fixtures/specificity.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -35,7 +36,7 @@ const rulesIn = (source) =>
  */
 function winner(el, property) {
   let best = null;
-  for (const rule of [...rulesIn(strip(reset)), ...rulesIn(outside)]) {
+  for (const rule of [...flatRules(reset), ...rulesIn(outside)]) {
     if (!rule.declarations.has(property)) continue;
     for (const selector of rule.selectors) {
       if (/::?(before|after)$/.test(selector) || !el.matches(selector)) continue;
@@ -135,6 +136,6 @@ describe("segmented.css recipe", () => {
   it("joins the light stylesheets and the reset's tag and block lists", () => {
     expect(LIGHT_COMPONENT_CSS).toContain("src/components/selection/segmented/segmented.css");
     expect(reset).toContain("neuwo-range, neuwo-segmented, neuwo-status-dot");
-    expect(reset).toContain('[class^="neuwo-segmented"], [class*=" neuwo-segmented"]');
+    expect(reset).toContain('.neuwo-segmented, [class*="neuwo-segmented__"], [class*="neuwo-segmented--"]');
   });
 });

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { flatRules } from "./fixtures/css-rules.js";
 import { compare, splitTopLevel, weight } from "./fixtures/specificity.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -29,7 +30,7 @@ const rulesIn = (source) =>
  */
 function winner(el, property) {
   let best = null;
-  for (const rule of [...rulesIn(reset), ...rulesIn(css)]) {
+  for (const rule of [...flatRules(reset), ...rulesIn(css)]) {
     if (!rule.declarations.has(property)) continue;
     for (const selector of rule.selectors) {
       if (/::?(before|after)$/.test(selector) || !el.matches(selector)) continue;
@@ -94,6 +95,6 @@ describe("toggle.css recipe", () => {
 
   it("is in the reset's tag and block lists", () => {
     expect(reset).toContain("neuwo-toggle)");
-    expect(reset).toContain('[class^="neuwo-form-toggle"], [class*=" neuwo-form-toggle"]');
+    expect(reset).toContain('.neuwo-form-toggle, [class*="neuwo-form-toggle__"], [class*="neuwo-form-toggle--"]');
   });
 });

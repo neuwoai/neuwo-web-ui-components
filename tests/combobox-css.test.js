@@ -94,6 +94,6 @@ describe("combobox.css recipe", () => {
   it("is in the reset's tag and block lists", () => {
     const reset = read("../src/components/reset.css");
     expect(reset).toContain("neuwo-combobox,");
-    expect(reset).toContain('[class^="neuwo-combobox"], [class*=" neuwo-combobox"]');
+    expect(reset).toContain('.neuwo-combobox, [class*="neuwo-combobox__"], [class*="neuwo-combobox--"]');
   });
 });

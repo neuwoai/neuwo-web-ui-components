@@ -431,7 +431,8 @@
   another React root, and warns about that in client development builds. `renderElement` takes them as an
   optional last argument, and an element refreshes the descendants that read it when it changes.
 - `components/reset.css`, the reset for the light DOM components, is published and leads the component
-  styles in `neuwo-components.css`.
+  styles in `neuwo-components.css`. It is written with CSS nesting, so a tool that reads the file must
+  support nesting, as lightningcss does.
 - Page element rules such as `button { text-transform: uppercase }`, `span { line-height: 3 }` or
   `a { text-decoration: underline }` no longer reach the markup a light DOM component renders. Its text
   properties come from the host, so casing set on `neuwo-badge` still applies, and its margins, padding,

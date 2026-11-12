@@ -199,6 +199,6 @@ describe("textarea recipe", () => {
 
   it("is in the reset's tag and block lists", () => {
     expect(resetCss).toContain("neuwo-textarea,");
-    expect(resetCss).toContain('[class^="neuwo-textarea"], [class*=" neuwo-textarea"]');
+    expect(resetCss).toContain('.neuwo-textarea, [class*="neuwo-textarea__"], [class*="neuwo-textarea--"]');
   });
 });

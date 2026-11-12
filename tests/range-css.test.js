@@ -67,7 +67,7 @@ describe("range.css recipe", () => {
   it("is in the reset's tag and block lists", () => {
     const reset = readFileSync(join(__dirname, "../src/components/reset.css"), "utf8");
     expect(reset).toContain("neuwo-range,");
-    expect(reset).toContain('[class^="neuwo-range"], [class*=" neuwo-range"]');
+    expect(reset).toContain('.neuwo-range, [class*="neuwo-range__"], [class*="neuwo-range--"]');
   });
 
   it("keeps every visual value on the portable class, not on :host", () => {

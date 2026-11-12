@@ -1,58 +1,95 @@
-:where(neuwo-badge, neuwo-button, neuwo-checkbox, neuwo-combobox, neuwo-copy, neuwo-cta, neuwo-deal-id, neuwo-input, neuwo-logo, neuwo-notice, neuwo-radio, neuwo-radio-group, neuwo-range, neuwo-segmented, neuwo-status-dot, neuwo-textarea, neuwo-toggle) :is([class^="neuwo-badge"], [class*=" neuwo-badge"], [class^="neuwo-btn"], [class*=" neuwo-btn"], [class^="neuwo-choice"], [class*=" neuwo-choice"], [class^="neuwo-combobox"], [class*=" neuwo-combobox"], [class^="neuwo-copy"], [class*=" neuwo-copy"], [class^="neuwo-cta"], [class*=" neuwo-cta"], [class^="neuwo-deal-id"], [class*=" neuwo-deal-id"], [class^="neuwo-field"], [class*=" neuwo-field"], [class^="neuwo-form-check"], [class*=" neuwo-form-check"], [class^="neuwo-form-toggle"], [class*=" neuwo-form-toggle"], [class^="neuwo-input"], [class*=" neuwo-input"], [class^="neuwo-logo"], [class*=" neuwo-logo"], [class^="neuwo-notice"], [class*=" neuwo-notice"], [class^="neuwo-radio-group"], [class*=" neuwo-radio-group"], [class^="neuwo-range"], [class*=" neuwo-range"], [class^="neuwo-segmented"], [class*=" neuwo-segmented"], [class^="neuwo-status-dot"], [class*=" neuwo-status-dot"], [class^="neuwo-textarea"], [class*=" neuwo-textarea"]),
-:where(neuwo-badge, neuwo-button, neuwo-checkbox, neuwo-combobox, neuwo-copy, neuwo-cta, neuwo-deal-id, neuwo-input, neuwo-logo, neuwo-notice, neuwo-radio, neuwo-radio-group, neuwo-range, neuwo-segmented, neuwo-status-dot, neuwo-textarea, neuwo-toggle) :is([class^="neuwo-badge"], [class*=" neuwo-badge"], [class^="neuwo-btn"], [class*=" neuwo-btn"], [class^="neuwo-choice"], [class*=" neuwo-choice"], [class^="neuwo-combobox"], [class*=" neuwo-combobox"], [class^="neuwo-copy"], [class*=" neuwo-copy"], [class^="neuwo-cta"], [class*=" neuwo-cta"], [class^="neuwo-deal-id"], [class*=" neuwo-deal-id"], [class^="neuwo-field"], [class*=" neuwo-field"], [class^="neuwo-form-check"], [class*=" neuwo-form-check"], [class^="neuwo-form-toggle"], [class*=" neuwo-form-toggle"], [class^="neuwo-input"], [class*=" neuwo-input"], [class^="neuwo-logo"], [class*=" neuwo-logo"], [class^="neuwo-notice"], [class*=" neuwo-notice"], [class^="neuwo-radio-group"], [class*=" neuwo-radio-group"], [class^="neuwo-range"], [class*=" neuwo-range"], [class^="neuwo-segmented"], [class*=" neuwo-segmented"], [class^="neuwo-status-dot"], [class*=" neuwo-status-dot"], [class^="neuwo-textarea"], [class*=" neuwo-textarea"])::before,
-:where(neuwo-badge, neuwo-button, neuwo-checkbox, neuwo-combobox, neuwo-copy, neuwo-cta, neuwo-deal-id, neuwo-input, neuwo-logo, neuwo-notice, neuwo-radio, neuwo-radio-group, neuwo-range, neuwo-segmented, neuwo-status-dot, neuwo-textarea, neuwo-toggle) :is([class^="neuwo-badge"], [class*=" neuwo-badge"], [class^="neuwo-btn"], [class*=" neuwo-btn"], [class^="neuwo-choice"], [class*=" neuwo-choice"], [class^="neuwo-combobox"], [class*=" neuwo-combobox"], [class^="neuwo-copy"], [class*=" neuwo-copy"], [class^="neuwo-cta"], [class*=" neuwo-cta"], [class^="neuwo-deal-id"], [class*=" neuwo-deal-id"], [class^="neuwo-field"], [class*=" neuwo-field"], [class^="neuwo-form-check"], [class*=" neuwo-form-check"], [class^="neuwo-form-toggle"], [class*=" neuwo-form-toggle"], [class^="neuwo-input"], [class*=" neuwo-input"], [class^="neuwo-logo"], [class*=" neuwo-logo"], [class^="neuwo-notice"], [class*=" neuwo-notice"], [class^="neuwo-radio-group"], [class*=" neuwo-radio-group"], [class^="neuwo-range"], [class*=" neuwo-range"], [class^="neuwo-segmented"], [class*=" neuwo-segmented"], [class^="neuwo-status-dot"], [class*=" neuwo-status-dot"], [class^="neuwo-textarea"], [class*=" neuwo-textarea"])::after {
+:where(neuwo-badge, neuwo-button, neuwo-checkbox, neuwo-combobox, neuwo-copy, neuwo-cta, neuwo-deal-id, neuwo-input, neuwo-logo, neuwo-notice, neuwo-radio, neuwo-radio-group, neuwo-range, neuwo-segmented, neuwo-status-dot, neuwo-textarea, neuwo-toggle) {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  box-shadow: none;
-  text-decoration: none;
-  float: none;
-  transform: none;
-  vertical-align: baseline;
-  text-transform: inherit;
-  letter-spacing: inherit;
-  word-spacing: inherit;
-  line-height: inherit;
-  text-shadow: inherit;
-  font-family: inherit;
-  font-weight: inherit;
-  font-size: inherit;
-  font-style: inherit;
-  font-variant: inherit;
-  color: inherit;
-  text-align: inherit;
-  text-indent: inherit;
-  white-space: inherit;
-}
+  font-family: var(--neuwo-font-text);
 
-/* Native text controls keep their user agent text defaults; the block above would hand them the page's. */
-:where(neuwo-badge, neuwo-button, neuwo-checkbox, neuwo-combobox, neuwo-copy, neuwo-cta, neuwo-deal-id, neuwo-input, neuwo-logo, neuwo-notice, neuwo-radio, neuwo-radio-group, neuwo-range, neuwo-segmented, neuwo-status-dot, neuwo-textarea, neuwo-toggle) :where(input, textarea, select):is([class^="neuwo-badge"], [class*=" neuwo-badge"], [class^="neuwo-btn"], [class*=" neuwo-btn"], [class^="neuwo-choice"], [class*=" neuwo-choice"], [class^="neuwo-combobox"], [class*=" neuwo-combobox"], [class^="neuwo-copy"], [class*=" neuwo-copy"], [class^="neuwo-cta"], [class*=" neuwo-cta"], [class^="neuwo-deal-id"], [class*=" neuwo-deal-id"], [class^="neuwo-field"], [class*=" neuwo-field"], [class^="neuwo-form-check"], [class*=" neuwo-form-check"], [class^="neuwo-form-toggle"], [class*=" neuwo-form-toggle"], [class^="neuwo-input"], [class*=" neuwo-input"], [class^="neuwo-logo"], [class*=" neuwo-logo"], [class^="neuwo-notice"], [class*=" neuwo-notice"], [class^="neuwo-radio-group"], [class*=" neuwo-radio-group"], [class^="neuwo-range"], [class*=" neuwo-range"], [class^="neuwo-segmented"], [class*=" neuwo-segmented"], [class^="neuwo-status-dot"], [class*=" neuwo-status-dot"], [class^="neuwo-textarea"], [class*=" neuwo-textarea"]) {
-  text-align: start;
-  text-transform: none;
-  letter-spacing: normal;
-  word-spacing: normal;
-  text-indent: 0;
-  text-shadow: none;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: normal;
-  line-height: normal;
-  white-space: normal;
-}
-:where(neuwo-badge, neuwo-button, neuwo-checkbox, neuwo-combobox, neuwo-copy, neuwo-cta, neuwo-deal-id, neuwo-input, neuwo-logo, neuwo-notice, neuwo-radio, neuwo-radio-group, neuwo-range, neuwo-segmented, neuwo-status-dot, neuwo-textarea, neuwo-toggle) :where(textarea):is([class^="neuwo-badge"], [class*=" neuwo-badge"], [class^="neuwo-btn"], [class*=" neuwo-btn"], [class^="neuwo-choice"], [class*=" neuwo-choice"], [class^="neuwo-combobox"], [class*=" neuwo-combobox"], [class^="neuwo-copy"], [class*=" neuwo-copy"], [class^="neuwo-cta"], [class*=" neuwo-cta"], [class^="neuwo-deal-id"], [class*=" neuwo-deal-id"], [class^="neuwo-field"], [class*=" neuwo-field"], [class^="neuwo-form-check"], [class*=" neuwo-form-check"], [class^="neuwo-form-toggle"], [class*=" neuwo-form-toggle"], [class^="neuwo-input"], [class*=" neuwo-input"], [class^="neuwo-logo"], [class*=" neuwo-logo"], [class^="neuwo-notice"], [class*=" neuwo-notice"], [class^="neuwo-radio-group"], [class*=" neuwo-radio-group"], [class^="neuwo-range"], [class*=" neuwo-range"], [class^="neuwo-segmented"], [class*=" neuwo-segmented"], [class^="neuwo-status-dot"], [class*=" neuwo-status-dot"], [class^="neuwo-textarea"], [class*=" neuwo-textarea"]) { white-space: pre-wrap; }
+  &[hidden] {
+    display: none;
+  }
 
-/* :where() keeps the svg exclusion weightless; a bare :not(svg) would outweigh the recipes' own sizes. */
-:where(neuwo-badge, neuwo-button, neuwo-checkbox, neuwo-combobox, neuwo-copy, neuwo-cta, neuwo-deal-id, neuwo-input, neuwo-logo, neuwo-notice, neuwo-radio, neuwo-radio-group, neuwo-range, neuwo-segmented, neuwo-status-dot, neuwo-textarea, neuwo-toggle) :is([class^="neuwo-badge"], [class*=" neuwo-badge"], [class^="neuwo-btn"], [class*=" neuwo-btn"], [class^="neuwo-choice"], [class*=" neuwo-choice"], [class^="neuwo-combobox"], [class*=" neuwo-combobox"], [class^="neuwo-copy"], [class*=" neuwo-copy"], [class^="neuwo-cta"], [class*=" neuwo-cta"], [class^="neuwo-deal-id"], [class*=" neuwo-deal-id"], [class^="neuwo-field"], [class*=" neuwo-field"], [class^="neuwo-form-check"], [class*=" neuwo-form-check"], [class^="neuwo-form-toggle"], [class*=" neuwo-form-toggle"], [class^="neuwo-input"], [class*=" neuwo-input"], [class^="neuwo-logo"], [class*=" neuwo-logo"], [class^="neuwo-notice"], [class*=" neuwo-notice"], [class^="neuwo-radio-group"], [class*=" neuwo-radio-group"], [class^="neuwo-range"], [class*=" neuwo-range"], [class^="neuwo-segmented"], [class*=" neuwo-segmented"], [class^="neuwo-status-dot"], [class*=" neuwo-status-dot"], [class^="neuwo-textarea"], [class*=" neuwo-textarea"]):where(:not(svg)),
-:where(neuwo-badge, neuwo-button, neuwo-checkbox, neuwo-combobox, neuwo-copy, neuwo-cta, neuwo-deal-id, neuwo-input, neuwo-logo, neuwo-notice, neuwo-radio, neuwo-radio-group, neuwo-range, neuwo-segmented, neuwo-status-dot, neuwo-textarea, neuwo-toggle) :is([class^="neuwo-badge"], [class*=" neuwo-badge"], [class^="neuwo-btn"], [class*=" neuwo-btn"], [class^="neuwo-choice"], [class*=" neuwo-choice"], [class^="neuwo-combobox"], [class*=" neuwo-combobox"], [class^="neuwo-copy"], [class*=" neuwo-copy"], [class^="neuwo-cta"], [class*=" neuwo-cta"], [class^="neuwo-deal-id"], [class*=" neuwo-deal-id"], [class^="neuwo-field"], [class*=" neuwo-field"], [class^="neuwo-form-check"], [class*=" neuwo-form-check"], [class^="neuwo-form-toggle"], [class*=" neuwo-form-toggle"], [class^="neuwo-input"], [class*=" neuwo-input"], [class^="neuwo-logo"], [class*=" neuwo-logo"], [class^="neuwo-notice"], [class*=" neuwo-notice"], [class^="neuwo-radio-group"], [class*=" neuwo-radio-group"], [class^="neuwo-range"], [class*=" neuwo-range"], [class^="neuwo-segmented"], [class*=" neuwo-segmented"], [class^="neuwo-status-dot"], [class*=" neuwo-status-dot"], [class^="neuwo-textarea"], [class*=" neuwo-textarea"]):where(:not(svg))::before,
-:where(neuwo-badge, neuwo-button, neuwo-checkbox, neuwo-combobox, neuwo-copy, neuwo-cta, neuwo-deal-id, neuwo-input, neuwo-logo, neuwo-notice, neuwo-radio, neuwo-radio-group, neuwo-range, neuwo-segmented, neuwo-status-dot, neuwo-textarea, neuwo-toggle) :is([class^="neuwo-badge"], [class*=" neuwo-badge"], [class^="neuwo-btn"], [class*=" neuwo-btn"], [class^="neuwo-choice"], [class*=" neuwo-choice"], [class^="neuwo-combobox"], [class*=" neuwo-combobox"], [class^="neuwo-copy"], [class*=" neuwo-copy"], [class^="neuwo-cta"], [class*=" neuwo-cta"], [class^="neuwo-deal-id"], [class*=" neuwo-deal-id"], [class^="neuwo-field"], [class*=" neuwo-field"], [class^="neuwo-form-check"], [class*=" neuwo-form-check"], [class^="neuwo-form-toggle"], [class*=" neuwo-form-toggle"], [class^="neuwo-input"], [class*=" neuwo-input"], [class^="neuwo-logo"], [class*=" neuwo-logo"], [class^="neuwo-notice"], [class*=" neuwo-notice"], [class^="neuwo-radio-group"], [class*=" neuwo-radio-group"], [class^="neuwo-range"], [class*=" neuwo-range"], [class^="neuwo-segmented"], [class*=" neuwo-segmented"], [class^="neuwo-status-dot"], [class*=" neuwo-status-dot"], [class^="neuwo-textarea"], [class*=" neuwo-textarea"]):where(:not(svg))::after {
-  width: auto;
-  height: auto;
-  min-width: auto;
-  min-height: auto;
-  max-width: none;
-  max-height: none;
-}
+  & :is(
+    .neuwo-badge, [class*="neuwo-badge__"], [class*="neuwo-badge--"],
+    .neuwo-btn, [class*="neuwo-btn__"], [class*="neuwo-btn--"],
+    .neuwo-choice, [class*="neuwo-choice__"], [class*="neuwo-choice--"],
+    .neuwo-combobox, [class*="neuwo-combobox__"], [class*="neuwo-combobox--"],
+    .neuwo-copy, [class*="neuwo-copy__"], [class*="neuwo-copy--"],
+    .neuwo-cta, [class*="neuwo-cta__"], [class*="neuwo-cta--"],
+    .neuwo-deal-id, [class*="neuwo-deal-id__"], [class*="neuwo-deal-id--"],
+    .neuwo-field, [class*="neuwo-field__"], [class*="neuwo-field--"],
+    .neuwo-form-check, [class*="neuwo-form-check__"], [class*="neuwo-form-check--"],
+    .neuwo-form-toggle, [class*="neuwo-form-toggle__"], [class*="neuwo-form-toggle--"],
+    .neuwo-input, [class*="neuwo-input__"], [class*="neuwo-input--"],
+    .neuwo-logo, [class*="neuwo-logo__"], [class*="neuwo-logo--"],
+    .neuwo-notice, [class*="neuwo-notice__"], [class*="neuwo-notice--"],
+    .neuwo-radio-group, [class*="neuwo-radio-group__"], [class*="neuwo-radio-group--"],
+    .neuwo-range, [class*="neuwo-range__"], [class*="neuwo-range--"],
+    .neuwo-segmented, [class*="neuwo-segmented__"], [class*="neuwo-segmented--"],
+    .neuwo-status-dot, [class*="neuwo-status-dot__"], [class*="neuwo-status-dot--"],
+    .neuwo-textarea, [class*="neuwo-textarea__"], [class*="neuwo-textarea--"]
+  ) {
+    &,
+    &::before,
+    &::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      box-shadow: none;
+      text-decoration: none;
+      float: none;
+      transform: none;
+      vertical-align: baseline;
+      text-transform: inherit;
+      letter-spacing: inherit;
+      word-spacing: inherit;
+      line-height: inherit;
+      text-shadow: inherit;
+      font-family: inherit;
+      font-weight: inherit;
+      font-size: inherit;
+      font-style: inherit;
+      font-variant: inherit;
+      color: inherit;
+      text-align: inherit;
+      text-indent: inherit;
+      white-space: inherit;
+    }
 
-:where(neuwo-badge, neuwo-button, neuwo-checkbox, neuwo-combobox, neuwo-copy, neuwo-cta, neuwo-deal-id, neuwo-input, neuwo-logo, neuwo-notice, neuwo-radio, neuwo-radio-group, neuwo-range, neuwo-segmented, neuwo-status-dot, neuwo-textarea, neuwo-toggle) :where(button):is([class^="neuwo-badge"], [class*=" neuwo-badge"], [class^="neuwo-btn"], [class*=" neuwo-btn"], [class^="neuwo-choice"], [class*=" neuwo-choice"], [class^="neuwo-combobox"], [class*=" neuwo-combobox"], [class^="neuwo-copy"], [class*=" neuwo-copy"], [class^="neuwo-cta"], [class*=" neuwo-cta"], [class^="neuwo-deal-id"], [class*=" neuwo-deal-id"], [class^="neuwo-field"], [class*=" neuwo-field"], [class^="neuwo-form-check"], [class*=" neuwo-form-check"], [class^="neuwo-form-toggle"], [class*=" neuwo-form-toggle"], [class^="neuwo-input"], [class*=" neuwo-input"], [class^="neuwo-logo"], [class*=" neuwo-logo"], [class^="neuwo-notice"], [class*=" neuwo-notice"], [class^="neuwo-radio-group"], [class*=" neuwo-radio-group"], [class^="neuwo-range"], [class*=" neuwo-range"], [class^="neuwo-segmented"], [class*=" neuwo-segmented"], [class^="neuwo-status-dot"], [class*=" neuwo-status-dot"], [class^="neuwo-textarea"], [class*=" neuwo-textarea"]) { cursor: pointer; font: inherit; border: none; background: none; color: inherit; }
-:where(neuwo-badge, neuwo-button, neuwo-checkbox, neuwo-combobox, neuwo-copy, neuwo-cta, neuwo-deal-id, neuwo-input, neuwo-logo, neuwo-notice, neuwo-radio, neuwo-radio-group, neuwo-range, neuwo-segmented, neuwo-status-dot, neuwo-textarea, neuwo-toggle) { box-sizing: border-box; font-family: var(--neuwo-font-text); }
-:where(neuwo-badge, neuwo-button, neuwo-checkbox, neuwo-combobox, neuwo-copy, neuwo-cta, neuwo-deal-id, neuwo-input, neuwo-logo, neuwo-notice, neuwo-radio, neuwo-radio-group, neuwo-range, neuwo-segmented, neuwo-status-dot, neuwo-textarea, neuwo-toggle)[hidden] { display: none; }
+    /* Native text controls keep their user agent text defaults; the block above would hand them the page's. */
+    &:where(input, textarea, select) {
+      text-align: start;
+      text-transform: none;
+      letter-spacing: normal;
+      word-spacing: normal;
+      text-indent: 0;
+      text-shadow: none;
+      font-style: normal;
+      font-variant: normal;
+      font-weight: normal;
+      line-height: normal;
+      white-space: normal;
+    }
+
+    &:where(textarea) {
+      white-space: pre-wrap;
+    }
+
+    /* :where() keeps the svg exclusion weightless; a bare :not(svg) would outweigh the recipes' own sizes. */
+    &:where(:not(svg)),
+    &:where(:not(svg))::before,
+    &:where(:not(svg))::after {
+      width: auto;
+      height: auto;
+      min-width: auto;
+      min-height: auto;
+      max-width: none;
+      max-height: none;
+    }
+
+    &:where(button) {
+      cursor: pointer;
+      font: inherit;
+      border: none;
+      background: none;
+      color: inherit;
+    }
+  }
+}

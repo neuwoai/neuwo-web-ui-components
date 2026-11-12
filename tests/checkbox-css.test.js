@@ -39,8 +39,8 @@ describe("form-check.css recipe", () => {
 
   it("is in the reset's tag and block lists", () => {
     expect(reset).toContain("neuwo-checkbox,");
-    expect(reset).toContain('[class^="neuwo-choice"], [class*=" neuwo-choice"]');
-    expect(reset).toContain('[class^="neuwo-form-check"], [class*=" neuwo-form-check"]');
+    expect(reset).toContain('.neuwo-choice, [class*="neuwo-choice__"], [class*="neuwo-choice--"]');
+    expect(reset).toContain('.neuwo-form-check, [class*="neuwo-form-check__"], [class*="neuwo-form-check--"]');
   });
 });
 
