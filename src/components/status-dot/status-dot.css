@@ -61,6 +61,13 @@ neuwo-status-dot {
   50%      { opacity: 0.3; }
 }
 
+/* Forced colours replace the dot's colour with Canvas and drop its ring, so it would vanish. */
+@media (forced-colors: active) {
+  .neuwo-status-dot {
+    background: CanvasText;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .neuwo-status-dot--pulse,
   .neuwo-status-dot--blink {

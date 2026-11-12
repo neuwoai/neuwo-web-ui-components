@@ -62,9 +62,9 @@ describe("copy.css recipe", () => {
     expect(declarations).not.toContain("hover: none");
   });
 
-  it("takes the shared focus ring rather than an outline of its own", () => {
+  it("takes the shared focus ring, with the transparent outline that forced colours paint in its place", () => {
     const body = ruleFor(".neuwo-copy__button:focus-visible");
-    expect(body).toMatch(/outline:\s*none/);
+    expect(body).toMatch(/outline:\s*var\(--neuwo-outline-focus\)/);
     expect(body).toMatch(/box-shadow:\s*var\(--neuwo-shadow-focus\)/);
   });
 

@@ -58,7 +58,8 @@ neuwo-combobox:not([hidden]) {
 }
 
 .neuwo-input:focus-visible {
-  outline: none;
+  outline: var(--neuwo-outline-focus);
+  outline-offset: var(--neuwo-outline-focus-offset);
   box-shadow: var(--neuwo-shadow-focus);
 }
 

@@ -60,7 +60,8 @@ neuwo-segmented:not([hidden]) {
 }
 
 .neuwo-segmented__option:focus-visible {
-  outline: none;
+  outline: var(--neuwo-outline-focus);
+  outline-offset: var(--neuwo-outline-focus-offset);
   box-shadow: var(--neuwo-shadow-focus);
 }
 
@@ -91,6 +92,19 @@ neuwo-segmented:not([hidden]) {
   height: 100%;
   opacity: 0;
   pointer-events: none;
+}
+
+/* Forced colours replace the blue with Canvas, so the selection would not show; Chromium's text backplate would hide its label. */
+@media (forced-colors: active) {
+  .neuwo-segmented__option[aria-checked="true"] {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  .neuwo-segmented__indicator {
+    background: Highlight;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

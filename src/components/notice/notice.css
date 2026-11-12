@@ -176,7 +176,8 @@ neuwo-notice {
 }
 
 .neuwo-notice__dismiss:focus-visible {
-  outline: none;
+  outline: var(--neuwo-outline-focus);
+  outline-offset: var(--neuwo-outline-focus-offset);
   box-shadow: var(--neuwo-shadow-focus);
 }
 
@@ -188,6 +189,13 @@ neuwo-notice {
 
 /* Reduced motion keeps the card still: it already announces itself by arriving,
    and the hover colour change is what marks the close button. */
+/* Forced colours replace the cross's colour with Canvas, the button's own, so it would vanish. */
+@media (forced-colors: active) {
+  .neuwo-notice__dismiss::before {
+    background: ButtonText;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .neuwo-notice {
     animation: none;

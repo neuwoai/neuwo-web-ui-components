@@ -95,7 +95,8 @@
 /* --- Focus: the ring belongs on the thumb, not on the input box --- */
 
 .neuwo-range:focus-visible {
-  outline: none;
+  outline: var(--neuwo-outline-focus);
+  outline-offset: var(--neuwo-outline-focus-offset);
   /* The shared field chrome rings the whole box; a slider rings its thumb. */
   box-shadow: none;
 }
@@ -110,6 +111,23 @@
 
 /* Reduced motion keeps a static thumb; the focus ring and the filled track
    already signal state without any movement. */
+/* Forced colours replace the track's colours with Canvas and drop WebKit's fill gradient, so neither would show. */
+@media (forced-colors: active) {
+  .neuwo-range::-webkit-slider-runnable-track {
+    forced-color-adjust: none;
+    background-color: GrayText;
+    background-image: linear-gradient(Highlight, Highlight);
+  }
+
+  .neuwo-range::-moz-range-track {
+    background: GrayText;
+  }
+
+  .neuwo-range::-moz-range-progress {
+    background: Highlight;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .neuwo-range::-webkit-slider-thumb {
     transition: none;
