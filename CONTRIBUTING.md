@@ -107,6 +107,12 @@ exits 1 on any `fail` or on a browser it cannot launch.
 - `adoption`: each `neuwo-*` element still holds the markup served for it, and nothing rewrote it
   after parsing, even with the same content.
 
+The `demo` target serves the repository root, so it checks the demo page against the `dist/` that
+`npm run build` made, not the tarball. It runs `console`, then asserts that the page's `.btn` and
+`button` rules reach plain buttons and no component, that a host rule restyles a component, and
+that the range readout never shows `NaN`, with `neuwo.js` held back for 500 ms and again after
+definition. Firefox cannot intercept requests over WebDriver BiDi, so the held reading is `n/a` there.
+
 After changing a check, run `npm run integration -- --self-test`. It serves the pages in
 `integration/self-test/`, expanded with `expand`. `good.html` must pass every check that runs, each
 other page must fail only its own check, and every check must fail on its own page in at least one
