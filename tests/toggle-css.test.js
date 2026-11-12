@@ -65,6 +65,20 @@ describe("toggle.css recipe", () => {
     expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*\.neuwo-form-toggle--pulse[\s\S]*animation: none/);
   });
 
+  it("moves the thumb by transform alone, from a physical anchor that a right-to-left context mirrors", () => {
+    const body = (selector) => css.match(new RegExp(`(?<![\\w,]\\s*)${selector.replace(/[.[\]()+:-]/g, "\\$&")}\\s*\\{([^}]*)\\}`))?.[1] ?? "";
+    const thumb = body(".neuwo-form-toggle__track::after");
+    expect(thumb).toMatch(/\bleft: 0\.25rem;/);
+    expect(thumb).toMatch(/transform: translateY\(-50%\);/);
+    expect(thumb).toMatch(/transition: transform var\(--neuwo-transition-fast\);/);
+    expect(body(".neuwo-form-toggle__input:checked + .neuwo-form-toggle__track::after")).toMatch(/^\s*transform: translateY\(-50%\) translateX\(1\.5rem\);\s*$/);
+    expect(body(".neuwo-form-toggle__track:dir(rtl)::after")).toMatch(/^\s*left: auto;\s*right: 0\.25rem;\s*$/);
+    expect(body(".neuwo-form-toggle__input:checked + .neuwo-form-toggle__track:dir(rtl)::after")).toMatch(/^\s*transform: translateY\(-50%\) translateX\(-1\.5rem\);\s*$/);
+    for (const [, transition] of css.replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/transition:\s*([^;]+);/g)) {
+      expect(transition, transition).not.toMatch(/\b(left|right|inset[\w-]*|top|width|margin[\w-]*)\b/);
+    }
+  });
+
   it("draws the thumb in CanvasText under forced colours, where the forced Canvas background would hide it", () => {
     const forced = css.match(/@media \(forced-colors: active\) \{([\s\S]*?\})\s*\}/)?.[1] ?? "";
     expect(forced).toMatch(/^\s*\.neuwo-form-toggle__track::after\s*\{\s*background: CanvasText;\s*\}$/);

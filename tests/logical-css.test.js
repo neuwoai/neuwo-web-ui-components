@@ -49,6 +49,13 @@ const ALLOWED = {
     "left: 50%": "centring a top-centre or bottom-centre notice, which is the same in either direction",
     "transform: translateX(-50%)": "the centring's half-width step back",
   },
+  "src/components/selection/toggle/toggle.css": {
+    "left: 0.25rem": "the thumb's anchor, which moves by transform as animations must; the dir attribute mirrors it",
+    "right: 0.25rem": "the thumb's anchor in a right-to-left context",
+    "left: auto": "releases the left-to-right anchor in a right-to-left context",
+    "transform: translateY(-50%) translateX(1.5rem)": "the checked thumb's slide",
+    "transform: translateY(-50%) translateX(-1.5rem)": "the checked thumb's slide in a right-to-left context",
+  },
   "src/components/selection/segmented/segmented.css": {
     "left: 0": "the pill's origin for the script's physical offsetLeft translate, which already follows the options' order",
   },

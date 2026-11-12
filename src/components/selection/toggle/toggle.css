@@ -44,13 +44,13 @@ neuwo-toggle:not([hidden]) {
   content: "";
   position: absolute;
   top: 50%;
-  inset-inline-start: 0.25rem;
+  left: 0.25rem;
   width: 1.125rem;
   height: 1.125rem;
   background: var(--neuwo-color-heading);
   border-radius: var(--neuwo-radius-full);
   transform: translateY(-50%);
-  transition: inset-inline-start var(--neuwo-transition-fast);
+  transition: transform var(--neuwo-transition-fast);
 }
 
 /* Checked: the track fills solid --neuwo-color-blue and the thumb stays
@@ -61,7 +61,17 @@ neuwo-toggle:not([hidden]) {
 }
 
 .neuwo-form-toggle__input:checked + .neuwo-form-toggle__track::after {
-  inset-inline-start: 1.75rem;
+  transform: translateY(-50%) translateX(1.5rem);
+}
+
+/* A transform cannot follow the writing direction, so the dir attribute mirrors the thumb, as it does the range fill. */
+.neuwo-form-toggle__track:dir(rtl)::after {
+  left: auto;
+  right: 0.25rem;
+}
+
+.neuwo-form-toggle__input:checked + .neuwo-form-toggle__track:dir(rtl)::after {
+  transform: translateY(-50%) translateX(-1.5rem);
 }
 
 .neuwo-form-toggle__input:focus-visible + .neuwo-form-toggle__track {
