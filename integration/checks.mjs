@@ -88,7 +88,9 @@ async function compareServed() {
     if (node.nodeType === Node.COMMENT_NODE) return `<!--${node.data}-->`;
     if (node.nodeType !== Node.ELEMENT_NODE) return "";
     const attributes = [...node.attributes].map(({ name, value }) => ` ${name}="${value}"`).sort().join("");
-    return `<${node.localName}${attributes}>${[...node.childNodes].map(markup).join("")}</${node.localName}>`;
+    // DOMParser keeps scripting off, so a noscript holds elements there and raw text on the live page.
+    const inner = node.localName === "noscript" ? "" : [...node.childNodes].map(markup).join("");
+    return `<${node.localName}${attributes}>${inner}</${node.localName}>`;
   };
   for (const [index, host] of live.entries()) {
     const before = markup(served[index]);

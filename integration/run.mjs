@@ -20,6 +20,7 @@ const SELF_TEST = {
   "rebuild.html": "adoption",
   "loading-write.html": "adoption",
   "unstyled.html": "noScript",
+  "noscript-host.html": null,
 };
 const USAGE = "Usage: node integration/run.mjs [--self-test] [--browser=chromium|firefox|all] [--keep] [target ...]";
 
@@ -131,7 +132,7 @@ async function runTarget(name, browsers, context) {
     return false;
   }
   if (!app.pages?.length) {
-    await app.stop();
+    await app.stop().catch((error) => log(String(error?.stack ?? error)));
     print(name, "-", "-", { check: "start", status: "fail", detail: "the target returned no pages" });
     return false;
   }
