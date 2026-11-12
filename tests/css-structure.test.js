@@ -54,9 +54,9 @@ describe("recipe and foundation sheets", () => {
     expect(structureErrors(readFileSync(file, "utf8"))).toEqual([]);
   });
 
-  it("declares the shimmer width on the shimmer rule", () => {
+  it("declares the shimmer percentage on the shimmer rule", () => {
     const rules = flatRules(readFileSync(join(root, "components/badge/badge.css"), "utf8"));
     const shimmer = rules.find((rule) => rule.selectors.includes(".neuwo-badge--shimmer"));
-    expect(shimmer?.declarations.get("--neuwo-badge-shimmer-width")).toBe("35");
+    expect(shimmer?.declarations.get("--neuwo-badge-shimmer-percent")).toBe("35");
   });
 });

@@ -31,6 +31,10 @@ function attributesFor(m, tag) {
   return names;
 }
 
+function cssPropertiesFor(m, tag) {
+  return new Set((declByTag(m, tag)?.cssProperties ?? []).map((property) => property.name));
+}
+
 const classes = () =>
   (manifest.modules ?? []).flatMap((mod) => (mod.declarations ?? []).filter((dec) => dec.kind === "class").map((dec) => ({ dec, path: mod.path })));
 
@@ -240,6 +244,12 @@ describe("custom-elements.json", () => {
   it("documents the badge's six axes", () => {
     const attrs = attributesFor(manifest, "neuwo-badge");
     for (const a of ["variant", "size", "borderless", "motion", "intensity", "glow"]) expect(attrs).toContain(a);
+  });
+
+  it("documents the badge shimmer percentage and not the 0.1 width name", () => {
+    const properties = cssPropertiesFor(manifest, "neuwo-badge");
+    expect(properties).toContain("--neuwo-badge-shimmer-percent");
+    expect(properties).not.toContain("--neuwo-badge-shimmer-width");
   });
 
   it("documents the deal-id size attribute", () => {

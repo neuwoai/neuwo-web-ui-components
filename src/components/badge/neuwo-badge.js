@@ -24,6 +24,7 @@ import { badgeTemplate } from "./badge.template.js";
  * @slot - the label content.
  * @cssprop --neuwo-color-blue - brand accent for the blue variant; re-theme on :root.
  * @cssprop --neuwo-color-green - brand accent for the green variant; re-theme on :root.
+ * @cssprop --neuwo-badge-shimmer-percent - width of the shimmer sweep as a unitless percentage of the badge, default 35 (25 on small intensity, 55 on large); write `40`, not `40%`.
  */
 export class NeuwoBadge extends NeuwoElement {
   static template = badgeTemplate;

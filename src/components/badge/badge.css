@@ -53,7 +53,7 @@ neuwo-badge {
 
 /* The sweep is drawn in --neuwo-color-shimmer, not currentColor, so it looks the same on either variant. */
 .neuwo-badge--shimmer {
-  --neuwo-badge-shimmer-width: 35;
+  --neuwo-badge-shimmer-percent: 35;
   --neuwo-badge-shimmer-strength: 100%;
   position: relative;
   overflow: hidden;
@@ -64,7 +64,7 @@ neuwo-badge {
   position: absolute;
   top: 0;
   left: -100%;
-  width: calc(var(--neuwo-badge-shimmer-width) * 1%);
+  width: calc(var(--neuwo-badge-shimmer-percent) * 1%);
   height: 100%;
   background: linear-gradient(
     90deg,
@@ -79,21 +79,21 @@ neuwo-badge {
 /* translateX percentages are of the sweep, so three badge widths is 300% * 100 / its unitless width. */
 @keyframes neuwo-badge-shimmer {
   0%        { transform: translateX(0); }
-  30%, 100% { transform: translateX(calc(300% * 100 / var(--neuwo-badge-shimmer-width))); }
+  30%, 100% { transform: translateX(calc(300% * 100 / var(--neuwo-badge-shimmer-percent))); }
 }
 
 /* After both motions, so its custom properties override their defaults. */
 .neuwo-badge--intensity-s {
   --neuwo-badge-pulse-spread: 4px;
   --neuwo-badge-pulse-alpha: 14%;
-  --neuwo-badge-shimmer-width: 25;
+  --neuwo-badge-shimmer-percent: 25;
   --neuwo-badge-shimmer-strength: 60%;
 }
 
 .neuwo-badge--intensity-l {
   --neuwo-badge-pulse-spread: 10px;
   --neuwo-badge-pulse-alpha: 30%;
-  --neuwo-badge-shimmer-width: 55;
+  --neuwo-badge-shimmer-percent: 55;
   --neuwo-badge-shimmer-strength: 100%;
 }
 

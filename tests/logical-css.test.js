@@ -28,7 +28,7 @@ const ALLOWED = {
   "src/components/badge/badge.css": {
     "left: -100%": "the shimmer is a decorative light sweep with no reading order, and its keyframes move it by transform",
     "transform: translateX(0)": "the shimmer sweep's start",
-    "transform: translateX(calc(300% * 100 / var(--neuwo-badge-shimmer-width)))": "the shimmer sweep's end",
+    "transform: translateX(calc(300% * 100 / var(--neuwo-badge-shimmer-percent)))": "the shimmer sweep's end",
   },
   "src/components/cta/cta.css": {
     "transform: translateX(0) skewX(-15deg)": "the scan line is a decorative sweep with no reading order",

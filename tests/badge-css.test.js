@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -52,7 +52,7 @@ describe("badge.css recipe", () => {
     // The keyframes read the axis, so one block covers all three steps.
     expect(css).toContain("var(--neuwo-badge-pulse-spread)");
     expect(css).toContain("var(--neuwo-badge-pulse-alpha)");
-    expect(css).toContain("var(--neuwo-badge-shimmer-width)");
+    expect(css).toContain("var(--neuwo-badge-shimmer-percent)");
     expect(css).toContain("var(--neuwo-badge-shimmer-strength)");
     expect(css.match(/@keyframes neuwo-badge-pulse/g)).toHaveLength(1);
     expect(css.match(/@keyframes neuwo-badge-shimmer/g)).toHaveLength(1);
@@ -63,7 +63,7 @@ describe("badge.css recipe", () => {
   it("sweeps the shimmer with transform, measured in sweep widths, and moves no layout property", () => {
     const [, shimmer] = css.match(/@keyframes neuwo-badge-shimmer\s*{([\s\S]*?)\n}/);
     expect(shimmer).toMatch(/transform:\s*translateX\(/);
-    expect(shimmer).toContain("var(--neuwo-badge-shimmer-width)");
+    expect(shimmer).toContain("var(--neuwo-badge-shimmer-percent)");
     for (const [, frames] of css.matchAll(/@keyframes [\w-]+\s*{([\s\S]*?)\n}/g)) {
       expect(frames).not.toMatch(/(?<![\w-])(left|right|top|width|margin(-[a-z]+)?)\s*:/);
     }
@@ -82,5 +82,13 @@ describe("badge.css recipe", () => {
     expect(css).not.toContain(":host");
     expect(css).toMatch(/^neuwo-badge\s*{[^}]*display: inline-block/m);
     expect(css).not.toMatch(/(^|[\s,}])\.(badge|deal-id|status-dot)(?![\w-])/);
+  });
+});
+
+describe("shimmer width rename", () => {
+  it("leaves no stylesheet under src naming the 0.1 shimmer width", () => {
+    const sheets = readdirSync(join(__dirname, "../src"), { recursive: true }).filter((file) => file.endsWith(".css"));
+    expect(sheets.length).toBeGreaterThan(0);
+    for (const file of sheets) expect(readFileSync(join(__dirname, "../src", file), "utf8")).not.toMatch(/shimmer-width/);
   });
 });
