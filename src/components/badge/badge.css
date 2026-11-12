@@ -61,6 +61,10 @@ neuwo-badge {
   50%      { box-shadow: 0 0 0 var(--neuwo-badge-pulse-spread) color-mix(in srgb, currentColor 0%, transparent); }
 }
 
+/* Shimmer motion: a sweeping highlight (the design system's solutions badge),
+   variant-independent via --neuwo-color-shimmer. Mutually exclusive with pulse. */
+.neuwo-badge--shimmer {
+  --neuwo-badge-shimmer-width: 35;
   --neuwo-badge-shimmer-strength: 100%;
   position: relative;
   overflow: hidden;
