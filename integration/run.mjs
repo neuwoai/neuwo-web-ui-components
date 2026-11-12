@@ -1,0 +1,174 @@
+import { execFile } from "node:child_process";
+import { cp, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { promisify } from "node:util";
+import { launch } from "./browsers.mjs";
+import { CHECKS, VIEWPORT, runChecks } from "./checks.mjs";
+import { serveStatic } from "./serve.mjs";
+
+const exec = promisify(execFile);
+const HERE = dirname(fileURLToPath(import.meta.url));
+const ROOT = dirname(HERE);
+const PACKAGE = "@neuwo/web-ui-library--demo";
+const BROWSERS = ["chromium", "firefox"];
+const SELF_TEST = {
+  "good.html": null,
+  "console-error.html": "console",
+  "layout-shift.html": "layoutShift",
+  "rebuild.html": "adoption",
+  "unstyled.html": "noScript",
+};
+const USAGE = "Usage: node integration/run.mjs [--self-test] [--browser=chromium|firefox|all] [--keep] [target ...]";
+
+class Halt extends Error {}
+
+const log = (message) => process.stderr.write(`${message}\n`);
+const oneLine = (text) => String(text).replace(/\s+/g, " ").trim();
+
+function print(target, browser, page, { check, status, detail }) {
+  const columns = [target.padEnd(10), browser.padEnd(9), page.padEnd(19), check.padEnd(12), status.padEnd(5), oneLine(detail)];
+  console.log(columns.join(" ").trimEnd());
+}
+
+function parse(args, known) {
+  const options = { selfTest: false, browsers: BROWSERS, keep: false, targets: [] };
+  for (const arg of args) {
+    if (arg === "--self-test") options.selfTest = true;
+    else if (arg === "--keep") options.keep = true;
+    else if (arg.startsWith("--browser=")) {
+      const value = arg.slice("--browser=".length);
+      if (value !== "all" && !BROWSERS.includes(value)) throw new Halt(`Unknown browser "${value}".\n${USAGE}`);
+      options.browsers = value === "all" ? BROWSERS : [value];
+    } else if (arg.startsWith("-")) throw new Halt(`Unknown option "${arg}".\n${USAGE}`);
+    else if (!known.includes(arg)) throw new Halt(`Unknown target "${arg}"; the targets are ${known.join(", ")}.`);
+    else options.targets.push(arg);
+  }
+  if (!options.selfTest && options.targets.length === 0) options.targets = known;
+  return options;
+}
+
+async function pack(work) {
+  log("Packing the library");
+  await exec("npm", ["pack", "--pack-destination", work], { cwd: ROOT, maxBuffer: 64 * 1024 * 1024 });
+  const tarball = (await readdir(work)).find((name) => name.endsWith(".tgz"));
+  if (!tarball) throw new Error("npm pack wrote no tarball.");
+  return join(work, tarball);
+}
+
+async function copyApps(work, tarball) {
+  const apps = join(work, "apps");
+  await cp(join(HERE, "apps"), apps, { recursive: true, filter: (source) => !/[\\/](node_modules|_site|dist|\.next)$/.test(source) });
+  for (const name of await readdir(apps)) {
+    const file = join(apps, name, "package.json");
+    const text = await readFile(file, "utf8").catch(() => null);
+    if (text === null) continue;
+    const manifest = JSON.parse(text);
+    manifest.dependencies = { ...manifest.dependencies, [PACKAGE]: `file:${tarball}` };
+    await writeFile(file, `${JSON.stringify(manifest, null, 2)}\n`);
+  }
+}
+
+async function selfTest(browsers) {
+  const { expand } = await import(pathToFileURL(join(ROOT, "dist", "server.js")).href);
+  const server = await serveStatic(ROOT, { html: expand });
+  const broken = [];
+  try {
+    for (const [name, browser] of browsers) {
+      for (const [page, own] of Object.entries(SELF_TEST)) {
+        for (const result of await runChecks(browser, name, `${server.url}/integration/self-test/${page}`, CHECKS)) {
+          print("self-test", name, page, result);
+          const expected = result.check === own ? "fail" : "pass";
+          if (result.status !== expected && result.status !== "n/a") {
+            broken.push(`${name} ${page} ${result.check}: expected ${expected}, got ${result.status}`);
+          }
+        }
+      }
+    }
+  } finally {
+    await server.stop();
+  }
+  if (broken.length === 0) console.log("self-test: good.html passed every check and each other page failed only its own");
+  for (const line of broken) console.log(`self-test broken: ${line}`);
+  return broken.length === 0;
+}
+
+async function interactWith(browser, target, url) {
+  const context = await browser.createBrowserContext();
+  try {
+    const page = await context.newPage();
+    await page.setViewport(VIEWPORT);
+    return await target.interact(page, url);
+  } catch (error) {
+    return [{ check: "interact", status: "fail", detail: error.message }];
+  } finally {
+    await context.close();
+  }
+}
+
+async function runTarget(name, browsers, context) {
+  const target = await import(pathToFileURL(join(HERE, "targets", `${name}.mjs`)).href);
+  log(`Starting ${name}`);
+  let app;
+  try {
+    app = await target.start(context);
+  } catch (error) {
+    log(String(error?.stack ?? error));
+    print(name, "-", "-", { check: "start", status: "fail", detail: error.message });
+    return false;
+  }
+  let passed = true;
+  try {
+    for (const [browserName, browser] of browsers) {
+      for (const url of app.pages) {
+        const results = await runChecks(browser, browserName, url, target.checks);
+        if (target.interact) results.push(...(await interactWith(browser, target, url)));
+        for (const result of results) {
+          print(name, browserName, new URL(url).pathname, result);
+          if (result.status === "fail") passed = false;
+        }
+      }
+    }
+  } finally {
+    await app.stop();
+  }
+  return passed;
+}
+
+async function main() {
+  const known = (await readdir(join(HERE, "targets"))).filter((name) => name.endsWith(".mjs")).map((name) => name.slice(0, -4)).sort();
+  const options = parse(process.argv.slice(2), known);
+  const started = Date.now();
+  const work = await mkdtemp(join(tmpdir(), "neuwo-integration-"));
+  const browsers = new Map();
+  let passed = true;
+  try {
+    for (const name of options.browsers) {
+      try {
+        browsers.set(name, await launch(name));
+      } catch (error) {
+        passed = false;
+        print("-", name, "-", { check: "launch", status: "fail", detail: error.message });
+      }
+    }
+    if (browsers.size === 0) throw new Halt("No browser launched, so nothing was checked.");
+    const tarball = await pack(work);
+    if (options.targets.length) await copyApps(work, tarball);
+    if (options.selfTest && !(await selfTest(browsers))) passed = false;
+    for (const name of options.targets) {
+      if (!(await runTarget(name, browsers, { tarball, work, log }))) passed = false;
+    }
+  } finally {
+    await Promise.all([...browsers.values()].map((browser) => browser.close()));
+    if (options.keep) log(`Kept the work folder ${work}`);
+    else await rm(work, { recursive: true, force: true });
+  }
+  log(`${passed ? "Passed" : "Failed"} in ${Math.round((Date.now() - started) / 1000)} s`);
+  process.exitCode = passed ? 0 : 1;
+}
+
+main().catch((error) => {
+  log(error instanceof Halt ? error.message : String(error?.stack ?? error));
+  process.exitCode = 1;
+});

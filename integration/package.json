@@ -1,0 +1,8 @@
+{
+  "name": "neuwo-integration",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "puppeteer-core": "24.11.2"
+  }
+}

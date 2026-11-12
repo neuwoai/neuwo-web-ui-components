@@ -76,6 +76,47 @@ Edit the single source (the CSS file, the template and the element). The publish
 with it. Do not edit the design system from this repo; it picks the change up on the next version
 bump.
 
+## Integration check
+
+`integration/` checks the packed library in real sites and browsers, apart from `npm test`. It packs
+the library, installs the tarball into each app under `integration/apps/`, builds and serves the app,
+and loads its pages in Chromium and Firefox through puppeteer-core. Install its dependencies once:
+
+```bash
+npm install --prefix integration
+```
+
+It finds a browser through `NEUWO_CHROMIUM` or `NEUWO_FIREFOX`, each the path to the executable, or
+else on `PATH`: `chromium`, `chromium-browser`, `google-chrome` or `google-chrome-stable`, and
+`firefox`. Firefox is driven over WebDriver BiDi. Run every target in both browsers:
+
+```bash
+npm run integration
+```
+
+Name targets to run only those (`npm run integration -- eleventy`), choose a browser with
+`--browser=chromium`, `firefox` or `all`, and keep the work folder in the system temporary folder
+with `--keep`. Each result is one line: target, browser, page, check, status and detail. The run
+exits 1 on any `fail` or on a browser it cannot launch.
+
+- `console`: no page error, console error or hydration warning.
+- `layoutShift`: the page does not shift at 1280 by 800. Only Chromium reports layout shifts, so it
+  is `n/a` in Firefox.
+- `noScript`: with JavaScript off, the first `.neuwo-btn` has the background it has with JavaScript
+  on, not the browser default. Puppeteer cannot turn JavaScript off in Firefox, so it is `n/a` there.
+- `adoption`: nothing writes inside a `neuwo-*` element, so each adopts its server markup as it is.
+
+After changing a check, run `npm run integration -- --self-test`. It serves the pages in
+`integration/self-test/`, expanded with `expand`: `good.html` must pass every check, and each other
+page must fail only the check it is named for.
+
+The apps are installed with `npm install`. To install only from the npm cache, here and in the
+one-time install above, set `npm_config_offline=true`:
+
+```bash
+npm_config_offline=true npm run integration
+```
+
 ## Cut a version
 
 1. Update the version in `package.json` (semver: a renamed public selector or attribute is a

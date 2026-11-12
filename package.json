@@ -43,6 +43,7 @@
     "pretest": "npm run analyze",
     "test": "vitest run",
     "test:watch": "vitest",
+    "integration": "node integration/run.mjs",
     "types": "tsc -p tsconfig.json",
     "types:jsx": "node scripts/jsx-types.js && tsc -p tests/react/tsconfig.json",
     "fonts:fallback": "node scripts/fallback-metrics.js",
