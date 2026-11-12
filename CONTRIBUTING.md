@@ -120,13 +120,14 @@ under `next build` then `next start`. Besides the four checks they run `forms` o
 component in `integration/apps/shared/`, once React has hydrated it. In its controlled form, typing,
 a combobox pick, a checkbox tick and a range move must each reach React's state and show in the
 field; its uncontrolled form must submit its defaults, then the values the user changed, then its
-defaults again after a reset, each time with no name submitted twice. The runner copies
-`apps/shared/` into each app as `shared/`, so its imports resolve from that app's own
-`node_modules`. Next.js runs with telemetry off and behind a proxy that refuses every connection,
-because `next dev` asks the npm registry for its latest version; the run logs each request it
-refused. Before Next.js starts, a child process fetches `http://neuwo.invalid/` with the proxy's
-settings, and the target fails unless the proxy saw it, so a Node that ignores `NODE_USE_ENV_PROXY`
-cannot reach the network.
+defaults again after a reset, each time with no name submitted twice. An app lists the folders of
+`integration/apps/` it imports under `neuwoIntegration.copy` in its `package.json`, as the Next.js
+app lists `shared`, and the runner copies each into the app, so their imports resolve from that
+app's own `node_modules`. Next.js runs with telemetry off and behind a proxy that refuses every
+connection, because `next dev` asks the npm registry for its latest version; the run logs each
+request it refused. Before Next.js starts, a child process fetches `http://neuwo.invalid/` with the
+proxy's settings, and the target fails unless the proxy saw it, so a Node that ignores
+`NODE_USE_ENV_PROXY` cannot reach the network.
 
 After changing a check, run `npm run integration -- --self-test`. It serves the pages in
 `integration/self-test/`, expanded with `expand`. `good.html` must pass every check that runs, each

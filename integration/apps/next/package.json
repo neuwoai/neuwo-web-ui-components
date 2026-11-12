@@ -1,6 +1,7 @@
 {
   "name": "neuwo-integration-next",
   "private": true,
+  "neuwoIntegration": { "copy": ["shared"] },
   "dependencies": {
     "next": "16.4.6",
     "react": "19.3.1",
