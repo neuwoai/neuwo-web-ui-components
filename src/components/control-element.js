@@ -1,4 +1,4 @@
-import { NeuwoElement, ownedByReact } from "../core/element.js";
+import { NeuwoElement, listenEarly, ownedByReact } from "../core/element.js";
 
 /**
  * Base for the light DOM elements built on native form controls: the fields, the selection controls and the radio
@@ -15,8 +15,8 @@ export class NeuwoControlElement extends NeuwoElement {
   /** @type {HTMLFormElement | null} */
   #form = null;
 
-  /** @type {Window | null} */
-  #window = null;
+  /** @type {(() => void) | null} */
+  #unlisten = null;
 
   /** @type {Event | null} */
   #heard = null;
@@ -28,7 +28,7 @@ export class NeuwoControlElement extends NeuwoElement {
     setTimeout(() => this.formReset(), 0);
   };
 
-  // React stops the reset event of a tree it has not hydrated at its root, which a listener on the window precedes.
+  // React stops the reset event of a tree it has not hydrated at its root, which the early listeners precede.
   /** @param {Event} event */
   #onEarlyReset = (event) => {
     if (event.target === this.#form && !ownedByReact(this)) this.#onReset(event);
@@ -116,15 +116,15 @@ export class NeuwoControlElement extends NeuwoElement {
 
   connect() {
     this.#bindForm();
-    this.#window = this.ownerDocument.defaultView;
-    this.#window?.addEventListener("reset", this.#onEarlyReset, true);
+    this.#unlisten?.();
+    this.#unlisten = listenEarly(this, "reset", this.#onEarlyReset);
   }
 
   disconnect() {
     this.#form?.removeEventListener("reset", this.#onReset);
     this.#form = null;
-    this.#window?.removeEventListener("reset", this.#onEarlyReset, true);
-    this.#window = null;
+    this.#unlisten?.();
+    this.#unlisten = null;
   }
 
   updated() {

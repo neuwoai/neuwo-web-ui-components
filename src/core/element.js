@@ -51,6 +51,27 @@ export function ownedByReact(el) {
 }
 
 /**
+ * Listens for an event in the capture phase where it arrives before a React root that has not hydrated the element
+ * stops it: on the window, and also on the element's shadow root when it is inside one, since an event there reaches
+ * the window retargeted to the shadow host, or not at all when it is not composed.
+ * @param {Element} el
+ * @param {string} type
+ * @param {(event: Event) => void} listener
+ * @returns {() => void} removes the listeners
+ */
+export function listenEarly(el, type, listener) {
+  const root = el.getRootNode();
+  /** @type {EventTarget[]} */
+  const targets = [];
+  if (el.ownerDocument.defaultView) targets.push(el.ownerDocument.defaultView);
+  if (typeof ShadowRoot === "function" && root instanceof ShadowRoot) targets.push(root);
+  for (const target of targets) target.addEventListener(type, listener, true);
+  return () => {
+    for (const target of targets) target.removeEventListener(type, listener, true);
+  };
+}
+
+/**
  * Base class for light DOM Neuwo custom elements. The markup is one pure
  * template function, rendered on connect or adopted when the server or React
  * already produced it, and patched in place when an attribute changes or a

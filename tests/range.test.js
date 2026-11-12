@@ -357,6 +357,21 @@ describe("<neuwo-range> under React", () => {
     expect([rangeOf(host).value, fillOf(host)]).toEqual(["20", "20%"]);
   });
 
+  it.each(["open", "closed"])("follows a move and a form reset that a React root stops inside a shadow root, %s", async (mode) => {
+    const holder = attach(document.createElement("div"));
+    const shadow = holder.attachShadow({ mode });
+    shadow.innerHTML = `<div class="root"><form><neuwo-range min="0" max="100" value="20"></neuwo-range></form></div>`;
+    // Stands in for a React root inside the shadow root that has not hydrated this tree.
+    for (const type of ["input", "reset"]) shadow.querySelector(".root").addEventListener(type, (event) => event.stopPropagation(), true);
+    const host = shadow.querySelector("neuwo-range");
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(rangeOf(host), "45");
+    rangeOf(host).dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+    expect(fillOf(host)).toBe("45%");
+    shadow.querySelector("form").reset();
+    await nextTask();
+    expect([rangeOf(host).value, fillOf(host)]).toEqual(["20", "20%"]);
+  });
+
   it("redraws its fill from the live value once hydrated, after a move React held back, and resets to its start", async () => {
     const errors = vi.spyOn(console, "error");
     const tree = () => jsx("form", { children: jsx("neuwo-range", { name: "r", defaultValue: 20 }) });
