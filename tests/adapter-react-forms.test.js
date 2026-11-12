@@ -281,11 +281,20 @@ describe("React adapter: a value the control took before React hydrated it", () 
     expect(errors).not.toHaveBeenCalled();
   });
 
-  it("draws nothing new for a control whose value did not change", async () => {
+  it("renders a control whose value did not change once when it hydrates, and twice more when it did", async () => {
     const errors = vi.spyOn(console, "error");
-    const { container } = await hydrateAfter(jsx("x-dial", { defaultValue: "a", name: "q" }), () => {});
-    expect(container.querySelector(".x-dial__shown").textContent).toBe("shows a");
-    expect(container.querySelector(".x-dial__input").defaultValue).toBe("a");
+    const dial = vi.fn(formTemplates["x-dial"]);
+    const { jsx: create } = createRuntime({ "x-dial": dial });
+    const tree = create("x-dial", { defaultValue: "a", name: "q" });
+    const unchanged = await hydrateAfter(tree, () => dial.mockClear());
+    expect(dial).toHaveBeenCalledTimes(1);
+    expect(unchanged.container.querySelector(".x-dial__shown").textContent).toBe("shows a");
+    const changed = await hydrateAfter(tree, (holder) => {
+      dial.mockClear();
+      setValue(holder.querySelector(".x-dial__input"), "b");
+    });
+    expect(dial).toHaveBeenCalledTimes(3);
+    expect(changed.container.querySelector(".x-dial__shown").textContent).toBe("shows b");
     expect(errors).not.toHaveBeenCalled();
   });
 });
