@@ -1,4 +1,4 @@
-/** @typedef {{ tag: string, props: Record<string, string | true>, children: TemplateChild[], control?: true }} TemplateNode */
+/** @typedef {{ tag: string, props: Record<string, string | true>, children: TemplateChild[], control?: true, live?: true }} TemplateNode */
 /** @typedef {TemplateNode | string | { region: string } | { raw: string }} TemplateChild */
 /**
  * An author child. An element's `children` describe its own child nodes the same way, whitespace-only text left out.
@@ -9,7 +9,8 @@
 /**
  * A template's blocks are the classes in its output that contain neither `__` nor `--`; the root's first class
  * is the root block. Every element it renders carries a class owned by one of its blocks: the block itself,
- * `<block>__*` or `<block>--*`. At most one node is marked as the form control with `control()`.
+ * `<block>__*` or `<block>--*`. At most one node is marked as the form control with `control()`, and every node the
+ * element writes live state into with `live()`.
  * A region is the only child of its element, its wrapper. Every wrapper is rendered for every attribute
  * combination and carries a class unique within the template that is one of its blocks or a `<block>__<name>`
  * class, never a `--` modifier. Template text and elements appear only in elements that hold no region. The
@@ -87,6 +88,18 @@ export function raw(html) {
  */
 export function control(node) {
   node.control = true;
+  return node;
+}
+
+/**
+ * Marks a node the element writes live state into, such as a range's fill or a combobox's shown label, which can
+ * differ from the markup by the time React hydrates it. The React adapter lets React keep what the node then holds;
+ * the other adapters render the marker as nothing.
+ * @param {TemplateNode} node
+ * @returns {TemplateNode}
+ */
+export function live(node) {
+  node.live = true;
   return node;
 }
 

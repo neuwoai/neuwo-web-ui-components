@@ -1,4 +1,4 @@
-import { control, h, has, region } from "../../../core/template.js";
+import { control, h, has, live, region } from "../../../core/template.js";
 import { controlAttrs, controlClass, fieldTemplate } from "../field.template.js";
 import { readOptions, resolveValue } from "../options.js";
 
@@ -30,18 +30,20 @@ export function comboboxTemplate(attrs, ctx) {
    * @param {ListOption} option
    */
   const row = (tag, option) =>
-    h(
-      tag,
-      {
-        class: "neuwo-combobox__option",
-        id: ctx.id(`option-${option.index}`),
-        role: "option",
-        "data-value": option.value,
-        "data-index": String(option.index),
-        "aria-selected": String(Boolean(chosen) && option.value === value),
-        "aria-disabled": option.disabled && "true",
-      },
-      option.label,
+    live(
+      h(
+        tag,
+        {
+          class: "neuwo-combobox__option",
+          id: ctx.id(`option-${option.index}`),
+          role: "option",
+          "data-value": option.value,
+          "data-index": String(option.index),
+          "aria-selected": String(Boolean(chosen) && option.value === value),
+          "aria-disabled": option.disabled && "true",
+        },
+        option.label,
+      ),
     );
   /** @type {TemplateNode[]} */
   const rows = [];
@@ -67,26 +69,30 @@ export function comboboxTemplate(attrs, ctx) {
   const box = h(
     "div",
     { class: "neuwo-combobox" },
-    has(attrs, "searchable")
-      ? h("input", {
-          class: triggerClass,
-          type: "text",
-          ...trigger,
-          autocomplete: "off",
-          "aria-autocomplete": "list",
-          value: chosen?.label,
-          placeholder: attrs.placeholder,
-        })
-      : h("button", { class: triggerClass, type: "button", ...trigger }, h("span", { class: "neuwo-combobox__value" }, chosen ? chosen.label : attrs.placeholder)),
+    live(
+      has(attrs, "searchable")
+        ? h("input", {
+            class: triggerClass,
+            type: "text",
+            ...trigger,
+            autocomplete: "off",
+            "aria-autocomplete": "list",
+            value: chosen?.label,
+            placeholder: attrs.placeholder,
+          })
+        : h("button", { class: triggerClass, type: "button", ...trigger }, live(h("span", { class: "neuwo-combobox__value" }, chosen ? chosen.label : attrs.placeholder))),
+    ),
     h("span", { class: "neuwo-combobox__chevron", "aria-hidden": "true" }),
-    h(
-      "div",
-      { class: "neuwo-combobox__popup", popover: "auto", id: ctx.id("popup") },
+    live(
       h(
-        "ul",
-        { class: "neuwo-combobox__listbox", role: "listbox", id: ctx.id("listbox"), "aria-labelledby": ctx.id("label") },
-        rows,
-        h("li", { class: "neuwo-combobox__empty", role: "presentation", hidden: true }, "No matches"),
+        "div",
+        { class: "neuwo-combobox__popup", popover: "auto", id: ctx.id("popup") },
+        h(
+          "ul",
+          { class: "neuwo-combobox__listbox", role: "listbox", id: ctx.id("listbox"), "aria-labelledby": ctx.id("label") },
+          rows,
+          h("li", { class: "neuwo-combobox__empty", role: "presentation", hidden: true }, "No matches"),
+        ),
       ),
     ),
     h("select", { class: "neuwo-combobox__options", multiple: true, hidden: true, tabindex: "-1", "aria-hidden": "true" }, region()),

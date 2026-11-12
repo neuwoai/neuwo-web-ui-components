@@ -256,6 +256,31 @@ describe("<neuwo-segmented> server rendered", () => {
     }
     expect(errors).not.toHaveBeenCalled();
   });
+
+  it("hydrates with no warning over a value a script set before hydration, keeping it", async () => {
+    const errors = vi.spyOn(console, "error");
+    const trees = [() => segmented({ defaultValue: "json", name: "a" }), () => segmented({ name: "a" })];
+    for (const [index, tree] of trees.entries()) {
+      const parsed = document.createElement("div");
+      parsed.innerHTML = renderToString(tree());
+      parsed.firstElementChild.value = "table";
+      const container = attach(document.createElement("div"));
+      container.append(...parsed.childNodes);
+      const host = container.querySelector("neuwo-segmented");
+      expect([checkedOf(host), stopOf(host)], String(index)).toEqual([["table"], ["table"]]);
+      const recoverable = [];
+      let root;
+      act(() => {
+        root = hydrateRoot(container, tree(), { onRecoverableError: (thrown) => void recoverable.push(String(thrown?.message ?? thrown)) });
+      });
+      cleanup.push(() => act(() => root.unmount()));
+      await settled();
+      expect(recoverable, String(index)).toEqual([]);
+      expect(container.querySelector("neuwo-segmented"), String(index)).toBe(host);
+      expect([host.value, checkedOf(host), stopOf(host)], String(index)).toEqual(["table", ["table"], ["table"]]);
+    }
+    expect(errors).not.toHaveBeenCalled();
+  });
 });
 
 describe("<neuwo-segmented> rendered by a Server Component", () => {

@@ -1,4 +1,4 @@
-import { control, h, has } from "../../../core/template.js";
+import { control, h, has, live } from "../../../core/template.js";
 import { controlAttrs, controlClass, fieldTemplate } from "../field.template.js";
 
 const FORWARDED = ["name", "min", "max", "step", "value"];
@@ -66,14 +66,16 @@ export function rangeTemplate(attrs, ctx) {
   return fieldTemplate(
     attrs,
     ctx,
-    control(
-      h("input", {
-        class: `${controlClass(attrs)} neuwo-range`,
-        type: "range",
-        ...controlAttrs(attrs, ctx, FORWARDED),
-        value: has(attrs, "value") ? attrs.value : String(rangeValue(attrs)),
-        style: `--neuwo-range-fill:${fillPercent(rangeValue(attrs), attrs.min, attrs.max)}%`,
-      }),
+    live(
+      control(
+        h("input", {
+          class: `${controlClass(attrs)} neuwo-range`,
+          type: "range",
+          ...controlAttrs(attrs, ctx, FORWARDED),
+          value: has(attrs, "value") ? attrs.value : String(rangeValue(attrs)),
+          style: `--neuwo-range-fill:${fillPercent(rangeValue(attrs), attrs.min, attrs.max)}%`,
+        }),
+      ),
     ),
   );
 }

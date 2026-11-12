@@ -533,6 +533,47 @@ describe("<neuwo-combobox> server rendered", () => {
     expect(errors).not.toHaveBeenCalled();
   });
 
+  it("hydrates with no warning over a value a script set and a list opened before hydration, keeping both", async () => {
+    const errors = vi.spyOn(console, "error");
+    const trees = [
+      () => combobox({ defaultValue: "fi", name: "a", placeholder: "Pick" }),
+      () => combobox({ name: "a", placeholder: "Pick" }),
+      () => combobox({ defaultValue: "fi", name: "a", searchable: true }),
+    ];
+    for (const [index, tree] of trees.entries()) {
+      const parsed = document.createElement("div");
+      parsed.innerHTML = renderToString(tree());
+      const container = attach(document.createElement("div"));
+      container.append(...parsed.childNodes);
+      const host = container.querySelector("neuwo-combobox");
+      host.value = "se";
+      if (index === 2) triggerOf(host).focus();
+      else host.open();
+      const live = () => ({
+        shown: index === 2 ? triggerOf(host).value : shownOf(host),
+        selected: selectedOf(host),
+        placeholder: placeholderShown(host),
+        expanded: triggerOf(host).getAttribute("aria-expanded"),
+        active: host.querySelector(".neuwo-combobox__option--active")?.dataset.value,
+        position: host.querySelector(".neuwo-combobox__popup").style.position,
+      });
+      const before = live();
+      expect(before, String(index)).toEqual({ shown: "Sweden", selected: ["se"], placeholder: false, expanded: "true", active: "se", position: "fixed" });
+      const recoverable = [];
+      let root;
+      act(() => {
+        root = hydrateRoot(container, tree(), { onRecoverableError: (thrown) => void recoverable.push(String(thrown?.message ?? thrown)) });
+      });
+      cleanup.push(() => act(() => root.unmount()));
+      await settled();
+      expect(recoverable, String(index)).toEqual([]);
+      expect(container.querySelector("neuwo-combobox"), String(index)).toBe(host);
+      expect(live(), String(index)).toEqual(before);
+      act(() => host.close());
+    }
+    expect(errors).not.toHaveBeenCalled();
+  });
+
   it("keeps a hydrated uncontrolled pick when React re-renders the placeholder", async () => {
     const errors = vi.spyOn(console, "error");
     const tree = (placeholder) => combobox({ placeholder });

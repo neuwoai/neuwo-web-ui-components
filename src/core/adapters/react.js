@@ -392,6 +392,7 @@ function toReact(node, regions, blocks, key, form, create) {
     props[prop] = BOOLEANS.has(prop) ? true : value === true ? "" : value;
   }
   if (typeof props.style === "string") props.style = styleOf(props.style);
+  if (node.live) props.suppressHydrationWarning = true;
   const type = /** @type {ElementType} */ (node.tag);
   /** @type {ReactNode[]} */
   const children = [];

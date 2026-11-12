@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { DEFAULT_REGION, control, distribute, h, has, normalizeProps, raw, region } from "../src/core/template.js";
+import { DEFAULT_REGION, control, distribute, h, has, live, normalizeProps, raw, region } from "../src/core/template.js";
 import { idScope } from "../src/core/ids.js";
 import { toHTML } from "../src/core/adapters/html.js";
 
@@ -57,6 +57,18 @@ describe("control()", () => {
 
   it("leaves no control attribute in the HTML", () => {
     expect(toHTML(control(h("input", { name: "q" })))).toBe('<input name="q">');
+  });
+});
+
+describe("live()", () => {
+  it("marks the node itself as one the element writes live state into", () => {
+    const node = h("span", null, "a");
+    expect(live(node)).toBe(node);
+    expect(node).toEqual({ tag: "span", props: {}, children: ["a"], live: true });
+  });
+
+  it("leaves no attribute in the HTML", () => {
+    expect(toHTML(live(control(h("input", { name: "q" }))))).toBe('<input name="q">');
   });
 });
 

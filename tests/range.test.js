@@ -333,4 +333,35 @@ describe("<neuwo-range> under React", () => {
   it("renders the fill in the server string", () => {
     expect(renderToString(jsx("neuwo-range", { min: 0, max: 200, value: 50, onChange() {} }))).toContain("--neuwo-range-fill:25%");
   });
+
+  it("hydrates with no warning over a value restored, moved or set by a script before hydration, keeping its fill", async () => {
+    const errors = vi.spyOn(console, "error");
+    const trees = [() => jsx("neuwo-range", { name: "r", defaultValue: 20 }), () => jsx("neuwo-range", { name: "r", value: 20, onChange() {} })];
+    for (const [index, tree] of trees.entries()) {
+      for (const when of ["restored", "moved", "scripted"]) {
+        const label = `${index} ${when}`;
+        const parsed = document.createElement("div");
+        parsed.innerHTML = renderToString(tree());
+        if (when === "restored") Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(rangeOf(parsed.firstElementChild), "45");
+        if (when === "scripted") parsed.firstElementChild.value = "45";
+        const container = attach(document.createElement("div"));
+        container.append(...parsed.childNodes);
+        const host = container.querySelector("neuwo-range");
+        if (when === "moved") drag(rangeOf(host), "45");
+        expect(fillOf(host), label).toBe("45%");
+        const recoverable = [];
+        let root;
+        act(() => {
+          root = hydrateRoot(container, tree(), { onRecoverableError: (thrown) => void recoverable.push(String(thrown?.message ?? thrown)) });
+        });
+        cleanup.push(() => act(() => root.unmount()));
+        await settled();
+        expect(recoverable, label).toEqual([]);
+        expect(container.querySelector("neuwo-range"), label).toBe(host);
+        expect(rangeOf(host).value, label).toBe("45");
+        expect(fillOf(host), label).toBe("45%");
+      }
+    }
+    expect(errors).not.toHaveBeenCalled();
+  });
 });

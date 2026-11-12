@@ -215,4 +215,25 @@ for (const [name, create] of Object.entries(factories)) {
     functions: functionsIn(tree),
   };
 }
+found.live = {};
+for (const [name, create] of Object.entries(factories)) {
+  const option = (value) => create("option", { value, children: value }, value);
+  const options = () => [option("a"), create("optgroup", { label: "G", children: option("b") }, "g")];
+  const radios = [create("neuwo-radio", { value: "a" }, "a"), create("neuwo-radio", { value: "b" }, "b")];
+  const Page = () =>
+    create("main", {
+      children: [
+        ...Object.keys(blocks).map((tag) => create(tag, {}, tag)),
+        create("neuwo-combobox", { children: options() }, "combobox"),
+        create("neuwo-combobox", { searchable: true, children: options() }, "searchable"),
+        create("neuwo-segmented", { children: [option("a"), option("b")] }, "segmented"),
+        create("neuwo-radio-group", { name: "g", children: radios }, "group"),
+      ],
+    });
+  const { errors, payload } = await flight(create(Page, {}));
+  assert.deepEqual(errors, [], `${name}: the live-state Flight render reported errors`);
+  const tree = await decode(payload);
+  const live = findAll(tree, (el) => el.props.suppressHydrationWarning === true).map((el) => `${el.type}.${String(el.props.className).split(" ").pop()}`);
+  found.live[name] = [...new Set(live)].sort();
+}
 console.log(JSON.stringify(found));

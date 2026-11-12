@@ -360,6 +360,53 @@ describe("createRuntime()", () => {
   });
 });
 
+describe("JSX runtime: the nodes an element writes live state into", () => {
+  const LIVE = [
+    "button.neuwo-combobox__trigger",
+    "span.neuwo-combobox__value",
+    "div.neuwo-combobox__popup",
+    "li.neuwo-combobox__option",
+    "div.neuwo-combobox__option",
+    "input.neuwo-combobox__trigger",
+    "input.neuwo-range",
+    "button.neuwo-segmented__option",
+  ].sort();
+
+  /** @param {(type: string, props: Record<string, unknown>, key?: string) => unknown} create */
+  function cases(create) {
+    const option = (value) => create("option", { value, children: value }, value);
+    const options = () => [option("a"), create("optgroup", { label: "G", children: option("b") }, "g")];
+    return [
+      ...Object.keys(templates).map((tag) => create(tag, {})),
+      create("neuwo-combobox", { children: options() }),
+      create("neuwo-combobox", { searchable: true, children: options() }),
+      create("neuwo-segmented", { children: [option("a"), option("b")] }),
+      create("neuwo-radio-group", { name: "g", children: [create("neuwo-radio", { value: "a" }, "a"), create("neuwo-radio", { value: "b" }, "b")] }),
+    ];
+  }
+
+  it("gives exactly those nodes suppressHydrationWarning, through jsx and jsxDEV", async () => {
+    const creators = {
+      jsx: (type, props, key) => (Array.isArray(props.children) ? runtime.jsxs : runtime.jsx)(type, props, key),
+      jsxDEV: (type, props, key) => devRuntime.jsxDEV(type, props, key, Array.isArray(props.children)),
+    };
+    for (const [name, create] of Object.entries(creators)) {
+      const found = new Set();
+      for (const element of cases(create)) {
+        const container = mount();
+        const root = createRoot(container);
+        await act(async () => root.render(element));
+        for (const el of container.querySelectorAll("*")) {
+          const key = Object.keys(el).find((prop) => prop.startsWith("__reactProps$"));
+          if (key && el[key].suppressHydrationWarning === true) found.add(`${el.localName}.${String(el.getAttribute("class")).split(" ").pop()}`);
+        }
+        act(() => root.unmount());
+      }
+      expect([...found].sort(), name).toEqual(LIVE);
+    }
+  });
+});
+
 describe("JSX runtime entries", () => {
   it("export React's Fragment and wrap React's element functions", () => {
     expect(runtime.Fragment).toBe(Fragment);

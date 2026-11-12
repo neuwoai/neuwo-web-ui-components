@@ -59,6 +59,20 @@ describe("JSX runtime in React Server Components", () => {
     expect(found.jsxDEV).toEqual(classes);
   });
 
+  it.runIf(built)("lets React keep live state on exactly the nodes an element writes it into, through jsx and jsxDEV", () => {
+    const expected = [
+      "button.neuwo-combobox__trigger",
+      "span.neuwo-combobox__value",
+      "div.neuwo-combobox__popup",
+      "li.neuwo-combobox__option",
+      "div.neuwo-combobox__option",
+      "input.neuwo-combobox__trigger",
+      "input.neuwo-range",
+      "button.neuwo-segmented__option",
+    ].sort();
+    expect(found.live).toEqual({ jsx: expected, jsxDEV: expected });
+  });
+
   it.runIf(built)("renders <neuwo-input value> through the built runtime as an uncontrolled control with no function", () => {
     const expected = {
       control: { className: "neuwo-input", type: "text", id: expect.stringMatching(/-control$/), name: "n", defaultValue: "a" },

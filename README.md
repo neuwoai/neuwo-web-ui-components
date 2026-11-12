@@ -717,6 +717,10 @@ the server-rendered HTML carries their full markup and they are on-brand from th
 before the bundle has run. Import `neuwo.css` instead of `neuwo-components.css` to add the
 typography and page surface.
 
+A value the browser restores on a back navigation, or one the user or a script enters before the
+page hydrates, stays: React keeps what the elements wrote into their markup by then, such as a
+range's fill or a combobox's label, and reports no hydration mismatch.
+
 ## Components
 
 | Component | Tag | Status |

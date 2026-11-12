@@ -1,4 +1,4 @@
-import { control, h, has, region } from "../../../core/template.js";
+import { control, h, has, live, region } from "../../../core/template.js";
 import { ariaAttrs } from "../../fields/field.template.js";
 import { readOptions, resolveValue } from "../../fields/options.js";
 import { choiceTemplate, errorAccent } from "../choice.template.js";
@@ -20,8 +20,8 @@ export function segmentedTemplate(attrs, ctx) {
   const disabled = has(attrs, "disabled");
   const chosen = options.find((option) => !option.disabled && option.value === value);
   /** @param {ListOption} option */
-  const live = (option) => !disabled && !option.disabled;
-  const stop = chosen && live(chosen) ? chosen : options.find(live);
+  const enabled = (option) => !disabled && !option.disabled;
+  const stop = chosen && enabled(chosen) ? chosen : options.find(enabled);
   return choiceTemplate(
     attrs,
     ctx,
@@ -37,18 +37,20 @@ export function segmentedTemplate(attrs, ctx) {
       },
       h("span", { class: "neuwo-segmented__indicator", "aria-hidden": "true" }),
       options.map((option) =>
-        h(
-          "button",
-          {
-            class: "neuwo-segmented__option",
-            type: "button",
-            role: "radio",
-            "data-value": option.value,
-            "aria-checked": String(option === chosen),
-            tabindex: option === stop ? "0" : "-1",
-            disabled: !live(option),
-          },
-          option.label,
+        live(
+          h(
+            "button",
+            {
+              class: "neuwo-segmented__option",
+              type: "button",
+              role: "radio",
+              "data-value": option.value,
+              "aria-checked": String(option === chosen),
+              tabindex: option === stop ? "0" : "-1",
+              disabled: !enabled(option),
+            },
+            option.label,
+          ),
         ),
       ),
       h("select", { class: "neuwo-segmented__options", multiple: true, hidden: true, tabindex: "-1", "aria-hidden": "true" }, region()),
