@@ -57,8 +57,7 @@ export const FALLBACKS = [
 ];
 
 /**
- * The tables of a woff2 file, or of a TrueType or OpenType file, by tag. A table woff2 transforms, `glyf` and `loca`
- * in these files, is left out, since only its transformed form is stored.
+ * The tables of a woff2, TrueType or OpenType file by tag, without the transformed `glyf` and `loca`.
  * @param {string} file
  * @returns {Record<string, Buffer>}
  */

@@ -204,6 +204,16 @@ export default function (eleventyConfig) {
 Then link the stylesheet and load `neuwo.js` in your layout as above. For Astro and other Node
 builds, call `expand` on each page's output before it is written.
 
+Expand a whole page once. Every call numbers its ids from `neuwo-s1-` again, so two fragments
+expanded separately and then joined into one page repeat them, and a label points at the wrong
+control until the script runs and renames the duplicates.
+
+Two copies adopt the markup they carry as written, because the browser builds a parsed element
+exactly as a script does and the element cannot tell them apart. A clone of a `<template>`'s
+`content` (`template.content.cloneNode(true)`) keeps the attributes its markup was written with, and
+so do served rows cloned and renamed, say a new `name`, before the elements are defined. Set such an
+attribute after the elements are defined.
+
 In Markdown, keep a block component, such as a field, `<neuwo-copy>`, `<neuwo-cta>` or
 `<neuwo-notice>`, out of paragraphs of text. Markdown wraps a component on its own line, or a run of
 them on consecutive lines, in a `<p>`, and a browser closes a paragraph at the first block element
@@ -435,13 +445,15 @@ Intent is one property. Each modifier declares `--neuwo-callout-accent` and noth
 reads that knob for both its edge and its tint. So a fourth intent needs no library change:
 
 ```css
-.callout--warning {
+.app-callout--warning {
   --neuwo-callout-accent: #d99a2b;
 }
 ```
 
+`.app-callout--warning` is your own class, not one the library ships, used beside `.neuwo-callout`.
 That example is also the honest gap. **There is no `warning` intent**, because the brand has no
-amber: `--neuwo-color-blue`, `--neuwo-color-green` and `--neuwo-color-red` are the only semantic hues in the system,
+amber: `--neuwo-color-blue`, `--neuwo-color-green` and `--neuwo-color-red` are the only semantic
+hues in the system,
 and adding a fourth is a brand decision rather than a recipe one. Until one exists, the knob above
 is the supported workaround.
 
@@ -542,7 +554,8 @@ createRoot(document.getElementById("root")!).render(<App />);
 light DOM elements (`<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuwo-status-dot>`,
 `<neuwo-logo>`, `<neuwo-copy>`, `<neuwo-notice>`, `<neuwo-cta>`, `<neuwo-input>`, `<neuwo-textarea>`,
 `<neuwo-range>`, `<neuwo-combobox>`, `<neuwo-checkbox>`, `<neuwo-toggle>`, `<neuwo-radio>`,
-`<neuwo-radio-group>` and `<neuwo-segmented>`) into their markup; MDX reads its own `jsxImportSource` option, not tsconfig's, so set it there too (in
+`<neuwo-radio-group>` and `<neuwo-segmented>`) into their markup; MDX reads its own
+`jsxImportSource` option, not tsconfig's, so set it there too (in
 `@mdx-js/*` or Next's MDX config). Elements recognise markup React rendered, from Client or Server
 Components, and leave it to React, so without the setting a light DOM tag React renders stays bare.
 The same setting adds every element to JSX with each attribute's allowed values and each custom
@@ -644,7 +657,7 @@ value props:
   revealed.
 - In Next.js, radios a Server Component passes as `children` to a Client Component that renders
   the group are rendered on the server, outside the group, so they get none of its attributes: no
-  `name`, value, `required` or `form`, and the browser does not group them. Development builds
+  `name`, value, `required` or `form`, and the browser does not group them. Client development builds
   warn about it. Render the group and its radios in the same component, whether that is the
   Client Component or the Server Component.
 - React Hook Form's `register` goes on the group: it reads the picked value from the group's
@@ -804,7 +817,8 @@ Published styling files, for direct linking or non-web use:
 
 ## Restyling from the host
 
-Every element renders its markup into its own light DOM, so none has parts. Their prefixed classes are the public hooks instead. Put the element name in
+Every element renders its markup into its own light DOM, so none has parts. Their prefixed classes
+are the public hooks instead. Put the element name in
 front for weight, so a rule wins without `!important`:
 
 ```css
@@ -948,7 +962,8 @@ control is under [Segmented control](#segmented-control). The generated
 `.d.ts` of the base lists them in the type it extends, not in its class body.
 
 `<neuwo-input>`, `<neuwo-textarea>` and `<neuwo-range>` render a native `<input>`
-or `<textarea>` into their own light DOM, and that control is the form control. The element carries `name`, `value`, `required`,
+or `<textarea>` into their own light DOM, and that control is the form control. The element carries
+`name`, `value`, `required`,
 `disabled`, `readonly`, `placeholder`, `autocomplete`, `form` and the
 constraint attributes onto it, so a form of inputs submits and validates
 natively, in server-rendered markup before the script has loaded too. The
@@ -1290,7 +1305,10 @@ the background it belongs on. It inlines the SVG, so a logo costs no request.
 | `bg-light` | blue | near-black | light backgrounds |
 | `bg-colour` | white | near-black | brand-coloured backgrounds, where blue would vanish |
 
-The element renders the `<svg>` into its own light DOM, so a server-rendered logo is drawn before any script runs. The `<svg>` carries `.neuwo-logo` and one of `.neuwo-logo--bg-light`, `--bg-dark`, `--bg-dark-alt` or `--bg-colour`; there is no `::part(logo)`. Restyle through the classes, with the element name in front for weight: `neuwo-logo .neuwo-logo { opacity: 0.8; }`.
+The element renders the `<svg>` into its own light DOM, so a server-rendered logo is drawn before
+any script runs. The `<svg>` carries `.neuwo-logo` and one of `.neuwo-logo--bg-light`, `--bg-dark`,
+`--bg-dark-alt` or `--bg-colour`; there is no `::part(logo)`. Restyle through the classes, with the
+element name in front for weight: `neuwo-logo .neuwo-logo { opacity: 0.8; }`.
 
 Size it with `--neuwo-logo-height` (default `1.75rem`); the width follows the aspect ratio. The
 accessible name defaults to `Neuwo`, and `label=""` marks the logo decorative instead, for a

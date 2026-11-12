@@ -92,9 +92,7 @@ export function control(node) {
 }
 
 /**
- * Marks a node the element writes live state into, such as a range's fill or a combobox's shown label, which can
- * differ from the markup by the time React hydrates it. The React adapter lets React keep what the node then holds;
- * the other adapters render the marker as nothing.
+ * Marks a node the element writes live state into; the React adapter keeps what it holds, the others render nothing.
  * @param {TemplateNode} node
  * @returns {TemplateNode}
  */

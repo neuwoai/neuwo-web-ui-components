@@ -29,8 +29,6 @@ neuwo-status-dot {
   animation: neuwo-status-dot-blink 2s infinite;
 }
 
-/* Halo intensity (static ring; m == the base .neuwo-status-dot ring). `s` tightens,
-   `l` is the wide glow halo. Authored after the base so it overrides the ring. */
 .neuwo-status-dot--halo-s {
   box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 25%, transparent);
 }

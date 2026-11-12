@@ -371,9 +371,7 @@ function rename(state, el, fresh) {
 }
 
 /**
- * Gives each id of the host's markup that the library minted and another element in the host's root also has, as on
- * a copy made with `cloneNode`, a fresh id, and points every reference to it there too. It runs at every adoption
- * and restart in the document, since a copy adopted outside it cannot see the ids it shares.
+ * Renames minted ids that another element in the host's root also has, as on a `cloneNode` copy, and repoints references.
  * @param {Element} host
  * @param {HostState} state
  */
@@ -672,8 +670,7 @@ export function reconcile(host, template) {
 }
 
 /**
- * Gives the host's markup fresh ids for the ids the library minted that another element in its root also has, as
- * on a restart that puts back an element a copy of which took its place.
+ * Renames the host's minted ids that another element in its root also has, as after a restart puts back a replaced element.
  * @param {Element} host
  */
 export function separate(host) {
@@ -681,8 +678,7 @@ export function separate(host) {
 }
 
 /**
- * Has the next reconcile place an author node in one of the host's region wrappers by its `slot`, as after a script
- * changed it, instead of keeping it in the wrapper it sits in.
+ * Has the next reconcile place an author node by its `slot` instead of keeping it in its current wrapper.
  * @param {Element} host
  * @param {Node} node
  */

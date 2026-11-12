@@ -2,8 +2,7 @@ neuwo-cta {
   display: block;
 }
 
-/* Shared scan-line shimmer, inlined and prefixed from the design system's global
-   `scan-line` keyframe, which a consuming page does not have. */
+/* Inlined from the design system's scan-line keyframe, which a consuming page lacks. */
 @keyframes neuwo-cta-scan {
   0%, 45% { transform: translateX(0) skewX(-15deg); }
   100%    { transform: translateX(800%) skewX(-15deg); }
@@ -40,8 +39,6 @@ neuwo-cta {
   margin-top: var(--neuwo-space-4);
 }
 
-/* No field: the wrapper leaves no box behind, so a band without a field is
-   exactly the band it was before the field region existed. */
 .neuwo-cta__field--empty {
   display: none;
 }
@@ -74,8 +71,6 @@ neuwo-cta {
   align-items: center;
 }
 
-/* Mark headline fragments with `data-accent` to paint them with the brand
-   gradient (the design system's text-gradient utility, at any depth). */
 .neuwo-cta__headline [data-accent] {
   background: var(--neuwo-gradient-accent);
   -webkit-background-clip: text;
@@ -83,12 +78,7 @@ neuwo-cta {
   color: transparent;
 }
 
-/* Opt-in synchronised pulse ring on the primary action button, sharing the
-   shimmer's 5.5s cadence so the band reads as one orchestrated motion. The
-   `<neuwo-button>` element is already pill-shaped, so the box-shadow ring hugs it.
-   `:first-of-type` picks the first button in the actions, whatever its variant: the
-   primary action is the one authored first, and an outline or glass primary
-   pulses exactly like a solid one. */
+/* The primary action is the first button authored, whatever its variant. */
 neuwo-cta[pulse] .neuwo-cta__actions > neuwo-button:first-of-type {
   --neuwo-cta-pulse-spread: 12px;
   --neuwo-cta-pulse-alpha: 40%;

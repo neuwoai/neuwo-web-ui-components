@@ -1,8 +1,3 @@
-/* ==========================================================================
-   Selection: Toggle / Switch. A hidden native checkbox drives the state,
-   the .neuwo-form-toggle__track is the visible control, its ::after is the thumb.
-   ========================================================================== */
-
 neuwo-toggle:not([hidden]) {
   display: inline-flex;
 }
@@ -53,9 +48,6 @@ neuwo-toggle:not([hidden]) {
   transition: transform var(--neuwo-transition-fast);
 }
 
-/* Checked: the track fills solid --neuwo-color-blue and the thumb stays
-   --neuwo-color-heading in both states, just sliding across (matches the
-   design-system reference recipe). */
 .neuwo-form-toggle__input:checked + .neuwo-form-toggle__track {
   background: var(--neuwo-color-blue);
 }
@@ -104,16 +96,7 @@ neuwo-toggle:not([hidden]) {
   box-shadow: var(--neuwo-shadow-danger);
 }
 
-/* Attention pulse: a ring that invites the visitor to flip a switch they have
-   not noticed (the revenue calculator's Bid Enrichment switch). It rings only
-   while the switch is off, and the selector is what stops it, so turning it on
-   ends the animation without a re-render. The ring rides on its own ::before so
-   it never competes with the track's focus and error box-shadows.
-
-   Shaped like the CTA button's ring and parameterised the same way, but with a
-   keyframe of its own, since a published recipe has to be complete on its own.
-   The two knobs are read with a fallback rather than declared, so a consumer can
-   set either from :root or the host. */
+/* Rings only while the switch is off, so turning it on ends the animation without a re-render. */
 .neuwo-form-toggle--pulse .neuwo-form-toggle__input:not(:checked) + .neuwo-form-toggle__track::before {
   content: "";
   position: absolute;

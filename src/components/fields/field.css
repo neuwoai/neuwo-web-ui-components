@@ -1,8 +1,3 @@
-/* ==========================================================================
-   Fields: shared chrome for the text-entry controls
-   (input, textarea, combobox, range)
-   ========================================================================== */
-
 /* --- Host: a field is a block so its control can fill the width --- */
 
 neuwo-input:not([hidden]),
@@ -26,9 +21,6 @@ neuwo-combobox:not([hidden]) {
   color: var(--neuwo-color-heading);
 }
 
-/* The label element is always present so slotted label content has a place
-   at any time; with neither attribute text nor slotted content it is taken out
-   of the flow entirely, so the column gap does not reserve space for it. */
 .neuwo-field__label--empty {
   display: none;
 }

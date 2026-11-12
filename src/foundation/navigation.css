@@ -1,10 +1,3 @@
-/* Neuwo navigation links for native elements. Opt-in: link or import this file.
-   Two classes, visuals only: `.neuwo-nav-link` is a top-level entry and
-   `.neuwo-nav-link--sm` the nested one. Neither owns placement, a list reset or a
-   panel surface, so the consumer decides the structure and whether sections
-   collapse at all. No custom element is involved, so `<ul><li><a>` and native
-   `<details>` both work, and nothing here needs !important. */
-
 .neuwo-nav-link {
   /* Drives the horizontal padding and the underline's endpoints together, so
      the bar cannot drift from the text it sits under. Retune it in one place
@@ -72,14 +65,7 @@
   color: var(--neuwo-color-heading);
 }
 
-/* `aria-current` is absent here on purpose: in a horizontal bar the current page
-   is marked, not offered, so it takes the lifted ink without the underline.
-
-   A vertical nav wants the opposite, and it wants the same treatment on the
-   section the current page sits under. `.neuwo-nav-link--active` is that opt-in: it
-   holds the bar open, and it composes with `aria-current` rather than replacing
-   it, so the current page keeps its semantics either way. One modifier covers
-   both, because to a reader the current page and its open section look alike. */
+/* aria-current takes no underline in a horizontal bar; --active holds the bar open in a vertical nav. */
 .neuwo-nav-link:hover::after,
 .neuwo-nav-link:focus-visible::after,
 .neuwo-nav-link--active::after {

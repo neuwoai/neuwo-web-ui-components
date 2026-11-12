@@ -1,9 +1,3 @@
-/* ==========================================================================
-   Selection: Checkbox & Radio. One recipe keyed by [type]
-   (square box + tick vs pill + dot), shared by <neuwo-checkbox> and
-   <neuwo-radio>.
-   ========================================================================== */
-
 neuwo-checkbox:not([hidden]) {
   display: inline-flex;
 }

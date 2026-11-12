@@ -1,8 +1,4 @@
-/* The filled portion of the track. WebKit has no progress pseudo-element, so the
-   component writes `--neuwo-range-fill` (0% to 100%) onto the control on every value
-   change and the track sizes a gradient with it; Firefox fills
-   `::-moz-range-progress` on its own. The track base stays neutral in both, so
-   the unfilled side is never blue. */
+/* WebKit has no progress pseudo-element, so --neuwo-range-fill sizes a gradient; Firefox fills its own. */
 
 .neuwo-range {
   /* Geometry, shared by both engines' pseudo-elements. */

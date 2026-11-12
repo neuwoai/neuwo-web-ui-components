@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Logo -- the Neuwo wordmark, in one of the brand's four ink pairs
+   Logo: the Neuwo wordmark, in one of the brand's four ink pairs
    ========================================================================== */
 
 /* --- Outer box --- */
@@ -9,13 +9,7 @@ neuwo-logo:not([hidden]) {
   vertical-align: middle;
 }
 
-/* --- The drawing ---
-       No colour here: the ink pair is baked into the SVG file the element
-       inlines, so the four `.neuwo-logo--bg-*` modifiers are consumer hooks with no
-       rule of their own. The sizing overrides the file's own width and height
-       attributes, which CSS outranks, and `width: auto` against the viewBox
-       keeps the aspect ratio. The same class would size an <img> of the published
-       file, so a class-only consumer needs nothing else. --- */
+/* CSS outranks the SVG's own width and height; the ink is baked in, so the --bg-* modifiers have no rule. */
 
 .neuwo-logo {
   display: block;

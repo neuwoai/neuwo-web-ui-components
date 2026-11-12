@@ -4,8 +4,7 @@ neuwo-badge {
 }
 
 .neuwo-badge {
-  /* Eyebrow typography, restated so the pill does not depend on typography.css's
-     .neuwo-eyebrow (Outfit, xs, 600, 0.08em). The consumer owns casing, not the recipe. */
+  /* Restates the eyebrow type so the pill needs no typography.css. */
   font-family: var(--neuwo-font-heading);
   font-size: var(--neuwo-font-size-xs);
   font-weight: var(--neuwo-font-weight-semibold);
@@ -62,10 +61,6 @@ neuwo-badge {
   50%      { box-shadow: 0 0 0 var(--neuwo-badge-pulse-spread) color-mix(in srgb, currentColor 0%, transparent); }
 }
 
-/* Shimmer motion: a sweeping highlight (the design system's solutions badge),
-   variant-independent via --neuwo-color-shimmer. Mutually exclusive with pulse. */
-.neuwo-badge--shimmer {
-  --neuwo-badge-shimmer-width: 35;
   --neuwo-badge-shimmer-strength: 100%;
   position: relative;
   overflow: hidden;

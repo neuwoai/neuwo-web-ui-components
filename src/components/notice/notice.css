@@ -1,17 +1,6 @@
 /* ==========================================================================
-   Notice -- a dismissible glass card
+   Notice: a dismissible glass card
    ========================================================================== */
-
-/* One card for every message the visitor did not ask for: a consent banner
-   centred at the foot of the page, a language hint in the corner, a toast. They
-   share the glass surface, radius and shadow so the whole family reads as one
-   thing.
-
-   Placement is composed from independent edge modifiers (`--fixed --bottom
-   --end`) rather than one class per corner, so a class-only consumer can write
-   the same list by hand and a new corner costs no new rule. Visibility is the
-   native `hidden` attribute, which the components reset already honours on the
-   element, so the component adds no second way to hide a card. */
 
 neuwo-notice {
   display: block;
@@ -113,8 +102,6 @@ neuwo-notice {
   justify-content: flex-end;
 }
 
-/* A wrapper nothing fills leaves no box behind, so the card's gaps never open
-   around content that is not there. */
 .neuwo-notice__title--empty,
 .neuwo-notice__message--empty,
 .neuwo-notice__actions--empty {

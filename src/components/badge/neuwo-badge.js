@@ -10,7 +10,7 @@ import { badgeTemplate } from "./badge.template.js";
  * the eyebrow look, or mixed-case for a plain pill; the consumer owns casing
  * (host `text-transform` inherits into the label).
  * Restyle weight/colour/spacing with a class rule on `.neuwo-badge`.
- * Presentational only -- no events, no role. For a label whose text changes at
+ * Presentational only: no events, no role. For a label whose text changes at
  * runtime, set `aria-live` and/or an accessible name on the element.
  *
  * @summary Neuwo badge (inline label / status pill). Public classes: `.neuwo-badge` on the pill `<span>`, with its modifiers `.neuwo-badge--green`, `--s`, `--l`, `--borderless`, `--glow`, `--pulse`, `--shimmer`, `--intensity-s` and `--intensity-l`.

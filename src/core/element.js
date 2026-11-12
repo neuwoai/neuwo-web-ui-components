@@ -51,9 +51,7 @@ export function ownedByReact(el) {
 }
 
 /**
- * Listens for an event in the capture phase where it arrives before a React root that has not hydrated the element
- * stops it: on the window, and also on the element's shadow root when it is inside one, since an event there reaches
- * the window retargeted to the shadow host, or not at all when it is not composed.
+ * Listens in the capture phase, on the window and on a containing shadow root, before an unhydrated React root stops the event.
  * @param {Element} el
  * @param {string} type
  * @param {(event: Event) => void} listener
@@ -301,10 +299,7 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
     this.#away = relevantAttributes(this);
   }
 
-  /**
-   * Whether a change is written now: to a started host in the document, and to rendered markup outside it, such as
-   * a copy a script made, whose native controls must carry the change before they join the document's.
-   */
+  // A detached rendered copy is written at once, so its native controls carry the change before they join the document.
   #writable() {
     if (ownedByReact(this) || this.#waiting) return false;
     return this.isConnected ? this.#started : isRendered(this, this.#template);

@@ -169,8 +169,7 @@ function lend(node, tag, within, rendered) {
 }
 
 /**
- * What a list of options holds that its template cannot read, such as a component of the app's own: among the
- * options or in an `<optgroup>`, where it hides options, or in an `<option>`, where it hides the label.
+ * Whether a list of options holds a component of the app's own that hides options or an option's label.
  * @param {ReactNode[]} items
  * @param {{ options: boolean, labels: boolean }} [found]
  * @param {boolean} [label] whether the items are an option's content
@@ -371,16 +370,14 @@ const heldState = (control, hasOnChange) => ({
 const valueOf = (node) => (node.tag === "textarea" ? node.children.filter((child) => typeof child === "string").join("") || undefined : (node.props.value === undefined ? undefined : String(node.props.value)));
 
 /**
- * Whether the element draws an uncontrolled control's value into its markup, so React draws it again from the
- * control's live value once mounted: any control that carries a value, not a checkbox or radio, which CSS draws.
+ * Whether an uncontrolled control's value is drawn into its markup: any value-carrying control except a checkbox or radio.
  * @param {TemplateNode} node
  * @returns {boolean}
  */
 const carriesValue = (node) => !isCheckable(node) && !FIXED_VALUE.has(inputTypeOf(node));
 
 /**
- * A ref for an uncontrolled control that reads its live value once React has mounted it, so a value the user or the
- * browser gave the control while React held back the events of a tree it had not hydrated is drawn too.
+ * A ref that reads an uncontrolled control's live value once mounted, so input made before hydration is drawn too.
  * @param {boolean} enabled
  * @param {string | undefined} start the value the control was rendered with
  * @param {(value: string) => void} draw

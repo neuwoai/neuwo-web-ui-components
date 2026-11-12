@@ -81,8 +81,7 @@ const componentsCssModule = {
 const shared = {
   bundle: true,
   format: "esm",
-  // Parse and compile cost scales with raw bytes, not compressed ones, so this
-  // buys more than the transfer saving suggests.
+  // Parse cost scales with raw bytes, not compressed ones.
   minify: true,
   plugins: [rawText],
   logLevel: "info",

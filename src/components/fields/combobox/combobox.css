@@ -2,8 +2,6 @@
   position: relative;
 }
 
-/* The trigger reuses the .neuwo-input field chrome; align its label and make room
-   for the chevron. As a <button> it must read like the other field controls. */
 .neuwo-combobox__trigger {
   display: flex;
   align-items: center;

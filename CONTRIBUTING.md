@@ -76,8 +76,10 @@ bump.
 
 1. Update the version in `package.json` (semver: a renamed public selector or attribute is a
    breaking change).
-2. `npm run build` and `npm test` must pass.
-3. Publish.
+2. Before 1.0, class names and markup change only in a minor release. A snapshot change in a patch
+   release fails review.
+3. `npm run build` and `npm test` must pass.
+4. Publish.
 4. The design system bumps the library version and rebuilds. Always publish the library first.
 
 ## What the library must not do

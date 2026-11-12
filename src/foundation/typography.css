@@ -74,9 +74,6 @@ p {
   margin-bottom: var(--neuwo-space-4);
 }
 
-/* Inline prose link. The bare element carries the treatment, and `.neuwo-link` applies
-   the same recipe explicitly, for an anchor sitting in a context that strips link
-   styling. */
 a,
 .neuwo-link {
   color: var(--neuwo-color-blue);
@@ -91,9 +88,6 @@ a:hover,
   color: var(--neuwo-color-blue-dark);
 }
 
-/* Opt-in hover, one class on top of `.neuwo-link`: switch to the brand green instead.
-   text-decoration-color follows currentColor, so the underline travels with the
-   text. The class beats `a:hover` on specificity, so it needs no !important. */
 .neuwo-link--hover-green:hover {
   color: var(--neuwo-color-green);
 }

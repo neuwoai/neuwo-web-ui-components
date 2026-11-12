@@ -144,7 +144,7 @@
   its fallback, `StrictMode`, `Profiler`, `Activity` and other Neuwo elements, but not inside a
   component of your own, through a portal or in another React root, which client development builds
   warn about. Radios a Server Component passes to a Client Component that renders the group arrive already
-  rendered, outside the group, so they get none of its attributes; development builds warn about it.
+  rendered, outside the group, so they get none of its attributes; client development builds warn about it.
   React Hook Form's `register` goes on the group, which it reads through `value` and resets by setting
   it. The JSX types give `<neuwo-radio>` `name`, `value`, `checked`, `defaultChecked`, `disabled`,
   `form`, `required` and an `onChange`, and refuse `defaultValue` and the error attributes on it.
@@ -352,7 +352,8 @@
 - Breaking: `role="status"` moves from the `<neuwo-notice>` element to its inner `.neuwo-notice` card,
   and the element no longer writes `role` onto itself. A `role` you set on the element, such as
   `role="dialog"` on a consent banner, still takes its place, even when a script sets it after render:
-  the card then carries no role.
+  the card then carries no role. An `aria-label` or `aria-live` on the element no longer names or
+  qualifies the status region, since the card holds the role now.
 - Breaking: `<neuwo-copy>` renders into its own light DOM from one template, so a server-rendered
   copy wrapper shows its control from the first paint. Your content moves into a new
   `.neuwo-copy__content` wrapper inside a `display: contents` root, `.neuwo-copy`. The classes are
@@ -423,6 +424,10 @@
   `<neuwo-radio-group>` or a `<neuwo-radio>` appended to the same form leaves the original's checked radio
   alone. An `aria-*`, `title` or `role` the element carries onto its control applies when the copy is
   inserted. A change to an element a script took out of the page applies at once in the same way.
+- Two copies still adopt the markup they carry as written, since an element a browser parses cannot be
+  told from one a script built: a clone of a `<template>`'s `content` (`template.content.cloneNode(true)`),
+  and served rows cloned and renamed, say with a new `name`, before the elements are defined. Their
+  markup keeps the attributes it was written with; set the attribute after the elements are defined.
 - A property a script sets on any Neuwo element before the element is defined, such as `loading` on a
   button or `checked` on a checkbox from an inline script on a page whose module is deferred, now reaches
   the element when it is defined, through the element's own setter; it used to hide that property and
