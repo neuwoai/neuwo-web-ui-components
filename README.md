@@ -93,8 +93,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 - Next.js 16 with Turbopack and Vite 8 import the file as that URL with no configuration. An app
   built with webpack (`next build --webpack`) needs a rule so that a script may import it:
   `config.module.rules.push({ test: /\.woff2$/, issuer: /\.[jt]sx?$/, type: "asset/resource" })`
-  in `next.config`'s `webpack` function. Add it only there: Next.js stops a Turbopack build that
-  finds a `webpack` function and no `turbopack` setting.
+  in `next.config`'s `webpack` function. Add the `webpack` function only to an app built with
+  webpack: Next.js stops a Turbopack build that finds one and no `turbopack` setting.
 - TypeScript needs a declaration for the import. Vite's `vite/client` types have one; in Next.js
   add `declare module "*.woff2" { const src: string; export default src; }` to a `.d.ts` file.
 - Preload what the first screen shows: Noto Sans for text, and Outfit when a heading is in view.
@@ -753,7 +753,9 @@ typography and page surface.
 
 A value the browser restores on a back navigation, or one the user or a script enters before the
 page hydrates, stays: React keeps what the elements wrote into their markup by then, such as a
-range's fill or a combobox's label, and reports no hydration mismatch.
+range's fill or a combobox's label, and reports no hydration mismatch. A controlled host whose
+value a script set before hydration keeps showing that value, not the one its state holds, as
+React's own controlled inputs do.
 
 ## Components
 
