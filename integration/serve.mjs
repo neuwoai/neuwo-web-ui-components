@@ -1,9 +1,8 @@
-import { execFile, spawn } from "node:child_process";
+import { spawn } from "node:child_process";
 import { createServer } from "node:http";
 import { createServer as createSocketServer } from "node:net";
 import { readFile, stat } from "node:fs/promises";
 import { extname, join, resolve, sep } from "node:path";
-import { promisify } from "node:util";
 
 const TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -16,11 +15,19 @@ const TYPES = {
 };
 
 const READY_TIMEOUT = 120_000;
+const RUN_TIMEOUT = 300_000;
 const STOP_TIMEOUT = 10_000;
 const POLL = 50;
+const OUTPUT_LIMIT = 4000;
 const PROBE_HOST = "neuwo.invalid";
-const exec = promisify(execFile);
 const commands = new Set();
+let closing = null;
+
+export class Finishing extends Error {
+  constructor() {
+    super("the run is finishing, so no command starts and any still running is stopped");
+  }
+}
 
 async function listen(server) {
   await new Promise((done, fail) => server.once("error", fail).listen(0, "127.0.0.1", done));
@@ -90,7 +97,7 @@ export async function blockNetwork() {
       proxy.close(() => done());
     });
   try {
-    await exec(process.execPath, ["-e", `fetch("http://${PROBE_HOST}/").catch(() => {})`], { env: { ...process.env, ...env }, timeout: STOP_TIMEOUT });
+    await runCommand(process.execPath, ["-e", `fetch("http://${PROBE_HOST}/").catch(() => {})`], { env, timeout: STOP_TIMEOUT });
   } catch (error) {
     await close();
     throw error;
@@ -104,16 +111,13 @@ export async function blockNetwork() {
   return { env, attempts, close };
 }
 
-export async function stopCommands() {
-  await Promise.allSettled([...commands].map((stop) => stop()));
-}
-
-export async function serveCommand(command, args, { cwd, env = {}, ready }) {
-  const probe = createSocketServer();
-  const port = await listen(probe);
-  await new Promise((done) => probe.close(() => done()));
-  const child = spawn(command, args(port), { cwd, env: { ...process.env, ...env }, stdio: ["ignore", "pipe", "pipe"], detached: true });
-  const exited = new Promise((done) => child.once("exit", (code, signal) => done(signal ?? code)));
+function launch(command, args, { cwd, env = {} }) {
+  if (closing) throw new Finishing();
+  const child = spawn(command, args, { cwd, env: { ...process.env, ...env }, stdio: ["ignore", "pipe", "pipe"], detached: true });
+  const exited = new Promise((done) => {
+    child.once("exit", (code, signal) => done(signal ?? code));
+    child.once("error", (error) => done(error));
+  });
   const signal = (name) => {
     try {
       process.kill(-child.pid, name);
@@ -122,21 +126,58 @@ export async function serveCommand(command, args, { cwd, env = {}, ready }) {
       return false;
     }
   };
-  let output = "";
   let stopping = null;
   const stop = () => {
     stopping ??= (async () => {
-      if (child.pid === undefined) return;
-      signal("SIGTERM");
-      for (let waited = 0; signal(0) && waited < 2 * STOP_TIMEOUT; waited += POLL) {
-        if (waited === STOP_TIMEOUT) signal("SIGKILL");
-        await new Promise((resolve) => setTimeout(resolve, POLL));
+      if (child.pid !== undefined) {
+        signal("SIGTERM");
+        for (let waited = 0; signal(0) && waited < 2 * STOP_TIMEOUT; waited += POLL) {
+          if (waited === STOP_TIMEOUT) signal("SIGKILL");
+          await new Promise((resolve) => setTimeout(resolve, POLL));
+        }
       }
       commands.delete(stop);
     })();
     return stopping;
   };
   commands.add(stop);
+  return { child, exited, stop };
+}
+
+export function closeCommands() {
+  closing ??= Promise.allSettled([...commands].map((stop) => stop()));
+  return closing;
+}
+
+export async function runCommand(command, args, { cwd, env, timeout = RUN_TIMEOUT } = {}) {
+  const { child, exited, stop } = launch(command, args, { cwd, env });
+  let output = "";
+  const read = (chunk) => {
+    output = (output + chunk).slice(-OUTPUT_LIMIT);
+  };
+  child.stdout.setEncoding("utf8").on("data", read);
+  child.stderr.setEncoding("utf8").on("data", read);
+  let late = false;
+  const timer = setTimeout(() => {
+    late = true;
+    stop();
+  }, timeout);
+  const status = await exited;
+  clearTimeout(timer);
+  await stop();
+  if (status === 0) return output;
+  if (closing) throw new Finishing();
+  if (status instanceof Error) throw status;
+  const outcome = late ? `took longer than ${timeout / 1000} s` : typeof status === "string" ? `stopped on ${status}` : `exited with ${status}`;
+  throw new Error(`${[command, ...args].join(" ")} ${outcome}: ${output}`);
+}
+
+export async function serveCommand(command, args, { cwd, env = {}, ready }) {
+  const probe = createSocketServer();
+  const port = await listen(probe);
+  await new Promise((done) => probe.close(() => done()));
+  const { child, exited, stop } = launch(command, args(port), { cwd, env });
+  let output = "";
   let timer;
   try {
     await new Promise((done, fail) => {
@@ -150,12 +191,11 @@ export async function serveCommand(command, args, { cwd, env = {}, ready }) {
       };
       child.stdout.setEncoding("utf8").on("data", read);
       child.stderr.setEncoding("utf8").on("data", read);
-      child.once("error", (error) => fail(error));
-      exited.then((status) => fail(new Error(`exited with ${status} before it was ready: ${output?.slice(-2000)}`)));
+      exited.then((status) => fail(status instanceof Error ? status : new Error(`exited with ${status} before it was ready: ${output?.slice(-2000)}`)));
     });
   } catch (error) {
     await stop();
-    throw error;
+    throw closing ? new Finishing() : error;
   } finally {
     clearTimeout(timer);
   }

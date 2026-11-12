@@ -1,14 +1,11 @@
-import { execFile } from "node:child_process";
 import { cp, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { promisify } from "node:util";
 import { launch } from "./browsers.mjs";
 import { CHECKS, VIEWPORT, runChecks } from "./checks.mjs";
-import { serveStatic, stopCommands } from "./serve.mjs";
+import { Finishing, closeCommands, runCommand, serveStatic } from "./serve.mjs";
 
-const exec = promisify(execFile);
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = dirname(HERE);
 const PACKAGE = "@neuwo/web-ui-library--demo";
@@ -30,6 +27,7 @@ const USAGE = "Usage: node integration/run.mjs [--self-test] [--browser=chromium
 const SIGNALS = ["SIGINT", "SIGTERM", "SIGHUP"];
 const live = { app: null, browsers: new Map(), work: null, keep: false };
 let finishing = null;
+let signalled = false;
 
 class Halt extends Error {}
 
@@ -60,7 +58,7 @@ function parse(args, known) {
 
 async function pack(work) {
   log("Packing the library");
-  await exec("npm", ["pack", "--pack-destination", work], { cwd: ROOT, maxBuffer: 64 * 1024 * 1024 });
+  await runCommand("npm", ["pack", "--pack-destination", work], { cwd: ROOT });
   const tarball = (await readdir(work)).find((name) => name.endsWith(".tgz"));
   if (!tarball) throw new Error("npm pack wrote no tarball.");
   return join(work, tarball);
@@ -131,21 +129,27 @@ async function interactWith(browser, target, url) {
 
 function finish() {
   finishing ??= (async () => {
-    await Promise.allSettled([Promise.resolve().then(() => live.app?.stop()), stopCommands()]);
+    await Promise.allSettled([Promise.resolve().then(() => live.app?.stop()), closeCommands()]);
     await Promise.allSettled([...live.browsers.values()].map((browser) => browser.close()));
     if (!live.work) return;
-    if (live.keep) log(`Kept the work folder ${live.work}`);
-    else await rm(live.work, { recursive: true, force: true });
+    if (live.keep) return log(`Kept the work folder ${live.work}`);
+    try {
+      await rm(live.work, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+    } catch (error) {
+      log(`Could not remove the work folder ${live.work}: ${error.message}`);
+    }
   })();
   return finishing;
 }
 
 function stopOnSignals() {
   for (const signal of SIGNALS) {
-    process.once(signal, async () => {
+    process.once(signal, () => {
+      signalled = true;
       log(`Stopping on ${signal}`);
-      await finish();
-      process.exit(130);
+      finish()
+        .catch((error) => log(String(error?.stack ?? error)))
+        .finally(() => process.exit(130));
     });
   }
 }
@@ -157,6 +161,7 @@ async function runTarget(name, browsers, context) {
   try {
     app = await target.start(context);
   } catch (error) {
+    if (error instanceof Finishing) return false;
     log(String(error?.stack ?? error));
     print(name, "-", "-", { check: "start", status: "fail", detail: error.message });
     return false;
@@ -175,6 +180,7 @@ async function runTarget(name, browsers, context) {
       for (const url of app.pages) {
         const results = await runChecks(browser, browserName, url, target.checks);
         if (target.interact) results.push(...(await interactWith(browser, target, url)));
+        if (finishing) return false;
         for (const result of results) {
           print(name, browserName, new URL(url).pathname, result);
           if (result.status === "fail") passed = false;
@@ -217,11 +223,13 @@ async function main() {
   } finally {
     await finish();
   }
+  if (signalled) return;
   log(`${passed ? "Passed" : "Failed"} in ${Math.round((Date.now() - started) / 1000)} s`);
   process.exitCode = passed ? 0 : 1;
 }
 
 main().catch((error) => {
+  if (error instanceof Finishing) return;
   log(error instanceof Halt ? error.message : String(error?.stack ?? error));
   process.exitCode = 1;
 });

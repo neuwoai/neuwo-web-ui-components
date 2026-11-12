@@ -97,7 +97,9 @@ npm run integration
 Name targets to run only those (`npm run integration -- eleventy`), choose a browser with
 `--browser=chromium`, `firefox` or `all`, and keep the work folder in the system temporary folder
 with `--keep`. Each result is one line: target, browser, page, check, status and detail. The run
-exits 1 on any `fail` or on a browser it cannot launch.
+exits 1 on any `fail` or on a browser it cannot launch. Stopped by SIGINT, SIGTERM or SIGHUP, it
+stops every install, build and server it started, closes the browsers, removes the work folder
+unless `--keep` is given, and exits 130.
 
 - `console`: no page error, console error or hydration warning.
 - `layoutShift`: the page does not shift at 1280 by 800. Only Chromium reports layout shifts, so it
