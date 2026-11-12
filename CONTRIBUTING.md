@@ -110,15 +110,21 @@ unless `--keep` is given, and exits 130.
   after parsing: no node inside it was added, removed or given new text, even with the same
   content, and no attribute changed its value. An attribute set again to the value it holds is not
   a write, since React's hydration does that to every `<input>`.
+- `singleCopy`: the scripts the page loaded hold the library code exactly once, so a React app that
+  bundles both `.` and `./jsx-runtime` shares it. The page fetches every script it loaded again, and
+  every inline module script, and counts the string literal `"neuwo-btn__spinner"`, which only the
+  button template holds. The element definition skips a tag already defined, so `console` cannot see
+  a second copy; a count of 0 fails too.
 
 The `demo` target serves the repository root, so it checks the demo page against the `dist/` that
-`npm run build` made, not the tarball. It runs `console`, then asserts that the page's `.btn` and
-`button` rules reach plain buttons and no component, that a host rule restyles a component, and
-that the range readout never shows `NaN`, with `neuwo.js` held back for 500 ms and again after
-definition. The target's server delays the bundle, so both browsers run the held reading.
+`npm run build` made, not the tarball. It runs `console` and `singleCopy`, then asserts that the
+page's `.btn` and `button` rules reach plain buttons and no component, that a host rule restyles a
+component, and that the range readout never shows `NaN`, with `neuwo.js` held back for 500 ms and
+again after definition. The target's server delays the bundle, so both browsers run the held
+reading.
 
 The `next-dev` and `next-prod` targets run the app in `integration/apps/next` under `next dev`, and
-under `next build` then `next start`. Besides the four checks they run `forms` on the `Forms`
+under `next build` then `next start`. Besides the five checks they run `forms` on the `Forms`
 component in `integration/apps/shared/`, once React has hydrated it. In its controlled form, typing,
 a combobox pick, a checkbox tick and a range move must each reach React's state and show in the
 field; its uncontrolled form must submit its defaults, then the values the user changed, then its
@@ -133,7 +139,7 @@ proxy's settings, and the target fails unless the proxy saw it, so a Node that i
 
 The `vite` target prerenders the app in `integration/apps/vite` with its `prerender.mjs`, which runs
 a Vite client build and a Vite SSR build, then writes the SSR entry's `renderToString` output into
-`dist/index.html` at its `<!--app-->` marker. The target serves `dist` and runs the four checks and
+`dist/index.html` at its `<!--app-->` marker. The target serves `dist` and runs the five checks and
 `forms`, so the client entry's `hydrateRoot` must take over the prerendered markup with no error and
 no write. The app sets `jsxImportSource` through `@vitejs/plugin-react`, imports the stylesheet and
 the library at the client entry, and preloads its fonts with React's `preload`, which puts the

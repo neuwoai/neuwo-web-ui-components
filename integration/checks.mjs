@@ -2,12 +2,14 @@ import { UnsupportedOperation } from "puppeteer-core";
 
 /** @typedef {{ check: string, status: "pass" | "fail" | "n/a", detail: string }} CheckResult */
 
-export const CHECKS = ["console", "layoutShift", "noScript", "adoption"];
+export const CHECKS = ["console", "layoutShift", "noScript", "adoption", "singleCopy"];
 export const VIEWPORT = { width: 1280, height: 800 };
 
 const HYDRATION = /hydrat|did not match|server rendered/i;
 const NAVIGATION_TIMEOUT = 60_000;
 const DEFINITION_TIMEOUT = 10_000;
+// Only the button template holds this as a quoted literal; the standalone bundle's inlined CSS holds it as a selector.
+const MARKER = "neuwo-btn__spinner";
 
 function watchWrites() {
   const writes = [];
@@ -120,6 +122,33 @@ async function compareServed() {
   return { hosts: live.length, difference: null };
 }
 
+async function countCopies(marker) {
+  const literal = new RegExp(`["'\`]${marker}["'\`]`, "g");
+  const count = (text) => text.match(literal)?.length ?? 0;
+  const local = (url) => (url.startsWith(location.origin) ? url.slice(location.origin.length) : url);
+  // Vite fetches its chunks through modulepreload links, which report the initiator "link".
+  const urls = performance
+    .getEntriesByType("resource")
+    .filter((entry) => entry.initiatorType === "script" || /\.m?js$/.test(new URL(entry.name).pathname))
+    .map((entry) => entry.name);
+  const scripts = await Promise.all(
+    [...new Set(urls)].map(async (url) => {
+      try {
+        const response = await fetch(url, { cache: "no-store" });
+        if (!response.ok) return { source: local(url), problem: `HTTP ${response.status}` };
+        return { source: local(url), count: count(await response.text()) };
+      } catch (error) {
+        return { source: local(url), problem: error.message };
+      }
+    }),
+  );
+  const inline = [...document.querySelectorAll('script[type="module"]:not([src])')].map((script, index) => ({
+    source: `inline module script ${index + 1}`,
+    count: count(script.text),
+  }));
+  return [...scripts, ...inline];
+}
+
 async function loadLive(context, url) {
   const page = await context.newPage();
   await page.setViewport(VIEWPORT);
@@ -140,6 +169,7 @@ async function loadLive(context, url) {
     writes: await page.evaluate(() => (window.__neuwoWrites ? [...window.__neuwoWrites] : null)),
     served: await page.evaluate(compareServed),
     background: await page.evaluate(buttonBackground),
+    copies: await page.evaluate(countCopies, MARKER),
   };
 }
 
@@ -179,6 +209,16 @@ function judgeAdoption({ writes, served }) {
   return { status: "pass", detail: `${served.hosts} neuwo-* elements as served, with no writes` };
 }
 
+function judgeSingleCopy({ copies }) {
+  const unread = copies.filter((script) => script.problem);
+  if (unread.length) return { status: "fail", detail: `could not read ${unread.map(({ source, problem }) => `${source} (${problem})`).join(", ")}` };
+  const holders = copies.filter((script) => script.count > 0);
+  const total = holders.reduce((sum, script) => sum + script.count, 0);
+  if (total === 0) return { status: "fail", detail: `no copy of the library code in ${copies.length} script(s)` };
+  if (total > 1) return { status: "fail", detail: `${total} copies: ${holders.map(({ source, count }) => `${source} ${count}`).join(", ")}` };
+  return { status: "pass", detail: `1 copy, in ${holders[0].source}, of ${copies.length} script(s)` };
+}
+
 function judgeNoScript(live, offline) {
   if (offline.unsupported) return { status: "n/a", detail: `cannot disable JavaScript: ${offline.unsupported}` };
   if (offline.problem) return { status: "fail", detail: offline.problem };
@@ -201,6 +241,7 @@ export async function runChecks(browser, browserName, url, names) {
       if (check === "console") return { check, ...judgeConsole(live) };
       if (check === "layoutShift") return { check, ...judgeLayoutShift(live, browserName) };
       if (check === "adoption") return { check, ...judgeAdoption(live) };
+      if (check === "singleCopy") return { check, ...judgeSingleCopy(live) };
       return { check, ...judgeNoScript(live, offline) };
     });
   } catch (error) {

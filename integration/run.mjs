@@ -21,6 +21,8 @@ const SELF_TEST = {
   "noscript-loading-write.html": "adoption",
   "attribute-reset.html": null,
   "attribute-write.html": "adoption",
+  "two-copies.html": "singleCopy",
+  "no-copy.html": "singleCopy",
 };
 const USAGE = "Usage: node integration/run.mjs [--self-test] [--browser=chromium|firefox|all] [--keep] [target ...]";
 

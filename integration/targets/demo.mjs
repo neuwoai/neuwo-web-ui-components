@@ -9,7 +9,7 @@ const HOLD_MS = 500;
 const BUNDLE = "/dist/neuwo.js";
 const NAVIGATION_TIMEOUT = 60_000;
 
-export const checks = ["console"];
+export const checks = ["console", "singleCopy"];
 
 export async function start() {
   const server = await serveStatic(ROOT, { delay: { [BUNDLE]: HOLD_MS } });
