@@ -381,10 +381,14 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
    * Hook for listeners and observers. It writes nothing on adoption. It runs just after the element has re-applied,
    * through their setters, the properties a script set before the element was defined, and `updated` does not run
    * for those on the first start.
+   * @protected
    */
   connect() {}
 
-  /** Hook to release whatever `connect` set up. */
+  /**
+   * Hook to release whatever `connect` set up.
+   * @protected
+   */
   disconnect() {}
 
   /**
@@ -393,6 +397,7 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
    * `connect` and covers a change written while the element was out of the page. It never runs on the first start,
    * where `connect` runs alone, nor for a write to markup out of the page. It must write only values that differ
    * from the DOM.
+   * @protected
    */
   updated() {}
 }

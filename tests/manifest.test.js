@@ -34,6 +34,21 @@ function attributesFor(m, tag) {
   return names;
 }
 
+const classes = () =>
+  (manifest.modules ?? []).flatMap((mod) => (mod.declarations ?? []).filter((dec) => dec.kind === "class").map((dec) => ({ dec, path: mod.path })));
+
+function chainOf(m, dec) {
+  const names = [];
+  for (let each = dec; each; each = each.superclass ? declByName(m, each.superclass.name) : null) names.push(each.name);
+  return names;
+}
+
+function documentedBy(path, name) {
+  const source = readFileSync(join(__dirname, "..", path), "utf8");
+  const block = source.match(new RegExp(String.raw`/\*\*((?:(?!\*/)[\s\S])*)\*/\s*export class ${name}\b`))?.[1] ?? "";
+  return new Set([...block.matchAll(/@attr\s+(?:\{[^}]*\}\s+)?([\w-]+)/g)].map((match) => match[1]));
+}
+
 export { manifest, attributesFor };
 
 const EXPECTED_TAGS = [
@@ -65,6 +80,33 @@ describe("custom-elements.json", () => {
       .filter((d) => d.customElement && d.tagName)
       .map((d) => d.tagName);
     for (const tag of REMOVED_TAGS) expect(tags).not.toContain(tag);
+  });
+
+  it("names HTMLElement, a global, as the base class's superclass", () => {
+    expect(declByName(manifest, "NeuwoElement").superclass).toEqual({ name: "HTMLElement", package: "global:" });
+  });
+
+  it("marks the lifecycle hooks protected on every element class", () => {
+    const hooks = ["connect", "disconnect", "updated", "formReset"];
+    const elements = classes().filter(({ dec }) => chainOf(manifest, dec).includes("NeuwoElement"));
+    expect(elements.length).toBeGreaterThan(EXPECTED_TAGS.length);
+    for (const { dec } of elements) {
+      for (const member of (dec.members ?? []).filter(({ name }) => hooks.includes(name))) {
+        expect(member.privacy, `${dec.name} ${member.name}`).toBe("protected");
+      }
+    }
+  });
+
+  it("records no inheritedFrom on an attribute a class documents itself", () => {
+    for (const { dec, path } of classes()) {
+      const own = documentedBy(path, dec.name);
+      for (const attribute of dec.attributes ?? []) {
+        if (own.has(attribute.name)) expect(attribute.inheritedFrom, `${dec.name} ${attribute.name}`).toBeUndefined();
+      }
+    }
+    const group = declByTag(manifest, "neuwo-radio-group").attributes;
+    expect(group.find(({ name }) => name === "name").inheritedFrom).toBeUndefined();
+    expect(group.find(({ name }) => name === "form").inheritedFrom?.name).toBe("NeuwoControlElement");
   });
 
   it("documents the shared field attributes on field elements", () => {
@@ -136,7 +178,7 @@ describe("custom-elements.json", () => {
     expect(declByName(manifest, "NeuwoControlElement").members.some((member) => member.name === "noErrorLine")).toBe(false);
   });
 
-  it("documents the error attributes and noErrorLine once, on a mixin every base with an error line applies, never the radio", () => {
+  it("documents the error attributes and noErrorLine on a mixin every base with an error line applies, which a few restate, never on the radio", () => {
     const mixin = declByName(manifest, "NeuwoErrorMixin");
     expect(mixin.kind).toBe("mixin");
     expect(mixin.attributes.map((attribute) => attribute.name)).toEqual(["error", "error-muted", "no-error-line"]);
@@ -144,11 +186,16 @@ describe("custom-elements.json", () => {
     for (const name of ["NeuwoFieldElement", "NeuwoChoiceElement", "NeuwoRadioGroup", "NeuwoSegmented"]) {
       expect(declByName(manifest, name).mixins?.map((applied) => applied.name), name).toContain("NeuwoErrorMixin");
     }
-    const declarations = (manifest.modules ?? []).flatMap((mod) => mod.declarations ?? []).filter((declaration) => declaration.kind === "class");
-    for (const declaration of declarations) {
-      for (const item of [...(declaration.attributes ?? []), ...(declaration.members ?? [])].filter(({ name }) => ["error", "error-muted", "no-error-line", "noErrorLine"].includes(name))) {
-        expect(item.inheritedFrom?.name, `${declaration.name} ${item.name}`).toBe("NeuwoErrorMixin");
-      }
+    const items = classes().flatMap(({ dec }) =>
+      [...(dec.attributes ?? []), ...(dec.members ?? [])]
+        .filter(({ name }) => ["error", "error-muted", "no-error-line", "noErrorLine"].includes(name))
+        .map((item) => ({ dec, item, key: `${dec.name} ${item.name}` })),
+    );
+    const restated = new Set(items.filter(({ item }) => !item.inheritedFrom).map(({ key }) => key));
+    expect([...restated].sort()).toEqual(["NeuwoFieldElement error-muted", "NeuwoRadioGroup error", "NeuwoRadioGroup no-error-line", "NeuwoSegmented no-error-line"]);
+    for (const { dec, item, key } of items.filter(({ item }) => item.inheritedFrom)) {
+      const nearest = chainOf(manifest, dec).slice(1).find((name) => restated.has(`${name} ${item.name}`));
+      expect(item.inheritedFrom.name, key).toBe(nearest ?? "NeuwoErrorMixin");
     }
     expect(declByTag(manifest, "neuwo-radio").mixins).toBeUndefined();
   });

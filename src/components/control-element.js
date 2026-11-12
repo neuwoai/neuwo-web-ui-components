@@ -134,6 +134,7 @@ export class NeuwoControlElement extends NeuwoElement {
   /**
    * Hook that runs in the task after the control's form resets, once the browser has put the starting value back.
    * It must write only values that differ from the DOM.
+   * @protected
    */
   formReset() {}
 
