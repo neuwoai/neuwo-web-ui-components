@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Self-test: noscript loading write</title>
+<link rel="icon" href="data:,">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/dist/fonts/noto-sans-variable.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/dist/fonts/outfit-variable.woff2">
+<link rel="stylesheet" href="/dist/neuwo-components.css">
+<script type="module" src="/dist/neuwo.js"></script>
+</head>
+<body>
+<neuwo-button variant="solid">Get started<noscript><a href="/x" class="y">Needs &amp; wants</a></noscript></neuwo-button>
+<script>document.querySelector("neuwo-button .neuwo-btn__label").append(document.createElement("span"));</script>
+<neuwo-badge>Live</neuwo-badge>
+<neuwo-checkbox name="terms">I agree</neuwo-checkbox>
+</body>
+</html>

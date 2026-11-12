@@ -21,6 +21,7 @@ const SELF_TEST = {
   "loading-write.html": "adoption",
   "unstyled.html": "noScript",
   "noscript-host.html": null,
+  "noscript-loading-write.html": "adoption",
 };
 const USAGE = "Usage: node integration/run.mjs [--self-test] [--browser=chromium|firefox|all] [--keep] [target ...]";
 

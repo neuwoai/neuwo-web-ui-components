@@ -111,7 +111,7 @@ The `demo` target serves the repository root, so it checks the demo page against
 `npm run build` made, not the tarball. It runs `console`, then asserts that the page's `.btn` and
 `button` rules reach plain buttons and no component, that a host rule restyles a component, and
 that the range readout never shows `NaN`, with `neuwo.js` held back for 500 ms and again after
-definition. Firefox cannot intercept requests over WebDriver BiDi, so the held reading is `n/a` there.
+definition. The target's server delays the bundle, so both browsers run the held reading.
 
 After changing a check, run `npm run integration -- --self-test`. It serves the pages in
 `integration/self-test/`, expanded with `expand`. `good.html` must pass every check that runs, each

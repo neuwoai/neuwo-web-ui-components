@@ -6,12 +6,13 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const HOTPINK = "rgb(255, 105, 180)";
 const PAGE_GREEN = "rgb(0, 128, 0)";
 const HOLD_MS = 500;
+const BUNDLE = "/dist/neuwo.js";
 const NAVIGATION_TIMEOUT = 60_000;
 
 export const checks = ["console"];
 
 export async function start() {
-  const server = await serveStatic(ROOT);
+  const server = await serveStatic(ROOT, { delay: { [BUNDLE]: HOLD_MS } });
   return { pages: [`${server.url}/demo/index.html`], stop: server.stop };
 }
 
@@ -70,29 +71,7 @@ function judgeReadout(name, { defined, readout }, expectDefined) {
 
 export async function interact(page, url) {
   const results = [];
-  let held = false;
-  let failure = null;
-  let intercepting = true;
-  try {
-    await page.setRequestInterception(true);
-  } catch (error) {
-    intercepting = false;
-    results.push({ check: "readoutBeforeDefinition", status: "n/a", detail: `request interception is unavailable: ${error.message}` });
-  }
-  if (intercepting) {
-    page.on("request", async (request) => {
-      try {
-        if (new URL(request.url()).pathname === "/dist/neuwo.js") {
-          held = true;
-          await new Promise((resolve) => setTimeout(resolve, HOLD_MS));
-        }
-        await request.continue();
-      } catch (error) {
-        failure ??= error.message;
-      }
-    });
-    await page.evaluateOnNewDocument(recordBeforeDefinition);
-  }
+  await page.evaluateOnNewDocument(recordBeforeDefinition);
   await page.goto(url, { waitUntil: "load", timeout: NAVIGATION_TIMEOUT });
   await page.evaluate(() => customElements.whenDefined("neuwo-range"));
   await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
@@ -102,13 +81,9 @@ export async function interact(page, url) {
   results.push({ check: "pageElementRule", ...judgeElementRule(rules) });
   results.push({ check: "hostRestyle", ...judgeHostRestyle(rules) });
 
-  if (intercepting) {
-    const before = await page.evaluate(() => window.__beforeDefinition ?? null);
-    if (failure) results.push({ check: "readoutBeforeDefinition", status: "n/a", detail: `request interception failed: ${failure}` });
-    else if (!held) results.push({ check: "readoutBeforeDefinition", status: "fail", detail: "the bundle request was never held" });
-    else if (!before) results.push({ check: "readoutBeforeDefinition", status: "fail", detail: "the readout was never read before definition" });
-    else results.push(judgeReadout("readoutBeforeDefinition", before, false));
-  }
+  const before = await page.evaluate(() => window.__beforeDefinition ?? null);
+  if (!before) results.push({ check: "readoutBeforeDefinition", status: "fail", detail: "the readout was never read before definition" });
+  else results.push(judgeReadout("readoutBeforeDefinition", before, false));
   const readout = await page.evaluate(() => ({ defined: Boolean(customElements.get("neuwo-range")), readout: document.getElementById("demo-views-value").value }));
   results.push(judgeReadout("readoutAfterDefinition", readout, true));
   return results;

@@ -35,6 +35,8 @@ export async function serveStatic(root, options = {}) {
       if (!file) return send(response, 404, "text/plain; charset=utf-8", "Not found");
       const type = extname(file);
       const body = await readFile(file);
+      const delay = options.delay?.[new URL(request.url, "http://localhost").pathname];
+      if (delay) await new Promise((resolve) => setTimeout(resolve, delay));
       if (type === ".html" && options.html) return send(response, 200, TYPES[type], options.html(body.toString("utf8")));
       send(response, 200, TYPES[type] ?? "application/octet-stream", body);
     } catch (error) {
