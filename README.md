@@ -621,6 +621,20 @@ value props:
   range that has no value at its midpoint, which React Hook Form takes for the user's edit, and a
   bare `reset()` returns it there through the form's native reset. A native range behaves the same.
 
+Type a handler you define apart from the element with `NeuwoChangeEvent`, from the JSX runtime. Its
+second type is the node the event comes from, the inner control here; leave it out on the combobox
+and the segmented control, which dispatch from the element itself:
+
+```tsx
+import type { NeuwoInput } from "@neuwo/web-ui-library--demo";
+import type { NeuwoChangeEvent } from "@neuwo/web-ui-library--demo/jsx-runtime";
+
+const onEmail = (e: NeuwoChangeEvent<NeuwoInput, HTMLInputElement>) => setEmail(e.target.value);
+```
+
+`e.target` is then the inner `<input>` and `e.currentTarget` the element, so read a property only
+the element has, such as `noErrorLine`, from `e.currentTarget`.
+
 `<neuwo-checkbox>` and `<neuwo-toggle>` behave like React's own checkbox:
 
 ```tsx
@@ -906,6 +920,7 @@ properties, or target the children you passed in.
 | `.neuwo-combobox__value` | the selected label or the placeholder inside the button trigger |
 | `.neuwo-combobox__chevron`, `.neuwo-combobox__popup` | the chevron and the popover around the list; they were `::part(chevron)` and `::part(popup)` |
 | `.neuwo-combobox__listbox`, `.neuwo-combobox__option`, `.neuwo-combobox__option--active` | the list, each option row, and the row the keyboard highlights |
+| `.neuwo-combobox__option-label` | the `<span>` around each option row's label |
 | `.neuwo-combobox__group-item`, `.neuwo-combobox__group` | the row around an `<optgroup>`'s options and its label |
 | `.neuwo-combobox__empty` | the "No matches" row, hidden until a filter matches nothing |
 | `.neuwo-choice` | the checkbox's, toggle's, radio group's or segmented control's wrapper `<div>`, which stacks the row (or the radiogroup) and the error line |
@@ -929,6 +944,7 @@ properties, or target the children you passed in.
 | `.neuwo-segmented--error` | the pill, by `error` unless `error-muted` or `no-error-line` is set |
 | `.neuwo-segmented__indicator` | the sliding pill behind the selected option, shown once a pick gives it `data-neuwo-placed`; it was `::part(indicator)` |
 | `.neuwo-segmented__option` | each option's `<button>`, the selected one with `aria-checked="true"`, which keeps its label on one line; it was `::part(option)` |
+| `.neuwo-segmented__option-label` | the `<span>` around each option's label |
 | `.neuwo-segmented__options` | the hidden `<select>` that keeps your `<option>` children |
 | `.neuwo-segmented__form-value` | the visually hidden native input that submits the value |
 

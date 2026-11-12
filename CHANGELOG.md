@@ -187,7 +187,8 @@
   `checked` makes one controlled, `defaultChecked` starts an uncontrolled one, and `onChange` fires on
   every click with the inner checkbox as `event.target`. The JSX types give an element with a `checked`
   attribute `checked` and `defaultChecked` as booleans, `value` as a string or a number and an `onChange`
-  whose target is typed as the element, and refuse `defaultValue` on it.
+  whose `event.target` is typed as the inner checkbox and `event.currentTarget` as the element, and refuse
+  `defaultValue` on it.
 - `<neuwo-checkbox>` and `<neuwo-toggle>` have a read-only `type` of `"checkbox"`, and `defaultChecked`
   reads the starting state the JSX runtime rendered from `defaultChecked`, so React Hook Form's `register`
   reads and resets them as a native checkbox: a checked one gives its `value`, or `true` without one, and
@@ -500,8 +501,9 @@
   `value` and `checked` as starting values, and keeps `value` on a radio, checkbox or toggle, where it
   names the control, so a selector such as `neuwo-radio[value="pro"]` matches its markup too. The JSX
   types give every element with a `value` and a `change` event `value` and `defaultValue` as a string or a
-  number, and an `onChange` whose target is typed as the element. `min`, `max`, `step`, `minlength`,
-  `maxlength` and `rows` on the fields take a string or a number too, so React Hook Form's
+  number, and an `onChange` whose `event.currentTarget` is typed as the element and `event.target` as its
+  inner control, or as the element itself on the combobox and the segmented control. `min`, `max`, `step`,
+  `minlength`, `maxlength` and `rows` on the fields take a string or a number too, so React Hook Form's
   `{...register("name")}` spreads onto every field.
 - Through the JSX runtime, a light DOM element's own event handlers, such as `oncopied` on `<neuwo-copy>`
   and `ondismiss` on `<neuwo-notice>`, run from the first event on markup React hydrated. React's

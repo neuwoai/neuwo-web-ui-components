@@ -24,7 +24,9 @@ adapters turn into the same markup. Follow `<neuwo-button>`.
    built with `h()`, `region()` and `raw()` from `src/core/template.js`, with no DOM, browser
    globals or CSS imports. Keep to the contract in that file's `Template` typedef: every element
    carries the block class or a `<block>__*` class, and each `region()` is the only child of a
-   wrapper rendered for every attribute combination. Register it in `src/templates.js`.
+   wrapper rendered for every attribute combination. `tests/templates-contract.test.js` checks
+   those rules on every case in `tests/fixtures/template-cases.js`, one rule per test title.
+   Register it in `src/templates.js`.
 2. Create `src/components/<name>/neuwo-<name>.js`: a class extending `NeuwoElement` from
    `src/core/element.js`, with `static template`, `static observedAttributes`, property accessors
    that reflect the attributes, and the JSDoc block that generates the manifest and types
@@ -38,9 +40,11 @@ adapters turn into the same markup. Follow `<neuwo-button>`.
    template with `control()` from `src/core/template.js`, so the React adapter maps `value`,
    `defaultValue`, `checked` and `defaultChecked` onto it, and return it from the `control` getter.
    To read an enclosing element's attributes, as a radio reads its group's, set the template's
-   `within` to that tag and read `ctx.within`. A control that renders its own error line extends
-   `NeuwoErrorMixin(...)` from `src/components/error-mixin.js`, which documents `error`,
-   `error-muted` and `no-error-line` and adds `noErrorLine`, and lists the three in its
+   `within` to that tag and read `ctx.within`. Through React it reaches only an element written in
+   place inside that tag: inside a component of the app's own, a portal or another React root it is
+   null, so the template must also render the element on its own. A control that renders its own
+   error line extends `NeuwoErrorMixin(...)` from `src/components/error-mixin.js`, which documents
+   `error`, `error-muted` and `no-error-line` and adds `noErrorLine`, and lists the three in its
    `observedAttributes`; one whose native control takes its `value` attribute as its default
    applies `NeuwoDefaultValueMixin` from `src/components/default-value-mixin.js` too. Follow the
    React-owned rules: write nothing to a host `ownedByReact()` reports, and drop a value written
