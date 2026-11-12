@@ -382,8 +382,10 @@
   and `neuwo-status-dot-blink`.
 - Breaking: the `<neuwo-badge>` shimmer sweeps with `transform` instead of `left`, so it no longer shifts
   layout, and its width property is renamed to `--neuwo-badge-shimmer-percent`, a unitless percentage of the badge
-  (`35`, not `35%`). The 0.1 name `--badge-shimmer-width` (and `--neuwo-badge-shimmer-width`) is no longer read, so a
-  consumer that set it sees the default sweep until they move to the new name.
+  (`35`, not `35%`); a value with a unit on the new name, such as `40%`, removes the sweep. The 0.1 name
+  `--badge-shimmer-width` is no longer read. Neither is `--neuwo-badge-shimmer-width`, the prefixed form that a
+  mechanical migration of that name produces, so a consumer that set either sees the default sweep until they move
+  to the new name.
 - Breaking: `::part(badge)`, `::part(value)` and `::part(dot)` are gone. Restyle through the classes, with
   the element name in front for weight: `neuwo-badge .neuwo-badge { font-weight: 500; }`.
 - The label of `<neuwo-badge>` and the value of `<neuwo-deal-id>` are now plain children of their
