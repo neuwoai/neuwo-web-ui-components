@@ -90,10 +90,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
-- Next.js 16 with Turbopack and Vite 8 import the file as that URL with no configuration. With
-  webpack (`next build --webpack`), add a rule so that a script may import it:
+- Next.js 16 with Turbopack and Vite 8 import the file as that URL with no configuration. An app
+  built with webpack (`next build --webpack`) needs a rule so that a script may import it:
   `config.module.rules.push({ test: /\.woff2$/, issuer: /\.[jt]sx?$/, type: "asset/resource" })`
-  in `next.config`'s `webpack` function.
+  in `next.config`'s `webpack` function. Add it only there: Next.js stops a Turbopack build that
+  finds a `webpack` function and no `turbopack` setting.
 - TypeScript needs a declaration for the import. Vite's `vite/client` types have one; in Next.js
   add `declare module "*.woff2" { const src: string; export default src; }` to a `.d.ts` file.
 - Preload what the first screen shows: Noto Sans for text, and Outfit when a heading is in view.
@@ -101,8 +102,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   the font is requested as soon as text needs it either way.
 
 Until a font arrives, text is drawn in Arial, or in Liberation Sans or Arimo where Arial is missing,
-sized to match the font's metrics, with Arial Bold from weight 550, so the swap barely moves the
-page.
+sized to match the font at each weight the tokens use, 400 to 800: Arial up to 500, Arial Bold from
+600, and Arial Italic or Arial Bold Italic for italic text. The swap barely moves the page.
 
 ## Consume
 

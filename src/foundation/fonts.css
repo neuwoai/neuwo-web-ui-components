@@ -25,11 +25,11 @@
        url('fonts/noto-sans-italic-variable.woff2') format('woff2');
 }
 
-/* Capsize's method against Arial (2048 units, ascent 1854, descent 434, line gap 67, average width 904) and Arial Bold (average width 978): Outfit at weights 400 and 700, Noto Sans at 400 and 600. */
+/* Capsize's method against Arial (2048 units, ascent 1854, descent 434, line gap 67, average width 904), Arial Bold (978) and their italics, each face sized to the font at its token weight. */
 
 @font-face {
   font-family: 'Outfit Fallback';
-  font-weight: 100 549;
+  font-weight: 100 449;
   src: local('Arial'), local('Liberation Sans'), local('Arimo'), local('Arimo Regular');
   size-adjust: 99.61%;
   ascent-override: 100.39%;
@@ -39,7 +39,27 @@
 
 @font-face {
   font-family: 'Outfit Fallback';
-  font-weight: 550 900;
+  font-weight: 450 549;
+  src: local('Arial'), local('Liberation Sans'), local('Arimo'), local('Arimo Regular');
+  size-adjust: 99.81%;
+  ascent-override: 100.19%;
+  descent-override: 26.05%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'Outfit Fallback';
+  font-weight: 550 649;
+  src: local('Arial Bold'), local('Arial-BoldMT'), local('Liberation Sans Bold'), local('Arimo Bold');
+  size-adjust: 93.75%;
+  ascent-override: 106.66%;
+  descent-override: 27.73%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'Outfit Fallback';
+  font-weight: 650 749;
   src: local('Arial Bold'), local('Arial-BoldMT'), local('Liberation Sans Bold'), local('Arimo Bold');
   size-adjust: 95.22%;
   ascent-override: 105.02%;
@@ -48,8 +68,18 @@
 }
 
 @font-face {
+  font-family: 'Outfit Fallback';
+  font-weight: 750 900;
+  src: local('Arial Bold'), local('Arial-BoldMT'), local('Liberation Sans Bold'), local('Arimo Bold');
+  size-adjust: 96.68%;
+  ascent-override: 103.43%;
+  descent-override: 26.89%;
+  line-gap-override: 0%;
+}
+
+@font-face {
   font-family: 'Noto Sans Fallback';
-  font-weight: 100 549;
+  font-weight: 100 449;
   src: local('Arial'), local('Liberation Sans'), local('Arimo'), local('Arimo Regular');
   size-adjust: 106.9%;
   ascent-override: 100%;
@@ -59,10 +89,62 @@
 
 @font-face {
   font-family: 'Noto Sans Fallback';
-  font-weight: 550 900;
+  font-weight: 450 549;
+  src: local('Arial'), local('Liberation Sans'), local('Arimo'), local('Arimo Regular');
+  size-adjust: 108.93%;
+  ascent-override: 98.13%;
+  descent-override: 26.9%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'Noto Sans Fallback';
+  font-weight: 550 649;
   src: local('Arial Bold'), local('Arial-BoldMT'), local('Liberation Sans Bold'), local('Arimo Bold');
   size-adjust: 102.82%;
   ascent-override: 103.97%;
   descent-override: 28.5%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'Noto Sans Fallback';
+  font-weight: 650 749;
+  src: local('Arial Bold'), local('Arial-BoldMT'), local('Liberation Sans Bold'), local('Arimo Bold');
+  size-adjust: 105.22%;
+  ascent-override: 101.59%;
+  descent-override: 27.85%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'Noto Sans Fallback';
+  font-weight: 750 900;
+  src: local('Arial Bold'), local('Arial-BoldMT'), local('Liberation Sans Bold'), local('Arimo Bold');
+  size-adjust: 106.97%;
+  ascent-override: 99.94%;
+  descent-override: 27.39%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'Noto Sans Fallback';
+  font-style: italic;
+  font-weight: 100 549;
+  src: local('Arial Italic'), local('Arial-ItalicMT'), local('Liberation Sans Italic'), local('Arimo Italic');
+  size-adjust: 100.77%;
+  ascent-override: 106.08%;
+  descent-override: 29.08%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'Noto Sans Fallback';
+  font-style: italic;
+  font-weight: 550 900;
+  src: local('Arial Bold Italic'), local('Arial-BoldItalicMT'), local('Liberation Sans Bold Italic'), local('Arimo Bold Italic');
+  size-adjust: 99.84%;
+  ascent-override: 107.07%;
+  descent-override: 29.35%;
   line-gap-override: 0%;
 }

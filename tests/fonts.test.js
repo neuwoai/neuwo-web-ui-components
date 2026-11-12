@@ -33,8 +33,19 @@ describe("font URLs", () => {
   });
 });
 
-/** @param {string} family */
-const facesOf = (family) => [...fontsCss.matchAll(new RegExp(`@font-face\\s*{[^}]*font-family: '${family}';[^}]*}`, "g"))].map(([face]) => face);
+/**
+ * @param {string} family
+ * @param {"normal" | "italic"} [style]
+ */
+const facesOf = (family, style = "normal") =>
+  [...fontsCss.matchAll(new RegExp(`@font-face\\s*{[^}]*font-family: '${family}';[^}]*}`, "g"))]
+    .map(([face]) => face)
+    .filter((face) => face.includes("font-style: italic") === (style === "italic"));
+
+const REGULAR = "src: local('Arial'), local('Liberation Sans'), local('Arimo'), local('Arimo Regular');";
+const BOLD = "src: local('Arial Bold'), local('Arial-BoldMT'), local('Liberation Sans Bold'), local('Arimo Bold');";
+const ITALIC = "src: local('Arial Italic'), local('Arial-ItalicMT'), local('Liberation Sans Italic'), local('Arimo Italic');";
+const BOLD_ITALIC = "src: local('Arial Bold Italic'), local('Arial-BoldItalicMT'), local('Liberation Sans Bold Italic'), local('Arimo Bold Italic');";
 
 /**
  * The vertical metrics of a woff2 file, read from its `head` and `hhea` tables, which woff2 never transforms.
@@ -76,22 +87,27 @@ function verticalMetrics(file) {
 }
 
 describe("fallback faces", () => {
-  it.each(["Outfit Fallback", "Noto Sans Fallback"])("%s lists Arial and its metric-compatible equivalents in order", (family) => {
-    const [regular, bold] = facesOf(family);
-    expect(regular).toMatch(/src: local\('Arial'\), local\('Liberation Sans'\), local\('Arimo'\), local\('Arimo Regular'\);/);
-    expect(bold).toMatch(/src: local\('Arial Bold'\), local\('Arial-BoldMT'\), local\('Liberation Sans Bold'\), local\('Arimo Bold'\);/);
+  it.each(["Outfit Fallback", "Noto Sans Fallback"])("%s has a face per token weight, meeting at the midpoints, Arial up to 500 and Arial Bold from 600", (family) => {
+    const faces = facesOf(family);
+    expect(faces.map((face) => face.match(/font-weight: ([\d ]+);/)?.[1])).toEqual(["100 449", "450 549", "550 649", "650 749", "750 900"]);
+    expect(faces.map((face) => (face.includes(REGULAR) ? "regular" : face.includes(BOLD) ? "bold" : "none"))).toEqual(["regular", "regular", "bold", "bold", "bold"]);
   });
 
-  it.each(["Outfit Fallback", "Noto Sans Fallback"])("%s takes Arial below weight 550 and Arial Bold from it, so bold text is never synthesised", (family) => {
-    expect(facesOf(family).map((face) => face.match(/font-weight: ([\d ]+);/)?.[1])).toEqual(["100 549", "550 900"]);
+  it("Noto Sans Fallback has an italic face for 400 and one for 700, split at 550, from Arial Italic and Arial Bold Italic", () => {
+    const faces = facesOf("Noto Sans Fallback", "italic");
+    expect(faces.map((face) => face.match(/font-weight: ([\d ]+);/)?.[1])).toEqual(["100 549", "550 900"]);
+    expect([faces[0].includes(ITALIC), faces[1].includes(BOLD_ITALIC)]).toEqual([true, true]);
   });
 
   it.each([
-    ["Outfit Fallback", "fonts/outfit-variable.woff2"],
-    ["Noto Sans Fallback", "fonts/noto-sans-variable.woff2"],
-  ])("%s gives the web font's ascent, descent and line gap at its adjusted size", (family, file) => {
+    ["Outfit Fallback", "normal", "fonts/outfit-variable.woff2"],
+    ["Noto Sans Fallback", "normal", "fonts/noto-sans-variable.woff2"],
+    ["Noto Sans Fallback", "italic", "fonts/noto-sans-italic-variable.woff2"],
+  ])("%s, %s, gives the web font's ascent, descent and line gap at each face's adjusted size", (family, style, file) => {
     const metrics = verticalMetrics(file);
-    for (const face of facesOf(family)) {
+    const faces = facesOf(family, /** @type {"normal" | "italic"} */ (style));
+    expect(faces.length).toBeGreaterThan(1);
+    for (const face of faces) {
       const share = (name) => Number(face.match(new RegExp(`${name}: ([\\d.]+)%;`))?.[1]) / 100;
       const size = share("size-adjust");
       expect(share("ascent-override") * size).toBeCloseTo(metrics.ascender / metrics.unitsPerEm, 3);
