@@ -877,6 +877,18 @@ describe("<neuwo-combobox searchable>", () => {
     expect(animation()).toMatchObject({ currentTime: 0, finished: true });
   });
 
+  it("closes at once when light dismiss follows a right-press on its trigger, before its pointerup reaches the page", async () => {
+    const el = make(`<neuwo-combobox>${OPTS}</neuwo-combobox>`);
+    popover(el);
+    const trigger = triggerOf(el);
+    click(trigger);
+    await nextTask();
+    trigger.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, cancelable: true, pointerType: "mouse", button: 2 }));
+    el.popup.hidePopover();
+    expect(el.isOpen).toBe(false);
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+  });
+
   it("closes at once on a later light dismiss after a right-click on its trigger", async () => {
     const el = make(`<neuwo-combobox>${OPTS}</neuwo-combobox>`);
     popover(el);

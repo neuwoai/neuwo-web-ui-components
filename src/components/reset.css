@@ -35,6 +35,10 @@
       unicode-bidi: revert;
     }
 
+    &::placeholder {
+      all: revert;
+    }
+
     /* revert drops the hidden attribute's own styling too, which browsers also apply in the author origin. */
     &:where([hidden]:not([hidden="until-found" i])) {
       display: none;

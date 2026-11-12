@@ -510,7 +510,8 @@ export class NeuwoCombobox extends NeuwoFieldElement {
 
   /** @param {Event} event */
   #onPress = (event) => {
-    this.#pressed = Boolean(this.trigger?.contains(/** @type {Node} */ (event.target)));
+    const pointer = /** @type {PointerEvent} */ (event);
+    this.#pressed = pointer.button === 0 && Boolean(this.trigger?.contains(/** @type {Node} */ (pointer.target)));
   };
 
   /** @param {Event} event */

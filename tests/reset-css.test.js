@@ -152,6 +152,14 @@ describe("components reset", () => {
     }
   });
 
+  it("reverts a page's placeholder rules on block nodes, which the revert of the nodes themselves does not reach", () => {
+    const placeholders = rules.filter((rule) => rule.selectors.some((selector) => selector.endsWith("::placeholder")));
+    expect(placeholders).toHaveLength(1);
+    expect(Object.fromEntries(placeholders[0].declarations)).toEqual({ all: "revert" });
+    expect(placeholders[0].selectors).toHaveLength(1);
+    expect(placeholders[0].selectors[0]).toMatch(/^:where\(neuwo-badge, [^)]*\) :is\([^)]*\)::placeholder$/);
+  });
+
   it("keeps a page's list markers off block nodes, which the revert of ::before and ::after does not reach", () => {
     const markers = rules.filter((rule) => rule.selectors.some((selector) => selector.endsWith("::marker")));
     expect(markers).toHaveLength(1);
