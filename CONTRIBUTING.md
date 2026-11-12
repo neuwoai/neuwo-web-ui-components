@@ -115,6 +115,9 @@ unless `--keep` is given, and exits 130.
   every inline module script, and counts the string literal `"neuwo-btn__spinner"`, which only the
   button template holds. The element definition skips a tag already defined, so `console` cannot see
   a second copy; a count of 0 fails too.
+- `interactConsole`: on a target that interacts with its page (`demo`, `next-dev`, `next-prod` and
+  `vite`), the `console` check again, over the whole interaction from its own page load to its last
+  step, so an error raised while the forms are exercised fails too.
 
 The `demo` target serves the repository root, so it checks the demo page against the `dist/` that
 `npm run build` made, not the tarball. It runs `console` and `singleCopy`, then asserts that the
@@ -146,9 +149,10 @@ the library at the client entry, and preloads its fonts with React's `preload`, 
 `<link>` elements at the start of the root element. Vite needs no network.
 
 After changing a check, run `npm run integration -- --self-test`. It serves the pages in
-`integration/self-test/`, expanded with `expand`. `good.html` must pass every check that runs, each
-other page must fail only its own check, and every check must fail on its own page in at least one
-browser. So the self-test fails in Firefox alone, where two checks are `n/a`.
+`integration/self-test/`, expanded with `expand`, and its interaction presses each page's first
+button. `good.html` must pass every check that runs, each other page must fail only its own checks,
+listed in `SELF_TEST` in `integration/run.mjs`, and every check must fail on its own page in at least
+one browser. So the self-test fails in Firefox alone, where two checks are `n/a`.
 
 The apps are installed with `npm install`. To install only from the npm cache, here and in the
 one-time install above, set `npm_config_offline=true`:

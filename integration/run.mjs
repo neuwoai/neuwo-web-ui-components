@@ -3,26 +3,36 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { launch } from "./browsers.mjs";
-import { CHECKS, VIEWPORT, runChecks } from "./checks.mjs";
+import { CHECKS, VIEWPORT, judgeConsole, recordErrors, runChecks } from "./checks.mjs";
 import { Finishing, closeCommands, runCommand, serveStatic } from "./serve.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = dirname(HERE);
 const PACKAGE = "@neuwo/web-ui-library--demo";
 const BROWSERS = ["chromium", "firefox"];
+const INTERACT_CONSOLE = "interactConsole";
 const SELF_TEST = {
-  "good.html": null,
-  "console-error.html": "console",
-  "layout-shift.html": "layoutShift",
-  "rebuild.html": "adoption",
-  "loading-write.html": "adoption",
-  "unstyled.html": "noScript",
-  "noscript-host.html": null,
-  "noscript-loading-write.html": "adoption",
-  "attribute-reset.html": null,
-  "attribute-write.html": "adoption",
-  "two-copies.html": "singleCopy",
-  "no-copy.html": "singleCopy",
+  "good.html": [],
+  "console-error.html": ["console", INTERACT_CONSOLE],
+  "interact-error.html": [INTERACT_CONSOLE],
+  "layout-shift.html": ["layoutShift"],
+  "rebuild.html": ["adoption"],
+  "loading-write.html": ["adoption"],
+  "unstyled.html": ["noScript"],
+  "noscript-host.html": [],
+  "noscript-loading-write.html": ["adoption"],
+  "attribute-reset.html": [],
+  "attribute-write.html": ["adoption"],
+  "two-copies.html": ["singleCopy"],
+  "no-copy.html": ["singleCopy"],
+};
+const pressButton = {
+  async interact(page, url) {
+    await page.goto(url, { waitUntil: "load" });
+    await page.click("neuwo-button .neuwo-btn");
+    await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(resolve)));
+    return [];
+  },
 };
 const USAGE = "Usage: node integration/run.mjs [--self-test] [--browser=chromium|firefox|all] [--keep] [target ...]";
 
@@ -85,16 +95,18 @@ async function selfTest(browsers) {
   const { expand } = await import(pathToFileURL(join(ROOT, "dist", "server.js")).href);
   const server = await serveStatic(ROOT, { html: expand });
   const broken = [];
-  const skipped = new Map(CHECKS.map((check) => [check, new Set()]));
-  const own = new Map(Object.keys(SELF_TEST).map((page) => [page, []]));
+  const skipped = new Map([...CHECKS, INTERACT_CONSOLE].map((check) => [check, new Set()]));
+  const own = new Map(Object.entries(SELF_TEST).map(([page, failing]) => [page, new Map(failing.map((check) => [check, []]))]));
   try {
     for (const [name, browser] of browsers) {
-      for (const [page, check] of Object.entries(SELF_TEST)) {
-        for (const result of await runChecks(browser, name, `${server.url}/integration/self-test/${page}`, CHECKS)) {
+      for (const [page, failing] of Object.entries(SELF_TEST)) {
+        const url = `${server.url}/integration/self-test/${page}`;
+        const results = [...(await runChecks(browser, name, url, CHECKS)), ...(await interactWith(browser, pressButton, url))];
+        for (const result of results) {
           print("self-test", name, page, result);
-          if (result.status === "n/a") skipped.get(result.check).add(name);
-          if (result.check === check) own.get(page).push(result.status);
-          const expected = result.check === check ? "fail" : "pass";
+          if (result.status === "n/a") skipped.get(result.check)?.add(name);
+          own.get(page).get(result.check)?.push(result.status);
+          const expected = failing.includes(result.check) ? "fail" : "pass";
           if (result.status !== expected && result.status !== "n/a") {
             broken.push(`broken: ${name} ${page} ${result.check}: expected ${expected}, got ${result.status}`);
           }
@@ -104,9 +116,10 @@ async function selfTest(browsers) {
   } finally {
     await server.stop();
   }
-  for (const [page, check] of Object.entries(SELF_TEST)) {
-    if (check && own.get(page).every((status) => status === "n/a")) {
-      broken.push(`unproven: ${check} on ${page} (n/a in ${[...skipped.get(check)].join(", ")})`);
+  for (const [page, checks] of own) {
+    for (const [check, statuses] of checks) {
+      if (statuses.length === 0) broken.push(`unproven: ${check} on ${page} (it never ran)`);
+      else if (statuses.every((status) => status === "n/a")) broken.push(`unproven: ${check} on ${page} (n/a in ${[...skipped.get(check)].join(", ")})`);
     }
   }
   for (const line of broken) console.log(`self-test ${line}`);
@@ -118,12 +131,17 @@ async function selfTest(browsers) {
 
 async function interactWith(browser, target, url) {
   const context = await browser.createBrowserContext();
+  let messages = [];
   try {
     const page = await context.newPage();
+    messages = recordErrors(page);
     await page.setViewport(VIEWPORT);
-    return await target.interact(page, url);
+    const results = await target.interact(page, url);
+    return [...results, { check: INTERACT_CONSOLE, ...judgeConsole({ messages: [...messages] }) }];
   } catch (error) {
-    return [{ check: "interact", status: "fail", detail: error.message }];
+    const results = [{ check: "interact", status: "fail", detail: error.message }];
+    if (messages.length) results.push({ check: INTERACT_CONSOLE, ...judgeConsole({ messages: [...messages] }) });
+    return results;
   } finally {
     await context.close();
   }

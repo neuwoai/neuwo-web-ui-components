@@ -149,27 +149,33 @@ async function countCopies(marker) {
   return [...scripts, ...inline];
 }
 
-async function loadLive(context, url) {
-  const page = await context.newPage();
-  await page.setViewport(VIEWPORT);
+export function recordErrors(page) {
   const messages = [];
   page.on("console", (message) => {
     const type = message.type();
     if (type === "error" || ((type === "warn" || type === "warning") && HYDRATION.test(message.text()))) messages.push(`console ${type}: ${message.text()}`);
   });
   page.on("pageerror", (error) => messages.push(`pageerror: ${error.message}`));
+  return messages;
+}
+
+async function loadLive(context, url) {
+  const page = await context.newPage();
+  await page.setViewport(VIEWPORT);
+  const messages = recordErrors(page);
   await page.evaluateOnNewDocument(watchWrites);
   const response = await page.goto(url, { waitUntil: "load", timeout: NAVIGATION_TIMEOUT });
   if (!response?.ok()) return { problem: `HTTP ${response?.status() ?? "no response"} for ${url}` };
   const problem = await page.evaluate(settle, DEFINITION_TIMEOUT);
   if (problem) return { problem };
   return {
-    messages: [...messages],
     shift: await page.evaluate(layoutShift),
     writes: await page.evaluate(() => (window.__neuwoWrites ? [...window.__neuwoWrites] : null)),
     served: await page.evaluate(compareServed),
     background: await page.evaluate(buttonBackground),
     copies: await page.evaluate(countCopies, MARKER),
+    // Copied last, so a message logged while the evaluations above fetch and measure still counts.
+    messages: [...messages],
   };
 }
 
@@ -188,7 +194,7 @@ async function loadWithoutScript(context, url) {
   return { background: await page.evaluate(buttonBackground) };
 }
 
-function judgeConsole({ messages }) {
+export function judgeConsole({ messages }) {
   if (messages.length === 0) return { status: "pass", detail: "" };
   return { status: "fail", detail: `${messages.length} message(s): ${messages.slice(0, 3).join("; ")}` };
 }
