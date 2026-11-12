@@ -120,9 +120,6 @@ async function compareServed() {
   return { hosts: live.length, difference: null };
 }
 
-// A second load in one browser context revalidates a page the server let it cache.
-const loaded = (response) => response?.ok() || response?.status() === 304;
-
 async function loadLive(context, url) {
   const page = await context.newPage();
   await page.setViewport(VIEWPORT);
@@ -134,7 +131,7 @@ async function loadLive(context, url) {
   page.on("pageerror", (error) => messages.push(`pageerror: ${error.message}`));
   await page.evaluateOnNewDocument(watchWrites);
   const response = await page.goto(url, { waitUntil: "load", timeout: NAVIGATION_TIMEOUT });
-  if (!loaded(response)) return { problem: `HTTP ${response?.status() ?? "no response"} for ${url}` };
+  if (!response?.ok()) return { problem: `HTTP ${response?.status() ?? "no response"} for ${url}` };
   const problem = await page.evaluate(settle, DEFINITION_TIMEOUT);
   if (problem) return { problem };
   return {
@@ -156,7 +153,8 @@ async function loadWithoutScript(context, url) {
   }
   await page.setViewport(VIEWPORT);
   const response = await page.goto(url, { waitUntil: "load", timeout: NAVIGATION_TIMEOUT });
-  if (!loaded(response)) return { problem: `HTTP ${response?.status() ?? "no response"} for ${url}` };
+  // The live load in this context cached the page, so a server that sends validators answers 304.
+  if (!response?.ok() && response?.status() !== 304) return { problem: `HTTP ${response?.status() ?? "no response"} for ${url}` };
   return { background: await page.evaluate(buttonBackground) };
 }
 
