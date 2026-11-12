@@ -4,7 +4,7 @@ import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "../..");
-const SOURCES = ["src", "scripts", "custom-elements-manifest.config.js"];
+const SOURCES = ["src", "scripts", "custom-elements-manifest.config.js", "tsconfig.json", "package.json"];
 
 /** One output of each step of `npm run build`: the bundles, the declarations and the JSX types. */
 export const BUILT = ["neuwo.js", "index.d.ts", "types/jsx-elements.d.ts"];
@@ -17,12 +17,21 @@ const filesIn = (path) =>
         .map((entry) => join(entry.parentPath, entry.name))
     : [path];
 
+/**
+ * A source and everything under it, folders too: adding, deleting or renaming a file changes only its folder.
+ * @param {string} path
+ */
+const entriesIn = (path) =>
+  statSync(path).isDirectory()
+    ? [path, ...readdirSync(path, { recursive: true, withFileTypes: true }).map((entry) => join(entry.parentPath, entry.name))]
+    : [path];
+
 /** @param {string} path */
 const modified = (path) => statSync(path).mtimeMs;
 
 /**
  * Why `dist` must be built before the tests read it, or null when it is current: a build step's output is
- * missing, or a source is newer than the oldest built file.
+ * missing, or a source file or folder is newer than the oldest built file.
  * @param {string} root
  * @returns {string | null}
  */
@@ -32,8 +41,8 @@ export function staleness(root) {
   const built = Math.min(...filesIn(join(root, "dist")).map(modified));
   const newer = SOURCES.map((source) => join(root, source))
     .filter((path) => existsSync(path))
-    .flatMap(filesIn)
-    .find((file) => modified(file) > built);
+    .flatMap(entriesIn)
+    .find((path) => modified(path) > built);
   return newer ? `${relative(root, newer)} is newer than dist` : null;
 }
 
@@ -48,9 +57,30 @@ export function distFile(file) {
   return path;
 }
 
-export default function setup() {
-  const reason = staleness(ROOT);
+/**
+ * Runs the build when `dist` is stale, and throws with everything it printed when it fails.
+ * @param {string} root
+ * @param {string} command
+ */
+export function buildIfStale(root, command) {
+  const reason = staleness(root);
   if (!reason) return;
   console.log(`Building dist before the tests, as ${reason}.`);
-  execSync("npm run build", { cwd: ROOT, stdio: "pipe" });
+  try {
+    execSync(command, { cwd: root, stdio: "pipe", encoding: "utf8" });
+  } catch (error) {
+    // tsc reports to stdout, which the error execSync throws leaves out of its message.
+    throw new Error(`Building dist failed:\n${error.stdout}\n${error.stderr}`, { cause: error });
+  }
+}
+
+/**
+ * Builds a stale `dist` before the first run and before each rerun in watch mode.
+ * @param {import("vitest/node").TestProject} project
+ * @param {string} [root]
+ * @param {string} [command]
+ */
+export default function setup(project, root = ROOT, command = "npm run build") {
+  buildIfStale(root, command);
+  project.onTestsRerun(() => buildIfStale(root, command));
 }

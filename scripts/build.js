@@ -118,7 +118,9 @@ if (serve) {
     }, 50);
   };
   for (const folder of ["src/foundation", "src/components"]) {
-    watch(folder, { recursive: true }, rewriteStylesheets).on("error", (error) => console.error(error));
+    watch(folder, { recursive: true }, rewriteStylesheets).on("error", (error) => {
+      console.error(`Stopped watching ${folder} for CSS changes (${error.message}); restart npm start to pick them up again.`);
+    });
   }
   console.log(`Serving demo at http://localhost:${port}/demo/`);
 } else {
