@@ -4,13 +4,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Neuwo Web UI Library: Demo</title>
+    <link rel="icon" href="data:," />
     <style>
       body {
         margin: 0;
         padding: 3rem;
       }
 
-      /* Wired as the main website wires it: the consumer owns where the wash sits and how it stacks. */
       .background {
         position: fixed;
         top: 0;
@@ -25,7 +25,6 @@
         width: 100%;
         height: 100%;
       }
-      /* Hostile rules: neither a page .btn class nor a bare button rule may reach the buttons. */
       .btn {
         background: hotpink !important;
         color: black !important;
@@ -33,73 +32,12 @@
         padding: 4px !important;
       }
       button {
-        padding: 0;
+        color: rgb(0, 128, 0);
         border: 3px solid hotpink;
       }
-      /* Hostile rule: the old unprefixed classes no longer reach the fields. */
-      .input,
-      .field,
-      .combobox,
-      .combobox__popup,
-      .combobox__option {
-        background: hotpink !important;
-        color: black !important;
-        border-radius: 0 !important;
+      neuwo-button.square .neuwo-btn {
+        border-radius: 0;
       }
-      /* Hostile rule: the old unprefixed classes no longer reach the selection controls. */
-      .form-check,
-      .form-check__input,
-      .form-check__label,
-      .form-toggle,
-      .form-toggle__track,
-      .radio-group,
-      .radio-group__legend,
-      .radio-group__options,
-      .segmented,
-      .segmented__indicator,
-      .segmented__option,
-      .control-error {
-        background: hotpink !important;
-        color: black !important;
-        border-radius: 0 !important;
-        outline: 4px solid black !important;
-      }
-      /* Hostile rule: the old unprefixed class no longer reaches the sliders. */
-      .range {
-        background: hotpink !important;
-        border: 4px solid black !important;
-        height: 3rem !important;
-      }
-      /* Hostile rule: the old unprefixed classes no longer reach the badges or deal-id chips. */
-      .badge,
-      .deal-id {
-        background: hotpink !important;
-        color: black !important;
-        border-radius: 0 !important;
-      }
-      /* Hostile rule: the old unprefixed class no longer reaches the status dots. */
-      .status-dot {
-        background: hotpink !important;
-        border-radius: 0 !important;
-        box-shadow: none !important;
-      }
-      /* Hostile rule: the old unprefixed class no longer reaches the CTA bands. */
-      .cta {
-        background: hotpink !important;
-      }
-      /* Hostile rule: the old unprefixed class no longer reaches the notice cards. */
-      .notice {
-        background: hotpink !important;
-        border-radius: 0 !important;
-        box-shadow: none !important;
-      }
-      /* Hostile rule: if unprefixed class names leaked in, the logo would be boxed and squashed. */
-      .logo {
-        background: hotpink !important;
-        height: 4rem !important;
-        outline: 4px solid black !important;
-      }
-      /* Panels so each logo tone sits on the background it is named for. */
       .panel {
         display: flex;
         align-items: center;
@@ -131,25 +69,15 @@
         align-items: center;
         margin-block: 1.5rem;
       }
-      /* A chip has no room for the corner control, so the consumer supplies the clearance. */
       .copy-chip {
         display: inline-block;
         padding-right: 2rem;
         --neuwo-copy-inset: 0.125rem;
       }
-      /* Hostile rule: the old unprefixed class no longer reaches the copy controls. */
-      .copy {
-        background: hotpink !important;
-        border-radius: 0 !important;
-        opacity: 1 !important;
-        width: 4rem !important;
-      }
-      /* A raw colour on purpose: the brand has no amber, so a consumer brings its own through the knob. */
       .callout--warning-demo {
         --neuwo-callout-accent: #d99a2b;
       }
 
-      /* navigation.css ships only the link recipes, so the list reset and placement are the consumer's. */
       .nav-demo ul {
         list-style: none;
         margin: 0;
@@ -176,13 +104,11 @@
         margin-top: 1rem;
       }
 
-      /* display: block strips a summary's triangle, so it is put back inside the box the underline spans. */
       .nav-demo summary.neuwo-nav-link {
         display: list-item;
         list-style-position: inside;
         cursor: pointer;
       }
-      /* Re-theme via a token that inherits through the whole page. */
       .reskin {
         --neuwo-color-blue: darkslateblue;
       }
@@ -190,7 +116,6 @@
         margin-top: 2.5rem;
       }
     </style>
-    <!-- Linked in the head, so the tokens the page's own chrome above uses are there at first paint. -->
     <link rel="stylesheet" href="/dist/neuwo.css" />
     <script type="module" src="/dist/neuwo.js"></script>
   </head>
@@ -217,9 +142,18 @@
       into the hover colour with them.
     </p>
     <p>
-      The page defines a hostile <code>.btn</code> class rule and a hostile <code>button</code>
-      element rule. Neither reaches the buttons, which render into their own light DOM.
+      The page defines a <code>.btn</code> class rule and a bare <code>button</code> rule, and the two
+      controls below are plain buttons outside any component, so you can see the rules are live. Page
+      rules of one class or less do not reach components, because the reset matches their template nodes
+      at one-class weight. A rule that is more specific than one class does, which is how a host
+      restyles a component.
     </p>
+    <div class="row">
+      <button id="control-plain" type="button">Plain button</button>
+      <button id="control-class" class="btn" type="button">Button with .btn</button>
+      <neuwo-button class="square" variant="solid">Restyled from the host</neuwo-button>
+      <neuwo-button variant="solid">Left alone</neuwo-button>
+    </div>
 
     <h2>Variants</h2>
     <div class="row">
@@ -378,11 +312,13 @@
       const views = document.getElementById("demo-views");
       const viewsOut = document.getElementById("demo-views-value");
       const showViews = () => {
-        viewsOut.value = Number(views.value).toLocaleString("en-GB");
+        const value = customElements.get("neuwo-range") ? views.value : views.getAttribute("value");
+        viewsOut.value = Number(value).toLocaleString("en-GB");
         views.setAttribute("aria-valuetext", viewsOut.value + " page views");
       };
       views.addEventListener("input", showViews);
       showViews();
+      customElements.whenDefined("neuwo-range").then(showViews);
     </script>
 
     <h2>Combobox (fully styled dropdown)</h2>
@@ -586,10 +522,8 @@
     <h2>Copy to clipboard</h2>
     <p>
       <code>&lt;neuwo-copy&gt;</code> wraps anything whose text is worth pasting and puts a
-      control in the corner. The page defines a hostile <code>.copy</code> rule and a bare
-      <code>button</code> rule. The classes are prefixed (<code>.neuwo-copy__button</code>) and
-      outweigh a bare element rule, so neither styles the control. The code panel in the
-      Markdown section above is wrapped the same way.
+      control in the corner. The page's bare <code>button</code> rule does not reach it. The code panel in
+      the Markdown section above is wrapped the same way.
     </p>
     <p>
       The wrapped content stays as authored inside <code>.neuwo-copy__content</code>: the panel
@@ -636,8 +570,6 @@
 
     <h2>Selection: checkbox</h2>
     <p>
-      The page defines a hostile <code>.form-check</code> rule. The classes are prefixed
-      <code>.neuwo-form-check</code>, so it does not reach them.
     </p>
     <form id="checkbox-form" class="row">
       <neuwo-checkbox name="news" value="weekly">Weekly newsletter</neuwo-checkbox>
@@ -673,9 +605,7 @@
     <h2>Selection: radio group</h2>
     <p>
       Each radio is a native radio carrying its group's <code>name</code>, so the browser groups them:
-      Tab reaches the checked one and the arrow keys move the choice. The page defines a hostile
-      <code>.radio-group</code> rule. The classes are prefixed <code>.neuwo-radio-group</code>, so it
-      does not reach them.
+      Tab reaches the checked one and the arrow keys move the choice.
     </p>
     <form id="radio-form">
       <div class="row">
@@ -714,8 +644,7 @@
     <h2>Selection: segmented control</h2>
     <p>
       The selected option is marked in the markup, so it shows before the script runs; the sliding pill
-      appears with the first pick. The page defines a hostile <code>.segmented</code> rule. The classes
-      are prefixed <code>.neuwo-segmented</code>, so it does not reach them.
+      appears with the first pick.
     </p>
     <form id="segmented-form" class="row">
       <neuwo-segmented name="view" label="Results view" value="visual">
@@ -800,7 +729,6 @@
     </script>
 
     <h2>Badge (label + status, mix-and-match axes)</h2>
-    <p>The page defines a hostile <code>.badge</code> rule. The classes are prefixed <code>.neuwo-badge</code>, so it does not reach them.</p>
     <div class="row">
       <neuwo-badge>For Publishers</neuwo-badge>
       <neuwo-badge variant="green">New</neuwo-badge>
@@ -839,7 +767,6 @@
       <neuwo-badge motion="shimmer" intensity="l">Loud shimmer</neuwo-badge>
     </div>
     <div class="row">
-      <!-- the dense-row case the axis exists for: a small pill with a ring to match. -->
       <neuwo-badge variant="green" size="s" borderless motion="pulse" intensity="s">Live</neuwo-badge>
     </div>
 
@@ -861,7 +788,6 @@
     </div>
 
     <h2>Status dot (colour + motion axes)</h2>
-    <p>The page defines a hostile <code>.status-dot</code> rule. The classes are prefixed <code>.neuwo-status-dot</code>, so it does not reach them.</p>
     <div class="row">
       <span style="display: inline-flex; align-items: center; gap: 0.5rem">
         <neuwo-status-dot></neuwo-status-dot> Resting
@@ -879,7 +805,6 @@
 
     <h2>neuwo-status-dot halo intensity (static ring size; motion is a separate axis)</h2>
     <div class="row">
-      <!-- halo is a static ring size, so these three are intentionally still -->
       <neuwo-status-dot halo="s"></neuwo-status-dot>
       <neuwo-status-dot halo="m"></neuwo-status-dot>
       <neuwo-status-dot halo="l"></neuwo-status-dot>
@@ -894,16 +819,12 @@
       <neuwo-status-dot glow="m"></neuwo-status-dot>
       <neuwo-status-dot glow="l"></neuwo-status-dot>
       <neuwo-status-dot variant="blue" glow="l"></neuwo-status-dot>
-      <!-- the reference look: saturated blue bloom + blink, composed from glow + motion. -->
       <neuwo-status-dot variant="blue" glow="m" motion="blink"></neuwo-status-dot>
-      <!-- glow stacks over the halo ring (filter vs box-shadow), no conflict. -->
       <neuwo-status-dot variant="blue" halo="l" glow="m"></neuwo-status-dot>
     </div>
 
     <h2>CTA band (banner + spotlight variants)</h2>
     <p>
-      The page defines a hostile <code>.cta</code> rule. The classes are prefixed
-      (<code>.neuwo-cta</code>), so it does not reach the bands.
       Headline words wrapped in <code>data-accent</code> get the brand gradient.
     </p>
     <neuwo-cta pulse>
@@ -985,14 +906,11 @@
     <neuwo-cta heading-level="3">
       Ready to <span data-accent>go</span>?
       <span slot="sub">Sub line.</span>
-      <!-- inside a CTA, calm the primary button's hover -->
       <neuwo-button slot="actions" variant="solid" hover="s">Get Started</neuwo-button>
     </neuwo-cta>
 
     <h2>Notice card (one element: consent banner, language hint, toast)</h2>
     <p>
-      The page defines a hostile <code>.notice</code> rule. The classes are prefixed
-      (<code>.neuwo-notice</code>), so it does not reach the cards.
       These first three use <code>position="static"</code> so they sit in the page;
       the buttons below dock live ones to the viewport.
     </p>
@@ -1001,7 +919,6 @@
         <span slot="title">Read this page in <a class="neuwo-link" href="#">Polski</a>?</span>
       </neuwo-notice>
 
-      <!-- Consent banner: a question, so no close button and role="dialog". -->
       <neuwo-notice
         position="static"
         layout="row"
@@ -1016,7 +933,6 @@
         <neuwo-button slot="actions" variant="solid" size="sm">Accept</neuwo-button>
       </neuwo-notice>
 
-      <!-- Token re-theming reaches the card like every other component. -->
       <neuwo-notice class="reskin" position="static" dismissible>
         <span slot="title">Re-themed notice</span>
         Same recipe, a different <code>--neuwo-color-blue</code> on the wrapper.
@@ -1069,9 +985,7 @@
       <code>bg-colour</code>, for a background where the brand blue would vanish
     </div>
     <p>
-      The page defines a hostile <code>.logo</code> rule that would box the wordmark in
-      hot pink and stretch it to 4rem. The library's classes are prefixed (<code>.neuwo-logo</code>), so it never matches. An unknown variant falls
-      back to <code>bg-dark</code>:
+      An unknown variant falls back to <code>bg-dark</code>:
     </p>
     <div class="panel panel--dark">
       <neuwo-logo variant="teal"></neuwo-logo>

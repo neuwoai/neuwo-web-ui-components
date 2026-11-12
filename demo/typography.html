@@ -9,14 +9,12 @@
     <script type="module" src="/dist/neuwo.js"></script>
 
     <style>
-      /* Page chrome only: a specimen takes nothing from this block. */
       body {
         margin: 0 auto;
         padding: var(--neuwo-space-12) var(--neuwo-space-6) var(--neuwo-space-24);
         max-width: 64rem;
       }
 
-      /* Wired as the main website wires it: the consumer owns where the wash sits and how it stacks. */
       .background {
         position: fixed;
         top: 0;
@@ -56,7 +54,6 @@
         color: var(--neuwo-color-blue-light);
       }
 
-      /* Specimen row: token name and value on the left, live sample on the right. */
       .demo-row {
         display: grid;
         grid-template-columns: minmax(0, 14rem) minmax(0, 1fr);
@@ -92,7 +89,6 @@
         color: var(--neuwo-color-text);
       }
 
-      /* Overflow visible, so a tight line-height such as 1.05 is not clipped into a scroll box. */
       .demo-row__sample--block {
         white-space: normal;
         overflow: visible;
