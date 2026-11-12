@@ -78,6 +78,7 @@
 }
 
 .neuwo-range::-moz-range-thumb {
+  box-sizing: border-box;
   width: var(--neuwo-range-thumb-size);
   height: var(--neuwo-range-thumb-size);
   border: var(--neuwo-range-thumb-border) solid var(--neuwo-color-blue);

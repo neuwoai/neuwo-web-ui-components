@@ -36,6 +36,11 @@ describe("range.css recipe", () => {
     expect(css).toContain("::-moz-range-progress");
   });
 
+  it("sizes the Firefox thumb by its border box, as WebKit's is, so both engines draw it at the thumb size", () => {
+    expect(css).toMatch(/\.neuwo-range::-moz-range-thumb\s*\{[^}]*box-sizing:\s*border-box;/);
+    expect(css).toMatch(/\.neuwo-range::-moz-range-thumb\s*\{[^}]*width:\s*var\(--neuwo-range-thumb-size\);/);
+  });
+
   it("rings the thumb on focus instead of the input box", () => {
     expect(css).toContain("var(--neuwo-shadow-focus)");
     expect(css).toMatch(/\.neuwo-range:focus-visible::-webkit-slider-thumb/);

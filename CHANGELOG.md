@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed: in Firefox the `<neuwo-range>` thumb is the size `--neuwo-range-thumb-size` sets, border included, as in Chromium, where it was drawn 4px wider and taller.
 - Fixed: the tick and dash of `<neuwo-checkbox>` and the dot of a checked `<neuwo-radio>` are drawn in `--neuwo-color-white`, so they follow that token, instead of a pure white fixed in the recipe. Each mark is a mask on the native input's `::before` now, where it was a background image on the input, so restyle it through `.neuwo-form-check__input:checked::before` or `.neuwo-form-check__input:indeterminate::before`.
 - Fixed: `<neuwo-copy>` copies `aria-*` and `title` from the element onto its control, as the other elements do, so an `aria-label` on the element names the control when `label` is not set. `label` still wins, over `aria-labelledby` too. `slot="status"` is documented as reserved for the outcome announcement.
 - Fixed: a failed `<neuwo-copy>` draws a cross in the error colour, where a successful one draws the tick, instead of nothing; only a screen reader learned of the failure before.
