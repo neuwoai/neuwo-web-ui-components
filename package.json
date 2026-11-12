@@ -21,10 +21,10 @@
     "CHANGELOG.md"
   ],
   "exports": {
-    ".": { "types": "./dist/types/elements.d.ts", "default": "./dist/neuwo.js" },
+    ".": { "types": "./dist/types/elements.d.ts", "default": "./dist/bundler/neuwo.js" },
     "./server": { "types": "./dist/server/index.d.ts", "default": "./dist/server.js" },
-    "./jsx-runtime": { "types": "./dist/types/jsx-runtime.d.ts", "react-server": "./dist/jsx-runtime.react-server.js", "default": "./dist/jsx-runtime.js" },
-    "./jsx-dev-runtime": { "types": "./dist/types/jsx-dev-runtime.d.ts", "react-server": "./dist/jsx-dev-runtime.react-server.js", "default": "./dist/jsx-dev-runtime.js" },
+    "./jsx-runtime": { "types": "./dist/types/jsx-runtime.d.ts", "react-server": "./dist/jsx-runtime.react-server.js", "default": "./dist/bundler/jsx-runtime.js" },
+    "./jsx-dev-runtime": { "types": "./dist/types/jsx-dev-runtime.d.ts", "react-server": "./dist/jsx-dev-runtime.react-server.js", "default": "./dist/bundler/jsx-dev-runtime.js" },
     "./neuwo.css": "./dist/neuwo.css",
     "./neuwo-components.css": "./dist/neuwo-components.css",
     "./foundation/*": "./dist/foundation/*",

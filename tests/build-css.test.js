@@ -106,3 +106,36 @@ describe("browser bundles", () => {
     });
   });
 });
+
+describe("bundler build", () => {
+  const SPINNER = "neuwo-btn__spinner";
+  const ENTRIES = ["neuwo.js", "jsx-runtime.js", "jsx-dev-runtime.js"];
+  const bundler = () => readdirSync(join(root, "dist/bundler")).filter((file) => file.endsWith(".js"));
+  const text = (file) => readFileSync(distFile(`bundler/${file}`), "utf8");
+
+  it("keeps the CDN bundles self-contained", () => {
+    for (const file of ["neuwo.js", "neuwo-standalone.js"]) {
+      expect(readFileSync(distFile(file), "utf8"), file).not.toMatch(/["']\.\/chunk-/);
+    }
+  });
+
+  it("holds the shared template code once in the bundler build", () => {
+    const holders = bundler().filter((file) => text(file).includes(SPINNER));
+    expect(holders).toHaveLength(1);
+    expect(holders[0]).toMatch(/^chunk-/);
+    for (const file of ENTRIES) expect(text(file), file).toContain(holders[0]);
+  });
+
+  it("builds every target of the package exports", () => {
+    const targets = [];
+    const collect = (value) => {
+      if (typeof value === "string") targets.push(value);
+      else for (const inner of Object.values(value)) collect(inner);
+    };
+    const { exports } = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+    collect(exports);
+    for (const target of targets.filter((path) => !path.includes("*") && path !== "./package.json")) {
+      expect(existsSync(join(root, target)), target).toBe(true);
+    }
+  });
+});

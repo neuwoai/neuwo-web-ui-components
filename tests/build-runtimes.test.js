@@ -7,14 +7,21 @@ import { distFile } from "./setup/dist.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-const importsOf = (file) =>
-  [...readFileSync(distFile(file), "utf8").matchAll(/(?:\bfrom|\bimport)\s*"([^"]+)"/g)].map((match) => match[1]).sort();
+const importsOf = (file, seen = new Set()) => {
+  seen.add(file);
+  const all = [...readFileSync(distFile(file), "utf8").matchAll(/(?:\bfrom|\bimport)\s*"([^"]+)"/g)].map((match) => match[1]);
+  const chunks = all.filter((name) => name.startsWith("./chunk-")).map((name) => join(dirname(file), name.slice(2)));
+  return [
+    ...all.filter((name) => !name.startsWith("./chunk-")),
+    ...chunks.filter((chunk) => !seen.has(chunk)).flatMap((chunk) => importsOf(chunk, seen)),
+  ].sort();
+};
 
 describe("built JSX runtimes", () => {
   for (const [file, own] of [
-    ["jsx-runtime.js", "react/jsx-runtime"],
+    ["bundler/jsx-runtime.js", "react/jsx-runtime"],
     ["jsx-runtime.react-server.js", "react/jsx-runtime"],
-    ["jsx-dev-runtime.js", "react/jsx-dev-runtime"],
+    ["bundler/jsx-dev-runtime.js", "react/jsx-dev-runtime"],
     ["jsx-dev-runtime.react-server.js", "react/jsx-dev-runtime"],
   ]) {
     it(`imports only its own React runtime: ${file}`, () => {
@@ -54,8 +61,8 @@ if (process.execArgv.includes("--conditions=react-server")) {
 
 describe("built JSX runtimes in use", () => {
   for (const [file, envs, conditions] of [
-    ["jsx-runtime.js", ["production", "development"], []],
-    ["jsx-dev-runtime.js", ["development"], []],
+    ["bundler/jsx-runtime.js", ["production", "development"], []],
+    ["bundler/jsx-dev-runtime.js", ["development"], []],
     ["jsx-runtime.react-server.js", ["production", "development"], ["--conditions=react-server"]],
     ["jsx-dev-runtime.react-server.js", ["development"], ["--conditions=react-server"]],
   ]) {

@@ -126,6 +126,11 @@ import "@neuwo/web-ui-library--demo";
 
 The script is safe to import on a server, where it registers nothing.
 
+A bundler resolves `.`, `./jsx-runtime` and `./jsx-dev-runtime` to a split build in `dist/bundler/`,
+where the entries share their template code through a chunk, so an app that loads both the elements
+and the JSX runtime downloads that code once. The CDN files, `dist/neuwo.js` and
+`dist/neuwo-standalone.js`, are single self-contained bundles, so a page costs one request.
+
 Tokens are custom properties on `:root` and inherit through every component, so you re-theme by
 setting them after the stylesheet:
 
