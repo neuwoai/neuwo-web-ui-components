@@ -167,14 +167,17 @@ npm_config_offline=true npm run integration
 
 ## Cut a version
 
-1. Update the version in `package.json` (semver: a renamed public selector or attribute is a
-   breaking change).
+1. Choose the version (semver: a renamed public selector or attribute is a breaking change).
 2. Before 1.0, class names and markup change only in a minor release. A snapshot change in a patch
    release fails review.
-3. `npm run build` and `npm test` must pass.
-4. `npm run integration` passes in Chromium and Firefox.
-5. Publish.
-6. The design system bumps the library version and rebuilds. Always publish the library first.
+3. Bump it everywhere it is written: `package.json` and the two version fields of
+   `package-lock.json` (`npm version <version> --no-git-tag-version` sets all three), the
+   `## X.Y.Z` heading of the release's section in `CHANGELOG.md`, and, for a new minor version, the
+   `@X.Y` in every CDN URL in `README.md`. `tests/release.test.js` fails until all of them agree.
+4. `npm run build` and `npm test` must pass.
+5. `npm run integration` passes in Chromium and Firefox.
+6. Publish.
+7. The design system bumps the library version and rebuilds. Always publish the library first.
 
 ## What the library must not do
 
