@@ -31,8 +31,6 @@ neuwo-notice {
   }
 }
 
-/* --- Placement --- */
-
 .neuwo-notice--fixed {
   position: fixed;
   z-index: var(--neuwo-z-overlay);
@@ -61,8 +59,6 @@ neuwo-notice {
   left: 50%;
   transform: translateX(-50%);
 }
-
-/* --- Content --- */
 
 .neuwo-notice__content {
   display: flex;
@@ -113,8 +109,6 @@ neuwo-notice {
     flex-shrink: 0;
   }
 }
-
-/* --- Dismiss --- */
 
 .neuwo-notice__dismiss {
   position: absolute;

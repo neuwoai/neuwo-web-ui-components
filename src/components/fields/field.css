@@ -1,13 +1,10 @@
-/* --- Host: a field is a block so its control can fill the width --- */
-
+/* Block so the control can fill the width */
 neuwo-input:not([hidden]),
 neuwo-textarea:not([hidden]),
 neuwo-range:not([hidden]),
 neuwo-combobox:not([hidden]) {
   display: block;
 }
-
-/* --- Wrapper: label + control + optional error, stacked --- */
 
 .neuwo-field {
   display: flex;
@@ -33,8 +30,6 @@ neuwo-combobox:not([hidden]) {
   margin-inline-start: var(--neuwo-space-1);
   color: var(--neuwo-color-red);
 }
-
-/* --- The shared control chrome --- */
 
 .neuwo-input {
   width: 100%;
@@ -64,8 +59,6 @@ neuwo-combobox:not([hidden]) {
   cursor: not-allowed;
 }
 
-/* --- Size axis: `sm` is a density step, not only a smaller control --- */
-
 .neuwo-input--sm {
   padding: var(--neuwo-space-2) var(--neuwo-space-3);
   font-size: var(--neuwo-font-size-sm);
@@ -79,8 +72,6 @@ neuwo-combobox:not([hidden]) {
 .neuwo-field--sm .neuwo-field__error {
   font-size: var(--neuwo-font-size-xs);
 }
-
-/* --- State: error (red border + danger ring + a single shake) --- */
 
 .neuwo-input--error {
   border-color: var(--neuwo-color-red);

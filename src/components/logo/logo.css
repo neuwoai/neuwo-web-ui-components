@@ -1,5 +1,3 @@
-/* --- Outer box --- */
-
 neuwo-logo:not([hidden]) {
   display: inline-flex;
   vertical-align: middle;

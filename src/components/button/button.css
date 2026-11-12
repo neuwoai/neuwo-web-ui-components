@@ -1,13 +1,9 @@
-/* --- Host: the custom element is the button's outer box --- */
-
 neuwo-button {
   display: inline-flex;
   position: relative;
   vertical-align: middle;
   border-radius: var(--neuwo-radius-full);
 }
-
-/* --- Base --- */
 
 .neuwo-btn {
   display: inline-flex;
@@ -31,15 +27,12 @@ neuwo-button {
   text-decoration: none;
 }
 
-/* --- Region wrappers: no box of their own, so an empty one adds no gap --- */
-
+/* An empty region adds no gap because it has no box of its own */
 .neuwo-btn__start,
 .neuwo-btn__label,
 .neuwo-btn__end {
   display: contents;
 }
-
-/* --- State: disabled --- */
 
 neuwo-button[disabled] {
   cursor: not-allowed;
@@ -49,8 +42,6 @@ neuwo-button[disabled] {
   opacity: var(--neuwo-opacity-disabled);
   pointer-events: none; /* also suppresses the hover lift on a disabled button */
 }
-
-/* --- Variant: solid (primary) --- */
 
 .neuwo-btn--solid {
   background: var(--neuwo-color-blue);
@@ -63,8 +54,6 @@ neuwo-button[disabled] {
   box-shadow: var(--neuwo-shadow-glow);
   transform: translateY(-0.125rem);
 }
-
-/* --- Variant: outline (secondary) --- */
 
 .neuwo-btn--outline {
   background: transparent;
@@ -80,8 +69,6 @@ neuwo-button[disabled] {
   transform: translateY(-0.125rem);
 }
 
-/* --- Variant: glass (secondary with heavy blur) --- */
-
 .neuwo-btn--glass {
   color: var(--neuwo-color-blue);
   border-color: var(--neuwo-color-blue);
@@ -95,8 +82,6 @@ neuwo-button[disabled] {
   transform: translateY(-0.125rem);
 }
 
-/* --- Modifier: hover emphasis (intensity scale; m == base variant hover) --- */
-
 .neuwo-btn--hover-s:hover {
   box-shadow: 0 0 0.75rem var(--neuwo-tint-blue-20);
   transform: translateY(-0.0625rem);
@@ -107,41 +92,29 @@ neuwo-button[disabled] {
   transform: translateY(-0.1875rem);
 }
 
-/* --- State: keyboard focus --- */
-
 .neuwo-btn:focus-visible {
   outline: var(--neuwo-outline-focus);
   outline-offset: var(--neuwo-outline-focus-offset);
   box-shadow: var(--neuwo-shadow-focus);
 }
 
-/* --- Size: small --- */
-
 .neuwo-btn--sm {
   padding: var(--neuwo-space-3) var(--neuwo-space-6);
   font-size: var(--neuwo-font-size-sm);
 }
-
-/* --- Size: large --- */
 
 .neuwo-btn--lg {
   padding: var(--neuwo-space-4) var(--neuwo-space-8);
   font-size: var(--neuwo-font-size-lg);
 }
 
-/* --- Modifier: wide --- */
-
 .neuwo-btn--wide {
   padding-inline: var(--neuwo-space-10);
 }
 
-/* --- Modifier: extra wide --- */
-
 .neuwo-btn--xwide {
   padding-inline: var(--neuwo-space-16);
 }
-
-/* --- Modifier: block (stretch to the container) --- */
 
 neuwo-button[block]:not([hidden]) {
   display: flex;
@@ -151,8 +124,6 @@ neuwo-button[block]:not([hidden]) {
 .neuwo-btn--block {
   width: 100%;
 }
-
-/* --- State: loading (spinner; keeps colour, blocks activation) --- */
 
 .neuwo-btn--loading {
   pointer-events: none;

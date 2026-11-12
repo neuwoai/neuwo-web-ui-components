@@ -24,8 +24,6 @@
   cursor: not-allowed;
 }
 
-/* --- WebKit / Blink --- */
-
 .neuwo-range::-webkit-slider-runnable-track {
   height: var(--neuwo-range-track-height);
   border-radius: var(--neuwo-radius-full);
@@ -59,8 +57,6 @@
   transform: scale(1.12);
 }
 
-/* --- Firefox --- */
-
 .neuwo-range::-moz-range-track {
   height: var(--neuwo-range-track-height);
   border-radius: var(--neuwo-radius-full);
@@ -83,8 +79,7 @@
   box-shadow: 0 0 0 var(--neuwo-range-thumb-ring) var(--neuwo-tint-blue-15);
 }
 
-/* --- Focus: the ring belongs on the thumb, not on the input box --- */
-
+/* The ring sits on the thumb, not on the input box */
 .neuwo-range:focus-visible {
   outline: var(--neuwo-outline-focus);
   outline-offset: var(--neuwo-outline-focus-offset);

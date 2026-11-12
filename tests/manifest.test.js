@@ -8,7 +8,6 @@ const manifest = JSON.parse(
   readFileSync(join(__dirname, "../custom-elements.json"), "utf8")
 );
 
-// --- manifest walkers (shared by later attribute assertions) ---
 function declByTag(m, tag) {
   for (const mod of m.modules ?? [])
     for (const dec of mod.declarations ?? [])

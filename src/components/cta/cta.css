@@ -14,7 +14,6 @@ neuwo-cta {
   initial-value: 0deg;
 }
 
-/* --- Shared inner content --- */
 .neuwo-cta__headline {
   margin: 0 0 var(--neuwo-space-2);
   font-family: var(--neuwo-font-heading);
@@ -105,7 +104,6 @@ neuwo-cta[pulse][intensity="l"] .neuwo-cta__actions > neuwo-button:first-of-type
   }
 }
 
-/* --- Banner variant: flat horizontal bar --- */
 .neuwo-cta--banner {
   position: relative;
   overflow: hidden;
@@ -165,7 +163,6 @@ neuwo-cta[pulse][intensity="l"] .neuwo-cta__actions > neuwo-button:first-of-type
   }
 }
 
-/* --- Spotlight variant: centred hero card with an animated gradient frame --- */
 .neuwo-cta--spotlight {
   position: relative;
   /* Keeps the glow's negative z-index behind this card instead of behind the page. */

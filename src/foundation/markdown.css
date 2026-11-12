@@ -1,5 +1,3 @@
-/* --- Lists --- */
-
 .neuwo-markdown ul,
 .neuwo-markdown ol {
   color: var(--neuwo-color-text);
@@ -18,15 +16,11 @@
   margin-bottom: 0;
 }
 
-/* --- Emphasis --- */
-
 /* Semibold, not bold: 700 beside the body's 400 is a wider jump than long-form copy wants. */
 .neuwo-markdown strong {
   color: var(--neuwo-color-heading);
   font-weight: var(--neuwo-font-weight-semibold);
 }
-
-/* --- Quotes and rules --- */
 
 .neuwo-markdown blockquote {
   margin: var(--neuwo-space-6) 0;
@@ -42,8 +36,6 @@
   border-top: 1px solid var(--neuwo-glass-border);
 }
 
-/* --- Images --- */
-
 .neuwo-markdown img {
   max-width: 100%;
   height: auto;
@@ -55,8 +47,6 @@
   margin: var(--neuwo-space-6) 0;
   border-radius: var(--neuwo-radius-lg);
 }
-
-/* --- Code --- */
 
 .neuwo-markdown code {
   font-family: var(--neuwo-font-mono);
@@ -92,8 +82,6 @@
 .neuwo-markdown neuwo-copy pre {
   padding-inline-end: calc(var(--neuwo-space-8) + var(--neuwo-space-3) * 2);
 }
-
-/* --- Tables --- */
 
 .neuwo-markdown table {
   width: 100%;
