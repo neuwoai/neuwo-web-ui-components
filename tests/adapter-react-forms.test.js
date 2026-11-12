@@ -242,8 +242,6 @@ describe("React adapter: an uncontrolled form control", () => {
 
 describe("React adapter: a value the control took before React hydrated it", () => {
   /**
-   * Server markup hydrated after its control's value changed with no event, as a value does that the user enters
-   * while React holds back the events of a tree it has not hydrated.
    * @param {unknown} tree
    * @param {(holder: HTMLElement) => void} change
    */

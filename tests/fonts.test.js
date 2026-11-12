@@ -48,7 +48,6 @@ const ITALIC = "src: local('Arial Italic'), local('Arial-ItalicMT'), local('Libe
 const BOLD_ITALIC = "src: local('Arial Bold Italic'), local('Arial-BoldItalicMT'), local('Liberation Sans Bold Italic'), local('Arimo Bold Italic');";
 
 /**
- * The vertical metrics of a woff2 file, from its `head` and `hhea` tables.
  * @param {string} file
  */
 function verticalMetrics(file) {

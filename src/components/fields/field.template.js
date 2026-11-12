@@ -49,8 +49,6 @@ export function ariaAttrs(attrs, ctx) {
 }
 
 /**
- * The attributes of a field's control: its id, the host attributes in `names` that are present, a boolean one as
- * present whatever its value, `disabled`, `form`, and the `ariaAttrs`.
  * @param {Record<string, string>} attrs
  * @param {TemplateContext} ctx
  * @param {string[]} names

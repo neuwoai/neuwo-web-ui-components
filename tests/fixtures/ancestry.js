@@ -1,5 +1,4 @@
 /**
- * The names of a class's ancestors up to `HTMLElement`, nearest first, mixin classes included.
  * @param {Function} klass
  * @returns {string[]}
  */

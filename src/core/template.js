@@ -1,25 +1,12 @@
 /** @typedef {{ tag: string, props: Record<string, string | true>, children: TemplateChild[], control?: true, live?: true }} TemplateNode */
 /** @typedef {TemplateNode | string | { region: string } | { raw: string }} TemplateChild */
 /**
- * An author child. An element's `children` describe its own child nodes the same way, whitespace-only text left out.
- * Through React, a wrapper that renders its children as they are, such as `Suspense`, is described by its children.
+ * An author child; `children` describes an element's own child nodes, whitespace-only text left out.
  * @typedef {{ tag: string | null, attrs: Record<string, string>, text: string, slot: string, children?: ChildInfo[] }} ChildInfo
  */
 /** @typedef {{ id: (suffix: string) => string, children: ChildInfo[], within: Record<string, string> | null }} TemplateContext */
 /**
- * A template's blocks are the classes in its output that contain neither `__` nor `--`; the root's first class
- * is the root block. Every element it renders carries a class owned by one of its blocks: the block itself,
- * `<block>__*` or `<block>--*`. At most one node is marked as the form control with `control()`, and every node the
- * element writes live state into with `live()`.
- * A region is the only child of its element, its wrapper. Every wrapper is rendered for every attribute
- * combination and carries a class unique within the template that is one of its blocks or a `<block>__<name>`
- * class, never a `--` modifier. Template text and elements appear only in elements that hold no region. The
- * adapters rely on this to tell template markup from author content: a wrapper's children are the author's,
- * every other node under the root is the template's. A template may name a tag as its `within`: every adapter then
- * hands it, as `ctx.within`, the attributes of the nearest enclosing element of that tag, never the host, or null.
- * Through React the enclosing host passes them down through elements, fragments, context providers, `Suspense`
- * and its fallback, `StrictMode`, `Profiler`, `Activity` and other Neuwo hosts, but not into a component of the app's
- * own, whose output it cannot see, nor through a portal, so a reader there gets null.
+ * A template function: the host's attributes and a context in, a node tree out.
  * @typedef {((attrs: Record<string, string>, ctx: TemplateContext) => TemplateNode) & { within?: string }} Template
  */
 

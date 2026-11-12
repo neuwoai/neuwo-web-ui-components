@@ -106,6 +106,7 @@ neuwo-toggle:not([hidden]) {
   animation: neuwo-toggle-pulse 3s ease-in-out infinite;
 }
 
+/* The spread and alpha are read with a fallback, not declared, so a consumer can set them from :root or the host. */
 @keyframes neuwo-toggle-pulse {
   0% {
     box-shadow: 0 0 0 0 color-mix(in srgb, var(--neuwo-color-blue) var(--neuwo-toggle-pulse-alpha, 40%), transparent);

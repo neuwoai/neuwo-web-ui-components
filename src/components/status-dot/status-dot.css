@@ -29,6 +29,7 @@ neuwo-status-dot {
   animation: neuwo-status-dot-blink 2s infinite;
 }
 
+/* Authored after the base rule so the halo modifiers override its ring. */
 .neuwo-status-dot--halo-s {
   box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 25%, transparent);
 }

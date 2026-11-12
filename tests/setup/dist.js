@@ -18,7 +18,6 @@ const filesIn = (path) =>
     : [path];
 
 /**
- * A source and everything under it, folders too: adding, deleting or renaming a file changes only its folder.
  * @param {string} path
  */
 const entriesIn = (path) =>
@@ -30,8 +29,6 @@ const entriesIn = (path) =>
 const modified = (path) => statSync(path).mtimeMs;
 
 /**
- * Why `dist` must be built before the tests read it, or null when it is current: a build step's output is
- * missing, or a source file or folder is newer than the oldest built file.
  * @param {string} root
  * @returns {string | null}
  */
@@ -47,7 +44,7 @@ export function staleness(root) {
 }
 
 /**
- * The path of a built file. The test setup builds `dist` when it is stale, so a missing file means the build failed.
+ * The setup builds a stale `dist`, so a missing file means the build failed.
  * @param {string} file
  * @returns {string}
  */
@@ -58,7 +55,6 @@ export function distFile(file) {
 }
 
 /**
- * Runs the build when `dist` is stale, and throws with everything it printed when it fails.
  * @param {string} root
  * @param {string} command
  */
@@ -75,7 +71,6 @@ export function buildIfStale(root, command) {
 }
 
 /**
- * Builds a stale `dist` before the first run and before each rerun in watch mode.
  * @param {import("vitest/node").TestProject} project
  * @param {string} [root]
  * @param {string} [command]

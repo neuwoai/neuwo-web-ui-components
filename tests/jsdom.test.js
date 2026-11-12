@@ -465,8 +465,6 @@ describe("served markup defined while the document is still parsing it, in jsdom
 
   let count = 0;
   /**
-   * Builds the host and the start of its served markup as the parser has so far, defines the element, then
-   * appends the rest as the parser goes on.
    * @param {string} html
    * @param {CustomElementConstructor} base
    * @param {(root: Element) => Array<[Element, Node]>} split - the nodes held back, each with the node it goes into

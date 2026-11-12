@@ -220,8 +220,6 @@ const attributesOf = (props) => {
 };
 
 /**
- * Describes the items as a template sees them, through the wrappers `lend()` passes through, whose children are
- * placed where the wrapper is.
  * @param {ReactNode[]} items
  * @returns {ChildInfo[]}
  */
@@ -394,9 +392,7 @@ function useWatch(enabled, start, draw) {
 }
 
 /**
- * Gives a form element its state the way React expects: the consumer's own on the control of a controlled host,
- * as the template resolved it, and the template's as a default everywhere else, so the browser keeps what the user
- * types. A control drawn from its live value keeps its starting value as the default.
+ * A controlled host takes the consumer's state and everything else the template's default, so the browser keeps typed input.
  * @param {TemplateNode} node
  * @param {Record<string, unknown>} props
  * @param {ReactNode[]} children
@@ -627,13 +623,7 @@ function hostFor(tag, template, { markHost, server, readers, dev, warned, create
 
 /**
  * @param {Record<string, Template>} registry
- * @param {{ factory: Factory, markHost?: boolean, server?: boolean, dev?: boolean }} options `factory` is React's own
- *   runtime, handed in by each entry so that it imports only the one it needs: `jsx` and `jsxs`, or `jsxDEV`. `server` renders for React Server
- *   Components: no form control is controlled, the element itself gets no `checked`, and no `value` unless its control
- *   is an input whose value names it, such as a radio, and the adapter adds no function prop. `dev` warns once per tag
- *   when a reader mounts inside its `within` element without its attributes, once per reader and enclosing tag when
- *   that element is handed the reader already rendered, and once per tag each when an element that keeps its options
- *   in a `<select>` is given options, or an option's label, that a component of the app's own renders.
+ * @param {{ factory: Factory, markHost?: boolean, server?: boolean, dev?: boolean }} options `factory` is React's own runtime, `server` renders for Server Components, `dev` adds warnings.
  * @returns {{ jsx: Jsx, jsxs: Jsxs, jsxDEV: JsxDEV }}
  */
 export function createRuntime(registry, { factory, markHost = true, server = false, dev = false }) {

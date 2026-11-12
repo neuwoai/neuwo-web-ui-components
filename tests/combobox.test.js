@@ -706,8 +706,7 @@ describe("<neuwo-combobox searchable>", () => {
     expect(el.isOpen).toBe(true);
   });
 
-  // The popover API a browser gives the popup: light dismiss at a pointerup outside it, beforetoggle at once and toggle
-  // a task later, and an entrance animation that starts again on every show and drops out of getAnimations() when done.
+  // Stands in for the browser's popover API, whose toggle event arrives a task after beforetoggle.
   function popover(el) {
     const popup = el.popup;
     let shown = false;

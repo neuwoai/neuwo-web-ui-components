@@ -406,9 +406,7 @@ const REFERENCES = ["for", "aria-describedby", "aria-labelledby", "aria-controls
 let blank;
 
 /**
- * Sorts attributes and renumbers ids by first appearance, so adapters that mint ids differently compare equal.
- * A browser's parser drops the newline right after `<textarea>`, which happy-dom's does not, so markup a browser
- * would parse (`parsed` true) loses one here; a DOM tree happy-dom built or serialised (`parsed` false) keeps it.
+ * happy-dom's parser keeps the newline after `<textarea>` that a browser drops, so `parsed` markup loses one here.
  * @param {string} html
  * @param {boolean} parsed
  * @returns {string}

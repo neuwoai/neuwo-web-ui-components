@@ -3,10 +3,7 @@ import { forwardedAttrs } from "../../fields/field.template.js";
 import { errorAccent } from "../choice.template.js";
 
 /**
- * A native radio inside its label. In a `<neuwo-radio-group>` it takes the group's `name`, or its own when the group
- * has none, the group's `required` and `form`, is disabled with the group, and starts checked when the group's
- * `value` is its own, so the browser groups the radios. Its label takes the error modifier while that group shows the
- * error accent. Outside a group it takes its own.
+ * A native radio inside its label, taking the group's `name`, `required` and `form` when it sits in one.
  * @param {Record<string, string>} attrs
  * @param {import("../../../core/template.js").TemplateContext} ctx
  * @returns {import("../../../core/template.js").TemplateNode}

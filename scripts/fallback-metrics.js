@@ -15,7 +15,7 @@ const KNOWN = (
   .map((tag) => tag.replace("_", " "));
 
 /**
- * English letter frequencies in percent (Wikipedia, "Letter frequency"), the weighting of an average advance width.
+ * English letter frequencies in percent (Wikipedia, "Letter frequency").
  * @type {Record<string, number>}
  */
 export const LETTERS = {
@@ -57,7 +57,6 @@ export const FALLBACKS = [
 ];
 
 /**
- * The tables of a woff2, TrueType or OpenType file by tag, without the transformed `glyf` and `loca`.
  * @param {string} file
  * @returns {Record<string, Buffer>}
  */
@@ -149,7 +148,6 @@ function glyphs(cmap) {
 }
 
 /**
- * The normalised coordinate of a weight on the `wght` axis, mapped through `avar` when the font has one.
  * @param {Record<string, Buffer>} tables
  * @param {number} weight
  * @returns {{ axis: number, axes: number, coordinate: number }}
@@ -188,7 +186,6 @@ export function normalise(tables, weight) {
 }
 
 /**
- * The `HVAR` advance width delta of a glyph at the given normalised coordinates.
  * @param {Buffer} hvar
  * @param {number} glyph
  * @param {number[]} coordinates
@@ -248,7 +245,6 @@ function advanceDelta(hvar, glyph, coordinates) {
 }
 
 /**
- * The vertical metrics of a font and its average advance width at a weight, in the font's own units.
  * @param {Record<string, Buffer>} tables
  * @param {number | null} weight null for a static font
  */
@@ -282,7 +278,6 @@ export function measure(tables, weight) {
 const percent = (share) => `${Number((share * 100).toFixed(2))}%`;
 
 /**
- * The fallback `@font-face` rules, with the comment that names their method, as `fonts.css` ends with them.
  * @returns {string}
  */
 export function fallbackCss() {
