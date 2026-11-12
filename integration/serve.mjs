@@ -1,4 +1,6 @@
+import { spawn } from "node:child_process";
 import { createServer } from "node:http";
+import { createServer as createSocketServer } from "node:net";
 import { readFile, stat } from "node:fs/promises";
 import { extname, join, resolve, sep } from "node:path";
 
@@ -11,6 +13,14 @@ const TYPES = {
   ".woff2": "font/woff2",
   ".svg": "image/svg+xml",
 };
+
+const READY_TIMEOUT = 120_000;
+const STOP_TIMEOUT = 10_000;
+
+async function listen(server) {
+  await new Promise((done, fail) => server.once("error", fail).listen(0, "127.0.0.1", done));
+  return server.address().port;
+}
 
 async function locate(root, pathname) {
   const file = resolve(root, `.${decodeURIComponent(pathname)}`);
@@ -43,8 +53,7 @@ export async function serveStatic(root, options = {}) {
       send(response, 500, "text/plain; charset=utf-8", String(error?.stack ?? error));
     }
   });
-  await new Promise((done, fail) => server.once("error", fail).listen(0, "127.0.0.1", done));
-  const { port } = server.address();
+  const port = await listen(server);
   return {
     url: `http://127.0.0.1:${port}`,
     stop: () =>
@@ -53,4 +62,64 @@ export async function serveStatic(root, options = {}) {
         server.close(() => done());
       }),
   };
+}
+
+export async function blockNetwork() {
+  const attempts = [];
+  const proxy = createSocketServer((socket) => {
+    socket.on("error", () => {});
+    socket.once("data", (data) => {
+      attempts.push(data.toString("latin1").split("\r\n", 1)[0]);
+      socket.destroy();
+    });
+  });
+  const url = `http://127.0.0.1:${await listen(proxy)}`;
+  const local = "127.0.0.1,localhost,::1";
+  return {
+    env: { NODE_USE_ENV_PROXY: "1", HTTP_PROXY: url, HTTPS_PROXY: url, NO_PROXY: local, http_proxy: url, https_proxy: url, no_proxy: local },
+    attempts,
+    close: () =>
+      new Promise((done) => {
+        proxy.close(() => done());
+      }),
+  };
+}
+
+export async function serveCommand(command, args, { cwd, env = {}, ready }) {
+  const probe = createSocketServer();
+  const port = await listen(probe);
+  await new Promise((done) => probe.close(() => done()));
+  const child = spawn(command, args(port), { cwd, env: { ...process.env, ...env }, stdio: ["ignore", "pipe", "pipe"] });
+  const exited = new Promise((done) => child.once("exit", (code, signal) => done(signal ?? code)));
+  let output = "";
+  const stop = async () => {
+    if (child.pid === undefined || child.exitCode !== null || child.signalCode !== null) return;
+    child.kill("SIGTERM");
+    const timer = setTimeout(() => child.kill("SIGKILL"), STOP_TIMEOUT);
+    await exited;
+    clearTimeout(timer);
+  };
+  let timer;
+  try {
+    await new Promise((done, fail) => {
+      timer = setTimeout(() => fail(new Error(`no ready line within ${READY_TIMEOUT / 1000} s: ${output.slice(-2000)}`)), READY_TIMEOUT);
+      const read = (chunk) => {
+        if (output === null) return;
+        output += chunk;
+        if (!ready.test(output)) return;
+        output = null;
+        done();
+      };
+      child.stdout.setEncoding("utf8").on("data", read);
+      child.stderr.setEncoding("utf8").on("data", read);
+      child.once("error", (error) => fail(error));
+      exited.then((status) => fail(new Error(`exited with ${status} before it was ready: ${output?.slice(-2000)}`)));
+    });
+  } catch (error) {
+    await stop();
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
+  return { url: `http://127.0.0.1:${port}`, stop };
 }

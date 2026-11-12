@@ -67,6 +67,8 @@ async function copyApps(work, tarball) {
     const file = join(apps, name, "package.json");
     const text = await readFile(file, "utf8").catch(() => null);
     if (text === null) continue;
+    // An app's own copy resolves the imports in it from that app's node_modules.
+    await cp(join(apps, "shared"), join(apps, name, "shared"), { recursive: true });
     const manifest = JSON.parse(text);
     manifest.dependencies = { ...manifest.dependencies, [PACKAGE]: `file:${tarball}` };
     await writeFile(file, `${JSON.stringify(manifest, null, 2)}\n`);

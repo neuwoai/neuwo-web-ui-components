@@ -113,6 +113,16 @@ The `demo` target serves the repository root, so it checks the demo page against
 that the range readout never shows `NaN`, with `neuwo.js` held back for 500 ms and again after
 definition. The target's server delays the bundle, so both browsers run the held reading.
 
+The `next-dev` and `next-prod` targets run the app in `integration/apps/next` under `next dev`, and
+under `next build` then `next start`. Besides the four checks they run `forms` on the `Forms`
+component in `integration/apps/shared/`, once React has hydrated it. In its controlled form, typing,
+a combobox pick, a checkbox tick and a range move must each reach React's state; its uncontrolled
+form must submit its defaults, then the values the user changed, then its defaults again after a
+reset. The runner copies `apps/shared/` into each app as `shared/`, so its imports resolve from that
+app's own `node_modules`. Next.js runs with telemetry off and behind a proxy that refuses every
+connection, because `next dev` asks the npm registry for its latest version; the run logs each
+request it refused.
+
 After changing a check, run `npm run integration -- --self-test`. It serves the pages in
 `integration/self-test/`, expanded with `expand`. `good.html` must pass every check that runs, each
 other page must fail only its own check, and every check must fail on its own page in at least one
