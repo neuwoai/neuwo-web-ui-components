@@ -219,6 +219,16 @@ describe("<neuwo-combobox> form", () => {
     expect(document.activeElement).toBe(triggerOf(el));
   });
 
+  it("only focuses a searchable combobox when validation focuses its form value, as a native input with a list does", () => {
+    const el = make(`<neuwo-combobox name="fruit" searchable required>${OPTS}</neuwo-combobox>`);
+    formValueOf(el).focus();
+    expect(document.activeElement).toBe(triggerOf(el));
+    expect(el.isOpen).toBe(false);
+    triggerOf(el).blur();
+    triggerOf(el).focus();
+    expect(el.isOpen).toBe(true);
+  });
+
   it("returns to the selected option and its display when its form resets", async () => {
     const form = make(`<form><neuwo-combobox name="fruit"><option value="a">Apple</option><option value="b" selected>Banana</option></neuwo-combobox></form>`);
     const el = form.querySelector("neuwo-combobox");
@@ -842,6 +852,42 @@ describe("<neuwo-combobox searchable>", () => {
     await nextTask();
     expect(el.isOpen).toBe(false);
     el.open();
+    await nextTask();
+    el.popup.hidePopover();
+    expect(el.isOpen).toBe(false);
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+  });
+
+  it("forgets an entrance time it recorded when it closes before a re-show uses it", async () => {
+    const el = make(`<neuwo-combobox searchable>${FRUIT}</neuwo-combobox>`);
+    const { animation, drop } = popover(el);
+    const trigger = triggerOf(el);
+    click(trigger);
+    await nextTask();
+    pointer(trigger, "pointerdown", "mouse");
+    animation().currentTime = 80;
+    el.popup.hidePopover();
+    expect(el.isOpen).toBe(true);
+    el.close();
+    el.open();
+    await nextTask();
+    drop();
+    click(trigger);
+    expect(el.popup.matches(":popover-open")).toBe(true);
+    expect(animation()).toMatchObject({ currentTime: 0, finished: true });
+  });
+
+  it("closes at once on a later light dismiss after a right-click on its trigger", async () => {
+    const el = make(`<neuwo-combobox>${OPTS}</neuwo-combobox>`);
+    popover(el);
+    const trigger = triggerOf(el);
+    click(trigger);
+    await nextTask();
+    expect(el.isOpen).toBe(true);
+    for (const type of ["pointerdown", "pointerup"]) trigger.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, pointerType: "mouse", button: 2 }));
+    trigger.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, button: 2 }));
+    await nextTask();
+    if (!el.isOpen) el.open();
     await nextTask();
     el.popup.hidePopover();
     expect(el.isOpen).toBe(false);

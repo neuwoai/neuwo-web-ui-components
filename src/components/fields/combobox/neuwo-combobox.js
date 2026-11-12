@@ -172,6 +172,7 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   close() {
     if (!this.#open) return;
     this.#open = false;
+    this.#entrance = null;
     if (this.#filter) {
       this.#filter = "";
       this.#applyFilter();
@@ -514,7 +515,8 @@ export class NeuwoCombobox extends NeuwoFieldElement {
 
   /** @param {Event} event */
   #onRelease = (event) => {
-    if (event.type === "pointercancel" || !this.trigger?.contains(/** @type {Node} */ (event.target))) this.#pressed = false;
+    const pointer = /** @type {PointerEvent} */ (event);
+    if (pointer.type === "pointercancel" || pointer.button !== 0 || !this.trigger?.contains(/** @type {Node} */ (pointer.target))) this.#pressed = false;
   };
 
   /** @param {Event} event */
@@ -541,7 +543,7 @@ export class NeuwoCombobox extends NeuwoFieldElement {
   /** @param {FocusEvent} event */
   #onFocus = (event) => {
     const trigger = this.trigger;
-    if (event.target === this.control) trigger?.focus();
+    if (event.target === this.control) this.#focusQuietly();
     else if (trigger instanceof HTMLInputElement && event.target === trigger && !this.#open && !this.#labelClicked && !this.#quiet) {
       this.#filter = "";
       this.open();

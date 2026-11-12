@@ -129,20 +129,36 @@ describe("components reset", () => {
   it("reverts every property of non-SVG block nodes and their ::before and ::after to the browser's, before the explicit list", () => {
     const at = rules.findIndex((rule) => rule.declarations.get("all") === "revert");
     expect(at).toBeGreaterThanOrEqual(0);
-    expect([...rules[at].declarations.keys()]).toEqual(["all"]);
+    expect(Object.fromEntries(rules[at].declarations)).toEqual({ all: "revert", direction: "revert", "unicode-bidi": "revert" });
     expect(rules[at].selectors.map(pseudoOf).sort()).toEqual(["", "::after", "::before"]);
     for (const selector of rules[at].selectors) expect(baseOf(selector)).toMatch(/:is\([^)]*\):where\(:not\(svg, svg \*\)\)$/);
     expect(at).toBeLessThan(rules.findIndex((rule) => rule.declarations.get("margin") === "0"));
   });
 
-  it("keeps a hidden block node hidden after the revert, which drops the attribute's own display: none", () => {
-    document.body.innerHTML = `<neuwo-combobox><ul class="neuwo-combobox__listbox"><li class="neuwo-combobox__empty" hidden></li><li class="neuwo-combobox__option"></li></ul></neuwo-combobox>`;
-    const [empty, option] = document.querySelectorAll("li");
+  it("keeps a hidden block node hidden after the revert, which drops the attribute's own display: none, and one hidden until found searchable", () => {
+    document.body.innerHTML =
+      `<neuwo-combobox><ul class="neuwo-combobox__listbox"><li class="neuwo-combobox__empty" hidden></li>` +
+      `<li class="neuwo-combobox__option" hidden="until-found"></li><li class="neuwo-combobox__option"></li></ul></neuwo-combobox>`;
+    const [empty, found, option] = document.querySelectorAll("li");
     expect(winner(empty, "display")).toBe("none");
+    expect(winner(found, "display")).toBeUndefined();
+    expect(winner(found, "content-visibility")).toBe("hidden");
     expect(winner(option, "display")).toBeUndefined();
+    expect(winner(option, "content-visibility")).toBeUndefined();
     const revertAt = rules.findIndex((rule) => rule.declarations.get("all") === "revert");
-    const hiddenAt = rules.findIndex((rule) => rule.declarations.get("display") === "none" && rule.selectors.every((selector) => selector.includes(":is(")));
-    expect(hiddenAt).toBeGreaterThan(revertAt);
+    for (const [property, value] of [["display", "none"], ["content-visibility", "hidden"]]) {
+      const at = rules.findIndex((rule) => rule.declarations.get(property) === value && rule.selectors.every((selector) => selector.includes(":is(")));
+      expect(at, property).toBeGreaterThan(revertAt);
+    }
+  });
+
+  it("keeps a page's list markers off block nodes, which the revert of ::before and ::after does not reach", () => {
+    const markers = rules.filter((rule) => rule.selectors.some((selector) => selector.endsWith("::marker")));
+    expect(markers).toHaveLength(1);
+    expect(Object.fromEntries(markers[0].declarations)).toEqual({ content: "none" });
+    expect(markers[0].selectors).toHaveLength(1);
+    expect(markers[0].selectors[0]).toMatch(/^:where\(neuwo-badge, [^)]*\) :is\([^)]*\)::marker$/);
+    expect(weight(markers[0].selectors[0])).toEqual([0, 1, 0]);
   });
 
   it("sets every reset property on block nodes and their ::before and ::after", () => {

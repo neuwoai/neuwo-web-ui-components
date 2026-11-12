@@ -31,11 +31,22 @@
     &:where(:not(svg, svg *))::before,
     &:where(:not(svg, svg *))::after {
       all: revert;
+      direction: revert;
+      unicode-bidi: revert;
     }
 
-    /* revert drops the hidden attribute's display: none too, which browsers also apply in the author origin. */
-    &:where([hidden]) {
+    /* revert drops the hidden attribute's own styling too, which browsers also apply in the author origin. */
+    &:where([hidden]:not([hidden="until-found" i])) {
       display: none;
+    }
+
+    &:where([hidden="until-found" i]) {
+      content-visibility: hidden;
+    }
+
+    /* The revert does not reach ::marker, and a page's marker content shows even under list-style: none. */
+    &::marker {
+      content: none;
     }
 
     &,
