@@ -596,6 +596,25 @@ describe("<neuwo-combobox> server rendered", () => {
     expect(errors).not.toHaveBeenCalled();
   });
 
+  it("fails hydration on a row label the server drew differently, which the marker for live state does not hide", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const tree = () => combobox({ defaultValue: "fi", name: "a" });
+    const parsed = document.createElement("div");
+    parsed.innerHTML = renderToString(tree());
+    const row = parsed.querySelector('.neuwo-combobox__option[data-value="se"]');
+    (row.firstElementChild ?? row).textContent = "Sverige";
+    const container = attach(document.createElement("div"));
+    container.append(...parsed.childNodes);
+    const recoverable = [];
+    let root;
+    act(() => {
+      root = hydrateRoot(container, tree(), { onRecoverableError: (thrown) => void recoverable.push(String(thrown?.message ?? thrown)) });
+    });
+    cleanup.push(() => act(() => root.unmount()));
+    await settled();
+    expect(recoverable.join(" ")).toMatch(/Hydration failed/);
+  });
+
   it("keeps a hydrated uncontrolled pick when React re-renders the placeholder", async () => {
     const errors = vi.spyOn(console, "error");
     const tree = (placeholder) => combobox({ placeholder });

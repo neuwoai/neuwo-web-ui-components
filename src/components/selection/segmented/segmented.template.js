@@ -49,7 +49,7 @@ export function segmentedTemplate(attrs, ctx) {
               tabindex: option === stop ? "0" : "-1",
               disabled: !enabled(option),
             },
-            option.label,
+            h("span", { class: "neuwo-segmented__option-label" }, option.label),
           ),
         ),
       ),

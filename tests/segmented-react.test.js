@@ -277,6 +277,25 @@ describe("<neuwo-segmented> server rendered", () => {
     expect(errors).not.toHaveBeenCalled();
   });
 
+  it("fails hydration on an option label the server drew differently, which the marker for live state does not hide", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const tree = () => segmented({ defaultValue: "json", name: "a" });
+    const parsed = document.createElement("div");
+    parsed.innerHTML = renderToString(tree());
+    const button = buttonOf(parsed.firstElementChild, "table");
+    (button.firstElementChild ?? button).textContent = "Grid";
+    const container = attach(document.createElement("div"));
+    container.append(...parsed.childNodes);
+    const recoverable = [];
+    let root;
+    act(() => {
+      root = hydrateRoot(container, tree(), { onRecoverableError: (thrown) => void recoverable.push(String(thrown?.message ?? thrown)) });
+    });
+    cleanup.push(() => act(() => root.unmount()));
+    await settled();
+    expect(recoverable.join(" ")).toMatch(/Hydration failed/);
+  });
+
   it("hydrates with no warning over a value a script set before hydration, keeping it", async () => {
     const errors = vi.spyOn(console, "error");
     const trees = [() => segmented({ defaultValue: "json", name: "a" }), () => segmented({ name: "a" })];

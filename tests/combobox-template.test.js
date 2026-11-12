@@ -113,9 +113,9 @@ describe("comboboxTemplate()", () => {
     expect(listbox.props).toMatchObject({ role: "listbox", id: "c-listbox", "aria-labelledby": "c-label" });
     expect(toHTML(listbox)).toBe(
       '<ul class="neuwo-combobox__listbox" role="listbox" id="c-listbox" aria-labelledby="c-label">' +
-        '<li class="neuwo-combobox__option" id="c-option-0" role="option" data-value="a" data-index="0" aria-selected="false">Apple</li>' +
-        '<li class="neuwo-combobox__option" id="c-option-1" role="option" data-value="b" data-index="1" aria-selected="true">Banana</li>' +
-        '<li class="neuwo-combobox__option" id="c-option-2" role="option" data-value="c" data-index="2" aria-selected="false" aria-disabled="true">Cherry</li>' +
+        '<li class="neuwo-combobox__option" id="c-option-0" role="option" data-value="a" data-index="0" aria-selected="false"><span class="neuwo-combobox__option-label">Apple</span></li>' +
+        '<li class="neuwo-combobox__option" id="c-option-1" role="option" data-value="b" data-index="1" aria-selected="true"><span class="neuwo-combobox__option-label">Banana</span></li>' +
+        '<li class="neuwo-combobox__option" id="c-option-2" role="option" data-value="c" data-index="2" aria-selected="false" aria-disabled="true"><span class="neuwo-combobox__option-label">Cherry</span></li>' +
         '<li class="neuwo-combobox__empty" role="presentation" hidden="">No matches</li>' +
         "</ul>",
     );
@@ -128,8 +128,8 @@ describe("comboboxTemplate()", () => {
     expect(toHTML(group)).toBe(
       '<li class="neuwo-combobox__group-item" role="group" aria-labelledby="c-group-1">' +
         '<div class="neuwo-combobox__group" id="c-group-1">Citrus</div>' +
-        '<div class="neuwo-combobox__option" id="c-option-1" role="option" data-value="o" data-index="1" aria-selected="true">Orange</div>' +
-        '<div class="neuwo-combobox__option" id="c-option-2" role="option" data-value="l" data-index="2" aria-selected="false">Lemon</div>' +
+        '<div class="neuwo-combobox__option" id="c-option-1" role="option" data-value="o" data-index="1" aria-selected="true"><span class="neuwo-combobox__option-label">Orange</span></div>' +
+        '<div class="neuwo-combobox__option" id="c-option-2" role="option" data-value="l" data-index="2" aria-selected="false"><span class="neuwo-combobox__option-label">Lemon</span></div>' +
         "</li>",
     );
     expect(listbox.children.filter(isNode).map((child) => classesOf(child)[0])).toEqual(["neuwo-combobox__option", "neuwo-combobox__group-item", "neuwo-combobox__empty"]);

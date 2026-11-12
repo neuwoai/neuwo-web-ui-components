@@ -71,8 +71,8 @@ describe("segmentedTemplate()", () => {
   it("renders each option as a radio button carrying its value and label", () => {
     const [visual, json, raw] = buttonsOf({});
     expect(visual.props).toEqual({ class: "neuwo-segmented__option", type: "button", role: "radio", "data-value": "visual", "aria-checked": "false", tabindex: "0" });
-    expect(visual.children).toEqual(["Visual"]);
-    expect(json.children).toEqual(["JSON"]);
+    expect(visual.children).toEqual([{ tag: "span", props: { class: "neuwo-segmented__option-label" }, children: ["Visual"] }]);
+    expect(json.children).toEqual([{ tag: "span", props: { class: "neuwo-segmented__option-label" }, children: ["JSON"] }]);
     expect(raw.props).toMatchObject({ "data-value": "raw", "aria-checked": "false", tabindex: "-1", disabled: true });
   });
 
@@ -161,8 +161,8 @@ describe("segmentedTemplate()", () => {
     expect(toHTML(render({ name: "view", value: "json", label: "View" }, [option("Visual", { value: "visual" }), option("JSON", { value: "json" })]))).toBe(
       '<div class="neuwo-choice"><div class="neuwo-segmented" role="radiogroup" aria-orientation="horizontal" aria-label="View">' +
         '<span class="neuwo-segmented__indicator" aria-hidden="true"></span>' +
-        '<button class="neuwo-segmented__option" type="button" role="radio" data-value="visual" aria-checked="false" tabindex="-1">Visual</button>' +
-        '<button class="neuwo-segmented__option" type="button" role="radio" data-value="json" aria-checked="true" tabindex="0">JSON</button>' +
+        '<button class="neuwo-segmented__option" type="button" role="radio" data-value="visual" aria-checked="false" tabindex="-1"><span class="neuwo-segmented__option-label">Visual</span></button>' +
+        '<button class="neuwo-segmented__option" type="button" role="radio" data-value="json" aria-checked="true" tabindex="0"><span class="neuwo-segmented__option-label">JSON</span></button>' +
         '<select class="neuwo-segmented__options" multiple="" hidden="" tabindex="-1" aria-hidden="true"></select>' +
         '<input class="neuwo-segmented__form-value" type="text" tabindex="-1" aria-hidden="true" autocomplete="off" name="view" value="json">' +
         '</div><span class="neuwo-choice__error" id="c-error"></span></div>',

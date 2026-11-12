@@ -42,7 +42,7 @@ export function comboboxTemplate(attrs, ctx) {
           "aria-selected": String(Boolean(chosen) && option.value === value),
           "aria-disabled": option.disabled && "true",
         },
-        option.label,
+        h("span", { class: "neuwo-combobox__option-label" }, option.label),
       ),
     );
   /** @type {TemplateNode[]} */

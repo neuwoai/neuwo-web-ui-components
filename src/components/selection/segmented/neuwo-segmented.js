@@ -28,7 +28,7 @@ const isShown = (button) => isChecked(button) && !button.disabled;
  * button shows selected from the first paint. Once the user picks, a pill slides behind the selected button. The
  * arrow keys, Home and End move the selection, which follows focus, past disabled options, and Space selects.
  *
- * @summary Neuwo segmented control. Public classes: `.neuwo-choice` on the wrapper; `.neuwo-segmented` on the radiogroup pill, with `--error`; `.neuwo-segmented__indicator` on the sliding pill, which carries `data-neuwo-placed` once a pick has placed it; `.neuwo-segmented__option` on each button, the selected one with `aria-checked="true"`; `.neuwo-segmented__options` on the hidden `<select>`; `.neuwo-segmented__form-value` on the native input that submits; `.neuwo-choice__error` on the error line.
+ * @summary Neuwo segmented control. Public classes: `.neuwo-choice` on the wrapper; `.neuwo-segmented` on the radiogroup pill, with `--error`; `.neuwo-segmented__indicator` on the sliding pill, which carries `data-neuwo-placed` once a pick has placed it; `.neuwo-segmented__option` on each button, the selected one with `aria-checked="true"`, and `.neuwo-segmented__option-label` around its label; `.neuwo-segmented__options` on the hidden `<select>`; `.neuwo-segmented__form-value` on the native input that submits; `.neuwo-choice__error` on the error line.
  * @customElement neuwo-segmented
  * @attr name - form field name, carried onto the native input.
  * @attr value - the starting value, carried onto the native input as its default; the live value is the `value` property.
