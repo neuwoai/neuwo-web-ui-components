@@ -453,9 +453,8 @@ reads that knob for both its edge and its tint. So a fourth intent needs no libr
 `.app-callout--warning` is your own class, not one the library ships, used beside `.neuwo-callout`.
 That example is also the honest gap. **There is no `warning` intent**, because the brand has no
 amber: `--neuwo-color-blue`, `--neuwo-color-green` and `--neuwo-color-red` are the only semantic
-hues in the system,
-and adding a fourth is a brand decision rather than a recipe one. Until one exists, the knob above
-is the supported workaround.
+hues in the system, and adding a fourth is a brand decision rather than a recipe one. Until one
+exists, the knob above is the supported workaround.
 
 This is deliberately not `<neuwo-notice>`, and deliberately not an element at all. `notice` is a
 docked glass card with an entrance animation, for a message the visitor did not ask for; a callout
@@ -961,13 +960,12 @@ control is under [Segmented control](#segmented-control). The generated
 `defaultValue` on the fields and the segmented control, come from mixins, so the
 `.d.ts` of the base lists them in the type it extends, not in its class body.
 
-`<neuwo-input>`, `<neuwo-textarea>` and `<neuwo-range>` render a native `<input>`
-or `<textarea>` into their own light DOM, and that control is the form control. The element carries
-`name`, `value`, `required`,
-`disabled`, `readonly`, `placeholder`, `autocomplete`, `form` and the
-constraint attributes onto it, so a form of inputs submits and validates
-natively, in server-rendered markup before the script has loaded too. The
-element itself is not form-associated, so each value is submitted once.
+`<neuwo-input>`, `<neuwo-textarea>` and `<neuwo-range>` render a native `<input>` or `<textarea>`
+into their own light DOM, and that control is the form control. The element carries `name`, `value`,
+`required`, `disabled`, `readonly`, `placeholder`, `autocomplete`, `form` and the constraint
+attributes onto it, so a form of inputs submits and validates natively, in server-rendered markup
+before the script has loaded too. The element itself is not form-associated, so each value is
+submitted once.
 
 - **`value` is the starting value**, as on a native input. Changing the
   attribute moves an input the user has not edited yet, and `form.reset()`

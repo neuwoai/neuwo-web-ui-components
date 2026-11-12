@@ -80,7 +80,7 @@ bump.
    release fails review.
 3. `npm run build` and `npm test` must pass.
 4. Publish.
-4. The design system bumps the library version and rebuilds. Always publish the library first.
+5. The design system bumps the library version and rebuilds. Always publish the library first.
 
 ## What the library must not do
 
