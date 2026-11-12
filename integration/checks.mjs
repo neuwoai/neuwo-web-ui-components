@@ -18,11 +18,13 @@ function watchWrites() {
     return null;
   };
   const name = (node) => (node.nodeType === 1 ? `${node.localName}${node.classList[0] ? `.${node.classList[0]}` : ""}` : node.nodeName);
+  // React's hydration sets these controls' attributes again to the values they hold; nothing else may.
+  const resetByReact = new Set(["input", "textarea", "select"]);
   const unchanged = (records) => {
     const same = new Set();
     const later = new Map();
     for (const record of [...records].reverse()) {
-      if (record.type !== "attributes") continue;
+      if (record.type !== "attributes" || !resetByReact.has(record.target.localName)) continue;
       const key = `${record.attributeNamespace} ${record.attributeName}`;
       if (!later.has(record.target)) later.set(record.target, new Map());
       const values = later.get(record.target);

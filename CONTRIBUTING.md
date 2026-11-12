@@ -108,8 +108,9 @@ unless `--keep` is given, and exits 130.
   on, not the browser default. Puppeteer cannot turn JavaScript off in Firefox, so it is `n/a` there.
 - `adoption`: each `neuwo-*` element still holds the markup served for it, and nothing rewrote it
   after parsing: no node inside it was added, removed or given new text, even with the same
-  content, and no attribute changed its value. An attribute set again to the value it holds is not
-  a write, since React's hydration does that to every `<input>`.
+  content, and no attribute changed its value. An attribute of an `input`, `textarea` or `select`
+  set again to the value it holds is not a write, since React's hydration does that to every
+  `<input>`; on any other node, the host and the template's wrappers included, it is.
 - `singleCopy`: the scripts the page loaded hold the library code exactly once, so a React app that
   bundles both `.` and `./jsx-runtime` shares it. The page fetches every script it loaded again, and
   every inline module script, and counts the string literal `"neuwo-btn__spinner"`, which only the

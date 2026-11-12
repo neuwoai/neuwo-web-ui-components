@@ -22,6 +22,7 @@ const SELF_TEST = {
   "noscript-host.html": [],
   "noscript-loading-write.html": ["adoption"],
   "attribute-reset.html": [],
+  "attribute-reset-button.html": ["adoption"],
   "attribute-write.html": ["adoption"],
   "two-copies.html": ["singleCopy"],
   "no-copy.html": ["singleCopy"],

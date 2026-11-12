@@ -15,11 +15,10 @@
 <neuwo-badge>Live</neuwo-badge>
 <neuwo-checkbox name="terms">I agree</neuwo-checkbox>
 <script type="module">
-  await customElements.whenDefined("neuwo-button");
-  const host = document.querySelector("neuwo-button");
-  host.setAttribute("variant", host.getAttribute("variant"));
-  const button = host.querySelector(".neuwo-btn");
-  button.setAttribute("type", button.getAttribute("type"));
+  await customElements.whenDefined("neuwo-checkbox");
+  const input = document.querySelector("neuwo-checkbox input");
+  input.setAttribute("type", input.getAttribute("type"));
+  input.setAttribute("name", input.getAttribute("name"));
 </script>
 </body>
 </html>
