@@ -106,6 +106,7 @@
   color: var(--neuwo-color-text);
   cursor: pointer;
   user-select: none;
+  overflow-wrap: anywhere;
 }
 
 /* The display above outranks the user agent's [hidden] rule. */

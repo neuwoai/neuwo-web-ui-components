@@ -54,6 +54,10 @@ describe("combobox.css recipe", () => {
     expect(rule(".neuwo-combobox__option[hidden]")).toContain("display: none");
   });
 
+  it("wraps a long option label inside the list, which the positioner caps to the viewport", () => {
+    expect(rule(".neuwo-combobox__option")).toContain("overflow-wrap: anywhere");
+  });
+
   it("tightens the chevron gutter at the compact size", () => {
     expect(rule(".neuwo-field--sm .neuwo-combobox__trigger")).toContain("padding-inline-end: var(--neuwo-space-8)");
     expect(rule(".neuwo-field--sm .neuwo-combobox__chevron")).toContain("inset-inline-end: var(--neuwo-space-3)");

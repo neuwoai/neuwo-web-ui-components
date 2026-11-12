@@ -1,3 +1,5 @@
+const EDGE = 8;
+
 /**
  * Place a top-layer popup against its trigger. The popup is expected to be a
  * `[popover]`, which the browser renders in the top layer, so it is positioned
@@ -5,7 +7,9 @@
  * `overflow`, `transform` or `backdrop-filter`.
  *
  * The preferred side flips to the opposite one when it cannot fit and the
- * opposite one has more room. Both the horizontal and vertical anchors clear
+ * opposite one has more room. The popup is never wider than the viewport less
+ * an 8px margin on each side, and one that would cross the viewport edge is
+ * moved back towards the trigger's other edge, to that margin. Both the horizontal and vertical anchors clear
  * their opposite property, so repositioning never leaves a stale value behind.
  *
  * @param {HTMLElement} trigger - the element to position against.
@@ -23,16 +27,27 @@ export function positionPopup(trigger, popup, options = {}) {
   const { placement = "bottom", align = "start", gap = 4, matchWidth = true } = options;
   const r = trigger.getBoundingClientRect();
 
+  // A fixed popup's right is measured inside a classic vertical scrollbar, which innerWidth includes.
+  const viewport = document.documentElement.clientWidth || window.innerWidth;
+  const room = Math.max(0, viewport - 2 * EDGE);
   popup.style.position = "fixed";
-  if (matchWidth) popup.style.minWidth = `${r.width}px`;
+  popup.style.maxWidth = `${room}px`;
+  if (matchWidth) popup.style.minWidth = `${Math.min(r.width, room)}px`;
 
   const rtl = trigger instanceof Element && getComputedStyle(trigger).direction === "rtl";
-  if ((align === "end") !== rtl) {
+  const toRight = (align === "end") !== rtl;
+  // Measured from one edge only: with both set from before, an auto width would stretch between them.
+  popup.style.left = "0px";
+  popup.style.right = "auto";
+  const width = popup.offsetWidth || 0;
+  let left = toRight ? r.right - width : r.left;
+  if (left < 0 || left + width > viewport) left = Math.max(EDGE, Math.min(left, viewport - EDGE - width));
+  if (toRight) {
     popup.style.left = "auto";
-    popup.style.right = `${window.innerWidth - r.right}px`;
+    popup.style.right = `${viewport - left - width}px`;
   } else {
     popup.style.right = "auto";
-    popup.style.left = `${r.left}px`;
+    popup.style.left = `${left}px`;
   }
 
   const below = window.innerHeight - r.bottom;

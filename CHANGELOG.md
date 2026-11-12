@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed: the `<neuwo-combobox>` list stays inside the viewport. It is never wider than the viewport less an 8px margin on each side, a list that would cross the viewport edge moves back towards its trigger's other edge, an option label too long for it wraps, and in a right-to-left page with a classic scrollbar it lines up with its trigger instead of the scrollbar's width to the left of it.
 - Fixed: components mirror in right-to-left containers, and so does the Markdown surface: list indents, the quote and callout bars, and table cell alignment sit on the right in a right-to-left page. Inside a `dir="rtl"` element the combobox's chevron, its value and its list sit on the right-to-left sides, the required marker keeps its gap from the label, the toggle's thumb starts on the right and slides left, and the range's fill grows from the right with its thumb in Chromium, as Firefox already drew it. The recipes use logical properties for inline sides, so the toggle thumb now moves by `inset-inline-start` instead of `transform`. In left-to-right pages nothing changes.
 - Fixed: `reportValidity()`, or a submit that fails validation, focuses a required `searchable` `<neuwo-combobox>` without opening its list, as it does a native `<input list>` or `<select>`; it used to open the list. Tab and a click still open it.
 - Fixed: in Firefox the `<neuwo-range>` thumb is the size `--neuwo-range-thumb-size` sets, border included, as in Chromium, where it was drawn 4px wider and taller.
