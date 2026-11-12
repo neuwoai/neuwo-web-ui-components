@@ -124,6 +124,13 @@ neuwo-toggle:not([hidden]) {
   }
 }
 
+/* Forced colours replace the thumb's colour with Canvas, the track's own colour, so it would vanish. */
+@media (forced-colors: active) {
+  .neuwo-form-toggle__track::after {
+    background: CanvasText;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .neuwo-form-toggle__track,
   .neuwo-form-toggle__track::after {

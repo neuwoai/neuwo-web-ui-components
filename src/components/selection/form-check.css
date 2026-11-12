@@ -90,6 +90,14 @@ neuwo-checkbox:not([hidden]) {
   box-shadow: var(--neuwo-shadow-danger);
 }
 
+/* Forced colours replace the white token with Canvas, the box's own colour, so the marks would vanish. */
+@media (forced-colors: active) {
+  .neuwo-form-check__input:checked::before,
+  .neuwo-form-check__input[type="checkbox"]:indeterminate::before {
+    background: CanvasText;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .neuwo-form-check__input {
     transition: none;

@@ -65,6 +65,11 @@ describe("toggle.css recipe", () => {
     expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*\.neuwo-form-toggle--pulse[\s\S]*animation: none/);
   });
 
+  it("draws the thumb in CanvasText under forced colours, where the forced Canvas background would hide it", () => {
+    const forced = css.match(/@media \(forced-colors: active\) \{([\s\S]*?\})\s*\}/)?.[1] ?? "";
+    expect(forced).toMatch(/^\s*\.neuwo-form-toggle__track::after\s*\{\s*background: CanvasText;\s*\}$/);
+  });
+
   it("uses tokens for focus/disabled/error and guards reduced motion", () => {
     expect(css).toContain("var(--neuwo-shadow-focus)");
     expect(css).toContain("var(--neuwo-opacity-disabled)");

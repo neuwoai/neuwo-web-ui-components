@@ -34,6 +34,11 @@ describe("form-check.css recipe", () => {
     expect(shared).toContain("background: var(--neuwo-color-white);");
   });
 
+  it("draws the marks in CanvasText under forced colours, where the forced Canvas background would hide them", () => {
+    const forced = css.match(/@media \(forced-colors: active\) \{([\s\S]*?\})\s*\}/)?.[1] ?? "";
+    expect(forced).toMatch(/^\s*\.neuwo-form-check__input:checked::before,\s*\.neuwo-form-check__input\[type="checkbox"\]:indeterminate::before\s*\{\s*background: CanvasText;\s*\}$/);
+  });
+
   it("uses the disabled token and a red error accent, with no hex colour literals", () => {
     expect(css).toContain("var(--neuwo-opacity-disabled)");
     expect(css).toContain(".neuwo-form-check--error > .neuwo-form-check__input");
