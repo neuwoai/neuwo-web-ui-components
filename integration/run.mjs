@@ -6,7 +6,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import { launch } from "./browsers.mjs";
 import { CHECKS, VIEWPORT, runChecks } from "./checks.mjs";
-import { serveStatic } from "./serve.mjs";
+import { serveStatic, stopCommands } from "./serve.mjs";
 
 const exec = promisify(execFile);
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -26,6 +26,10 @@ const SELF_TEST = {
   "attribute-write.html": "adoption",
 };
 const USAGE = "Usage: node integration/run.mjs [--self-test] [--browser=chromium|firefox|all] [--keep] [target ...]";
+
+const SIGNALS = ["SIGINT", "SIGTERM", "SIGHUP"];
+const live = { app: null, browsers: new Map(), work: null, keep: false };
+let finishing = null;
 
 class Halt extends Error {}
 
@@ -125,6 +129,27 @@ async function interactWith(browser, target, url) {
   }
 }
 
+function finish() {
+  finishing ??= (async () => {
+    await Promise.allSettled([Promise.resolve().then(() => live.app?.stop()), stopCommands()]);
+    await Promise.allSettled([...live.browsers.values()].map((browser) => browser.close()));
+    if (!live.work) return;
+    if (live.keep) log(`Kept the work folder ${live.work}`);
+    else await rm(live.work, { recursive: true, force: true });
+  })();
+  return finishing;
+}
+
+function stopOnSignals() {
+  for (const signal of SIGNALS) {
+    process.once(signal, async () => {
+      log(`Stopping on ${signal}`);
+      await finish();
+      process.exit(130);
+    });
+  }
+}
+
 async function runTarget(name, browsers, context) {
   const target = await import(pathToFileURL(join(HERE, "targets", `${name}.mjs`)).href);
   log(`Starting ${name}`);
@@ -141,6 +166,9 @@ async function runTarget(name, browsers, context) {
     print(name, "-", "-", { check: "start", status: "fail", detail: "the target returned no pages" });
     return false;
   }
+  let stopping = null;
+  const stop = () => (stopping ??= Promise.resolve().then(() => app.stop()));
+  live.app = { stop };
   let passed = true;
   try {
     for (const [browserName, browser] of browsers) {
@@ -154,7 +182,8 @@ async function runTarget(name, browsers, context) {
       }
     }
   } finally {
-    await app.stop();
+    await stop();
+    live.app = null;
   }
   return passed;
 }
@@ -163,8 +192,10 @@ async function main() {
   const known = (await readdir(join(HERE, "targets"))).filter((name) => name.endsWith(".mjs")).map((name) => name.slice(0, -4)).sort();
   const options = parse(process.argv.slice(2), known);
   const started = Date.now();
-  const work = await mkdtemp(join(tmpdir(), "neuwo-integration-"));
-  const browsers = new Map();
+  stopOnSignals();
+  live.keep = options.keep;
+  const work = (live.work = await mkdtemp(join(tmpdir(), "neuwo-integration-")));
+  const browsers = live.browsers;
   let passed = true;
   try {
     for (const name of options.browsers) {
@@ -180,12 +211,11 @@ async function main() {
     if (options.targets.length) await copyApps(work, tarball);
     if (options.selfTest && !(await selfTest(browsers))) passed = false;
     for (const name of options.targets) {
+      if (finishing) break;
       if (!(await runTarget(name, browsers, { tarball, work, log }))) passed = false;
     }
   } finally {
-    await Promise.allSettled([...browsers.values()].map((browser) => browser.close()));
-    if (options.keep) log(`Kept the work folder ${work}`);
-    else await rm(work, { recursive: true, force: true });
+    await finish();
   }
   log(`${passed ? "Passed" : "Failed"} in ${Math.round((Date.now() - started) / 1000)} s`);
   process.exitCode = passed ? 0 : 1;

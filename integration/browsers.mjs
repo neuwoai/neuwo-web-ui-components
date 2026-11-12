@@ -28,7 +28,8 @@ export async function launch(name) {
   if (!executablePath) {
     throw new Error(`No ${name} found: set ${browser.variable} to its executable, or put ${browser.commands.join(", ")} on PATH.`);
   }
+  const options = { executablePath, headless: true, handleSIGINT: false, handleSIGTERM: false, handleSIGHUP: false };
   return name === "firefox"
-    ? puppeteer.launch({ browser: "firefox", executablePath, headless: true, protocol: "webDriverBiDi" })
-    : puppeteer.launch({ browser: "chrome", executablePath, headless: true });
+    ? puppeteer.launch({ ...options, browser: "firefox", protocol: "webDriverBiDi" })
+    : puppeteer.launch({ ...options, browser: "chrome" });
 }

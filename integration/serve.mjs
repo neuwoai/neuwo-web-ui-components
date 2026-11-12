@@ -16,6 +16,8 @@ const TYPES = {
 
 const READY_TIMEOUT = 120_000;
 const STOP_TIMEOUT = 10_000;
+const POLL = 50;
+const commands = new Set();
 
 async function listen(server) {
   await new Promise((done, fail) => server.once("error", fail).listen(0, "127.0.0.1", done));
@@ -66,7 +68,10 @@ export async function serveStatic(root, options = {}) {
 
 export async function blockNetwork() {
   const attempts = [];
+  const sockets = new Set();
   const proxy = createSocketServer((socket) => {
+    sockets.add(socket);
+    socket.once("close", () => sockets.delete(socket));
     socket.on("error", () => {});
     socket.once("data", (data) => {
       attempts.push(data.toString("latin1").split("\r\n", 1)[0]);
@@ -80,25 +85,45 @@ export async function blockNetwork() {
     attempts,
     close: () =>
       new Promise((done) => {
+        for (const socket of sockets) socket.destroy();
         proxy.close(() => done());
       }),
   };
+}
+
+export async function stopCommands() {
+  await Promise.allSettled([...commands].map((stop) => stop()));
 }
 
 export async function serveCommand(command, args, { cwd, env = {}, ready }) {
   const probe = createSocketServer();
   const port = await listen(probe);
   await new Promise((done) => probe.close(() => done()));
-  const child = spawn(command, args(port), { cwd, env: { ...process.env, ...env }, stdio: ["ignore", "pipe", "pipe"] });
+  const child = spawn(command, args(port), { cwd, env: { ...process.env, ...env }, stdio: ["ignore", "pipe", "pipe"], detached: true });
   const exited = new Promise((done) => child.once("exit", (code, signal) => done(signal ?? code)));
-  let output = "";
-  const stop = async () => {
-    if (child.pid === undefined || child.exitCode !== null || child.signalCode !== null) return;
-    child.kill("SIGTERM");
-    const timer = setTimeout(() => child.kill("SIGKILL"), STOP_TIMEOUT);
-    await exited;
-    clearTimeout(timer);
+  const signal = (name) => {
+    try {
+      process.kill(-child.pid, name);
+      return true;
+    } catch {
+      return false;
+    }
   };
+  let output = "";
+  let stopping = null;
+  const stop = () => {
+    stopping ??= (async () => {
+      if (child.pid === undefined) return;
+      signal("SIGTERM");
+      for (let waited = 0; signal(0) && waited < 2 * STOP_TIMEOUT; waited += POLL) {
+        if (waited === STOP_TIMEOUT) signal("SIGKILL");
+        await new Promise((resolve) => setTimeout(resolve, POLL));
+      }
+      commands.delete(stop);
+    })();
+    return stopping;
+  };
+  commands.add(stop);
   let timer;
   try {
     await new Promise((done, fail) => {
