@@ -4,6 +4,7 @@ import { jsx, jsxs } from "../src/react/jsx-runtime.js";
 import { templates } from "../src/templates.js";
 import "../src/index.js";
 import { expand } from "../src/server/index.js";
+import { expandWith } from "../src/server/expand.js";
 import { renderElement } from "../src/core/adapters/html.js";
 import { idScope } from "../src/core/ids.js";
 import { cases, markup, normalise, renderChildren, renderHtml } from "./fixtures/template-cases.js";
@@ -73,7 +74,7 @@ describe("template parity across the HTML, React and DOM adapters", () => {
           };
           renderElement(tag, testCase.attrs, renderChildren(testCase.children), capture, idScope("neuwo-s"));
           const fixture = seen.pop();
-          expand(markup({ tag, attrs: testCase.attrs, children: testCase.children }), { [tag]: capture });
+          expandWith(markup({ tag, attrs: testCase.attrs, children: testCase.children }), { [tag]: capture }, "neuwo-s");
           expect(fixture).toEqual(seen.pop());
         });
       }

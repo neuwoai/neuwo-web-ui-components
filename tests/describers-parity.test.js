@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { h, region } from "../src/core/template.js";
 import { render } from "../src/core/adapters/dom.js";
-import { expand } from "../src/server/index.js";
+import { expandWith } from "../src/server/expand.js";
 import { createRuntime } from "./fixtures/runtime.js";
 
 const seenBy = [];
@@ -70,7 +70,7 @@ function viaDom(html) {
 }
 
 function viaExpand(html) {
-  expand(`<neuwo-t>${html}</neuwo-t>`, { "neuwo-t": template });
+  expandWith(`<neuwo-t>${html}</neuwo-t>`, { "neuwo-t": template }, "neuwo-s");
   return seenBy.at(-1);
 }
 

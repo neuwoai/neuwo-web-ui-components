@@ -2,6 +2,7 @@ import { Window } from "happy-dom";
 import { renderElement } from "../../src/core/adapters/html.js";
 import { idScope } from "../../src/core/ids.js";
 import { expand } from "../../src/server/index.js";
+import { expandWith } from "../../src/server/expand.js";
 import { templates } from "../../src/templates.js";
 
 /** @typedef {{ tag: string, attrs?: Record<string, string>, text?: string, children?: Child[] }} ChildElement */
@@ -383,7 +384,7 @@ function expandIn(html, { tag, attrs }) {
   const registry = Object.fromEntries(Object.entries(templates).filter(([name]) => name !== tag));
   const close = `</${tag}>`;
   const open = markup({ tag, attrs, children: [] }).slice(0, -close.length);
-  return expand(`${open}${html}${close}`, registry).slice(open.length, -close.length);
+  return expandWith(`${open}${html}${close}`, registry, "neuwo-s").slice(open.length, -close.length);
 }
 
 /**

@@ -2,9 +2,9 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { JSDOM } from "jsdom";
 import { h, region } from "../src/core/template.js";
-import { renderElement as htmlRenderElement } from "../src/core/adapters/html.js";
 import { templates } from "../src/templates.js";
-import { eleventyPlugin, expand, renderElement } from "../src/server/index.js";
+import { eleventyPlugin, expand } from "../src/server/index.js";
+import { expandWith } from "../src/server/expand.js";
 import { cases, markup } from "./fixtures/template-cases.js";
 
 const testTemplate = (a, ctx) =>
@@ -18,7 +18,7 @@ const shell = (tone, start, body) =>
   `<span class="neuwo-t neuwo-t--${tone}"><span class="neuwo-t__start">${start}</span><span class="neuwo-t__body">${body}</span></span>`;
 
 const registry = { "neuwo-t": testTemplate };
-const run = (html) => expand(html, registry);
+const run = (html) => expandWith(html, registry, "neuwo-s");
 
 describe("expand()", () => {
   it("expands a registered element and places its original child markup by slot", () => {
@@ -40,7 +40,7 @@ describe("expand()", () => {
       seen = ctx.children;
       return testTemplate(a, ctx);
     };
-    expand('<neuwo-t><b slot="start" title="a &amp; b">x <i>y</i></b> t &lt; u <!-- c --></neuwo-t>', { "neuwo-t": capture });
+    expandWith('<neuwo-t><b slot="start" title="a &amp; b">x <i>y</i></b> t &lt; u <!-- c --></neuwo-t>', { "neuwo-t": capture }, "neuwo-s");
     expect(seen).toEqual([
       {
         tag: "b",
@@ -74,14 +74,14 @@ describe("expand()", () => {
     const html = "<neuwo-i></neuwo-i><neuwo-i></neuwo-i>";
     const expected =
       '<neuwo-i><span class="neuwo-i" id="neuwo-s1-x"></span></neuwo-i><neuwo-i><span class="neuwo-i" id="neuwo-s2-x"></span></neuwo-i>';
-    expect(expand(html, withId)).toBe(expected);
-    expect(expand(html, withId)).toBe(expected);
+    expect(expandWith(html, withId, "neuwo-s")).toBe(expected);
+    expect(expandWith(html, withId, "neuwo-s")).toBe(expected);
   });
 
   it("numbers an element's ids before those of the elements inside it, in document order", () => {
     const withId = { "neuwo-i": (a, ctx) => h("span", { class: "neuwo-i", id: ctx.id(a.n) }, h("span", { class: "neuwo-i__body" }, region())) };
     const html = '<neuwo-i n="outer"><neuwo-i n="inner"></neuwo-i></neuwo-i><neuwo-i n="next"></neuwo-i>';
-    expect([...expand(html, withId).matchAll(/ id="([^"]+)"/g)].map((match) => match[1])).toEqual(["neuwo-s1-outer", "neuwo-s2-inner", "neuwo-s3-next"]);
+    expect([...expandWith(html, withId, "neuwo-s").matchAll(/ id="([^"]+)"/g)].map((match) => match[1])).toEqual(["neuwo-s1-outer", "neuwo-s2-inner", "neuwo-s3-next"]);
   });
 
   it("expands only what the library registry owns by default", () => {
@@ -89,8 +89,32 @@ describe("expand()", () => {
     expect(expand(html)).toBe(html);
   });
 
-  it("re-exports the HTML adapter's renderElement", () => {
-    expect(renderElement).toBe(htmlRenderElement);
+  const FIELD = '<neuwo-input label="Name"></neuwo-input>';
+  const ids = (html) => [...html.matchAll(/ id="([^"]+)"/g)].map((match) => match[1]);
+
+  it("names every id from the given prefix", () => {
+    const found = ids(expand(FIELD, { prefix: "hdr" }));
+    expect(found.length).toBeGreaterThan(0);
+    for (const id of found) expect(id).toMatch(/^hdr\d+-/);
+  });
+
+  it("defaults the prefix to neuwo-s", () => {
+    const found = ids(expand(FIELD));
+    expect(found.length).toBeGreaterThan(0);
+    for (const id of found) expect(id).toMatch(/^neuwo-s\d+-/);
+  });
+
+  it("keeps fragments expanded with different prefixes apart", () => {
+    const a = ids(expand(FIELD, { prefix: "a" }));
+    const b = ids(expand(FIELD, { prefix: "b" }));
+    expect(a.filter((id) => b.includes(id))).toEqual([]);
+  });
+
+  it("rejects a prefix that could collide", () => {
+    for (const prefix of ["", "1a", "a b", "a1", "neuwo-c", "neuwo-cx", 'a"b']) {
+      expect(() => expand(FIELD, { prefix }), prefix).toThrow(TypeError);
+      expect(() => expand(FIELD, { prefix }), prefix).toThrow(/prefix/);
+    }
   });
 });
 

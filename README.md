@@ -183,7 +183,7 @@ linked stylesheet wherever you can add one.
 
 ### Server rendering
 
-Import from `@neuwo/web-ui-library--demo/server`. `expand(html)` returns the HTML with every
+Import from `@neuwo/web-ui-library--demo/server`. `expand(html, options?)` returns the HTML with every
 registered `<neuwo-*>` tag written out as its full markup, so the page paints before any script
 runs and still works with the script blocked.
 
@@ -207,9 +207,19 @@ export default function (eleventyConfig) {
 Then link the stylesheet and load `neuwo.js` in your layout as above. For Astro and other Node
 builds, call `expand` on each page's output before it is written.
 
-Expand a whole page once. Every call numbers its ids from `neuwo-s1-` again, so two fragments
-expanded separately and then joined into one page repeat them, and a label points at the wrong
-control until the script runs and renames the duplicates.
+Expand a whole page once, or give each separately expanded fragment its own `prefix`. Every call
+numbers its ids from 1 again, so two fragments expanded with the same prefix and then joined into
+one page repeat them, and a label points at the wrong control until the script runs and renames
+the duplicates.
+
+```js
+const header = expand(headerHtml, { prefix: "hdr" });
+const article = expand(articleHtml, { prefix: "art" });
+```
+
+A prefix starts with a letter, ends with a letter, `_` or `-`, holds only letters, digits, `_` and
+`-`, and does not start with `neuwo-c`, which the browser uses. The default is `neuwo-s`, and any
+other value that breaks a rule throws a `TypeError`.
 
 Two copies adopt the markup they carry as written, because the browser builds a parsed element
 exactly as a script does and the element cannot tell them apart. A clone of a `<template>`'s

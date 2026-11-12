@@ -37,4 +37,12 @@ describe("published declarations", () => {
       expect(existsSync(join(dist, "types", file)), file).toBe(file === "elements.d.ts");
     }
   });
+
+  it("the server entry publishes only its two functions", () => {
+    const code = readFileSync(distFile("server/index.d.ts"), "utf8");
+    const names = [...code.matchAll(/export\s+(?:declare\s+)?(?:function|const|type|interface|class)\s+(\w+)/g)].map((match) => match[1]);
+    const listed = [...code.matchAll(/export\s*\{([^}]*)\}/g)].flatMap((match) => match[1].split(",").map((part) => part.trim().split(/\s+as\s+/).pop()).filter(Boolean));
+    expect([...names, ...listed].sort()).toEqual(["eleventyPlugin", "expand"]);
+    for (const word of ["Page", "Foreign", "renderElement"]) expect(code).not.toMatch(new RegExp(`\\b${word}\\b`));
+  });
 });

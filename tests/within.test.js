@@ -9,7 +9,7 @@ import { createRuntime } from "./fixtures/runtime.js";
 import { idScope } from "../src/core/ids.js";
 import { CONTROLLED } from "../src/core/marks.js";
 import { control, h } from "../src/core/template.js";
-import { expand } from "../src/server/index.js";
+import { expandWith } from "../src/server/expand.js";
 import { templates } from "../src/templates.js";
 import { boxTemplate, itemTemplate, withinTemplates } from "./fixtures/within.js";
 import { normalise } from "./fixtures/template-cases.js";
@@ -180,7 +180,7 @@ describe("enclosing-element attributes (within) across the HTML, React and DOM a
   for (const [name, spec] of CASES) {
     it(name, () => {
       const errors = vi.spyOn(console, "error");
-      const html = normalise(expand(markup(spec), withinTemplates), true);
+      const html = normalise(expandWith(markup(spec), withinTemplates, "neuwo-s"), true);
       expect(html).toContain(`<${spec.tag}`);
       expect(normalise(renderToStaticMarkup(toReact(spec)), true)).toBe(html);
       expect(normalise(viaDom(markup(spec)), false)).toBe(html);
@@ -192,7 +192,7 @@ describe("enclosing-element attributes (within) across the HTML, React and DOM a
     it(`gives a reader ${name} its group's attributes`, () => {
       const errors = vi.spyOn(console, "error");
       const source = `<x-group name="size" value="m">${inner}</x-group>`;
-      const html = normalise(expand(source, withinTemplates), true);
+      const html = normalise(expandWith(source, withinTemplates, "neuwo-s"), true);
       expect(Array.from(mount(html).querySelectorAll(".x-item__group"), (el) => el.textContent)).toEqual(shown);
       expect(normalise(renderToStaticMarkup(groupOf(runtime, children(runtime))), true)).toBe(html);
       expect(normalise(viaDom(source), false)).toBe(html);
@@ -201,14 +201,14 @@ describe("enclosing-element attributes (within) across the HTML, React and DOM a
   }
 
   it("renders an item in a group with the group's attributes and a lone item with none", () => {
-    const holder = mount(expand(markup(CASES[0][1]) + markup(CASES[1][1]), withinTemplates));
+    const holder = mount(expandWith(markup(CASES[0][1]) + markup(CASES[1][1]), withinTemplates, "neuwo-s"));
     expect(Array.from(holder.querySelectorAll(".x-item__group"), (el) => el.textContent)).toEqual(["size=m", "none"]);
     expect(holder.querySelector(".x-item").getAttribute("data-value")).toBe("m");
-    expect(normalise(holder.innerHTML, false)).toBe(normalise(expand(markup(CASES[0][1]), withinTemplates) + expand(markup(CASES[1][1]), withinTemplates), false));
+    expect(normalise(holder.innerHTML, false)).toBe(normalise(expandWith(markup(CASES[0][1]), withinTemplates, "neuwo-s") + expandWith(markup(CASES[1][1]), withinTemplates, "neuwo-s"), false));
   });
 
   it("gives nested items and boxes the nearest enclosing element's attributes", () => {
-    const holder = mount(expand(markup(CASES[3][1]) + markup(CASES[5][1]), withinTemplates));
+    const holder = mount(expandWith(markup(CASES[3][1]) + markup(CASES[5][1]), withinTemplates, "neuwo-s"));
     expect(Array.from(holder.querySelectorAll(".x-item__group"), (el) => el.textContent)).toEqual(["outer=1", "inner=2", "outer=1"]);
     expect(Array.from(holder.querySelectorAll(".x-box"), (el) => el.getAttribute("data-outer"))).toEqual(["none", "outer", "inner"]);
   });
@@ -222,12 +222,12 @@ describe("within in the HTML adapter", () => {
     expect(seen).toEqual([null, { name: "size", value: "s" }]);
   });
 
-  it("gives expand() the attributes of the nearest ancestor of the tag, through plain elements in between", () => {
+  it("gives expandWith() the attributes of the nearest ancestor of the tag, through plain elements in between", () => {
     const { seen, wrapped } = spy(itemTemplate, { withChildren: true });
-    expand(`<x-group name="a" value="1"><div><x-group name="b"><p><x-item>x</x-item></p></x-group><x-item>y</x-item></div></x-group><x-item>z</x-item>`, {
+    expandWith(`<x-group name="a" value="1"><div><x-group name="b"><p><x-item>x</x-item></p></x-group><x-item>y</x-item></div></x-group><x-item>z</x-item>`, {
       "x-group": withinTemplates["x-group"],
       "x-item": wrapped,
-    });
+    }, "neuwo-s");
     expect(seen).toEqual([{ name: "b" }, { name: "a", value: "1" }, null]);
   });
 });
@@ -239,7 +239,7 @@ describe("within in the DOM adapter", () => {
     const { seen, wrapped } = spy(itemTemplate);
     const rendered = mount(SERVED).querySelector("x-item");
     render(rendered, wrapped);
-    const adopted = mount(expand(SERVED, withinTemplates)).querySelector("x-item");
+    const adopted = mount(expandWith(SERVED, withinTemplates, "neuwo-s")).querySelector("x-item");
     adopt(adopted, wrapped);
     const group = /** @type {Element} */ (adopted.closest("x-group"));
     group.setAttribute("value", "l");

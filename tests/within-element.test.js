@@ -4,7 +4,7 @@ import { hydrateRoot } from "react-dom/client";
 import { renderToString } from "react-dom/server";
 import { createRuntime } from "./fixtures/runtime.js";
 import { NeuwoElement, define } from "../src/core/element.js";
-import { expand } from "../src/server/index.js";
+import { expandWith } from "../src/server/expand.js";
 import { boxTemplate, groupTemplate, itemTemplate, withinTemplates } from "./fixtures/within.js";
 
 class XGroup extends NeuwoElement {
@@ -77,7 +77,7 @@ const GROUP = `<x-group name="size" value="m"><x-item>Medium</x-item><x-item>Lar
 describe("an element whose template reads its enclosing element (within)", () => {
   for (const [source, html] of [
     ["rendered by the elements", GROUP],
-    ["served", expand(GROUP, withinTemplates)],
+    ["served", expandWith(GROUP, withinTemplates, "neuwo-s")],
   ]) {
     describe(source, () => {
       it("renders each item with its group's name and value", () => {
@@ -238,7 +238,7 @@ describe("an element whose template reads its enclosing element (within)", () =>
     it("applies a group change made while the served items wait for the document", () => {
       Object.defineProperty(document, "readyState", { configurable: true, get: () => "loading" });
       const served = document.createElement("template");
-      served.innerHTML = expand(`<x-group name="size" value="m"><x-item>Medium</x-item></x-group>`, withinTemplates);
+      served.innerHTML = expandWith(`<x-group name="size" value="m"><x-item>Medium</x-item></x-group>`, withinTemplates, "neuwo-s");
       const root = served.content.querySelector(".x-group");
       const itemMarkup = served.content.querySelector("x-item").innerHTML;
       const holder = mount("");

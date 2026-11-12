@@ -4,6 +4,7 @@ import { NeuwoElement, define } from "../src/core/element.js";
 import { REACT } from "../src/core/marks.js";
 import { h, region } from "../src/core/template.js";
 import { expand } from "../src/server/index.js";
+import { expandWith } from "../src/server/expand.js";
 import { templates } from "../src/templates.js";
 import { cases, markup } from "./fixtures/template-cases.js";
 import { groupTemplate, itemTemplate, withinTemplates } from "./fixtures/within.js";
@@ -157,9 +158,10 @@ describe("readers of an enclosing element (within), upgraded and copied in jsdom
   };
 
   beforeAll(() => {
-    container.innerHTML = expand(
+    container.innerHTML = expandWith(
       `<x-group name="size" value="m"><x-item>Medium</x-item><x-item>Large</x-item></x-group><x-group name="colour" value="red"><x-item>Red</x-item></x-group>`,
       withinTemplates,
+      "neuwo-s",
     );
     document.body.append(container);
     const observer = new MutationObserver((records) => void seen.push(...records));
@@ -224,7 +226,7 @@ describe("readers of an enclosing element (within), upgraded and copied in jsdom
 
   it("writes nothing when served markup outside the document is upgraded", () => {
     const holder = document.createElement("div");
-    holder.innerHTML = expand(`<x-group name="size" value="m"><x-late-item>Medium</x-late-item></x-group>`, { ...withinTemplates, "x-late-item": itemTemplate });
+    holder.innerHTML = expandWith(`<x-group name="size" value="m"><x-late-item>Medium</x-late-item></x-group>`, { ...withinTemplates, "x-late-item": itemTemplate }, "neuwo-s");
     define("x-late-item", class extends NeuwoElement {
       static template = itemTemplate;
       static observedAttributes = [];
@@ -596,7 +598,7 @@ describe("what an observed attribute change, and refresh(), do in each lifecycle
     return holder;
   };
   /** @param {string} html */
-  const served = (html) => expand(html, LIFE);
+  const served = (html) => expandWith(html, LIFE, "neuwo-s");
   const loading = () => Object.defineProperty(document, "readyState", { configurable: true, get: () => "loading" });
   const parsed = () => {
     delete document.readyState;

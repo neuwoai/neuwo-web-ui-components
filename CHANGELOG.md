@@ -456,8 +456,7 @@
   such element: in `expand`, in the browser, and through the JSX runtime, which reaches it through
   elements, fragments, context providers, `Suspense` and its fallback, `StrictMode`, `Profiler`,
   `Activity` and other Neuwo elements but not inside a component of your own, through a portal or in
-  another React root, and warns about that in client development builds. `renderElement` takes them as an
-  optional last argument, and an element refreshes the descendants that read it when it changes.
+  another React root, and warns about that in client development builds. An element refreshes the descendants that read it when it changes.
 - `components/reset.css`, the reset for the light DOM components, is published and leads the component
   styles in `neuwo-components.css`. It is written with CSS nesting, so a tool that reads the file must
   support nesting, as lightningcss does.
@@ -473,7 +472,7 @@
   the page, or import it where you import the library; `<style data-neuwo-fonts>` is no longer read.
 - `neuwo-standalone.js` is for pages that can only add a script: it embeds `neuwo-components.css`, applies
   it only when the page has not linked it, and loads the fonts from beside itself.
-- New entries: `./server` exports `expand(html)`, `renderElement` and the Eleventy plugin, with its HTML
+- New entries: `./server` exports `expand(html, options)` and the Eleventy plugin, with its HTML
   parser bundled; `./jsx-runtime` and `./jsx-dev-runtime` wrap React's runtime for `jsxImportSource`, with
   a `react-server` build for Server Components. React DevTools and development Server Component payloads
   name each element's component after its tag and show only the props you passed. Elements recognise
@@ -484,6 +483,9 @@
   Component, or `defaultValue`, put on its native control, and hydration finds the markup it sent. A moved
   element fits its markup to its attributes and children only when they changed while it was out of the
   document.
+- `expand(html, { prefix })` names the ids it writes from `prefix` (default `neuwo-s`), so fragments expanded
+  separately and joined into one page can each use their own and never share an id. A prefix that could
+  collide throws a `TypeError`.
 - Served markup keeps its formatting and its ids. Whitespace and comments around an element's markup stay
   where they are when a script appends a child, where they used to move into the content and show as a
   stray space; indentation inside the markup is no longer removed on the first change; and an element the

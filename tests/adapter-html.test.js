@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { h, raw, region } from "../src/core/template.js";
 import { idScope } from "../src/core/ids.js";
 import { renderElement, toHTML } from "../src/core/adapters/html.js";
-import { expand } from "../src/server/index.js";
+import { expandWith } from "../src/server/expand.js";
 import { NESTED, OPTGROUP, described } from "./fixtures/nested-children.js";
 
 const testTemplate = (a) =>
@@ -127,7 +127,7 @@ describe("renderElement()", () => {
       seen = ctx.children;
       return testTemplate(a);
     };
-    expand(`<neuwo-t>${OPTGROUP}<!-- c --></neuwo-t>`, { "neuwo-t": template });
+    expandWith(`<neuwo-t>${OPTGROUP}<!-- c --></neuwo-t>`, { "neuwo-t": template }, "neuwo-s");
     expect(seen).toEqual([NESTED]);
   });
 });
