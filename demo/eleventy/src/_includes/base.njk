@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="data:,">
+    <title>{{ title }}</title>
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/neuwo/fonts/noto-sans-variable.woff2">
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/neuwo/fonts/outfit-variable.woff2">
+    <link rel="stylesheet" href="/neuwo/neuwo.css">
+    <link rel="stylesheet" href="/page.css">
+    <script type="module" src="/neuwo/neuwo.js"></script>
+    <script type="module" src="/sign-up.js"></script>
+  </head>
+  <body class="neuwo-body">
+    <div class="background">
+      <div class="neuwo-background__gradient"></div>
+    </div>
+    <main class="page">
+      <neuwo-logo variant="bg-dark"></neuwo-logo>
+      {{ content | safe }}
+    </main>
+  </body>
+</html>

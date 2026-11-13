@@ -16,3 +16,4 @@ custom-elements.json
 demo/*/package-lock.json
 .next/
 next-env.d.ts
+_site/

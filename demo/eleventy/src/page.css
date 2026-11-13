@@ -1,0 +1,24 @@
+.background {
+  position: fixed;
+  inset: 0;
+  z-index: var(--neuwo-z-background);
+  overflow: hidden;
+}
+
+.background .neuwo-background__gradient {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.page {
+  max-inline-size: 64rem;
+  margin-inline: auto;
+  padding: var(--neuwo-space-12) var(--neuwo-space-4);
+}
+
+.sign-up {
+  display: grid;
+  gap: var(--neuwo-space-4);
+  justify-items: start;
+  max-inline-size: 28rem;
+}

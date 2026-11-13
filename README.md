@@ -155,7 +155,7 @@ Typography alone is also published as `foundation/typography.css`, and tokens al
 |---|---|
 | Next.js, server-rendered React (React Router, Remix) | `"jsxImportSource": "@neuwo/web-ui-library--demo"` in `tsconfig`; import the stylesheet in the root layout; import the library once from a client component; [demo/nextjs](demo/nextjs/) |
 | Client-only React (Vite) | the same `jsxImportSource` line; import the stylesheet and the library at the entry; [demo/react-vite](demo/react-vite/) |
-| Eleventy | `eleventyConfig.addPlugin(neuwo)`; link the stylesheet; script tag for `neuwo.js` |
+| Eleventy | `eleventyConfig.addPlugin(neuwo)`; link the stylesheet; script tag for `neuwo.js`; [demo/eleventy](demo/eleventy/) |
 | Astro and other Node builds | call `expand(html)` from `@neuwo/web-ui-library--demo/server` on the output; link the stylesheet; load `neuwo.js` |
 | Plain HTML, non-JavaScript servers | link the stylesheet and load `neuwo.js`; components render when the script runs |
 | A page that can only add one script | `neuwo-standalone.js` alone; components render when the script runs |
@@ -209,7 +209,7 @@ export default function (eleventyConfig) {
 }
 ```
 
-Then link the stylesheet and load `neuwo.js` in your layout as above. For Astro and other Node
+Then link the stylesheet and load `neuwo.js` in your layout as above; [demo/eleventy](demo/eleventy/) is a working site. For Astro and other Node
 builds, call `expand` on each page's output before it is written.
 
 Expand a whole page once, or give each separately expanded fragment its own `prefix`. Every call
