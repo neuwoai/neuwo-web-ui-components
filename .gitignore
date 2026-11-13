@@ -11,3 +11,6 @@ custom-elements.json
 # Local env
 .env
 .env.*
+
+*.tgz
+demo/*/package-lock.json

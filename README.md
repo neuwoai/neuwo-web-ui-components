@@ -154,7 +154,7 @@ Typography alone is also published as `foundation/typography.css`, and tokens al
 | Site | One-time setup |
 |---|---|
 | Next.js, server-rendered React (React Router, Remix) | `"jsxImportSource": "@neuwo/web-ui-library--demo"` in `tsconfig`; import the stylesheet in the root layout; import the library once from a client component |
-| Client-only React (Vite) | the same `jsxImportSource` line; import the stylesheet and the library at the entry |
+| Client-only React (Vite) | the same `jsxImportSource` line; import the stylesheet and the library at the entry; [demo/react-vite](demo/react-vite/) |
 | Eleventy | `eleventyConfig.addPlugin(neuwo)`; link the stylesheet; script tag for `neuwo.js` |
 | Astro and other Node builds | call `expand(html)` from `@neuwo/web-ui-library--demo/server` on the output; link the stylesheet; load `neuwo.js` |
 | Plain HTML, non-JavaScript servers | link the stylesheet and load `neuwo.js`; components render when the script runs |
@@ -585,7 +585,7 @@ light DOM elements (`<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuw
 Components, and leave it to React, so without the setting a light DOM tag React renders stays bare.
 The same setting adds every element to JSX with each attribute's allowed values and each custom
 event's `detail`, so a misspelt variant fails the type check. React stays an optional peer
-dependency.
+dependency. A working project with controlled and uncontrolled forms is in [demo/react-vite](demo/react-vite/).
 
 React renders the markup of all seventeen elements itself, so they show from the first paint.
 

@@ -173,7 +173,8 @@ npm_config_offline=true npm run integration
 3. Bump it everywhere it is written: `package.json` and the two version fields of
    `package-lock.json` (`npm version <version> --no-git-tag-version` sets all three), the
    `## X.Y.Z` heading of the release's section in `CHANGELOG.md`, and, for a new minor version, the
-   `@X.Y` in every CDN URL in `README.md`. `tests/release.test.js` fails until all of them agree.
+   `@X.Y` in every CDN URL in `README.md` and the `^X.Y.0` library range in each
+   `demo/*/package.json`. `tests/release.test.js` fails until all of them agree.
 4. `npm run build` and `npm test` must pass.
 5. `npm run integration` passes in Chromium and Firefox.
 6. Publish.

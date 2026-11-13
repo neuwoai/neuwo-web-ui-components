@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { distFile } from "./setup/dist.js";
@@ -39,6 +39,17 @@ describe("release", () => {
   it("the first versioned CHANGELOG heading is the package version", () => {
     const heading = read("CHANGELOG.md").match(/^## \d+\.\d+\.\d+.*$/m);
     expect(heading?.[0]).toBe(`## ${version}`);
+  });
+
+  it("every example's library range is the package's minor version", () => {
+    const examples = readdirSync(join(root, "demo"), { withFileTypes: true })
+      .filter((entry) => entry.isDirectory() && existsSync(join(root, "demo", entry.name, "package.json")))
+      .map((entry) => entry.name);
+    expect(examples.length).toBeGreaterThan(0);
+    for (const example of examples) {
+      const manifest = JSON.parse(read(`demo/${example}/package.json`));
+      expect(manifest.dependencies?.[name], example).toBe(`^${major}.${minor}.0`);
+    }
   });
 
   it("the lockfile's top-level version fields are the package version", () => {
