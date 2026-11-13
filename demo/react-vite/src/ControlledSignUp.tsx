@@ -15,9 +15,12 @@ export default function ControlledSignUp() {
     event.preventDefault();
     setPending(true);
     setDone(false);
-    await submitSignUp({ email, updates });
-    setPending(false);
-    setDone(true);
+    try {
+      await submitSignUp({ email, updates });
+      setDone(true);
+    } finally {
+      setPending(false);
+    }
   };
 
   return (

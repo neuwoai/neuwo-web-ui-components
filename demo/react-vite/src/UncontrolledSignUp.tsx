@@ -12,9 +12,12 @@ export default function UncontrolledSignUp() {
     const updates = data.get("updates") !== null;
     setPending(true);
     setMessage(null);
-    await submitSignUp({ email, updates });
-    setPending(false);
-    setMessage(`Read from the form: ${JSON.stringify({ email, updates })}`);
+    try {
+      await submitSignUp({ email, updates });
+      setMessage(`Read from the form: ${JSON.stringify({ email, updates })}`);
+    } finally {
+      setPending(false);
+    }
   };
 
   return (
