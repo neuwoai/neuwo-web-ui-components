@@ -116,9 +116,19 @@ unless `--keep` is given, and exits 130.
   every inline module script, and counts the string literal `"neuwo-btn__spinner"`, which only the
   button template holds. The element definition skips a tag already defined, so `console` cannot see
   a second copy; a count of 0 fails too.
-- `interactConsole`: on a target that interacts with its page (`demo`, `next-dev`, `next-prod` and
-  `vite`), the `console` check again, over the whole interaction from its own page load to its last
+- `signUp`: on the example targets, each sign-up form on the page rejects an empty submit without
+  showing loading or its confirmation, then, with an email typed and the updates checkbox ticked,
+  shows loading and ends with its `neuwo-notice` visible and loading cleared. One line per form, and
+  the check fails if the page has a different number of forms than the target expects.
+- `interactConsole`: on a target that interacts with its page (`demo`, `next-dev`, `next-prod`,
+  `vite`, `example-vite` and `example-vite-dev`), the `console` check again, over the whole interaction from its own page load to its last
   step, so an error raised while the forms are exercised fails too.
+
+The harness also builds every example under `demo/` that has a `package.json`, from a copy with its
+library dependency pointed at the tarball. The `example-vite` target builds `demo/react-vite` with
+`npm run build` and serves `dist/`, and `example-vite-dev` runs it under `vite`; both run `console`
+and `singleCopy`, then `signUp`. The check reads the examples' labels, names and button text (the
+form contract), so changing that copy means changing `integration/sign-up.mjs`.
 
 The `demo` target serves the repository root, so it checks the demo page against the `dist/` that
 `npm run build` made, not the tarball. It runs `console` and `singleCopy`, then asserts that the

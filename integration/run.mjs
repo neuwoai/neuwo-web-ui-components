@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { cp, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -77,18 +78,32 @@ async function pack(work) {
   return join(work, tarball);
 }
 
+async function pointAtTarball(folder, tarball) {
+  const file = join(folder, "package.json");
+  const text = await readFile(file, "utf8").catch(() => null);
+  if (text === null) return null;
+  const manifest = JSON.parse(text);
+  manifest.dependencies = { ...manifest.dependencies, [PACKAGE]: `file:${tarball}` };
+  await writeFile(file, `${JSON.stringify(manifest, null, 2)}\n`);
+  return manifest;
+}
+
 async function copyApps(work, tarball) {
+  const keep = (source) => !/[\\/](node_modules|_site|dist|\.next)$/.test(source);
   const apps = join(work, "apps");
-  await cp(join(HERE, "apps"), apps, { recursive: true, filter: (source) => !/[\\/](node_modules|_site|dist|\.next)$/.test(source) });
+  await cp(join(HERE, "apps"), apps, { recursive: true, filter: keep });
   for (const name of await readdir(apps)) {
-    const file = join(apps, name, "package.json");
-    const text = await readFile(file, "utf8").catch(() => null);
-    if (text === null) continue;
-    const manifest = JSON.parse(text);
+    const manifest = await pointAtTarball(join(apps, name), tarball);
+    if (manifest === null) continue;
     // An app's own copy resolves the imports in it from that app's node_modules.
     for (const folder of manifest.neuwoIntegration?.copy ?? []) await cp(join(apps, folder), join(apps, name, folder), { recursive: true });
-    manifest.dependencies = { ...manifest.dependencies, [PACKAGE]: `file:${tarball}` };
-    await writeFile(file, `${JSON.stringify(manifest, null, 2)}\n`);
+  }
+  const demos = join(ROOT, "demo");
+  for (const entry of await readdir(demos, { withFileTypes: true })) {
+    if (!entry.isDirectory() || !existsSync(join(demos, entry.name, "package.json"))) continue;
+    const example = join(work, "examples", entry.name);
+    await cp(join(demos, entry.name), example, { recursive: true, filter: keep });
+    await pointAtTarball(example, tarball);
   }
 }
 
