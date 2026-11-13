@@ -6,18 +6,24 @@ const EMAIL = "reader@example.com";
 const FORM = 'form:has(neuwo-button[type="submit"])';
 
 function watchLoading(form) {
-  const button = form.querySelector("neuwo-button");
-  window.__loadingSeen = false;
+  const button = form.querySelector('neuwo-button[type="submit"]');
+  if (!button) return false;
+  window.__loadingSeen ??= new WeakSet();
   new MutationObserver(() => {
-    if (button.hasAttribute("loading")) window.__loadingSeen = true;
+    if (button.hasAttribute("loading")) window.__loadingSeen.add(button);
   }).observe(button, { attributes: true, attributeFilter: ["loading"] });
+  return true;
 }
 
 function readState(form) {
+  const button = form.querySelector('neuwo-button[type="submit"]');
+  const notice = form.querySelector("neuwo-notice");
+  if (!button) return { missing: "no submit neuwo-button" };
+  if (!notice) return { missing: "no neuwo-notice" };
   return {
-    loadingSeen: window.__loadingSeen,
-    loading: form.querySelector("neuwo-button").hasAttribute("loading"),
-    noticeVisible: form.querySelector("neuwo-notice").checkVisibility(),
+    loadingSeen: window.__loadingSeen?.has(button) ?? false,
+    loading: button.hasAttribute("loading"),
+    noticeVisible: notice.checkVisibility(),
   };
 }
 
@@ -28,9 +34,13 @@ async function submitForm(page, index) {
     throw new Error(`form ${index + 1}: ${step}`);
   };
   const form = (await page.$$(FORM))[index];
-  const state = () => form.evaluate(readState);
+  const state = async () => {
+    const read = await form.evaluate(readState);
+    if (read.missing) fail(read.missing);
+    return read;
+  };
   if ((await state()).noticeVisible) fail("the confirmation was visible before any submission");
-  await form.evaluate(watchLoading);
+  if (!(await form.evaluate(watchLoading))) fail("no submit neuwo-button");
   const submit = await form.$('neuwo-button[type="submit"] button');
   if (!submit) fail("no submit button");
   await submit.click();
