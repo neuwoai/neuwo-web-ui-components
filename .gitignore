@@ -14,3 +14,5 @@ custom-elements.json
 
 *.tgz
 demo/*/package-lock.json
+.next/
+next-env.d.ts

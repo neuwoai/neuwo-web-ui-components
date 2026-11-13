@@ -153,7 +153,7 @@ Typography alone is also published as `foundation/typography.css`, and tokens al
 
 | Site | One-time setup |
 |---|---|
-| Next.js, server-rendered React (React Router, Remix) | `"jsxImportSource": "@neuwo/web-ui-library--demo"` in `tsconfig`; import the stylesheet in the root layout; import the library once from a client component |
+| Next.js, server-rendered React (React Router, Remix) | `"jsxImportSource": "@neuwo/web-ui-library--demo"` in `tsconfig`; import the stylesheet in the root layout; import the library once from a client component; [demo/nextjs](demo/nextjs/) |
 | Client-only React (Vite) | the same `jsxImportSource` line; import the stylesheet and the library at the entry; [demo/react-vite](demo/react-vite/) |
 | Eleventy | `eleventyConfig.addPlugin(neuwo)`; link the stylesheet; script tag for `neuwo.js` |
 | Astro and other Node builds | call `expand(html)` from `@neuwo/web-ui-library--demo/server` on the output; link the stylesheet; load `neuwo.js` |
@@ -801,7 +801,7 @@ export function Neuwo() {
 Render `<Neuwo />` once in the root layout. Because the JSX runtime expands all seventeen elements,
 the server-rendered HTML carries their full markup and they are on-brand from the first paint,
 before the bundle has run. Import `neuwo.css` instead of `neuwo-components.css` to add the
-typography and page surface.
+typography and page surface. A working project is in [demo/nextjs](demo/nextjs/).
 
 A value the browser restores on a back navigation, or one the user or a script enters before the
 page hydrates, stays: React keeps what the elements wrote into their markup by then, such as a

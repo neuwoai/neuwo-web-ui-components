@@ -1,8 +1,7 @@
 import { join } from "node:path";
 import { blockNetwork, runCommand, serveCommand } from "./serve.mjs";
 
-export async function startNext(name, command, { work, log }) {
-  const app = join(work, "apps", "next");
+export async function startNext(name, command, { log }, app) {
   const next = join(app, "node_modules", "next", "dist", "bin", "next");
   log(`${name}: installing`);
   await runCommand("npm", ["install", "--no-audit", "--no-fund"], { cwd: app });

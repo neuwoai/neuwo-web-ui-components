@@ -121,14 +121,15 @@ unless `--keep` is given, and exits 130.
   shows loading and ends with its `neuwo-notice` visible and loading cleared. One line per form, and
   the check fails if the page has a different number of forms than the target expects.
 - `interactConsole`: on a target that interacts with its page (`demo`, `next-dev`, `next-prod`,
-  `vite`, `example-vite` and `example-vite-dev`), the `console` check again, over the whole
+  `vite`, `example-next`, `example-vite` and `example-vite-dev`), the `console` check again, over the whole
   interaction from its own page load to its last step, so an error raised while the forms are
   exercised fails too.
 
 The harness also builds every example under `demo/` that has a `package.json`, from a copy with its
 library dependency pointed at the tarball. The `example-vite` target builds `demo/react-vite` with
 `npm run build` and serves `dist/`, and `example-vite-dev` runs it under `vite`; both run `console`
-and `singleCopy`, then `signUp`. The check reads the examples' form contract: the `name` attributes
+and `singleCopy`, then `signUp`. The `example-next` target builds `demo/nextjs` and serves it with `next start`, behind the
+same network block as `next-prod`, and runs all five checks, then `signUp`. That check reads the examples' form contract: the `name` attributes
 `email` and `updates`, the `type="submit"` `neuwo-button`, and a `neuwo-notice` inside the form, so
 changing any of those means changing `integration/sign-up.mjs`. The examples install without
 lockfiles until 0.2.0 is published, so their transitive versions are not pinned like the apps' are.
