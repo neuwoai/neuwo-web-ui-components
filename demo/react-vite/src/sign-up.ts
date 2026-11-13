@@ -1,5 +1,8 @@
 export interface SignUp {
+  name: string;
   email: string;
+  role: string;
+  digest: boolean;
   updates: boolean;
 }
 

@@ -2,7 +2,9 @@
 
 A client-only React 19 app built with Vite that uses the Neuwo Web UI Library. The page holds two sign-up forms made
 from the library's elements (`<neuwo-input>`, `<neuwo-checkbox>`, `<neuwo-button>`, `<neuwo-notice>`), one controlled
-by React state and one uncontrolled, plus a `<neuwo-logo>` and the library's typography and page surface.
+by React state and one uncontrolled, each with a name, email, role, weekly digest and consent field
+(`<neuwo-input>`, `<neuwo-combobox>`, `<neuwo-toggle>`, `<neuwo-checkbox>`), plus a `<neuwo-logo>`, the library's
+typography and the full-viewport background wash.
 
 ## Run it
 
@@ -56,14 +58,20 @@ Four places carry the library's setup.
   import "@neuwo/web-ui-library--demo";
   ```
 
-- [index.html](index.html) puts `neuwo-body` on the `<body>`, which gives the page its surface.
+- [index.html](index.html) puts `neuwo-body` on the `<body>`, which gives the page its ink and paper.
+- [src/App.tsx](src/App.tsx) and [src/App.css](src/App.css) add the wash: a fixed frame at `--neuwo-z-background`
+  holding a `.neuwo-background__gradient`, written with logical properties. The library supplies the gradient; the page
+  supplies the frame.
 
 ## What to look at
 
-- [src/ControlledSignUp.tsx](src/ControlledSignUp.tsx): `value` and `checked` held in state, with the email handler typed
-  `NeuwoChangeEvent<NeuwoInput, HTMLInputElement>`. The `<output>` echoes the live values.
+- [src/ControlledSignUp.tsx](src/ControlledSignUp.tsx): `value` and `checked` held in state for every field. The input
+  handlers are typed `NeuwoChangeEvent<NeuwoInput, HTMLInputElement>` and the combobox's `NeuwoChangeEvent<NeuwoCombobox>`,
+  since the combobox dispatches from the element itself. The `<output>` echoes all the live values.
 - [src/UncontrolledSignUp.tsx](src/UncontrolledSignUp.tsx): `defaultValue` and `defaultChecked`, read back with
-  `new FormData(event.currentTarget)` on submit.
+  `new FormData(event.currentTarget)` on submit; the confirmation lists every entry.
+- [src/App.css](src/App.css) lays the two forms side by side when they fit and stacks them when they do not, using
+  the library's spacing tokens.
 - Both forms set `loading` on the button from the start of the submit handler until the submission ends, so a submission
   the browser's validation blocks never shows it. [src/sign-up.ts](src/sign-up.ts) stands in for a backend.
 - Misspell an attribute value, such as `variant="bg-darkk"` on the logo in [src/App.tsx](src/App.tsx), and
