@@ -52,6 +52,30 @@ describe("release", () => {
     }
   });
 
+  it("every example README's library range and tarball name match the package version", () => {
+    const readmes = readdirSync(join(root, "demo"), { withFileTypes: true })
+      .filter((entry) => entry.isDirectory() && existsSync(join(root, "demo", entry.name, "README.md")))
+      .map((entry) => `demo/${entry.name}/README.md`);
+    expect(readmes.length).toBeGreaterThan(0);
+    const tarball = name.replace(/^@/, "").replace("/", "-");
+    const problems = [];
+    const checked = { ranges: 0, tarballs: 0 };
+    for (const readme of readmes) {
+      const text = read(readme);
+      for (const [, range] of text.matchAll(new RegExp(`"${escaped}": "\\^(\\d+\\.\\d+\\.\\d+)"`, "g"))) {
+        checked.ranges++;
+        if (range !== `${major}.${minor}.0`) problems.push(`${readme}: range ^${range}`);
+      }
+      for (const [, tarballVersion] of text.matchAll(new RegExp(`${tarball}-(\\d+\\.\\d+\\.\\d+)\\.tgz`, "g"))) {
+        checked.tarballs++;
+        if (tarballVersion !== version) problems.push(`${readme}: tarball ${tarballVersion}`);
+      }
+    }
+    expect(checked.ranges).toBeGreaterThanOrEqual(readmes.length);
+    expect(checked.tarballs).toBeGreaterThanOrEqual(readmes.length);
+    expect(problems).toEqual([]);
+  });
+
   it("the lockfile's top-level version fields are the package version", () => {
     const lock = JSON.parse(read("package-lock.json"));
     expect({ version: lock.version, root: lock.packages[""].version }).toEqual({ version, root: version });

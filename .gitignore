@@ -17,3 +17,4 @@ demo/*/package-lock.json
 .next/
 next-env.d.ts
 _site/
+demo/nextjs/AGENTS.md

@@ -13,26 +13,27 @@ npm install
 npm run dev
 ```
 
-While 0.2.0 is not on npm, `npm install` finds no such version; install the packed library as described in the next section instead, then run `npm run dev`.
+Until this version of the library is on npm, `npm install` finds no matching version. Install the packed library as described in the next section instead, then run `npm run dev`.
 
 `npm run build` type-checks and writes the production build to `.next/`; `npm start` serves it.
 
 ## Try an unreleased library change
 
-Until 0.2.0 is on npm, this is also the way to run the example at all, in place of `npm install`. In the repository root, pack the library, then
-install the tarball in the example:
+This is also the way to run the example at all while the library is not on npm, in place of `npm install`. In the
+repository root, install the dependencies and pack the library, then install the tarball in the example:
 
 ```bash
+npm install
 npm pack
 cd demo/nextjs
-npm install --no-save ../../neuwo-web-ui-library--demo-<version>.tgz
+npm install --no-save ../../neuwo-web-ui-library--demo-0.2.0.tgz
 ```
 
 `--no-save` leaves `package.json` untouched, so the dependency stays the published range.
 
 ## The setup
 
-Five places carry the library's setup.
+These files carry the library's setup.
 
 - [package.json](package.json) lists the library under `dependencies` at the released minor version:
 
@@ -49,9 +50,34 @@ Five places carry the library's setup.
   ```
 
 - [app/layout.tsx](app/layout.tsx) imports the stylesheet, preloads the two variable fonts and renders `<Neuwo />` once.
-  It also puts `neuwo-body` on the `<body>`, which gives the page its ink and paper.
+  It also puts `neuwo-body` on the `<body>`, which gives the page its ink and paper:
+
+  ```tsx
+  import "@neuwo/web-ui-library--demo/neuwo.css";
+  import notoSans from "@neuwo/web-ui-library--demo/fonts/noto-sans-variable.woff2";
+  import outfit from "@neuwo/web-ui-library--demo/fonts/outfit-variable.woff2";
+
+  preload(notoSans, { as: "font", type: "font/woff2", crossOrigin: "anonymous" });
+  preload(outfit, { as: "font", type: "font/woff2", crossOrigin: "anonymous" });
+
+  <body className="neuwo-body">
+    <Neuwo />
+    {children}
+  </body>
+  ```
+
 - [app/neuwo.tsx](app/neuwo.tsx) is a client component that imports the library, so the elements register in the
-  browser, and renders nothing.
+  browser, and renders nothing:
+
+  ```tsx
+  "use client";
+  import "@neuwo/web-ui-library--demo";
+
+  export function Neuwo() {
+    return null;
+  }
+  ```
+
 - [app/fonts.d.ts](app/fonts.d.ts) types a `.woff2` import as its URL, which TypeScript needs for the preload.
 - [app/page.tsx](app/page.tsx) and [app/app.css](app/app.css) add the wash: a fixed frame at `--neuwo-z-background`
   holding a `.neuwo-background__gradient`, written with logical properties. The library supplies the gradient; the page

@@ -12,8 +12,8 @@ form.addEventListener("submit", async (event) => {
   try {
     await new Promise((resolve) => setTimeout(resolve, 800));
     entries.textContent = `Read from the form: ${text}`;
+    notice.hidden = false;
   } finally {
     button.loading = false;
-    notice.hidden = false;
   }
 });

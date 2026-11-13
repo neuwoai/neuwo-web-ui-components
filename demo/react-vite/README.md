@@ -1,10 +1,10 @@
 # Neuwo with React and Vite
 
 A client-only React 19 app built with Vite that uses the Neuwo Web UI Library. The page holds two sign-up forms made
-from the library's elements (`<neuwo-input>`, `<neuwo-checkbox>`, `<neuwo-button>`, `<neuwo-notice>`), one controlled
-by React state and one uncontrolled, each with a name, email, role, weekly digest and consent field
-(`<neuwo-input>`, `<neuwo-combobox>`, `<neuwo-toggle>`, `<neuwo-checkbox>`), plus a `<neuwo-logo>`, the library's
-typography and the full-viewport background wash.
+from the library's elements, one controlled by React state and one uncontrolled, each with a name, email, role, weekly
+digest and consent field (`<neuwo-input>`, `<neuwo-combobox>`, `<neuwo-toggle>`, `<neuwo-checkbox>`,
+`<neuwo-button>`, `<neuwo-notice>`), plus a `<neuwo-logo>`, the library's typography and the full-viewport background
+wash.
 
 ## Run it
 
@@ -13,26 +13,27 @@ npm install
 npm run dev
 ```
 
-While 0.2.0 is not on npm, `npm install` finds no such version; install the packed library as described in the next section instead, then run `npm run dev`.
+Until this version of the library is on npm, `npm install` finds no matching version. Install the packed library as described in the next section instead, then run `npm run dev`.
 
 `npm run build` type-checks and writes the production build to `dist/`; `npm run preview` serves it.
 
 ## Try an unreleased library change
 
-Until 0.2.0 is on npm, this is also the way to run the example at all, in place of `npm install`. In the repository root, pack the library, then
-install the tarball in the example:
+This is also the way to run the example at all while the library is not on npm, in place of `npm install`. In the
+repository root, install the dependencies and pack the library, then install the tarball in the example:
 
 ```bash
+npm install
 npm pack
 cd demo/react-vite
-npm install --no-save ../../neuwo-web-ui-library--demo-<version>.tgz
+npm install --no-save ../../neuwo-web-ui-library--demo-0.2.0.tgz
 ```
 
 `--no-save` leaves `package.json` untouched, so the dependency stays the published range.
 
 ## The setup
 
-Four places carry the library's setup.
+These files carry the library's setup.
 
 - [package.json](package.json) lists the library under `dependencies` at the released minor version:
 
@@ -48,7 +49,7 @@ Four places carry the library's setup.
   "jsxImportSource": "@neuwo/web-ui-library--demo"
   ```
 
-  [vite.config.ts](vite.config.ts) needs no `jsxImportSource` option: `@vitejs/plugin-react` reads the setting from
+  [vite.config.ts](vite.config.ts) needs no `jsxImportSource` option: Vite reads the setting from
   `tsconfig.json`, so that one line is the only place it is written.
 
 - [src/main.tsx](src/main.tsx) imports the stylesheet and the library once, at the entry:

@@ -28,8 +28,14 @@ the runtime path entirely. Copy the published `dist/` into your own static outpu
 
 ```js
 // Eleventy
+import { createRequire } from "node:module";
+import { dirname, join, relative } from "node:path";
+
+const require = createRequire(import.meta.url);
+const dist = join(dirname(require.resolve("@neuwo/web-ui-library--demo/package.json")), "dist");
+
 eleventyConfig.addPassthroughCopy({
-  "node_modules/@neuwo/web-ui-library--demo/dist": "vendor/neuwo",
+  [relative(process.cwd(), dist)]: "vendor/neuwo",
 });
 ```
 
@@ -37,6 +43,8 @@ eleventyConfig.addPassthroughCopy({
 <link rel="stylesheet" href="/vendor/neuwo/neuwo-components.css" />
 <script type="module" src="/vendor/neuwo/neuwo.js"></script>
 ```
+
+[demo/eleventy/](demo/eleventy/) is a complete Eleventy site set up this way.
 
 Next.js and Vite serve `public/` verbatim, so a `prebuild` script copying the same directory
 into `public/vendor/neuwo` achieves the same thing.
@@ -299,22 +307,19 @@ main website uses, the consumer supplies the frame:
 ```css
 .background {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   z-index: var(--neuwo-z-background);
   overflow: hidden;
 }
 
 .neuwo-background__gradient {
-  width: 100%;
-  height: 100%;
+  inline-size: 100%;
+  block-size: 100%;
 }
 ```
 
 `--neuwo-z-background` is a library token, so the stacking stays consistent with the rest of the
-system. Both demo pages are wired exactly this way. The same gradient class also works on an
+system. `demo/index.html`, `demo/typography.html` and the three framework examples are wired this way. The same gradient class also works on an
 ordinary sized element, for a single washed panel rather than a whole page.
 
 ### Navigation links
