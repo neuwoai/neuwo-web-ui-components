@@ -11,6 +11,10 @@
     "css"
   ],
   "homepage": "https://designsystem.neuwo.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/neuwoai/neuwo-web-ui-components.git"
+  },
   "license": "MIT",
   "author": "Neuwo",
   "type": "module",
