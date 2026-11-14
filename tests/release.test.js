@@ -59,20 +59,15 @@ describe("release", () => {
     expect(readmes.length).toBeGreaterThan(0);
     const tarball = name.replace(/^@/, "").replace("/", "-");
     const problems = [];
-    const checked = { ranges: 0, tarballs: 0 };
     for (const readme of readmes) {
       const text = read(readme);
-      for (const [, range] of text.matchAll(new RegExp(`"${escaped}": "\\^(\\d+\\.\\d+\\.\\d+)"`, "g"))) {
-        checked.ranges++;
-        if (range !== `${major}.${minor}.0`) problems.push(`${readme}: range ^${range}`);
-      }
-      for (const [, tarballVersion] of text.matchAll(new RegExp(`${tarball}-(\\d+\\.\\d+\\.\\d+)\\.tgz`, "g"))) {
-        checked.tarballs++;
-        if (tarballVersion !== version) problems.push(`${readme}: tarball ${tarballVersion}`);
-      }
+      const ranges = [...text.matchAll(new RegExp(`"${escaped}": "\\^(\\d+\\.\\d+\\.\\d+)"`, "g"))].map(([, range]) => range);
+      const tarballs = [...text.matchAll(new RegExp(`${tarball}-(\\d+\\.\\d+\\.\\d+)\\.tgz`, "g"))].map(([, found]) => found);
+      if (ranges.length === 0) problems.push(`${readme}: no library range`);
+      if (tarballs.length === 0) problems.push(`${readme}: no tarball name`);
+      for (const range of ranges) if (range !== `${major}.${minor}.0`) problems.push(`${readme}: range ^${range}`);
+      for (const found of tarballs) if (found !== version) problems.push(`${readme}: tarball ${found}`);
     }
-    expect(checked.ranges).toBeGreaterThanOrEqual(readmes.length);
-    expect(checked.tarballs).toBeGreaterThanOrEqual(readmes.length);
     expect(problems).toEqual([]);
   });
 

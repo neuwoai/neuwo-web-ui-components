@@ -12,14 +12,12 @@ npm install
 npm run dev
 ```
 
-Until this version of the library is on npm, `npm install` finds no matching version. Install the packed library as described in the next section instead, then run `npm run dev`.
-
 `npm run build` writes the site to `_site/`.
 
 ## Try an unreleased library change
 
-This is also the way to run the example at all while the library is not on npm, in place of `npm install`. In the
-repository root, install the dependencies and pack the library, then install the tarball in the example:
+To try a library change before it is released, install the dependencies in the repository root and pack the library,
+then install the tarball in the example:
 
 ```bash
 npm install
@@ -28,7 +26,8 @@ cd demo/eleventy
 npm install --no-save ../../neuwo-web-ui-library--demo-0.2.0.tgz
 ```
 
-`--no-save` leaves `package.json` untouched, so the dependency stays the published range.
+`--no-save` leaves `package.json` and `package-lock.json` untouched, so the example keeps the published release;
+`npm ci` puts it back in `node_modules`.
 
 ## The setup
 

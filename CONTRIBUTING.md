@@ -132,8 +132,9 @@ and `singleCopy`, then `signUp`. The `example-next` target builds `demo/nextjs` 
 same network block as `next-prod`, and runs all five checks, then `signUp`. The `example-eleventy` target builds
 `demo/eleventy` with `npm run build`, serves `_site/`, and runs all five checks, then `signUp` on its one form. That check reads the examples' form contract: the `name` attributes
 `email` and `updates`, the `type="submit"` `neuwo-button`, and a `neuwo-notice` inside the form, so
-changing any of those means changing `integration/sign-up.mjs`. The examples install without
-lockfiles until 0.2.0 is published, so their transitive versions are not pinned like the apps' are.
+changing any of those means changing `integration/sign-up.mjs`. Each example keeps the
+`package-lock.json` a real project would, with the published library in it; the runner points the
+dependency at the tarball, npm replaces that one entry, and every other locked version stays.
 
 The `demo` target serves the repository root, so it checks the demo page against the `dist/` that
 `npm run build` made, not the tarball. It runs `console` and `singleCopy`, then asserts that the
@@ -193,7 +194,10 @@ npm_config_offline=true npm run integration
 4. `npm run build` and `npm test` must pass.
 5. `npm run integration` passes in Chromium and Firefox.
 6. Publish.
-7. The design system bumps the library version and rebuilds. Always publish the library first.
+7. Move the examples to the release: run `npm update @neuwo/web-ui-library--demo` in each
+   `demo/*/` folder, which updates the lockfile and leaves `package.json` alone, and commit the
+   lockfiles. It waits for the publish, because a lockfile can only resolve a released version.
+8. The design system bumps the library version and rebuilds. Always publish the library first.
 
 ## What the library must not do
 
