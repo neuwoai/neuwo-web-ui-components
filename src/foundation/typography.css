@@ -73,7 +73,7 @@ a,
 .neuwo-link {
   color: var(--neuwo-color-blue);
   text-decoration: underline;
-  text-underline-offset: 2px;
+  text-underline-offset: 0.2em;
   transition: color var(--neuwo-transition-fast);
 }
 

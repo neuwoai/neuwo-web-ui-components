@@ -56,6 +56,10 @@ describe("typography stylesheet", () => {
     expect(typographyCss).not.toMatch(/\.neuwo-link--hover-green:hover \{[^}]*!important/);
   });
 
+  it("sets the underline offset in em, so the gap scales with the link's text", () => {
+    expect(typographyCss).toMatch(/^a,\n\.neuwo-link \{[^}]*text-underline-offset: 0\.2em;/m);
+  });
+
   it("ships the eyebrow utility class with the kicker type recipe", () => {
     expect(typographyCss).toContain(".neuwo-eyebrow");
     expect(typographyCss).toContain("var(--neuwo-font-heading)");

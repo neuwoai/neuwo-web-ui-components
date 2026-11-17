@@ -13,6 +13,12 @@
   hovering the button itself plays none, and `intensity` scales the burst like the ring. Reduced
   motion turns it off, and the banner is unchanged.
 
+### Changed
+
+- Links, bare `a` and `.neuwo-link`, set their underline `0.2em` below the text instead of `2px`,
+  so the gap scales with the text: 3.2px at 16px, 4px at 20px, as the design system's prose links
+  do.
+
 ### Fixed
 
 - A `<neuwo-badge motion="shimmer">` keeps the height and line of a badge without it. The sweep was
