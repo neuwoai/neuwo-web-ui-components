@@ -278,7 +278,7 @@
     <section class="demo-section">
       <h2>Families</h2>
       <p>
-        Two families, each with a metric-matched local fallback so a font swap does not shift the
+        Three families, each with a metric-matched local fallback so a font swap does not shift the
         layout. Reference them through the token, never by raw family name.
       </p>
 
@@ -295,12 +295,23 @@
         >
       </div>
       <div class="demo-row">
-        <span class="demo-row__meta"><b>Numerals</b>Outfit / Noto Sans</span>
-        <span class="demo-row__sample" style="font-size: var(--neuwo-font-size-xl)"
-          >0123456789 &nbsp;
-          <span style="font-family: var(--neuwo-font-text)">0123456789</span></span
+        <span class="demo-row__meta"><b>--neuwo-font-mono</b>JetBrains Mono, code, API keys and IDs</span>
+        <span class="demo-row__sample" style="font-family: var(--neuwo-font-mono); font-size: var(--neuwo-font-size-xl)"
+          >0O 1lI != -&gt; {"id": 42}</span
         >
       </div>
+      <div class="demo-row">
+        <span class="demo-row__meta"><b>Numerals</b>Outfit / Noto Sans / JetBrains Mono</span>
+        <span class="demo-row__sample" style="font-size: var(--neuwo-font-size-xl)"
+          >0123456789 &nbsp;
+          <span style="font-family: var(--neuwo-font-text)">0123456789</span> &nbsp;
+          <span style="font-family: var(--neuwo-font-mono)">0123456789</span></span
+        >
+      </div>
+      <p class="demo-note">
+        The mono face has its code ligatures removed, so <code>!=</code> and <code>-&gt;</code> stay two
+        characters, and its zero is dotted, so an API key never mixes up 0 and O.
+      </p>
     </section>
 
     <section class="demo-section">
@@ -435,7 +446,8 @@
         It also styles nothing else: no lists, tables, blockquotes, <code>code</code> or
         <code>hr</code>. Those are <code>foundation/markdown.css</code>, a separate opt-in sheet
         scoped to a <code>.neuwo-markdown</code> container, because a list in a nav and a list in an
-        article want different treatment. Everything monospaced on this page is page chrome.
+        article want different treatment. Apart from the mono specimen under Families, everything
+        monospaced on this page is page chrome.
       </p>
     </section>
   </body>
