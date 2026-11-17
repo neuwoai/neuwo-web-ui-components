@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- A partly selected `<neuwo-checkbox>` (`indeterminate`) is filled blue with a white dash, like a
+  checked one and like a native checkbox, instead of a white dash on the empty dark box.
+
 ## 0.2.0
 
 Every component now renders into its own light DOM from one template that the browser, the server

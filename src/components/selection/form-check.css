@@ -32,7 +32,8 @@ neuwo-checkbox:not([hidden]) {
   box-shadow: var(--neuwo-shadow-focus);
 }
 
-.neuwo-form-check__input:checked {
+.neuwo-form-check__input:checked,
+.neuwo-form-check__input[type="checkbox"]:indeterminate {
   background-color: var(--neuwo-color-blue);
   border-color: var(--neuwo-color-blue);
 }

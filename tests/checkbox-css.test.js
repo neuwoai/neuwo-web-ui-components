@@ -20,6 +20,12 @@ describe("form-check.css recipe", () => {
     expect(css).toContain('.neuwo-form-check__input[type="radio"]:checked');
   });
 
+  it("fills a partly selected checkbox blue, like a checked one", () => {
+    expect(css).toMatch(
+      /^\.neuwo-form-check__input:checked,\n\.neuwo-form-check__input\[type="checkbox"\]:indeterminate \{\s*background-color: var\(--neuwo-color-blue\);\s*border-color: var\(--neuwo-color-blue\);\s*\}/m,
+    );
+  });
+
   it("draws the tick, the dash and the radio dot as masks over the white token, on the input's ::before", () => {
     expect(css.replace(/\/\*[\s\S]*?\*\//g, "").replaceAll("var(--neuwo-color-white)", "")).not.toMatch(/white/i);
     expect(css).not.toContain("background-image");
