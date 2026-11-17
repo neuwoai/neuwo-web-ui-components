@@ -1407,6 +1407,7 @@ npm start     # build + watch + serve the demo at http://localhost:8000/demo/
 npm run build # produce dist/ (neuwo.js, neuwo.css, fonts/, logos/, foundation/*.css, components/**/*.css, types/)
 npm test      # Vitest + happy-dom
 npm run fonts:fallback # print the fallback @font-face rules computed from the woff2 files
+npm run tokens:fallback # rewrite the hex fallbacks at the end of tokens.css from the colour tokens
 ```
 
 See CONTRIBUTING.md for how to add or change components and keep the Neuwo Design System in

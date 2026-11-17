@@ -197,3 +197,65 @@
   0% { background-position: 200% center; }
   100% { background-position: -200% center; }
 }
+
+/* From `npm run tokens:fallback`: each colour token in hex, for browsers without oklch() or color-mix(), since a custom property cannot fall back by declaration order. */
+@supports not ((color: oklch(0% 0 0)) and (color: color-mix(in srgb, red, red))) {
+  :root {
+    --neuwo-color-blue: #0aa5c3;
+    --neuwo-color-blue-light: #0bcbe6;
+    --neuwo-color-blue-dark: #078a9e;
+    --neuwo-color-green: #8acb46;
+    --neuwo-color-green-dark: #6a9e30;
+    --neuwo-color-red: #ec4041;
+    --neuwo-color-white: #f1f5f9;
+    --neuwo-color-grey-50: #0f172a;
+    --neuwo-color-grey-100: #131d30;
+    --neuwo-color-grey-200: #1e293b;
+    --neuwo-color-grey-300: #334155;
+    --neuwo-color-grey-400: #94a3b8;
+    --neuwo-color-grey-500: #64748b;
+    --neuwo-color-grey-600: #cbd5e1;
+    --neuwo-color-grey-700: #e2e8f0;
+    --neuwo-color-grey-800: #f1f5f9;
+    --neuwo-color-grey-900: #f8fafc;
+    --neuwo-color-body-bg: #080d1a;
+    --neuwo-color-surface-solid: #0b1120;
+    --neuwo-color-header-solid-bg: #080d1af2;
+    --neuwo-color-text: #cbd5e1;
+    --neuwo-color-text-muted: #94a3b8;
+    --neuwo-color-heading: #f1f5f9;
+    --neuwo-glass-bg: #0f172a99;
+    --neuwo-glass-bg-light: #0f172a66;
+    --neuwo-glass-border: #94a3b81f;
+    --neuwo-glass-border-hover: #94a3b838;
+    --neuwo-tint-blue-5: #0aa5c30d;
+    --neuwo-tint-blue-8: #0aa5c314;
+    --neuwo-tint-blue-10: #0aa5c31a;
+    --neuwo-tint-blue-12: #0aa5c31f;
+    --neuwo-tint-blue-15: #0aa5c326;
+    --neuwo-tint-blue-20: #0aa5c333;
+    --neuwo-tint-blue-25: #0aa5c340;
+    --neuwo-tint-blue-30: #0aa5c34d;
+    --neuwo-tint-green-5: #8acb460d;
+    --neuwo-tint-green-8: #8acb4614;
+    --neuwo-tint-green-10: #8acb461a;
+    --neuwo-tint-green-12: #8acb461f;
+    --neuwo-tint-green-15: #8acb4626;
+    --neuwo-tint-green-20: #8acb4633;
+    --neuwo-tint-green-25: #8acb4640;
+    --neuwo-tint-green-30: #8acb464d;
+    --neuwo-tint-red-20: #ec404133;
+    --neuwo-gradient-accent: linear-gradient(135deg, #0c99b5 0 10%, #7fbb45 90% 100%);
+    --neuwo-color-grid-line: #94a3b814;
+    --neuwo-color-grid-line-light: #94a3b80f;
+    --neuwo-color-shimmer: #ffffff40;
+    --neuwo-partner-item-bg: #20262b;
+    --neuwo-benefits-card-bg: #0f172a99;
+    --neuwo-signal-dot: #0aa5c380;
+    --neuwo-shadow-sm: 0 0.0625rem 0.125rem #0000004d;
+    --neuwo-shadow-md: 0 0.25rem 0.375rem #00000059;
+    --neuwo-shadow-lg: 0 0.625rem 0.9375rem #00000066;
+    --neuwo-shadow-xl: 0 1.25rem 1.5625rem #00000073;
+    --neuwo-shadow-glow: 0 0 1.5rem #0aa5c359;
+  }
+}

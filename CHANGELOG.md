@@ -21,6 +21,12 @@
   `--neuwo-gradient-accent-shimmer` gradient it animates. Use them together with
   `background-size: 200% 100%` and `animation: neuwo-shimmer 4s ease-in-out infinite`, the recipe
   in the comment above the token, which named a `shimmer` keyframes the library did not ship.
+- Hex fallbacks for every colour token, in browsers without `oklch()` or `color-mix()` (before
+  Chrome 111, Firefox 113 and Safari 16.2), which dropped every token colour. An `@supports` block
+  at the end of `tokens.css` redefines each token built from either function in hex, within one
+  step of the original per channel, so every bundle carries it with no build step of your own.
+  Component rules that mix `currentColor` inline, such as the status dot's ring and the button
+  spinner, still need `color-mix()`.
 
 ### Removed
 

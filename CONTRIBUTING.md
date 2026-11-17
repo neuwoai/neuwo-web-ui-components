@@ -9,7 +9,9 @@ npm warns on any other.
 ## Principles
 
 - One source of truth. Tokens live once in `src/foundation/tokens.css`; each component's CSS
-  lives once in its own file. Never re-type a value elsewhere.
+  lives once in its own file. Never re-type a value elsewhere. The hex fallbacks at the end of
+  `tokens.css` are computed: after changing a colour token, run `npm run tokens:fallback`, which
+  `tests/colour-fallback.test.js` checks.
 - Visually meaningful styling goes on the portable selector (`.neuwo-btn` and variants). Reserve
   the element-name rule (`neuwo-button { ... }`) for the outer box only, so the recipe the design
   system shows and non-web outputs copy is complete without it.
