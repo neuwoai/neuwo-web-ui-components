@@ -19,6 +19,7 @@ function ruleFor(css, selector) {
 
 const BORDERED = [
   ["src/components/fields/field.css", ".neuwo-input:focus-visible"],
+  ["src/components/fields/combobox/combobox.css", ".neuwo-combobox__trigger:focus"],
   ["src/components/selection/form-check.css", ".neuwo-form-check__input:focus-visible"],
   ["src/components/selection/toggle/toggle.css", ".neuwo-form-toggle__input:focus-visible + .neuwo-form-toggle__track"],
   ["src/components/button/button.css", ".neuwo-btn:focus-visible"],

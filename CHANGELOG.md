@@ -15,6 +15,8 @@
 
 - A partly selected `<neuwo-checkbox>` (`indeterminate`) is filled blue with a white dash, like a
   checked one and like a native checkbox, instead of a white dash on the empty dark box.
+- A `<neuwo-combobox>` without `searchable` shows its focus when clicked, as a clicked
+  `<neuwo-input>` does. Its trigger is a button, which showed focus only after a key press.
 - A required field's asterisk (`.neuwo-field__required`) takes the label's colour instead of red,
   so it no longer reads as an error message.
 

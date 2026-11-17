@@ -24,6 +24,14 @@
   white-space: normal;
 }
 
+/* A button matches :focus-visible only after a key press, so a clicked dropdown would show no focus where a clicked text field does. */
+.neuwo-combobox__trigger:focus {
+  border-color: var(--neuwo-color-blue);
+  outline: var(--neuwo-outline-focus);
+  outline-offset: var(--neuwo-outline-focus-offset);
+  box-shadow: var(--neuwo-shadow-focus);
+}
+
 /* Moves with the chevron below, so the gap between the value and the chevron is unchanged. */
 .neuwo-field--sm .neuwo-combobox__trigger {
   padding-inline-end: var(--neuwo-space-8);
