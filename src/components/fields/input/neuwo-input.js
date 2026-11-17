@@ -1,5 +1,5 @@
 import { define } from "../../../core/element.js";
-import { NeuwoFieldElement } from "../field-element.js";
+import { NeuwoTextFieldElement } from "../text-field-element.js";
 import { inputTemplate } from "./input.template.js";
 
 /**
@@ -7,7 +7,7 @@ import { inputTemplate } from "./input.template.js";
  * attributes over the shared field shell. The native `<input>` inside is the
  * form control, so it submits with its form and validates natively.
  *
- * @summary Neuwo text input. Public classes: `.neuwo-field` on the wrapper, with `--sm`; `.neuwo-field__label` on the `<label>`, with `--empty` while nothing labels the field; `.neuwo-field__label-content` around the `slot="label"` children; `.neuwo-field__label-text` around the `label` text; `.neuwo-field__required` on the required marker; `.neuwo-input` on the native `<input>`, with `--sm`, `--error` and `--mono`; `.neuwo-field__error` on the error line.
+ * @summary Neuwo text input. Public classes: `.neuwo-field` on the wrapper, with `--sm`; `.neuwo-field__label` on the `<label>`, with `--empty` while nothing labels the field; `.neuwo-field__label-content` around the `slot="label"` children; `.neuwo-field__label-text` around the `label` text; `.neuwo-field__required` on the required marker; `.neuwo-input` on the native `<input>`, with `--sm`, `--error` and `--mono`; `.neuwo-field__error` on the error line. For 0.9 s after `flashError()` the element carries `data-neuwo-state="error-flash"`.
  * @customElement neuwo-input
  * @attr {text|email|url|password|number|search|tel} type - input type (default text).
  * @attr {string | number} min - minimum value (number/date types).
@@ -19,10 +19,10 @@ import { inputTemplate } from "./input.template.js";
  * @attr inputmode - virtual keyboard hint.
  * @attr {boolean} mono - sets the value and the placeholder in the brand's monospace face (`--neuwo-font-mono`), for code, API keys and IDs.
  */
-export class NeuwoInput extends NeuwoFieldElement {
+export class NeuwoInput extends NeuwoTextFieldElement {
   static template = inputTemplate;
   static observedAttributes = [
-    ...NeuwoFieldElement.observedAttributes,
+    ...NeuwoTextFieldElement.observedAttributes,
     "type",
     "min",
     "max",

@@ -224,6 +224,18 @@ describe("custom-elements.json", () => {
     }
   });
 
+  it("documents flashError() once, on the text field base, for the input and the textarea only", () => {
+    for (const tag of ["neuwo-input", "neuwo-textarea"]) {
+      const method = declByTag(manifest, tag).members.find((member) => member.name === "flashError");
+      expect(method?.kind, tag).toBe("method");
+      expect(method.inheritedFrom?.name, tag).toBe("NeuwoTextFieldElement");
+      expect(method.description, tag).toMatch(/for 0\.9 s.*no\s+message/s);
+    }
+    for (const tag of ["neuwo-combobox", "neuwo-range"]) {
+      expect(declByTag(manifest, tag).members.some((member) => member.name === "flashError"), tag).toBe(false);
+    }
+  });
+
   it("keeps the radio group's and the segmented control's own wording for the error attributes", () => {
     const description = (tag, name) => declByTag(manifest, tag).attributes.find((attribute) => attribute.name === name).description;
     expect(description("neuwo-radio-group", "error")).toMatch(/on each of the group's own radios/);

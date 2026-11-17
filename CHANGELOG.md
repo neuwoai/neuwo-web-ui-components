@@ -4,8 +4,9 @@
 
 The rest of the Neuwo Design System's switch to the library: capitals and a steady height for
 the badge, the brand's hover burst on the spotlight CTA, a filled close button for the notice,
-link underlines that scale with the text, and a focus ring that stands clear of a button's edge.
-It adds two attributes, so it is a minor release; nothing is renamed or removed.
+link underlines that scale with the text, a focus ring that stands clear of a button's edge, and
+a short-lived error flash for the text fields. It adds two attributes and a method, so it is a
+minor release; nothing is renamed or removed.
 
 ### Added
 
@@ -21,6 +22,13 @@ It adds two attributes, so it is a minor release; nothing is renamed or removed.
   `--neuwo-color-white` at 15%, which strengthens to 25% on hover and keyboard focus, so it stands
   out on a busy or coloured card (`.neuwo-notice__dismiss--filled`). Without it the button is
   unchanged.
+- `flashError()` on `<neuwo-input>` and `<neuwo-textarea>` shows the error look for 0.9s, the red
+  border, the danger ring and the shake (no shake under reduced motion), then returns the field to
+  rest. It prints no message, sets no invalid state and leaves `error` alone, and it wins over
+  focus while it shows. For that moment the element carries `data-neuwo-state="error-flash"`. It
+  replaces the README's `[data-flash]` recipe, so a page such as neuwo.ai's API demo no longer
+  repeats the error declarations. Both elements now extend `NeuwoTextFieldElement`, which extends
+  `NeuwoFieldElement`.
 
 ### Changed
 

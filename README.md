@@ -986,15 +986,8 @@ which sets them with `text-transform` and leaves the text as written:
 Prefer a size axis where one exists (`<neuwo-badge size>`, `<neuwo-deal-id
 size>`) over a font-size override, so the scale stays on-brand.
 
-A transient state the component does not own, such as a field flashed red on a
-host-driven event without a persistent `error`, is a rule on the same classes:
-
-```css
-.api-field[data-flash] .neuwo-input {
-  border-color: var(--neuwo-color-red);
-  box-shadow: var(--neuwo-shadow-danger);
-}
-```
+A field flashed red for a moment needs no rule of its own: call `flashError()` on the
+`<neuwo-input>` or `<neuwo-textarea>` (see [Form errors](#form-errors)).
 
 The components and the Markdown surface mirror in a right-to-left page or container; set the `dir`
 attribute there, as HTML recommends, not only the CSS `direction` property, since the toggle's thumb
@@ -1259,6 +1252,19 @@ toolbar `<neuwo-segmented>`, say) can drop that row with `no-error-line`, so it
 carries no empty vertical space. The control is then treated as non-validated:
 setting `error` alongside `no-error-line` is a misconfiguration, the message has
 nowhere to render.
+
+For a check the page runs itself, such as a run button that needs a URL, `flashError()` on a
+`<neuwo-input>` or `<neuwo-textarea>` shows the error look for 0.9 s: the red border, the danger
+ring and the shake, or no shake under reduced motion. It prints no message, sets no invalid state
+and leaves `error` alone, so an error set meanwhile stays. It wins over focus while it shows, and
+calling it again restarts it. For that moment the element carries
+`data-neuwo-state="error-flash"`.
+
+```js
+run.addEventListener("click", () => {
+  if (!url.value.trim()) url.flashError();
+});
+```
 
 ## Capture CTAs
 

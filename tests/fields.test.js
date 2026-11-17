@@ -41,11 +41,11 @@ describe("field.css recipe", () => {
   });
 
   it("carries a tokenised error state with a reduced-motion guard", () => {
-    expect(code).toMatch(/\.neuwo-input--error\s*\{[^}]*border-color:\s*var\(--neuwo-color-red\)/);
-    expect(code).toMatch(/\.neuwo-input--error\s*\{[^}]*box-shadow:\s*var\(--neuwo-shadow-danger\)/);
-    expect(code).toMatch(/\.neuwo-input--error\s*\{[^}]*animation:\s*neuwo-field-shake/);
+    expect(code).toMatch(/\.neuwo-input--error,[^{]*\{[^}]*border-color:\s*var\(--neuwo-color-red\)/);
+    expect(code).toMatch(/\.neuwo-input--error,[^{]*\{[^}]*box-shadow:\s*var\(--neuwo-shadow-danger\)/);
+    expect(code).toMatch(/\.neuwo-input--error,[^{]*\{[^}]*animation:\s*neuwo-field-shake/);
     expect(code).toContain("@keyframes neuwo-field-shake");
-    expect(code).toMatch(/@media \(prefers-reduced-motion: reduce\)\s*\{\s*\.neuwo-input--error\s*\{\s*animation:\s*none;/);
+    expect(code).toMatch(/@media \(prefers-reduced-motion: reduce\)\s*\{\s*\.neuwo-input--error,[^{]*\{\s*animation:\s*none;/);
   });
 
   it("carries a compact size step for the control, the label and the error line", () => {

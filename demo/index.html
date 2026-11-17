@@ -743,6 +743,25 @@
       });
     </script>
 
+    <h2>Error flash on a text field (flashError(): the error look for 0.9 s, no message)</h2>
+    <p>
+      Leave the URL empty and run: the field flashes red and shakes, then returns to rest, with no
+      message and <code>error</code> untouched. The request body flashes when it is empty too.
+    </p>
+    <div class="row" style="align-items: flex-end">
+      <neuwo-input id="flash-url" label="Article URL" placeholder="https://example.com/article" mono></neuwo-input>
+      <neuwo-textarea id="flash-body" label="Request body" rows="3" mono></neuwo-textarea>
+      <neuwo-button id="flash-run" variant="solid">Run analysis</neuwo-button>
+    </div>
+    <script>
+      document.getElementById("flash-run").addEventListener("click", () => {
+        for (const id of ["flash-url", "flash-body"]) {
+          const field = document.getElementById(id);
+          if (!field.value.trim()) field.flashError();
+        }
+      });
+    </script>
+
     <h2>Badge (label + status, mix-and-match axes)</h2>
     <div class="row">
       <neuwo-badge>For Publishers</neuwo-badge>

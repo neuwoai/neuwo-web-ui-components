@@ -6,6 +6,7 @@ import { renderToString } from "react-dom/server";
 import "../src/index.js";
 import { NeuwoInput } from "../src/components/fields/input/neuwo-input.js";
 import { NeuwoFieldElement } from "../src/components/fields/field-element.js";
+import { NeuwoTextFieldElement } from "../src/components/fields/text-field-element.js";
 import { CONTROLLED } from "../src/core/marks.js";
 import { expand } from "../src/server/index.js";
 import { jsx, jsxs } from "../src/react/jsx-runtime.js";
@@ -65,7 +66,8 @@ const errorOf = (el) => el.querySelector(":scope > .neuwo-field > .neuwo-field__
 describe("<neuwo-input>", () => {
   it("registers a light DOM field element", () => {
     expect(customElements.get("neuwo-input")).toBe(NeuwoInput);
-    expect(Object.getPrototypeOf(NeuwoInput)).toBe(NeuwoFieldElement);
+    expect(Object.getPrototypeOf(NeuwoInput)).toBe(NeuwoTextFieldElement);
+    expect(Object.getPrototypeOf(NeuwoTextFieldElement)).toBe(NeuwoFieldElement);
     const el = make(`<neuwo-input></neuwo-input>`);
     expect(el.shadowRoot).toBeNull();
     expect(inputOf(el).type).toBe("text");

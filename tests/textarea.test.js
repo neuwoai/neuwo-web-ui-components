@@ -9,6 +9,7 @@ import { dirname, join } from "node:path";
 import "../src/index.js";
 import { NeuwoTextarea } from "../src/components/fields/textarea/neuwo-textarea.js";
 import { NeuwoFieldElement } from "../src/components/fields/field-element.js";
+import { NeuwoTextFieldElement } from "../src/components/fields/text-field-element.js";
 import { expand } from "../src/server/index.js";
 import { jsx } from "../src/react/jsx-runtime.js";
 
@@ -53,7 +54,8 @@ const VALUES = ["\nlead", "a</textarea>b", "x & y < z", "1 > 0", "line one\nline
 describe("<neuwo-textarea>", () => {
   it("registers a light DOM field element with a native textarea carrying the multi-line class", () => {
     expect(customElements.get("neuwo-textarea")).toBe(NeuwoTextarea);
-    expect(Object.getPrototypeOf(NeuwoTextarea)).toBe(NeuwoFieldElement);
+    expect(Object.getPrototypeOf(NeuwoTextarea)).toBe(NeuwoTextFieldElement);
+    expect(Object.getPrototypeOf(NeuwoTextFieldElement)).toBe(NeuwoFieldElement);
     const el = make(`<neuwo-textarea></neuwo-textarea>`);
     expect(el.shadowRoot).toBeNull();
     const control = areaOf(el);

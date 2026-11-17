@@ -48,6 +48,7 @@ export function Usage() {
       <neuwo-input mono placeholder="nw_live_..." />
       <neuwo-input value={s} onChange={(e) => setS(e.target.value)} />
       <neuwo-input ref={input} defaultValue="draft" name="q" onChange={(e) => e.target.checkValidity()} />
+      <neuwo-button onClick={() => input.current?.flashError()}>Run</neuwo-button>
       <neuwo-range value={40} />
       <neuwo-combobox value={s} onChange={(e) => setS(e.target.value + e.target.name)}>
         <option value="a">A</option>

@@ -78,7 +78,7 @@ describe("focus recipe", () => {
 
   it("lets focus win over the error state on a field", () => {
     const css = read("src/components/fields/field.css");
-    expect(ruleFor(css, ".neuwo-input--error")).toMatch(/border-color:\s*var\(--neuwo-color-red\);/);
+    expect(css.match(/^\.neuwo-input--error,\n[^{]*\{([^}]*)\}/m)?.[1]).toMatch(/border-color:\s*var\(--neuwo-color-red\);/);
     expect(ruleFor(css, ".neuwo-input:focus-visible")).toMatch(/border-color:\s*var\(--neuwo-color-blue\);/);
   });
 

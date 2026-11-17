@@ -64,9 +64,14 @@ export default {
         for (const mod of customElementsManifest.modules) for (const declaration of mod.declarations ?? []) modules.set(declaration, mod.path);
         const declarations = customElementsManifest.modules.flatMap((mod) => mod.declarations ?? []);
         const classes = new Map(declarations.filter(({ kind }) => kind === "class").map((klass) => [klass.name, klass]));
-        for (const klass of classes.values()) {
+        const mixedIn = (klass) => Boolean(klass && (klass.mixins || mixedIn(classes.get(klass.superclass?.name))));
+        const done = new Set();
+        const order = (klass) => {
+          if (!klass || done.has(klass)) return;
+          done.add(klass);
           const parent = classes.get(klass.superclass?.name);
-          if (klass.mixins || !parent?.mixins || !klass.attributes) continue;
+          order(parent);
+          if (klass.mixins || !mixedIn(parent) || !klass.attributes) return;
           const inherited = new Map((parent.attributes ?? []).map((attribute, index) => [attribute.name, { attribute, index }]));
           const rank = (attribute) => (attribute.inheritedFrom ? (inherited.get(attribute.name)?.index ?? -1) : -1);
           klass.attributes = klass.attributes
@@ -77,7 +82,8 @@ export default {
               return { ...attribute, ...(from.description && { description: from.description }), inheritedFrom };
             })
             .sort((a, b) => rank(a) - rank(b));
-        }
+        };
+        for (const klass of classes.values()) order(klass);
       },
     },
   ],

@@ -77,7 +77,9 @@ neuwo-combobox:not([hidden]) {
   font-size: var(--neuwo-font-size-xs);
 }
 
-.neuwo-input--error {
+/* The flash outweighs focus, unlike the error, because it shows for a moment only to be seen. */
+.neuwo-input--error,
+[data-neuwo-state="error-flash"] > .neuwo-field > .neuwo-input {
   border-color: var(--neuwo-color-red);
   box-shadow: var(--neuwo-shadow-danger);
   animation: neuwo-field-shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97);
@@ -98,7 +100,8 @@ neuwo-combobox:not([hidden]) {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .neuwo-input--error {
+  .neuwo-input--error,
+  [data-neuwo-state="error-flash"] > .neuwo-field > .neuwo-input {
     animation: none;
   }
 }
