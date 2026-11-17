@@ -4,6 +4,13 @@
 
 ### Added
 
+- A monospace brand face, JetBrains Mono (SIL Open Font License), shipped like Outfit and Noto
+  Sans: `fonts/jetbrains-mono-variable.woff2`, a variable weight from 100 to 800 subset to the same
+  Latin ranges, with an `@font-face` in the stylesheet and a metric-matched `JetBrains Mono
+  Fallback` drawn from Courier New, or Liberation Mono or Cousine where it is missing.
+  `--neuwo-font-mono` names it first, so code, Markdown `code` and `pre`, and anything else set in
+  the token render the same on every machine instead of in whichever monospace face is installed.
+  Its code ligatures are removed, so `!=` and `->` read exactly as typed.
 - `@keyframes neuwo-shimmer`, in `neuwo.css` and `neuwo-components.css` beside the
   `--neuwo-gradient-accent-shimmer` gradient it animates. Use them together with
   `background-size: 200% 100%` and `animation: neuwo-shimmer 4s ease-in-out infinite`, the recipe

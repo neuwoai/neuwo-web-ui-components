@@ -25,7 +25,16 @@
        url('fonts/noto-sans-italic-variable.woff2') format('woff2');
 }
 
-/* From `npm run fonts:fallback`: Capsize's method, each face sized to the font at its token weight by advance widths weighted by English letter frequency with spaces as 18% of characters, against Arial (2048 units, ascent 1854, descent 434, line gap 67, average width 904), Arial Bold (977.7) and their italics. */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url('fonts/jetbrains-mono-variable.woff2') format('woff2-variations'),
+       url('fonts/jetbrains-mono-variable.woff2') format('woff2');
+}
+
+/* From `npm run fonts:fallback`: Capsize's method, each face sized to the font at its token weight by advance widths weighted by English letter frequency with spaces as 18% of characters, against Arial (2048 units, ascent 1854, descent 434, line gap 67, average width 904), Arial Bold (977.7) and their italics, and the monospace face against Courier New (2048 units, every advance 1229) and Courier New Bold. */
 
 @font-face {
   font-family: 'Outfit Fallback';
@@ -146,5 +155,25 @@
   size-adjust: 99.84%;
   ascent-override: 107.07%;
   descent-override: 29.35%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono Fallback';
+  font-weight: 100 549;
+  src: local('Courier New'), local('CourierNewPSMT'), local('Liberation Mono'), local('Cousine'), local('Cousine Regular');
+  size-adjust: 99.98%;
+  ascent-override: 102.02%;
+  descent-override: 30%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono Fallback';
+  font-weight: 550 900;
+  src: local('Courier New Bold'), local('CourierNewPS-BoldMT'), local('Liberation Mono Bold'), local('Cousine Bold');
+  size-adjust: 99.98%;
+  ascent-override: 102.02%;
+  descent-override: 30%;
   line-gap-override: 0%;
 }

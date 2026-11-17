@@ -449,9 +449,9 @@ which is yours to emit:
 .table-scroll { overflow-x: auto; }
 ```
 
-Code is set in `--neuwo-font-mono`, a system stack (`ui-monospace`, then the developer faces most
-likely installed). The brand ships no monospace face, so this is the one family token that is
-not a Neuwo font.
+Code is set in `--neuwo-font-mono`, JetBrains Mono, which ships with Outfit and Noto Sans. Its
+code ligatures are removed, so `!=` and `->` read exactly as typed, which matters for API keys
+and IDs.
 
 #### Callouts
 

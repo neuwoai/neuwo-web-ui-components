@@ -11,6 +11,7 @@ export function resolveFontUrls(cssText) {
     "fonts/outfit-variable.woff2": new URL("./fonts/outfit-variable.woff2", import.meta.url).href,
     "fonts/noto-sans-variable.woff2": new URL("./fonts/noto-sans-variable.woff2", import.meta.url).href,
     "fonts/noto-sans-italic-variable.woff2": new URL("./fonts/noto-sans-italic-variable.woff2", import.meta.url).href,
+    "fonts/jetbrains-mono-variable.woff2": new URL("./fonts/jetbrains-mono-variable.woff2", import.meta.url).href,
   };
   return cssText.replace(/url\(['"]?([^'")]+\.woff2)['"]?\)/g, (match, rel) =>
     Object.hasOwn(urls, rel) ? `url('${urls[rel]}')` : match,

@@ -29,9 +29,9 @@ describe("font-size tokens", () => {
 });
 
 describe("font-family tokens", () => {
-  it("defines --neuwo-font-mono as a system stack, not a brand face", () => {
+  it("defines --neuwo-font-mono as the shipped JetBrains Mono, then its fallback face and the system stack", () => {
     expect(tokensCss).toContain(
-      "--neuwo-font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Consolas, monospace"
+      "--neuwo-font-mono: 'JetBrains Mono', 'JetBrains Mono Fallback', ui-monospace, 'SF Mono', Consolas, monospace;"
     );
   });
 });

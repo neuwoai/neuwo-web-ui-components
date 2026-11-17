@@ -31,11 +31,19 @@ export const REFERENCES = { regular: 904, bold: 977.7, italic: 904.2, boldItalic
 
 const ARIAL_UNITS = 2048;
 
+// Courier New's advance, which Liberation Mono and Cousine share; a monospace face gives every glyph it, bold included.
+export const MONO_REFERENCE = 1229;
+
 const SOURCES = {
   regular: "local('Arial'), local('Liberation Sans'), local('Arimo'), local('Arimo Regular')",
   bold: "local('Arial Bold'), local('Arial-BoldMT'), local('Liberation Sans Bold'), local('Arimo Bold')",
   italic: "local('Arial Italic'), local('Arial-ItalicMT'), local('Liberation Sans Italic'), local('Arimo Italic')",
   boldItalic: "local('Arial Bold Italic'), local('Arial-BoldItalicMT'), local('Liberation Sans Bold Italic'), local('Arimo Bold Italic')",
+};
+
+const MONO_SOURCES = {
+  regular: "local('Courier New'), local('CourierNewPSMT'), local('Liberation Mono'), local('Cousine'), local('Cousine Regular')",
+  bold: "local('Courier New Bold'), local('CourierNewPS-BoldMT'), local('Liberation Mono Bold'), local('Cousine Bold')",
 };
 
 const UPRIGHT = /** @type {const} */ ([
@@ -45,15 +53,16 @@ const UPRIGHT = /** @type {const} */ ([
   [700, "650 749"],
   [800, "750 900"],
 ]);
-const ITALIC = /** @type {const} */ ([
+const REGULAR_AND_BOLD = /** @type {const} */ ([
   [400, "100 549"],
   [700, "550 900"],
 ]);
 
 export const FALLBACKS = [
-  { family: "Outfit Fallback", file: "outfit-variable.woff2", italic: false, faces: UPRIGHT },
-  { family: "Noto Sans Fallback", file: "noto-sans-variable.woff2", italic: false, faces: UPRIGHT },
-  { family: "Noto Sans Fallback", file: "noto-sans-italic-variable.woff2", italic: true, faces: ITALIC },
+  { family: "Outfit Fallback", file: "outfit-variable.woff2", italic: false, mono: false, faces: UPRIGHT },
+  { family: "Noto Sans Fallback", file: "noto-sans-variable.woff2", italic: false, mono: false, faces: UPRIGHT },
+  { family: "Noto Sans Fallback", file: "noto-sans-italic-variable.woff2", italic: true, mono: false, faces: REGULAR_AND_BOLD },
+  { family: "JetBrains Mono Fallback", file: "jetbrains-mono-variable.woff2", italic: false, mono: true, faces: REGULAR_AND_BOLD },
 ];
 
 /**
@@ -282,20 +291,20 @@ const percent = (share) => `${Number((share * 100).toFixed(2))}%`;
  */
 export function fallbackCss() {
   const rules = [];
-  for (const { family, file, italic, faces } of FALLBACKS) {
+  for (const { family, file, italic, mono, faces } of FALLBACKS) {
     const tables = readTables(join(FONTS, file));
     for (const [weight, range] of faces) {
       const font = measure(tables, weight);
       const bold = weight >= 600;
       const kind = italic ? (bold ? "boldItalic" : "italic") : bold ? "bold" : "regular";
-      const size = font.average / font.unitsPerEm / (REFERENCES[kind] / ARIAL_UNITS);
+      const size = font.average / font.unitsPerEm / ((mono ? MONO_REFERENCE : REFERENCES[kind]) / ARIAL_UNITS);
       rules.push(
         [
           "@font-face {",
           `  font-family: '${family}';`,
           ...(italic ? ["  font-style: italic;"] : []),
           `  font-weight: ${range};`,
-          `  src: ${SOURCES[kind]};`,
+          `  src: ${mono ? MONO_SOURCES[bold ? "bold" : "regular"] : SOURCES[kind]};`,
           `  size-adjust: ${percent(size)};`,
           `  ascent-override: ${percent(font.ascender / font.unitsPerEm / size)};`,
           `  descent-override: ${percent(-font.descender / font.unitsPerEm / size)};`,
@@ -306,7 +315,7 @@ export function fallbackCss() {
     }
   }
   const comment =
-    "/* From `npm run fonts:fallback`: Capsize's method, each face sized to the font at its token weight by advance widths weighted by English letter frequency with spaces as 18% of characters, against Arial (2048 units, ascent 1854, descent 434, line gap 67, average width 904), Arial Bold (977.7) and their italics. */";
+    "/* From `npm run fonts:fallback`: Capsize's method, each face sized to the font at its token weight by advance widths weighted by English letter frequency with spaces as 18% of characters, against Arial (2048 units, ascent 1854, descent 434, line gap 67, average width 904), Arial Bold (977.7) and their italics, and the monospace face against Courier New (2048 units, every advance 1229) and Courier New Bold. */";
   return `${[comment, ...rules].join("\n\n")}\n`;
 }
 

@@ -17,6 +17,7 @@ describe("font URLs", () => {
       "fonts/outfit-variable.woff2",
       "fonts/noto-sans-variable.woff2",
       "fonts/noto-sans-italic-variable.woff2",
+      "fonts/jetbrains-mono-variable.woff2",
     ]);
   });
 
@@ -72,10 +73,34 @@ describe("fallback faces", () => {
     expect([faces[0].includes(ITALIC), faces[1].includes(BOLD_ITALIC)]).toEqual([true, true]);
   });
 
+  it("JetBrains Mono Fallback has a regular face up to 549 and a bold one from 550, from Courier New or a metric twin, at JetBrains Mono's advance", () => {
+    const faces = facesOf("JetBrains Mono Fallback");
+    expect(faces.map((face) => face.match(/font-weight: ([\d ]+);/)?.[1])).toEqual(["100 549", "550 900"]);
+    expect(faces[0]).toContain("src: local('Courier New'), local('CourierNewPSMT'), local('Liberation Mono'), local('Cousine'), local('Cousine Regular');");
+    expect(faces[1]).toContain("src: local('Courier New Bold'), local('CourierNewPS-BoldMT'), local('Liberation Mono Bold'), local('Cousine Bold');");
+    const { hmtx } = readTables(join(__dirname, "../src/foundation/fonts/jetbrains-mono-variable.woff2"));
+    const advance = hmtx.readUInt16BE(0);
+    for (const face of faces) {
+      const size = Number(face.match(/size-adjust: ([\d.]+)%;/)?.[1]) / 100;
+      expect(size * (1229 / 2048)).toBeCloseTo(advance / 1000, 4);
+    }
+  });
+
+  it("ships JetBrains Mono without its code ligatures, so text reads exactly as typed", () => {
+    const { GSUB } = readTables(join(__dirname, "../src/foundation/fonts/jetbrains-mono-variable.woff2"));
+    const list = GSUB.subarray(GSUB.readUInt16BE(6));
+    const tags = Array.from({ length: list.readUInt16BE(0) }, (_, index) => list.toString("latin1", 2 + index * 6, 6 + index * 6));
+    expect(tags.length).toBeGreaterThan(0);
+    expect(tags).not.toContain("calt");
+    expect(tags).not.toContain("liga");
+    expect(tags).not.toContain("dlig");
+  });
+
   it.each([
     ["Outfit Fallback", "normal", "fonts/outfit-variable.woff2"],
     ["Noto Sans Fallback", "normal", "fonts/noto-sans-variable.woff2"],
     ["Noto Sans Fallback", "italic", "fonts/noto-sans-italic-variable.woff2"],
+    ["JetBrains Mono Fallback", "normal", "fonts/jetbrains-mono-variable.woff2"],
   ])("%s, %s, gives the web font's ascent, descent and line gap at each face's adjusted size", (family, style, file) => {
     const metrics = verticalMetrics(file);
     const faces = facesOf(family, /** @type {"normal" | "italic"} */ (style));
