@@ -115,6 +115,17 @@ describe("<neuwo-notice>", () => {
     expect(part(el, "dismiss")).toBeNull();
   });
 
+  it("fills the close button in place under dismiss-filled, and reflects the property", () => {
+    const el = make(`<neuwo-notice dismissible>Hint</neuwo-notice>`);
+    const button = part(el, "dismiss");
+    el.dismissFilled = true;
+    expect(el.hasAttribute("dismiss-filled")).toBe(true);
+    expect(part(el, "dismiss")).toBe(button);
+    expect(button.classList.contains("neuwo-notice__dismiss--filled")).toBe(true);
+    el.dismissFilled = false;
+    expect(button.classList.contains("neuwo-notice__dismiss--filled")).toBe(false);
+  });
+
   it("dismisses on a click in server markup it adopted without a mutation", async () => {
     const holder = document.createElement("div");
     holder.innerHTML = renderElement(

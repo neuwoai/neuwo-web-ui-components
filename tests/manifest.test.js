@@ -270,7 +270,7 @@ describe("custom-elements.json", () => {
 
   it("documents the notice's axes", () => {
     const attrs = attributesFor(manifest, "neuwo-notice");
-    for (const a of ["position", "layout", "dismissible", "dismiss-label"]) expect(attrs).toContain(a);
+    for (const a of ["position", "layout", "dismissible", "dismiss-label", "dismiss-filled"]) expect(attrs).toContain(a);
   });
 
   it("documents the logo's variant and label", () => {

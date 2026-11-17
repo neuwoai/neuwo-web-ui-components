@@ -38,6 +38,11 @@ export function noticeTemplate(attrs, ctx) {
     { class: classes.join(" "), role: has(attrs, "role") ? null : "status" },
     h("div", { class: "neuwo-notice__content" }, wrapper("title", "title"), wrapper("message", DEFAULT_REGION)),
     wrapper("actions", "actions"),
-    dismissible && h("button", { class: "neuwo-notice__dismiss", type: "button", "aria-label": attrs["dismiss-label"] || "Dismiss" }),
+    dismissible &&
+      h("button", {
+        class: has(attrs, "dismiss-filled") ? "neuwo-notice__dismiss neuwo-notice__dismiss--filled" : "neuwo-notice__dismiss",
+        type: "button",
+        "aria-label": attrs["dismiss-label"] || "Dismiss",
+      }),
   );
 }

@@ -13,6 +13,11 @@
   hovering the button itself plays none, and `intensity` scales the burst like the ring. Reduced
   motion turns it off, and the banner is unchanged.
 
+- `dismiss-filled` on `<neuwo-notice>` gives the close button a subtle background,
+  `--neuwo-color-white` at 15%, which strengthens to 25% on hover and keyboard focus, so it stands
+  out on a busy or coloured card (`.neuwo-notice__dismiss--filled`). Without it the button is
+  unchanged.
+
 ### Changed
 
 - Links, bare `a` and `.neuwo-link`, set their underline `0.2em` below the text instead of `2px`,

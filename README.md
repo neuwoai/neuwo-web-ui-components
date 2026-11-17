@@ -916,6 +916,7 @@ properties, or target the children you passed in.
 | `.neuwo-notice__title`, `.neuwo-notice__message`, `.neuwo-notice__actions` | the wrappers around the `slot="title"` children, the message and the `slot="actions"` children |
 | `.neuwo-notice__title--empty`, `.neuwo-notice__message--empty`, `.neuwo-notice__actions--empty` | a wrapper nothing fills, taken out of the flow |
 | `.neuwo-notice__dismiss` | the close button, while `dismissible` |
+| `.neuwo-notice__dismiss--filled` | the close button, by `dismiss-filled` |
 | `.neuwo-cta` | the band's root `<div>` |
 | `.neuwo-cta--banner`, `.neuwo-cta--spotlight` | the band, by `variant` |
 | `.neuwo-cta__inner` | the panel inside the band in both variants, which holds the text column and then the actions; the banner lays them out side by side |
@@ -1308,6 +1309,8 @@ consent banner, a language hint, a toast. What differs between those is separate
 axes rather than one bundled variant, so they mix freely: `position` (which
 viewport corner, or `static` to flow with the page), `layout` (actions under the
 text or beside it), and `dismissible` (a consent banner deliberately is not).
+`dismiss-filled` gives the close button a subtle background, stronger on hover
+and keyboard focus, for a card where the cross alone would not stand out.
 
 Visibility is the native `hidden` attribute, so a card that waits on a decision
 starts hidden in the markup. Closing is the page's to remember: the component

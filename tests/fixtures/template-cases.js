@@ -327,6 +327,7 @@ export const cases = {
       ],
     },
     { name: "top-start toast", attrs: { position: "top-start", dismissible: "" }, children: [{ tag: "span", attrs: { slot: "title" }, text: "Saved" }] },
+    { name: "filled close button", attrs: { position: "static", dismissible: "", "dismiss-filled": "" }, children: [{ tag: "span", attrs: { slot: "title" }, text: "New release" }] },
     { name: "unknown values", attrs: { position: "toString", layout: "grid" }, children: ["Hint"] },
     {
       name: "indented title only",

@@ -20,12 +20,13 @@ import { noticeTemplate } from "./notice.template.js";
  * declares a role of its own: a consent banner is a question, so give the host
  * `role="dialog"` and a label.
  *
- * @summary Neuwo dismissible notice card. Public classes: `.neuwo-notice` on the card, with `--fixed`, `--top`, `--bottom`, `--start`, `--end`, `--center`, `--row` and `--dismissible`; `.neuwo-notice__content` around `.neuwo-notice__title` and `.neuwo-notice__message`; `.neuwo-notice__actions`; `.neuwo-notice__dismiss` on the close button. A title, message or actions wrapper nothing fills also carries its `--empty` modifier.
+ * @summary Neuwo dismissible notice card. Public classes: `.neuwo-notice` on the card, with `--fixed`, `--top`, `--bottom`, `--start`, `--end`, `--center`, `--row` and `--dismissible`; `.neuwo-notice__content` around `.neuwo-notice__title` and `.neuwo-notice__message`; `.neuwo-notice__actions`; `.neuwo-notice__dismiss` on the close button, with `--filled`. A title, message or actions wrapper nothing fills also carries its `--empty` modifier.
  * @customElement neuwo-notice
  * @attr {bottom-end|bottom-start|bottom-center|top-end|top-start|top-center|static} position - where the card docks; `static` flows with the page instead of pinning to the viewport (default bottom-end).
  * @attr {stack|row} layout - actions under the text, or beside it from 48rem up (default stack).
  * @attr {boolean} dismissible - render the close button.
  * @attr dismiss-label - accessible name for the close button (default "Dismiss"); set it to the visitor's language.
+ * @attr {boolean} dismiss-filled - give the close button a subtle background, stronger on hover and keyboard focus, so it stands out on a busy or coloured card. No effect without `dismissible`.
  * @fires {CustomEvent} dismiss - the close button was pressed or `dismiss()` was called; cancelable, and cancelling keeps the card open.
  * @slot title - the headline line; a notice with nothing else is just this.
  * @slot - the supporting message under the headline.
@@ -35,7 +36,7 @@ import { noticeTemplate } from "./notice.template.js";
  */
 export class NeuwoNotice extends NeuwoElement {
   static template = noticeTemplate;
-  static observedAttributes = ["position", "layout", "dismissible", "dismiss-label"];
+  static observedAttributes = ["position", "layout", "dismissible", "dismiss-label", "dismiss-filled"];
 
   get position() { return this.getAttribute("position") || "bottom-end"; }
   set position(value) {
@@ -51,6 +52,9 @@ export class NeuwoNotice extends NeuwoElement {
 
   get dismissible() { return this.hasAttribute("dismissible"); }
   set dismissible(value) { this.toggleAttribute("dismissible", Boolean(value)); }
+
+  get dismissFilled() { return this.hasAttribute("dismiss-filled"); }
+  set dismissFilled(value) { this.toggleAttribute("dismiss-filled", Boolean(value)); }
 
   get dismissLabel() { return this.getAttribute("dismiss-label") || "Dismiss"; }
   set dismissLabel(value) {

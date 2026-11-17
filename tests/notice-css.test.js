@@ -66,6 +66,12 @@ describe("notice.css recipe", () => {
     expect(ruleFor(".neuwo-notice__dismiss:focus-visible")).toContain("var(--neuwo-shadow-focus)");
   });
 
+  it("gives a filled close button a subtle white background, stronger on hover and keyboard focus", () => {
+    expect(ruleFor(".neuwo-notice__dismiss--filled")).toMatch(/background-color: color-mix\(in srgb, var\(--neuwo-color-white\) 15%, transparent\);/);
+    expect(ruleFor(".neuwo-notice__dismiss--filled:hover,\n.neuwo-notice__dismiss--filled:focus-visible")).toMatch(/background-color: color-mix\(in srgb, var\(--neuwo-color-white\) 25%, transparent\);/);
+    expect(ruleFor(".neuwo-notice__dismiss")).toMatch(/transition: color var\(--neuwo-transition-fast\), background-color var\(--neuwo-transition-fast\);/);
+  });
+
   it("stacks by default and turns to a row only when there is room", () => {
     expect(ruleFor(".neuwo-notice")).toMatch(/flex-direction: column/);
     expect(css).toMatch(/@media \(min-width: 48rem\)[\s\S]*\.neuwo-notice--row\s*\{[^}]*flex-direction: row/);

@@ -125,7 +125,7 @@ neuwo-notice {
   border: 0;
   border-radius: var(--neuwo-radius-sm);
   cursor: pointer;
-  transition: color var(--neuwo-transition-fast);
+  transition: color var(--neuwo-transition-fast), background-color var(--neuwo-transition-fast);
 }
 
 /* A mask over currentColor, so the cross follows the hover and a consumer's colour. */
@@ -141,6 +141,15 @@ neuwo-notice {
 .neuwo-notice__dismiss:hover,
 .neuwo-notice__dismiss:focus-visible {
   color: var(--neuwo-color-heading);
+}
+
+.neuwo-notice__dismiss--filled {
+  background-color: color-mix(in srgb, var(--neuwo-color-white) 15%, transparent);
+}
+
+.neuwo-notice__dismiss--filled:hover,
+.neuwo-notice__dismiss--filled:focus-visible {
+  background-color: color-mix(in srgb, var(--neuwo-color-white) 25%, transparent);
 }
 
 .neuwo-notice__dismiss:focus-visible {

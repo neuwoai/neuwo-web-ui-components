@@ -90,6 +90,12 @@ describe("noticeTemplate()", () => {
     expect(find(render(), "neuwo-notice__dismiss")).toBeNull();
   });
 
+  it("fills the close button under dismiss-filled, and only on a dismissible notice", () => {
+    expect(find(render({ dismissible: "", "dismiss-filled": "" }), "neuwo-notice__dismiss").props.class).toBe("neuwo-notice__dismiss neuwo-notice__dismiss--filled");
+    expect(find(render({ dismissible: "" }), "neuwo-notice__dismiss").props.class).toBe("neuwo-notice__dismiss");
+    expect(find(render({ "dismiss-filled": "" }), "neuwo-notice__dismiss")).toBeNull();
+  });
+
   it("names the close button by dismiss-label, falling back to Dismiss when it is empty", () => {
     expect(find(render({ dismissible: "", "dismiss-label": "Zamknij" }), "neuwo-notice__dismiss").props["aria-label"]).toBe("Zamknij");
     expect(find(render({ dismissible: "", "dismiss-label": "" }), "neuwo-notice__dismiss").props["aria-label"]).toBe("Dismiss");
