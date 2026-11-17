@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Added
+
+- `@keyframes neuwo-shimmer`, in `neuwo.css` and `neuwo-components.css` beside the
+  `--neuwo-gradient-accent-shimmer` gradient it animates. Use them together with
+  `background-size: 200% 100%` and `animation: neuwo-shimmer 4s ease-in-out infinite`, the recipe
+  in the comment above the token, which named a `shimmer` keyframes the library did not ship.
+
 ### Changed
 
 - Keyboard focus looks the same on every control and matches neuwo.ai: the control's border turns

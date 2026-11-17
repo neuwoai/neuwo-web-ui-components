@@ -71,7 +71,7 @@
     color-mix(in srgb, var(--neuwo-color-blue) 90%, var(--neuwo-color-grey-200)) 0 10%,
     color-mix(in srgb, var(--neuwo-color-green) 90%, var(--neuwo-color-grey-200)) 90% 100%
   );
-  /* Pair with `background-size: 200% 100%` and `animation: shimmer ...` for the looping accent. */
+  /* Pair with `background-size: 200% 100%` and `animation: neuwo-shimmer 4s ease-in-out infinite` for the looping accent. */
   --neuwo-gradient-accent-shimmer: linear-gradient(
     90deg,
     var(--neuwo-color-blue) 0%,
@@ -198,4 +198,9 @@
   --neuwo-z-header: 100;
   --neuwo-z-overlay: 200;
   --neuwo-z-modal: 300;
+}
+
+@keyframes neuwo-shimmer {
+  0% { background-position: 200% center; }
+  100% { background-position: -200% center; }
 }
