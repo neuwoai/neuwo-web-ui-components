@@ -1327,7 +1327,10 @@ axes rather than one bundled variant, so they mix freely: `position` (which
 viewport corner, or `static` to flow with the page), `layout` (actions under the
 text or beside it), and `dismissible` (a consent banner deliberately is not).
 `dismiss-filled` gives the close button a subtle background, stronger on hover
-and keyboard focus, for a card where the cross alone would not stand out.
+and keyboard focus, for a card where the cross alone would not stand out. A
+dismissible card reserves the button's corner plus a `--neuwo-space-2` gap, so its
+text and actions stop 8px short of the button, even in a card that shrinks to a
+short title.
 
 Visibility is the native `hidden` attribute, so a card that waits on a decision
 starts hidden in the markup. Closing is the page's to remember: the component

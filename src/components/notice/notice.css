@@ -167,9 +167,9 @@ neuwo-notice {
   pointer-events: none;
 }
 
-/* Reserved on the card, not the first line, so nothing collides with the button in either layout. */
+/* Reserved on the card, not the first line, so no text reaches the button in either layout, with a gap before it. */
 .neuwo-notice--dismissible {
-  padding-inline-end: calc(var(--neuwo-space-3) + var(--neuwo-space-8));
+  padding-inline-end: calc(var(--neuwo-space-3) + var(--neuwo-space-8) + var(--neuwo-space-2));
 }
 
 /* Forced colours replace the cross's colour with Canvas, the button's own, so it would vanish. */

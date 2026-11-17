@@ -9,6 +9,15 @@
   as neuwo.ai's API demo request body's `resize: none`. Without it the textarea is resizable
   vertically, as before.
 
+### Fixed
+
+- A dismissible `<neuwo-notice>` leaves an 8px gap (`--neuwo-space-2`) between its text and the
+  close button. It reserved exactly the button's width and inset, so the text column ended at the
+  button's edge: a long line, or a short title in a card that shrinks to its text, touched it.
+  `.neuwo-notice--dismissible` now reserves
+  `calc(var(--neuwo-space-3) + var(--neuwo-space-8) + var(--neuwo-space-2))`. A notice without
+  `dismissible` is unchanged.
+
 ## 0.4.0
 
 The rest of the Neuwo Design System's switch to the library: capitals and a steady height for

@@ -58,7 +58,7 @@ describe("notice.css recipe", () => {
   });
 
   it("reserves the close button's corner on the card and draws the cross as a mask over its own colour", () => {
-    expect(ruleFor(".neuwo-notice--dismissible")).toMatch(/padding-inline-end:\s*calc\(var\(--neuwo-space-3\) \+ var\(--neuwo-space-8\)\)/);
+    expect(ruleFor(".neuwo-notice--dismissible")).toMatch(/padding-inline-end:\s*calc\(var\(--neuwo-space-3\) \+ var\(--neuwo-space-8\) \+ var\(--neuwo-space-2\)\);/);
     const glyph = ruleFor(".neuwo-notice__dismiss::before");
     expect(glyph).toMatch(/background: currentColor/);
     expect(glyph).toContain("mask:");
