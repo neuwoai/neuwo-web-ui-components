@@ -300,6 +300,12 @@
 }'></neuwo-textarea>
     </div>
 
+    <h2>Textarea without the resize handle (no-resize)</h2>
+    <div class="row">
+      <neuwo-textarea label="Resizable (default)" rows="4" style="inline-size: 20rem" placeholder="Drag the corner"></neuwo-textarea>
+      <neuwo-textarea label="Fixed (no-resize)" rows="4" no-resize mono style="inline-size: 20rem" value='{"url": "https://example.com/article"}'></neuwo-textarea>
+    </div>
+
     <h2>Field label slot (markup in the label, still associated)</h2>
     <p>
       The <code>label</code> attribute stays the fallback for plain text. Slot

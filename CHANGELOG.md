@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `no-resize` on `<neuwo-textarea>` turns the resize handle off, so the visitor cannot drag the box
+  taller or shorter (`.neuwo-textarea--no-resize`, `resize: none`). It replaces a project rule such
+  as neuwo.ai's API demo request body's `resize: none`. Without it the textarea is resizable
+  vertically, as before.
+
 ## 0.4.0
 
 The rest of the Neuwo Design System's switch to the library: capitals and a steady height for

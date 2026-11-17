@@ -942,6 +942,7 @@ through the two tokens.
 | `.neuwo-input` | the native `<input>`; it was `::part(input)` |
 | `.neuwo-input--sm`, `.neuwo-input--error` | the control, by `size="sm"`, and by `error` unless `error-muted` or `no-error-line` is set |
 | `.neuwo-input--mono` | the input's or the textarea's control, by `mono` |
+| `.neuwo-textarea--no-resize` | the textarea's control, by `no-resize` |
 | `.neuwo-field__error` | the reserved error line; it was `::part(error)` |
 | `.neuwo-combobox` | the combobox's box around the trigger, the chevron, the popup and the form value |
 | `.neuwo-combobox__trigger` | the combobox's trigger, a `<button>`, or a text `<input>` with `searchable`, alongside `.neuwo-input` and its modifiers |
@@ -1040,7 +1041,9 @@ On `<neuwo-textarea>` the `value` attribute is the textarea's starting text, and
 (`--neuwo-font-mono`), for code, JSON, API keys and IDs, a step smaller than a prose field of the
 same size so code reads as code: `--neuwo-font-size-sm` at the standard size and
 `--neuwo-font-size-xs` with `size="sm"`, with the same padding. A `mono` textarea also spaces its
-lines for code, at `--neuwo-line-height-body` like the Markdown surface's code panels. On `<neuwo-range>` the
+lines for code, at `--neuwo-line-height-body` like the Markdown surface's code panels. A textarea
+is resizable vertically; `no-resize` turns the handle off for a box of fixed height, such as a
+request body. On `<neuwo-range>` the
 bounds and `step` are carried onto the range input, and the filled part of its
 track (`--neuwo-range-fill`) is written into the markup from `min`, `max` and
 `value`, so it shows in the first paint.

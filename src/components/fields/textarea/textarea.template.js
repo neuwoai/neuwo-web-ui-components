@@ -1,4 +1,4 @@
-import { control, h } from "../../../core/template.js";
+import { control, h, has } from "../../../core/template.js";
 import { controlAttrs, fieldTemplate, textControlClass } from "../field.template.js";
 
 const FORWARDED = ["name", "placeholder", "required", "readonly", "autocomplete", "rows", "minlength", "maxlength"];
@@ -15,7 +15,7 @@ export function textareaTemplate(attrs, ctx) {
     control(
       h(
         "textarea",
-        { class: `${textControlClass(attrs)} neuwo-textarea`, ...controlAttrs(attrs, ctx, FORWARDED) },
+        { class: `${textControlClass(attrs)} ${has(attrs, "no-resize") ? "neuwo-textarea neuwo-textarea--no-resize" : "neuwo-textarea"}`, ...controlAttrs(attrs, ctx, FORWARDED) },
         // A parser reads CR as LF before it drops the LF after the tag, so markup must carry the LF form to keep it.
         attrs.value?.replace(/\r\n?/g, "\n") || undefined,
       ),

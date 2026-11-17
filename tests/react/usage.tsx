@@ -42,7 +42,7 @@ export function Usage() {
       <neuwo-cta heading-level={3} />
       <neuwo-cta heading-level="3" />
       <neuwo-textarea rows={4} className="notes" />
-      <neuwo-textarea mono />
+      <neuwo-textarea mono no-resize />
       <neuwo-badge uppercase variant="green">Live</neuwo-badge>
       <neuwo-notice dismissible dismiss-filled position="static">Saved</neuwo-notice>
       <neuwo-input mono placeholder="nw_live_..." />

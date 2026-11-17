@@ -254,6 +254,7 @@ export const cases = {
     },
     { name: "value with two lines", attrs: { value: "line one\nline two" }, children: [] },
     { name: "monospace small", attrs: { mono: "", size: "sm", value: '{"id": 1}' }, children: [] },
+    { name: "monospace without the resize handle", attrs: { mono: "", "no-resize": "", rows: "4" }, children: [] },
     { name: "value with a leading newline", attrs: { value: "\nlead" }, children: [] },
     { name: "value with markup characters", attrs: { value: "x & y < z </textarea>" }, children: [] },
     { name: "small, disabled, readonly and no error line", attrs: { size: "sm", disabled: "", readonly: "", "no-error-line": "", "aria-label": "Notes" }, children: [] },

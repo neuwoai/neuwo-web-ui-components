@@ -3,6 +3,10 @@
   resize: vertical;
 }
 
+.neuwo-textarea--no-resize {
+  resize: none;
+}
+
 .neuwo-textarea.neuwo-input--mono {
   line-height: var(--neuwo-line-height-body);
 }

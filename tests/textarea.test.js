@@ -74,6 +74,18 @@ describe("<neuwo-textarea>", () => {
     expect(areaOf(el).classList.contains("neuwo-input--mono")).toBe(false);
   });
 
+  it("drops the resize handle under no-resize, and follows the attribute and the property", () => {
+    const el = make(`<neuwo-textarea no-resize></neuwo-textarea>`);
+    expect(areaOf(el).className).toBe("neuwo-input neuwo-textarea neuwo-textarea--no-resize");
+    expect(el.noResize).toBe(true);
+    el.noResize = false;
+    expect(el.hasAttribute("no-resize")).toBe(false);
+    expect(areaOf(el).className).toBe("neuwo-input neuwo-textarea");
+    el.noResize = true;
+    expect(el.getAttribute("no-resize")).toBe("");
+    expect(areaOf(el).classList.contains("neuwo-textarea--no-resize")).toBe(true);
+  });
+
   it("forwards rows, minlength and maxlength to the textarea", () => {
     const control = areaOf(make(`<neuwo-textarea rows="6" minlength="2" maxlength="40" name="m" placeholder="p"></neuwo-textarea>`));
     expect(control.getAttribute("rows")).toBe("6");
@@ -206,6 +218,11 @@ describe("textarea recipe", () => {
     expect(textareaCss).toMatch(/\.neuwo-textarea\s*\{[^}]*min-height:\s*8rem;[^}]*resize:\s*vertical;/);
     expect(textareaCss).not.toMatch(/(^|[\s,}])\.input\b/);
     expect(textareaCss).not.toMatch(/:host/);
+  });
+
+  it("turns the resize handle off on its own modifier, leaving the textarea resizable without it", () => {
+    expect(textareaCss).toMatch(/^\.neuwo-textarea--no-resize \{\s*resize: none;\s*\}/m);
+    expect(textareaCss.indexOf(".neuwo-textarea--no-resize")).toBeGreaterThan(textareaCss.indexOf(".neuwo-textarea {"));
   });
 
   it("spaces a mono textarea's lines for code, as the Markdown surface's code panels are", () => {

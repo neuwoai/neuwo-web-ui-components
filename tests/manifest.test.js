@@ -216,7 +216,7 @@ describe("custom-elements.json", () => {
     const names = (tag) => declByTag(manifest, tag).attributes.map((attribute) => attribute.name);
     const base = ["name", "value", "placeholder", "disabled", "form", "required", "readonly", "autocomplete", "size", "label", "error", "error-muted", "no-error-line"];
     expect(names("neuwo-input")).toEqual(["type", "min", "max", "step", "pattern", "minlength", "maxlength", "inputmode", "mono", ...base]);
-    expect(names("neuwo-textarea")).toEqual(["rows", "minlength", "maxlength", "mono", ...base]);
+    expect(names("neuwo-textarea")).toEqual(["rows", "minlength", "maxlength", "mono", "no-resize", ...base]);
     expect(names("neuwo-combobox")).toEqual(["searchable", ...base]);
     for (const tag of ["neuwo-input", "neuwo-textarea", "neuwo-combobox", "neuwo-range"]) {
       const muted = declByTag(manifest, tag).attributes.find((attribute) => attribute.name === "error-muted");
