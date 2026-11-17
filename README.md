@@ -19,8 +19,8 @@ npm install @neuwo/web-ui-library--demo
 npm tarball, with permissive CORS headers, so the fonts load without any configuration:
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.2/dist/neuwo-components.css" />
-<script type="module" src="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.2/dist/neuwo.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.3/dist/neuwo-components.css" />
+<script type="module" src="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.3/dist/neuwo.js"></script>
 ```
 
 **Self-hosted**, to keep every runtime request on your own origin and take the registry out of
@@ -55,9 +55,9 @@ A page that server-renders the components fixes their markup at build time, so t
 part of the public API. Before 1.0, class names and markup structure change only in minor
 releases; patch releases change CSS and behaviour only. Two ways to take that:
 
-- **Float on patches**, for example `@0.2` in a jsDelivr URL. Styling and behaviour fixes reach
+- **Float on patches**, for example `@0.3` in a jsDelivr URL. Styling and behaviour fixes reach
   every site centrally. A markup change reaches you only when you upgrade and rebuild.
-- **Pin**, for example `@0.2.1`, or the version your lockfile resolves. Nothing changes until
+- **Pin**, for example `@0.3.0`, or the version your lockfile resolves. Nothing changes until
   you decide it should. A pinned URL is immutable and cached for a year, while a floating one is
   cached at the edge for about half a day.
 
@@ -76,7 +76,7 @@ rules after the stylesheet. To avoid a swap on first paint, preload a file:
 
 ```html
 <link rel="preload" as="font" type="font/woff2" crossorigin
-      href="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.2/dist/fonts/outfit-variable.woff2" />
+      href="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.3/dist/fonts/outfit-variable.woff2" />
 ```
 
 With a bundler, preload the URL the bundler gives the file, which is the fingerprinted one the
@@ -120,8 +120,8 @@ design tokens, the font faces and every component's styles, then load the script
 self-register.
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.2/dist/neuwo-components.css" />
-<script type="module" src="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.2/dist/neuwo.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.3/dist/neuwo-components.css" />
+<script type="module" src="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.3/dist/neuwo.js"></script>
 <neuwo-button variant="solid">Get started</neuwo-button>
 ```
 
@@ -151,7 +151,7 @@ For Neuwo typography on native headings and text as well, link `neuwo.css` inste
 surface.
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.2/dist/neuwo.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.3/dist/neuwo.css" />
 ```
 
 Typography alone is also published as `foundation/typography.css`, and tokens alone as
@@ -186,7 +186,7 @@ or any child of an element that has no regions.
 Where you cannot link a stylesheet, load the standalone build on its own:
 
 ```html
-<script type="module" src="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.2/dist/neuwo-standalone.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.3/dist/neuwo-standalone.js"></script>
 <neuwo-button variant="solid">Get started</neuwo-button>
 ```
 
@@ -1389,8 +1389,8 @@ preloaded image.
 
 ```html
 <link rel="preload" as="image" fetchpriority="high"
-      href="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.2/dist/logos/neuwo-logo--bg-dark.svg" />
-<img src="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.2/dist/logos/neuwo-logo--bg-dark.svg" alt="Neuwo"
+      href="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.3/dist/logos/neuwo-logo--bg-dark.svg" />
+<img src="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.3/dist/logos/neuwo-logo--bg-dark.svg" alt="Neuwo"
      width="320" height="50" class="neuwo-logo" />
 ```
 

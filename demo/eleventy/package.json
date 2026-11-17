@@ -7,7 +7,7 @@
     "build": "eleventy"
   },
   "dependencies": {
-    "@neuwo/web-ui-library--demo": "^0.2.0"
+    "@neuwo/web-ui-library--demo": "^0.3.0"
   },
   "devDependencies": {
     "@11ty/eleventy": "3.1.8"

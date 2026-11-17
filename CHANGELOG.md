@@ -1,6 +1,12 @@
 # Changelog
 
-## Unreleased
+## 0.3.0
+
+Brings the library in line with the Neuwo Design System's pages: a shipped monospace face and a
+`mono` field option, the design system's glowing status dot and shimmer keyframes, focus that
+matches neuwo.ai on every control, a logo sized from its element, and colour fallbacks for older
+browsers. It removes four unused tokens, so it is a minor release; no class or attribute is
+renamed.
 
 ### Added
 

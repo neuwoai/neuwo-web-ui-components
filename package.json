@@ -1,6 +1,6 @@
 {
   "name": "@neuwo/web-ui-library--demo",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Neuwo Web UI Library: vanilla custom elements and published CSS recipes for the Neuwo design language.",
   "keywords": [
     "neuwo",
