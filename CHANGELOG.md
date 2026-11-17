@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.5.0
+
+Two more of the Neuwo Design System's requests: a textarea that can turn its resize handle off,
+and a gap between a notice's text and its close button. It adds an attribute, so it is a minor
+release; nothing is renamed or removed.
 
 ### Added
 
