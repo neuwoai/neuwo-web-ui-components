@@ -226,6 +226,7 @@ export const cases = {
       children: [],
     },
     { name: "no error line", attrs: { label: "Search", "no-error-line": "" }, children: [] },
+    { name: "monospace", attrs: { label: "API key", mono: "", placeholder: "nw_live_..." }, children: [] },
     { name: "forwarded host attributes", attrs: { "aria-label": "Search", title: "Search the site", "data-x": "1" }, children: [] },
     {
       name: "disabled with a muted error",
@@ -251,6 +252,7 @@ export const cases = {
       children: [],
     },
     { name: "value with two lines", attrs: { value: "line one\nline two" }, children: [] },
+    { name: "monospace small", attrs: { mono: "", size: "sm", value: '{"id": 1}' }, children: [] },
     { name: "value with a leading newline", attrs: { value: "\nlead" }, children: [] },
     { name: "value with markup characters", attrs: { value: "x & y < z </textarea>" }, children: [] },
     { name: "small, disabled, readonly and no error line", attrs: { size: "sm", disabled: "", readonly: "", "no-error-line": "", "aria-label": "Notes" }, children: [] },

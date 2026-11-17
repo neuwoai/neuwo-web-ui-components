@@ -19,6 +19,15 @@ export function controlClass(attrs) {
 }
 
 /**
+ * The classes of a text-entry control: the `controlClass`, with `--mono` for `mono`.
+ * @param {Record<string, string>} attrs
+ * @returns {string}
+ */
+export function textControlClass(attrs) {
+  return has(attrs, "mono") ? `${controlClass(attrs)} neuwo-input--mono` : controlClass(attrs);
+}
+
+/**
  * The host attributes a native control carries as they are: every `aria-*` and `title`.
  * @param {Record<string, string>} attrs
  * @returns {Record<string, string>}

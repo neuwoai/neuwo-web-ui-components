@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { toHTML } from "../src/core/adapters/html.js";
 import { control, h } from "../src/core/template.js";
-import { controlAttrs, controlClass, fieldTemplate } from "../src/components/fields/field.template.js";
+import { controlAttrs, controlClass, fieldTemplate, textControlClass } from "../src/components/fields/field.template.js";
 import { inputTemplate } from "../src/components/fields/input/input.template.js";
 import { templates } from "../src/templates.js";
 
@@ -174,6 +174,16 @@ describe("controlClass()", () => {
   });
 });
 
+describe("textControlClass()", () => {
+  it.each([
+    [{}, "neuwo-input"],
+    [{ mono: "" }, "neuwo-input neuwo-input--mono"],
+    [{ mono: "", size: "sm", error: "Bad" }, "neuwo-input neuwo-input--sm neuwo-input--error neuwo-input--mono"],
+  ])("composes %j into %j", (attrs, classes) => {
+    expect(textControlClass(attrs)).toBe(classes);
+  });
+});
+
 describe("inputTemplate()", () => {
   const render = (attrs = {}, children = []) => inputTemplate(attrs, ctx(children));
   const input = (attrs) => find(render(attrs), "neuwo-input");
@@ -227,5 +237,11 @@ describe("inputTemplate()", () => {
 
   it("styles the control from the size and error attributes", () => {
     expect(input({ size: "sm", error: "Bad" }).props.class).toBe("neuwo-input neuwo-input--sm neuwo-input--error");
+  });
+
+  it("sets the control in the monospace face under mono, and keeps mono off it", () => {
+    const props = input({ mono: "" }).props;
+    expect(props.class).toBe("neuwo-input neuwo-input--mono");
+    expect(props).not.toHaveProperty("mono");
   });
 });

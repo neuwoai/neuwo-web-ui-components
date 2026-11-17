@@ -233,6 +233,10 @@
         <neuwo-textarea name="message" label="Message" rows="4" placeholder="Tell us what you are looking for..."></neuwo-textarea>
       </div>
       <div class="row">
+        <neuwo-input name="api-key" label="API key (mono)" placeholder="nw_live_..." mono></neuwo-input>
+        <neuwo-textarea name="payload" label="Request body (mono)" rows="4" size="sm" mono value='{"url": "https://example.com/article", "lang": "en"}'></neuwo-textarea>
+      </div>
+      <div class="row">
         <neuwo-combobox name="role" label="I am a" placeholder="Select one">
           <option value="publisher">Publisher</option>
           <option value="advertiser">Advertiser</option>

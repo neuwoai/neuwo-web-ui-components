@@ -31,6 +31,11 @@ describe("field.css recipe", () => {
     expect(code).toMatch(/\.neuwo-field__required\s*\{\s*margin-inline-start:\s*var\(--neuwo-space-1\);\s*\}/);
   });
 
+  it("sets a mono control in the monospace token, value and placeholder alike", () => {
+    expect(code).toMatch(/\.neuwo-input--mono\s*\{\s*font-family:\s*var\(--neuwo-font-mono\);\s*\}/);
+    expect(code.indexOf(".neuwo-input--mono")).toBeGreaterThan(code.indexOf(".neuwo-input {"));
+  });
+
   it("takes an empty label out of the flow so the column gap ignores it", () => {
     expect(code).toMatch(/\.neuwo-field__label--empty\s*\{\s*display:\s*none/);
   });

@@ -11,6 +11,8 @@
   `--neuwo-font-mono` names it first, so code, Markdown `code` and `pre`, and anything else set in
   the token render the same on every machine instead of in whichever monospace face is installed.
   Its code ligatures are removed, so `!=` and `->` read exactly as typed.
+- `mono` on `<neuwo-input>` and `<neuwo-textarea>` sets the value and the placeholder in the
+  monospace face, for code, JSON, API keys and IDs. It adds `.neuwo-input--mono` to the control.
 - `@keyframes neuwo-shimmer`, in `neuwo.css` and `neuwo-components.css` beside the
   `--neuwo-gradient-accent-shimmer` gradient it animates. Use them together with
   `background-size: 200% 100%` and `animation: neuwo-shimmer 4s ease-in-out infinite`, the recipe

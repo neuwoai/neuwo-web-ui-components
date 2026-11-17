@@ -934,6 +934,7 @@ properties, or target the children you passed in.
 | `.neuwo-field__required` | the required marker after the label |
 | `.neuwo-input` | the native `<input>`; it was `::part(input)` |
 | `.neuwo-input--sm`, `.neuwo-input--error` | the control, by `size="sm"`, and by `error` unless `error-muted` or `no-error-line` is set |
+| `.neuwo-input--mono` | the input's or the textarea's control, by `mono` |
 | `.neuwo-field__error` | the reserved error line; it was `::part(error)` |
 | `.neuwo-combobox` | the combobox's box around the trigger, the chevron, the popup and the form value |
 | `.neuwo-combobox__trigger` | the combobox's trigger, a `<button>`, or a text `<input>` with `searchable`, alongside `.neuwo-input` and its modifiers |
@@ -1033,7 +1034,9 @@ submitted once.
   element only, so a query such as `[data-testid="email"]` matches one node.
 
 On `<neuwo-textarea>` the `value` attribute is the textarea's starting text, and
-`rows`, `minlength` and `maxlength` are carried onto it. On `<neuwo-range>` the
+`rows`, `minlength` and `maxlength` are carried onto it. `mono` on `<neuwo-input>` or
+`<neuwo-textarea>` sets the value and the placeholder in the brand's monospace face
+(`--neuwo-font-mono`), for code, JSON, API keys and IDs. On `<neuwo-range>` the
 bounds and `step` are carried onto the range input, and the filled part of its
 track (`--neuwo-range-fill`) is written into the markup from `min`, `max` and
 `value`, so it shows in the first paint.

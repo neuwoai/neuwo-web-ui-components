@@ -63,6 +63,15 @@ describe("<neuwo-textarea>", () => {
     expect(el.querySelector("[part]")).toBeNull();
   });
 
+  it("sets the textarea in the monospace face under mono, and follows the attribute and the property", () => {
+    const el = make(`<neuwo-textarea mono></neuwo-textarea>`);
+    expect(areaOf(el).className).toBe("neuwo-input neuwo-input--mono neuwo-textarea");
+    expect(el.mono).toBe(true);
+    el.mono = false;
+    expect(el.hasAttribute("mono")).toBe(false);
+    expect(areaOf(el).classList.contains("neuwo-input--mono")).toBe(false);
+  });
+
   it("forwards rows, minlength and maxlength to the textarea", () => {
     const control = areaOf(make(`<neuwo-textarea rows="6" minlength="2" maxlength="40" name="m" placeholder="p"></neuwo-textarea>`));
     expect(control.getAttribute("rows")).toBe("6");

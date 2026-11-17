@@ -42,6 +42,8 @@ export function Usage() {
       <neuwo-cta heading-level={3} />
       <neuwo-cta heading-level="3" />
       <neuwo-textarea rows={4} className="notes" />
+      <neuwo-textarea mono />
+      <neuwo-input mono placeholder="nw_live_..." />
       <neuwo-input value={s} onChange={(e) => setS(e.target.value)} />
       <neuwo-input ref={input} defaultValue="draft" name="q" onChange={(e) => e.target.checkValidity()} />
       <neuwo-range value={40} />

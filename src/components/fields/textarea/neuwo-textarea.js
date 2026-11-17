@@ -11,10 +11,14 @@ import { textareaTemplate } from "./textarea.template.js";
  * @attr {string | number} rows - visible row count.
  * @attr {string | number} minlength - minimum text length.
  * @attr {string | number} maxlength - maximum text length.
+ * @attr {boolean} mono - sets the text and the placeholder in the brand's monospace face (`--neuwo-font-mono`), for code and JSON.
  */
 export class NeuwoTextarea extends NeuwoFieldElement {
   static template = textareaTemplate;
-  static observedAttributes = [...NeuwoFieldElement.observedAttributes, "rows", "minlength", "maxlength"];
+  static observedAttributes = [...NeuwoFieldElement.observedAttributes, "rows", "minlength", "maxlength", "mono"];
+
+  get mono() { return this.hasAttribute("mono"); }
+  set mono(value) { this.toggleAttribute("mono", Boolean(value)); }
 }
 
 define("neuwo-textarea", NeuwoTextarea);
