@@ -37,7 +37,7 @@ describe("cta.css recipe", () => {
     expect(ruleFor("neuwo-cta").trim()).toBe("display: block;");
     const named = rules.flatMap((rule) => rule.selectors).filter((selector) => /^neuwo-cta\b/.test(selector));
     for (const selector of named.filter((selector) => selector !== "neuwo-cta")) {
-      expect(selector).toMatch(/^neuwo-cta\[pulse\](\[intensity="[sl]"\])?(:hover)? \.neuwo-cta__actions > neuwo-button:first-of-type$/);
+      expect(selector).toMatch(/^neuwo-cta\[pulse\](\[intensity="[sl]"\])?(:hover)?( \.neuwo-cta--spotlight(:hover)?)? \.neuwo-cta__actions > neuwo-button:first-of-type(:hover)?$/);
     }
   });
 
@@ -91,6 +91,16 @@ describe("cta.css recipe", () => {
     expect(ruleFor('neuwo-cta[pulse][intensity="l"] .neuwo-cta__actions > neuwo-button:first-of-type')).toContain("--neuwo-cta-pulse-spread: 18px");
     expect(declarations).toContain("var(--neuwo-cta-pulse-spread)");
     expect(declarations).toContain("var(--neuwo-cta-pulse-alpha)");
+  });
+
+  it("bursts the spotlight's first action button once when the card is hovered, never while the button itself is", () => {
+    const [block] = [...declarations.matchAll(/@media \(hover: hover\) and \(prefers-reduced-motion: no-preference\) \{[\s\S]*?\n\}/g)].map((m) => m[0]);
+    expect(block).toMatch(/neuwo-cta\[pulse\] \.neuwo-cta--spotlight:hover \.neuwo-cta__actions > neuwo-button:first-of-type \{\s*animation: neuwo-cta-button-burst 0\.6s ease-out;\s*\}/);
+    expect(block).toMatch(/neuwo-cta\[pulse\] \.neuwo-cta--spotlight \.neuwo-cta__actions > neuwo-button:first-of-type:hover \{\s*animation: none;\s*\}/);
+    expect(block.indexOf(":first-of-type:hover")).toBeGreaterThan(block.indexOf(".neuwo-cta--spotlight:hover"));
+    const [, burst] = css.match(/@keyframes neuwo-cta-button-burst\s*{([\s\S]*?)\n}/);
+    expect(burst).toMatch(/0%\s*\{ box-shadow: 0 0 0 0 color-mix\(in srgb, var\(--neuwo-color-blue\) var\(--neuwo-cta-pulse-alpha\), transparent\); \}/);
+    expect(burst).toMatch(/100%\s*\{ box-shadow: 0 0 0 var\(--neuwo-cta-pulse-spread\) color-mix\(in srgb, var\(--neuwo-color-blue\) 0%, transparent\); \}/);
   });
 
   it("rings the first action button whatever its variant", () => {

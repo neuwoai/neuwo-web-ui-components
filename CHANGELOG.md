@@ -8,6 +8,10 @@
   (`.neuwo-badge--uppercase`), so the text in the markup stays as written for search, copying and
   assistive technology. It replaces a project rule such as
   `.hero-tags neuwo-badge { text-transform: uppercase; }`.
+- On a `<neuwo-cta variant="spotlight" pulse>`, hovering the card plays one 0.6s burst of the
+  pulse ring on the first action button (`neuwo-cta-button-burst`), as the brand's final CTA does;
+  hovering the button itself plays none, and `intensity` scales the burst like the ring. Reduced
+  motion turns it off, and the banner is unchanged.
 
 ### Fixed
 

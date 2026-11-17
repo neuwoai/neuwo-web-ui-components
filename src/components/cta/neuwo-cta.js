@@ -10,7 +10,9 @@ import { ctaTemplate } from "./cta.template.js";
  * gradient border that comes alive on hover). Wrap headline words in an element
  * with `data-accent` to paint just those words with the brand gradient. With the
  * `pulse` attribute, the first action button radiates a ring synced to the
- * surface shimmer, whatever its variant, and `intensity` scales that ring.
+ * surface shimmer, whatever its variant, and `intensity` scales that ring. On the
+ * spotlight, hovering the card plays one burst of that ring on the button instead,
+ * and hovering the button itself plays none.
  * Presentational; the actions are `<neuwo-button>`s, and an optional `field`
  * region takes an inline control so a capture band needs no rebuild by hand.
  * Submission stays with the consumer: wrap the band in a `<form>` and a
@@ -19,7 +21,7 @@ import { ctaTemplate } from "./cta.template.js";
  * @summary Neuwo call-to-action band. Public classes: `.neuwo-cta` on the band, with `--banner` or `--spotlight`; `.neuwo-cta__inner` inside it in both variants, after `.neuwo-cta__glow` in the spotlight, holding `.neuwo-cta__body` and then `.neuwo-cta__actions`; `.neuwo-cta__headline`, `.neuwo-cta__sub`, `.neuwo-cta__field` and `.neuwo-cta__actions` around the author's content, with `.neuwo-cta__field--empty` on a field wrapper nothing fills; `.neuwo-cta__status` on the status line, with `--success` or `--error`.
  * @customElement neuwo-cta
  * @attr {banner|spotlight} variant - layout and chrome (default banner).
- * @attr {boolean} pulse - radiate a synchronised pulse ring on the first action button, any variant; honours prefers-reduced-motion.
+ * @attr {boolean} pulse - radiate a synchronised pulse ring on the first action button, any variant, and on the spotlight one burst while the card is hovered; honours prefers-reduced-motion.
  * @attr {s|m|l} intensity - amplitude of the pulse ring (default m). No effect without `pulse`.
  * @attr {1|2|3|4|5|6} heading-level - heading level for the headline element (default 2).
  * @attr status - message shown under the field after the band's action; the consumer sets it, the component renders the line and its live region.

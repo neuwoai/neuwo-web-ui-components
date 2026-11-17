@@ -104,6 +104,22 @@ neuwo-cta[pulse][intensity="l"] .neuwo-cta__actions > neuwo-button:first-of-type
   }
 }
 
+/* Reduced motion is in the query, because these rules outweigh the reduced-motion block below. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  neuwo-cta[pulse] .neuwo-cta--spotlight:hover .neuwo-cta__actions > neuwo-button:first-of-type {
+    animation: neuwo-cta-button-burst 0.6s ease-out;
+  }
+
+  neuwo-cta[pulse] .neuwo-cta--spotlight .neuwo-cta__actions > neuwo-button:first-of-type:hover {
+    animation: none;
+  }
+}
+
+@keyframes neuwo-cta-button-burst {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--neuwo-color-blue) var(--neuwo-cta-pulse-alpha), transparent); }
+  100% { box-shadow: 0 0 0 var(--neuwo-cta-pulse-spread) color-mix(in srgb, var(--neuwo-color-blue) 0%, transparent); }
+}
+
 .neuwo-cta--banner {
   position: relative;
   overflow: hidden;
