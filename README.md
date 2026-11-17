@@ -1361,8 +1361,19 @@ any script runs. The `<svg>` carries `.neuwo-logo` and one of `.neuwo-logo--bg-l
 `--bg-dark-alt` or `--bg-colour`; there is no `::part(logo)`. Restyle through the classes, with the
 element name in front for weight: `neuwo-logo .neuwo-logo { opacity: 0.8; }`.
 
-Size it with `--neuwo-logo-height` (default `1.75rem`); the width follows the aspect ratio. The
-accessible name defaults to `Neuwo`, and `label=""` marks the logo decorative instead, for a
+The element is the logo's box, and the drawing fills it at the wordmark's aspect ratio. Size it
+with `--neuwo-logo-height` (default `1.75rem`), or with `height` or `width` on the element, as on an
+image; the element's own rule weighs nothing, so a single class wins, `display` included:
+
+```css
+.header-logo { display: block; }                 /* a block, still 1.75rem high */
+.spec-logo { width: 100%; height: auto; }        /* fills its container, height by ratio */
+.toolbar-logo { min-width: 0; }                  /* may shrink as a flex item */
+```
+
+It never grows past its container (`max-width: 100%`), and a box narrower than the ratio scales
+the drawing down inside it, centred. Size the element, not the inner `.neuwo-logo`, which fills it.
+The accessible name defaults to `Neuwo`, and `label=""` marks the logo decorative instead, for a
 link or heading that already names the brand:
 
 ```html

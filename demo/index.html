@@ -1008,7 +1008,17 @@
       <neuwo-logo style="--neuwo-logo-height: 3rem"></neuwo-logo>
     </div>
     <p>
-      Height only, via <code>--neuwo-logo-height</code>; the width follows the aspect ratio.
+      Height via <code>--neuwo-logo-height</code>; the width follows the aspect ratio. The element
+      is the logo's box, so a <code>width</code> on it works too, and in a narrow box the drawing
+      scales down inside it:
+    </p>
+    <div class="row">
+      <div style="width: 14rem"><neuwo-logo style="width: 100%; height: auto"></neuwo-logo></div>
+      <div style="display: flex; width: 9rem; border: 1px dashed var(--neuwo-glass-border)">
+        <neuwo-logo style="min-width: 0"></neuwo-logo><span style="flex: none">Contact</span>
+      </div>
+    </div>
+    <p>
       Below, a link that already says Neuwo, so the logo inside it is marked decorative
       with <code>label=""</code> and the name is announced once:
     </p>

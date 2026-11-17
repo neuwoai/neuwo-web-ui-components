@@ -25,6 +25,8 @@ function selectorsIn(code, out = []) {
 }
 
 function isOuterBox(selector) {
+  const weightless = /^:where\((.*)\)$/.exec(selector);
+  if (weightless && closing(selector, ":where".length, "(", ")") === selector.length - 1) return isOuterBox(weightless[1]);
   const tag = /^neuwo-[\w-]+/.exec(selector);
   if (!tag) return false;
   let i = tag[0].length;
@@ -57,9 +59,11 @@ describe("light recipes", () => {
     }
   });
 
-  it("allows only a bare neuwo- tag, with attribute or pseudo-class parts, as an outer-box rule", () => {
-    for (const selector of ["neuwo-cta", "neuwo-cta:not([hidden])", "neuwo-button[block]:not([hidden])"]) expect(isOuterBox(selector), selector).toBe(true);
-    for (const selector of ["neuwo-cta span", "neuwo-cta > a", "neuwo-cta::before", "neuwo-cta:before", "neuwo-cta:first-letter", "span", ":where(.neuwo-x)"]) {
+  it("allows only a bare neuwo- tag, with attribute or pseudo-class parts, as an outer-box rule, weightless in :where() too", () => {
+    for (const selector of ["neuwo-cta", "neuwo-cta:not([hidden])", "neuwo-button[block]:not([hidden])", ":where(neuwo-logo:not([hidden]))"]) {
+      expect(isOuterBox(selector), selector).toBe(true);
+    }
+    for (const selector of ["neuwo-cta span", "neuwo-cta > a", "neuwo-cta::before", "neuwo-cta:before", "neuwo-cta:first-letter", "span", ":where(.neuwo-x)", ":where(neuwo-cta span)", ":where(neuwo-cta) span"]) {
       expect(isOuterBox(selector), selector).toBe(false);
     }
   });

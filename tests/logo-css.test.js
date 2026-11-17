@@ -8,22 +8,23 @@ const css = readFileSync(join(__dirname, "../src/components/logo/logo.css"), "ut
 const LOGOS = join(__dirname, "../src/foundation/logos");
 
 describe("logo.css recipe", () => {
-  it("keeps the element-name rule to layout only, and guards display with :not([hidden])", () => {
-    const rules = css.match(/^neuwo-logo[^{]*\{[^}]*\}/gm) ?? [];
-    expect(rules.length).toBeGreaterThan(0);
-    for (const rule of rules) {
-      expect(rule).toContain(":not([hidden])");
-      const props = rule
-        .slice(rule.indexOf("{") + 1, -1)
-        .split(";")
-        .map((d) => d.split(":")[0].trim())
-        .filter(Boolean);
-      expect(props).toEqual(props.filter((p) => p === "display" || p === "vertical-align"));
-    }
+  it("sizes the element's box with no specificity, so a project's single class on the element wins", () => {
+    const host = css.match(/^:where\(neuwo-logo:not\(\[hidden\]\)\) \{([^}]*)\}/m)?.[1] ?? "";
+    expect(host).toMatch(/display: inline-flex;/);
+    expect(host).toMatch(/vertical-align: middle;/);
+    expect(host).toMatch(/height: var\(--neuwo-logo-height, 1\.75rem\);/);
+    expect(host).toMatch(/aspect-ratio: 32 \/ 5;/);
+    expect(host).toMatch(/max-width: 100%;/);
+    expect(css).not.toMatch(/^neuwo-logo/m);
     expect(css).not.toContain(":host");
   });
 
-  it("sizes the portable class by height alone, so the aspect ratio holds", () => {
+  it("fills the element's box with the drawing, with only the class's weight", () => {
+    expect(css).toMatch(/^:where\(neuwo-logo\) > \.neuwo-logo \{\s*width: 100%;\s*height: 100%;\s*\}/m);
+    expect(css.indexOf(":where(neuwo-logo) > .neuwo-logo")).toBeGreaterThan(css.indexOf(".neuwo-logo {"));
+  });
+
+  it("sizes the portable class by height alone, so an <img> with it keeps the aspect ratio", () => {
     expect(css).toMatch(/\.neuwo-logo \{[^}]*height:\s*var\(--neuwo-logo-height, 1\.75rem\)/);
     expect(css).toMatch(/\.neuwo-logo \{[^}]*width:\s*auto/);
     expect(css).toMatch(/\.neuwo-logo \{[^}]*display:\s*block/);
@@ -50,6 +51,8 @@ describe("published logo assets", () => {
       const fills = [...svg.matchAll(/<path [^>]*fill="([^"]+)"/g)].map((m) => m[1]);
       expect(fills).toEqual([lead, lead, lead, trail, trail]);
       expect(svg).toContain('viewBox="0 0 320 50"');
+      const [across, down] = (css.match(/aspect-ratio: ([\d.]+) \/ ([\d.]+);/) ?? []).slice(1).map(Number);
+      expect(across / down, variant).toBe(320 / 50);
     }
   });
 });

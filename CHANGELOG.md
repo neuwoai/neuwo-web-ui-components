@@ -36,6 +36,13 @@
   of 0.2.0, and buttons, the copy button, checkboxes, radios, the toggle and a focused Markdown
   code panel turn their border blue too. A field, checkbox or radio that shows an error and has focus
   shows focus.
+- `<neuwo-logo>` is sized from the element, like an image. The element is the logo's box (its
+  height from `--neuwo-logo-height`, its width from the wordmark's aspect ratio, and at most its
+  container's width) and the drawing fills it, so `width: 100%; height: auto` fills a container
+  and the logo shrinks in a narrow row, scaling inside its height. The element's rule now weighs
+  nothing (`:where()`), so a project's single class on it wins, `display: block` included. The
+  default size is unchanged. Size the element rather than the inner `.neuwo-logo`, which fills it;
+  a size set on the inner class no longer sizes the element.
 
 ### Fixed
 

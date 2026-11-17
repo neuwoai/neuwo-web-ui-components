@@ -4,8 +4,10 @@ import { DEFAULT_LABEL, DEFAULT_VARIANT, logoTemplate } from "./logo.template.js
 /**
  * The Neuwo wordmark. Draws one of the brand's four ink pairs, each named for
  * the background it belongs on, and inlines the SVG rather than fetching it, so
- * a logo costs no request. Size it with `--neuwo-logo-height`; the width follows the
- * aspect ratio. Wrap it in an `<a>` to make it a link.
+ * a logo costs no request. The element is the logo's box and the drawing fills it:
+ * size it with `--neuwo-logo-height`, or with `height` or `width` on the element as on
+ * an image, and the other side follows the aspect ratio. Its own rule weighs nothing,
+ * so a single class on it wins. Wrap it in an `<a>` to make it a link.
  *
  * The same four files are published to `dist/logos/` for consumers that need an
  * `<img>`. A server-rendered or expanded logo draws with the first paint; only one
