@@ -1037,7 +1037,9 @@ submitted once.
 On `<neuwo-textarea>` the `value` attribute is the textarea's starting text, and
 `rows`, `minlength` and `maxlength` are carried onto it. `mono` on `<neuwo-input>` or
 `<neuwo-textarea>` sets the value and the placeholder in the brand's monospace face
-(`--neuwo-font-mono`), for code, JSON, API keys and IDs. On `<neuwo-range>` the
+(`--neuwo-font-mono`), for code, JSON, API keys and IDs, a step smaller than a prose field of the
+same size so code reads as code: `--neuwo-font-size-sm` at the standard size and
+`--neuwo-font-size-xs` with `size="sm"`, with the same padding. On `<neuwo-range>` the
 bounds and `step` are carried onto the range input, and the filled part of its
 track (`--neuwo-range-fill`) is written into the markup from `min`, `max` and
 `value`, so it shows in the first paint.

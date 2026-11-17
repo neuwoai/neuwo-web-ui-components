@@ -66,6 +66,11 @@ neuwo-combobox:not([hidden]) {
 
 .neuwo-input--mono {
   font-family: var(--neuwo-font-mono);
+  font-size: var(--neuwo-font-size-sm);
+}
+
+.neuwo-input--sm.neuwo-input--mono {
+  font-size: var(--neuwo-font-size-xs);
 }
 
 .neuwo-field--sm {

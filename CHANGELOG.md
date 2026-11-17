@@ -4,9 +4,9 @@
 
 The rest of the Neuwo Design System's switch to the library: capitals and a steady height for
 the badge, the brand's hover burst on the spotlight CTA, a filled close button for the notice,
-link underlines that scale with the text, a focus ring that stands clear of a button's edge, and
-a short-lived error flash for the text fields. It adds two attributes and a method, so it is a
-minor release; nothing is renamed or removed.
+link underlines that scale with the text, a focus ring that stands clear of a button's edge,
+code-sized text in monospace fields and a short-lived error flash for the text fields. It adds
+two attributes and a method, so it is a minor release; nothing is renamed or removed.
 
 ### Added
 
@@ -32,6 +32,10 @@ minor release; nothing is renamed or removed.
 
 ### Changed
 
+- `mono` on `<neuwo-input>` and `<neuwo-textarea>` sets the value and the placeholder a step
+  smaller than a prose field of the same size, as the Markdown surface's inline code is:
+  `--neuwo-font-size-sm` (14px) at the standard size and `--neuwo-font-size-xs` (12px) with
+  `size="sm"`. The padding stays, so a `mono` field is a little shorter than a prose one.
 - A focused `<neuwo-button>`, copy button or notice close button rings 1px clear of its edge, so
   the ring reads against a solid fill: a 1px blue line, a 2px blur and the 20% band
   (`--neuwo-shadow-focus-ring`), drawn on the control's `::after`

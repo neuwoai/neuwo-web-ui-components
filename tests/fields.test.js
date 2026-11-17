@@ -32,8 +32,17 @@ describe("field.css recipe", () => {
   });
 
   it("sets a mono control in the monospace token, value and placeholder alike", () => {
-    expect(code).toMatch(/\.neuwo-input--mono\s*\{\s*font-family:\s*var\(--neuwo-font-mono\);\s*\}/);
+    expect(code).toMatch(/\.neuwo-input--mono\s*\{\s*font-family:\s*var\(--neuwo-font-mono\);/);
     expect(code.indexOf(".neuwo-input--mono")).toBeGreaterThan(code.indexOf(".neuwo-input {"));
+  });
+
+  it("sets mono text a step smaller than a prose field of the same size, keeping the padding", () => {
+    const mono = code.match(/^\.neuwo-input--mono \{([^}]*)\}/m)?.[1] ?? "";
+    expect(mono).toContain("font-size: var(--neuwo-font-size-sm);");
+    expect(code.match(/^\.neuwo-input--sm \{([^}]*)\}/m)?.[1]).toContain("font-size: var(--neuwo-font-size-sm);");
+    expect(code.match(/^\.neuwo-input--sm\.neuwo-input--mono \{([^}]*)\}/m)?.[1]).toMatch(/^\s*font-size: var\(--neuwo-font-size-xs\);\s*$/);
+    expect(code.indexOf(".neuwo-input--mono {")).toBeGreaterThan(code.indexOf(".neuwo-input--sm {"));
+    expect(code).not.toMatch(/\.neuwo-input--mono[^{]*\{[^}]*padding/);
   });
 
   it("takes an empty label out of the flow so the column gap ignores it", () => {

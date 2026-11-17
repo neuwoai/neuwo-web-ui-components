@@ -17,7 +17,7 @@ import { inputTemplate } from "./input.template.js";
  * @attr {string | number} minlength - minimum text length.
  * @attr {string | number} maxlength - maximum text length.
  * @attr inputmode - virtual keyboard hint.
- * @attr {boolean} mono - sets the value and the placeholder in the brand's monospace face (`--neuwo-font-mono`), for code, API keys and IDs.
+ * @attr {boolean} mono - sets the value and the placeholder in the brand's monospace face (`--neuwo-font-mono`), a step smaller than a prose field of the same size (`--neuwo-font-size-sm`, or `--neuwo-font-size-xs` with `size="sm"`) and with the same padding, for code, API keys and IDs.
  */
 export class NeuwoInput extends NeuwoTextFieldElement {
   static template = inputTemplate;
