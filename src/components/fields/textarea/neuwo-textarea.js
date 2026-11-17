@@ -11,7 +11,7 @@ import { textareaTemplate } from "./textarea.template.js";
  * @attr {string | number} rows - visible row count.
  * @attr {string | number} minlength - minimum text length.
  * @attr {string | number} maxlength - maximum text length.
- * @attr {boolean} mono - sets the text and the placeholder in the brand's monospace face (`--neuwo-font-mono`), a step smaller than a prose field of the same size (`--neuwo-font-size-sm`, or `--neuwo-font-size-xs` with `size="sm"`) and with the same padding, for code and JSON.
+ * @attr {boolean} mono - sets the text and the placeholder in the brand's monospace face (`--neuwo-font-mono`), a step smaller than a prose field of the same size (`--neuwo-font-size-sm`, or `--neuwo-font-size-xs` with `size="sm"`) and with the same padding, its lines spaced for code like the Markdown surface's code panels (`--neuwo-line-height-body`), for code and JSON.
  */
 export class NeuwoTextarea extends NeuwoTextFieldElement {
   static template = textareaTemplate;

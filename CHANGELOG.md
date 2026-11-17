@@ -36,6 +36,9 @@ two attributes and a method, so it is a minor release; nothing is renamed or rem
   smaller than a prose field of the same size, as the Markdown surface's inline code is:
   `--neuwo-font-size-sm` (14px) at the standard size and `--neuwo-font-size-xs` (12px) with
   `size="sm"`. The padding stays, so a `mono` field is a little shorter than a prose one.
+- A `<neuwo-textarea mono>` spaces its lines for code at `--neuwo-line-height-body` (1.6), the
+  line height of the Markdown surface's code panels, instead of the tight `normal` that crowded
+  multi-line JSON.
 - A focused `<neuwo-button>`, copy button or notice close button rings 1px clear of its edge, so
   the ring reads against a solid fill: a 1px blue line, a 2px blur and the 20% band
   (`--neuwo-shadow-focus-ring`), drawn on the control's `::after`

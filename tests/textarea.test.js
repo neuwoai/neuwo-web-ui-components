@@ -208,6 +208,11 @@ describe("textarea recipe", () => {
     expect(textareaCss).not.toMatch(/:host/);
   });
 
+  it("spaces a mono textarea's lines for code, as the Markdown surface's code panels are", () => {
+    expect(textareaCss).toMatch(/^\.neuwo-textarea\.neuwo-input--mono \{\s*line-height: var\(--neuwo-line-height-body\);\s*\}/m);
+    expect(read("../src/foundation/markdown.css")).toMatch(/\.neuwo-markdown pre \{[^}]*line-height: var\(--neuwo-line-height-body\);/);
+  });
+
   it("is in the reset's tag and block lists", () => {
     expect(resetCss).toContain("neuwo-textarea,");
     expect(resetCss).toContain('.neuwo-textarea, [class*="neuwo-textarea__"], [class*="neuwo-textarea--"]');

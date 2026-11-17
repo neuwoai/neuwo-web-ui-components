@@ -280,12 +280,24 @@
       <neuwo-button size="sm" variant="solid">Get started</neuwo-button>
     </div>
 
-    <h2>Monospace fields (mono: the text a step smaller than prose, same padding)</h2>
+    <h2>Monospace fields (mono: the text a step smaller than prose, same padding; a textarea's lines spaced for code)</h2>
     <div class="row" style="align-items: flex-end">
       <neuwo-input label="Default, prose" value="nw_live_4f2a9c"></neuwo-input>
       <neuwo-input label="Default, mono" value="nw_live_4f2a9c" mono></neuwo-input>
       <neuwo-input size="sm" label="Compact, prose" value="nw_live_4f2a9c"></neuwo-input>
       <neuwo-input size="sm" label="Compact, mono" value="nw_live_4f2a9c" mono></neuwo-input>
+    </div>
+    <div class="row">
+      <neuwo-textarea label="Prose textarea" rows="5" style="inline-size: 26rem" value='{
+  "url": "https://example.com/article",
+  "lang": "en",
+  "segments": ["sports", "travel"]
+}'></neuwo-textarea>
+      <neuwo-textarea label="Mono textarea (lines spaced for code)" rows="5" mono style="inline-size: 26rem" value='{
+  "url": "https://example.com/article",
+  "lang": "en",
+  "segments": ["sports", "travel"]
+}'></neuwo-textarea>
     </div>
 
     <h2>Field label slot (markup in the label, still associated)</h2>

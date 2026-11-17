@@ -2,3 +2,7 @@
   min-height: 8rem;
   resize: vertical;
 }
+
+.neuwo-textarea.neuwo-input--mono {
+  line-height: var(--neuwo-line-height-body);
+}
