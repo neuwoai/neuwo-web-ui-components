@@ -19,6 +19,11 @@ neuwo-status-dot {
   color: var(--neuwo-color-blue);
 }
 
+.neuwo-status-dot--s {
+  width: 0.5rem;
+  height: 0.5rem;
+}
+
 /* Motion axis: pulse expands the ring; blink fades the dot. Mutually exclusive. */
 .neuwo-status-dot--pulse {
   animation: neuwo-status-dot-pulse 2s ease-in-out infinite;
@@ -29,6 +34,10 @@ neuwo-status-dot {
 }
 
 /* Authored after the base rule so the halo modifiers override its ring. */
+.neuwo-status-dot--halo-none {
+  box-shadow: none;
+}
+
 .neuwo-status-dot--halo-s {
   box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 25%, transparent);
 }
@@ -44,6 +53,22 @@ neuwo-status-dot {
 .neuwo-status-dot--glow-l {
   filter: drop-shadow(0 0 0.5rem currentColor)
           drop-shadow(0 0 1rem currentColor);
+}
+
+/* With no ring to stack over, a box-shadow glow draws the design system's glowing dot pixel for pixel; drop-shadow does not. */
+.neuwo-status-dot--halo-none.neuwo-status-dot--glow-s {
+  filter: none;
+  box-shadow: 0 0 0.25rem currentColor;
+}
+
+.neuwo-status-dot--halo-none.neuwo-status-dot--glow-m {
+  filter: none;
+  box-shadow: 0 0 0.5rem currentColor;
+}
+
+.neuwo-status-dot--halo-none.neuwo-status-dot--glow-l {
+  filter: none;
+  box-shadow: 0 0 0.5rem currentColor, 0 0 1rem currentColor;
 }
 
 @keyframes neuwo-status-dot-pulse {

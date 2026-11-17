@@ -257,9 +257,9 @@ describe("custom-elements.json", () => {
     expect(attributesFor(manifest, "neuwo-deal-id").has("size")).toBe(true);
   });
 
-  it("documents the status-dot's four axes", () => {
+  it("documents the status-dot's five axes", () => {
     const attrs = attributesFor(manifest, "neuwo-status-dot");
-    for (const a of ["variant", "motion", "halo", "glow"]) expect(attrs).toContain(a);
+    for (const a of ["variant", "size", "motion", "halo", "glow"]) expect(attrs).toContain(a);
   });
 
   it("documents the cta's attributes", () => {

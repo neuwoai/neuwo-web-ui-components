@@ -27,7 +27,14 @@ describe("statusDotTemplate()", () => {
     expect(classes({ motion: "xyz" })).toBe("neuwo-status-dot");
   });
 
-  it("maps halo s and l to a modifier, and m or anything else to none", () => {
+  it("maps size s to a modifier, and m or anything else to none", () => {
+    expect(classes({ size: "s" })).toBe("neuwo-status-dot neuwo-status-dot--s");
+    expect(classes({ size: "m" })).toBe("neuwo-status-dot");
+    expect(classes({ size: "l" })).toBe("neuwo-status-dot");
+  });
+
+  it("maps halo none, s and l to a modifier, and m or anything else to none", () => {
+    expect(classes({ halo: "none" })).toBe("neuwo-status-dot neuwo-status-dot--halo-none");
     expect(classes({ halo: "s" })).toBe("neuwo-status-dot neuwo-status-dot--halo-s");
     expect(classes({ halo: "l" })).toBe("neuwo-status-dot neuwo-status-dot--halo-l");
     expect(classes({ halo: "m" })).toBe("neuwo-status-dot");
@@ -41,8 +48,8 @@ describe("statusDotTemplate()", () => {
   });
 
   it("composes every axis", () => {
-    expect(classes({ variant: "blue", motion: "blink", halo: "l", glow: "m" })).toBe(
-      "neuwo-status-dot neuwo-status-dot--blue neuwo-status-dot--blink neuwo-status-dot--halo-l neuwo-status-dot--glow-m",
+    expect(classes({ variant: "blue", size: "s", motion: "blink", halo: "l", glow: "m" })).toBe(
+      "neuwo-status-dot neuwo-status-dot--blue neuwo-status-dot--s neuwo-status-dot--blink neuwo-status-dot--halo-l neuwo-status-dot--glow-m",
     );
   });
 });

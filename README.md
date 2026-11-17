@@ -899,8 +899,9 @@ properties, or target the children you passed in.
 | `.neuwo-deal-id--s`, `.neuwo-deal-id--l` | the value box, by `size` |
 | `.neuwo-status-dot` | the dot `<span>`, which has no children |
 | `.neuwo-status-dot--blue` | the dot, by `variant` |
+| `.neuwo-status-dot--s` | the dot, by `size="s"` |
 | `.neuwo-status-dot--pulse`, `.neuwo-status-dot--blink` | the dot, by `motion` |
-| `.neuwo-status-dot--halo-s`, `.neuwo-status-dot--halo-l` | the dot, by `halo` |
+| `.neuwo-status-dot--halo-none`, `.neuwo-status-dot--halo-s`, `.neuwo-status-dot--halo-l` | the dot, by `halo` |
 | `.neuwo-status-dot--glow-s`, `.neuwo-status-dot--glow-m`, `.neuwo-status-dot--glow-l` | the dot, by `glow` |
 | `.neuwo-logo` | the logo `<svg>` |
 | `.neuwo-logo--bg-light`, `.neuwo-logo--bg-dark`, `.neuwo-logo--bg-dark-alt`, `.neuwo-logo--bg-colour` | the logo, by `variant` |

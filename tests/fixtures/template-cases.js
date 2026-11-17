@@ -339,7 +339,9 @@ export const cases = {
     { name: "blue blink", attrs: { variant: "blue", motion: "blink" }, children: [] },
     { name: "pulse with large halo", attrs: { motion: "pulse", halo: "l" }, children: [] },
     { name: "small halo and medium glow", attrs: { halo: "s", glow: "m" }, children: [] },
+    { name: "small blue blinking glow without a ring", attrs: { variant: "blue", size: "s", motion: "blink", halo: "none", glow: "m" }, children: [] },
     { name: "unknown values", attrs: { variant: "xyz", motion: "xyz", halo: "xl", glow: "xl" }, children: [] },
+    { name: "unknown size", attrs: { size: "xl" }, children: [] },
     { name: "forwarded host attributes", attrs: { title: "Online", "aria-label": "Online" }, children: [] },
   ],
 };

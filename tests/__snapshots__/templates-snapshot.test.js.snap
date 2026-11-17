@@ -268,7 +268,11 @@ exports[`template markup snapshots > neuwo-status-dot > forwarded host attribute
 
 exports[`template markup snapshots > neuwo-status-dot > pulse with large halo 1`] = `"<neuwo-status-dot motion="pulse" halo="l"><span class="neuwo-status-dot neuwo-status-dot--pulse neuwo-status-dot--halo-l"></span></neuwo-status-dot>"`;
 
+exports[`template markup snapshots > neuwo-status-dot > small blue blinking glow without a ring 1`] = `"<neuwo-status-dot variant="blue" size="s" motion="blink" halo="none" glow="m"><span class="neuwo-status-dot neuwo-status-dot--blue neuwo-status-dot--s neuwo-status-dot--blink neuwo-status-dot--halo-none neuwo-status-dot--glow-m"></span></neuwo-status-dot>"`;
+
 exports[`template markup snapshots > neuwo-status-dot > small halo and medium glow 1`] = `"<neuwo-status-dot halo="s" glow="m"><span class="neuwo-status-dot neuwo-status-dot--halo-s neuwo-status-dot--glow-m"></span></neuwo-status-dot>"`;
+
+exports[`template markup snapshots > neuwo-status-dot > unknown size 1`] = `"<neuwo-status-dot size="xl"><span class="neuwo-status-dot"></span></neuwo-status-dot>"`;
 
 exports[`template markup snapshots > neuwo-status-dot > unknown values 1`] = `"<neuwo-status-dot variant="xyz" motion="xyz" halo="xl" glow="xl"><span class="neuwo-status-dot"></span></neuwo-status-dot>"`;
 

@@ -13,6 +13,10 @@
   Its code ligatures are removed, so `!=` and `->` read exactly as typed.
 - `mono` on `<neuwo-input>` and `<neuwo-textarea>` sets the value and the placeholder in the
   monospace face, for code, JSON, API keys and IDs. It adds `.neuwo-input--mono` to the control.
+- `size="s"` and `halo="none"` on `<neuwo-status-dot>`: a 0.5rem dot, and a dot without its ring
+  (`.neuwo-status-dot--s` and `.neuwo-status-dot--halo-none`). With no ring, `glow` is drawn as a
+  box-shadow, so `<neuwo-status-dot variant="blue" size="s" halo="none" glow="m" motion="blink">`
+  is the design system's glowing dot, pixel for pixel in Chromium and Firefox.
 - `@keyframes neuwo-shimmer`, in `neuwo.css` and `neuwo-components.css` beside the
   `--neuwo-gradient-accent-shimmer` gradient it animates. Use them together with
   `background-size: 200% 100%` and `animation: neuwo-shimmer 4s ease-in-out infinite`, the recipe
