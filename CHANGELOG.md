@@ -9,6 +9,12 @@
   `background-size: 200% 100%` and `animation: neuwo-shimmer 4s ease-in-out infinite`, the recipe
   in the comment above the token, which named a `shimmer` keyframes the library did not ship.
 
+### Removed
+
+- The tokens `--neuwo-bg-blue-1`, `--neuwo-bg-green-1`, `--neuwo-bg-blue-2` and
+  `--neuwo-bg-green-2`. Nothing read them: `.neuwo-background__gradient` writes its own
+  percentages, so setting them changed nothing. Delete any rule that sets them.
+
 ### Changed
 
 - Keyboard focus looks the same on every control and matches neuwo.ai: the control's border turns
