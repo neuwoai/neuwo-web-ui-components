@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- A `<neuwo-badge motion="shimmer">` keeps the height and line of a badge without it. The sweep was
+  clipped with `overflow: hidden`, which moved the pill's baseline to its bottom edge: the element
+  grew from 29.19px to 36.78px and the pill rose 3.8px. It is clipped with `overflow: clip` now,
+  which leaves the baseline alone, with `hidden` kept for browsers without `clip`.
+
 ## 0.3.0
 
 Brings the library in line with the Neuwo Design System's pages: a shipped monospace face and a

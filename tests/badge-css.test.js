@@ -37,6 +37,11 @@ describe("badge.css recipe", () => {
     expect(css).toContain("prefers-reduced-motion: reduce");
   });
 
+  it("clips the shimmer sweep without moving the pill's baseline, so a shimmer badge keeps its height and line", () => {
+    const shimmer = css.match(/^\.neuwo-badge--shimmer \{([^}]*)\}/m)?.[1] ?? "";
+    expect(shimmer).toMatch(/overflow: hidden;\s*overflow: clip;/);
+  });
+
   it("defines the size axis as font-size-only presets from tokens", () => {
     expect(css).toContain(".neuwo-badge--s");
     expect(css).toContain("var(--neuwo-font-size-2xs)");

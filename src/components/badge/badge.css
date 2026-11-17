@@ -56,7 +56,9 @@ neuwo-badge {
   --neuwo-badge-shimmer-percent: 35;
   --neuwo-badge-shimmer-strength: 100%;
   position: relative;
+  /* clip, unlike hidden, keeps the pill's text baseline, so the badge neither grows nor rises; hidden is the fallback. */
   overflow: hidden;
+  overflow: clip;
 }
 
 .neuwo-badge--shimmer::after {
