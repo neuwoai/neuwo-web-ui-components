@@ -58,10 +58,9 @@ describe("copy.css recipe", () => {
     expect(declarations).not.toContain("hover: none");
   });
 
-  it("takes the shared focus ring, with the transparent outline that forced colours paint in its place", () => {
-    const body = ruleFor(".neuwo-copy__button:focus-visible");
-    expect(body).toMatch(/outline:\s*var\(--neuwo-outline-focus\)/);
-    expect(body).toMatch(/box-shadow:\s*var\(--neuwo-shadow-focus\)/);
+  it("takes the buttons' focus ring, with the transparent outline that forced colours paint in its place", () => {
+    expect(ruleFor(".neuwo-copy__button:focus-visible")).toMatch(/outline:\s*var\(--neuwo-outline-focus\)/);
+    expect(ruleFor(".neuwo-copy__button:focus-visible::after")).toMatch(/box-shadow:\s*var\(--neuwo-shadow-focus-ring\)/);
   });
 
   it("draws both glyphs as masks over the button's own colour", () => {
@@ -127,7 +126,8 @@ describe("copy.css recipe", () => {
       "--neuwo-glass-border",
       "--neuwo-glass-border-hover",
       "--neuwo-tint-green-25",
-      "--neuwo-shadow-focus",
+      "--neuwo-shadow-focus-ring",
+      "--neuwo-shadow-focus-ring-offset",
       "--neuwo-transition-fast",
     ]) {
       expect(css).toContain(`var(${token})`);

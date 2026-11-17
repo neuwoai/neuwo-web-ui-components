@@ -93,10 +93,18 @@ neuwo-button[disabled] {
 }
 
 .neuwo-btn:focus-visible {
-  border-color: var(--neuwo-color-blue);
   outline: var(--neuwo-outline-focus);
   outline-offset: var(--neuwo-outline-focus-offset);
-  box-shadow: var(--neuwo-shadow-focus);
+}
+
+/* Its own box, because a shadow on the button cannot leave a see-through gap; -1px steps over the button's border. */
+.neuwo-btn:focus-visible::after {
+  content: "";
+  position: absolute;
+  inset: calc(-1px - var(--neuwo-shadow-focus-ring-offset));
+  border-radius: inherit;
+  box-shadow: var(--neuwo-shadow-focus-ring);
+  pointer-events: none;
 }
 
 .neuwo-btn--sm {

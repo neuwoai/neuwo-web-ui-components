@@ -22,14 +22,17 @@ const BORDERED = [
   ["src/components/fields/combobox/combobox.css", ".neuwo-combobox__trigger:focus"],
   ["src/components/selection/form-check.css", ".neuwo-form-check__input:focus-visible"],
   ["src/components/selection/toggle/toggle.css", ".neuwo-form-toggle__input:focus-visible + .neuwo-form-toggle__track"],
-  ["src/components/button/button.css", ".neuwo-btn:focus-visible"],
-  ["src/components/copy/copy.css", ".neuwo-copy__button:focus-visible"],
   ["src/foundation/markdown.css", ".neuwo-markdown pre:focus-visible"],
 ];
 
 const BORDERLESS = [
-  ["src/components/notice/notice.css", ".neuwo-notice__dismiss:focus-visible"],
   ["src/components/selection/segmented/segmented.css", ".neuwo-segmented__option:focus-visible"],
+];
+
+const RINGED = [
+  ["src/components/button/button.css", ".neuwo-btn:focus-visible", "calc(-1px - var(--neuwo-shadow-focus-ring-offset))"],
+  ["src/components/copy/copy.css", ".neuwo-copy__button:focus-visible", "calc(-1px - var(--neuwo-shadow-focus-ring-offset))"],
+  ["src/components/notice/notice.css", ".neuwo-notice__dismiss:focus-visible", "calc(-1 * var(--neuwo-shadow-focus-ring-offset))"],
 ];
 
 describe("focus recipe", () => {
@@ -48,6 +51,29 @@ describe("focus recipe", () => {
 
   it.each(BORDERLESS)("draws the band on a borderless control in %s", (file, selector) => {
     expect(ruleFor(read(file), selector)).toMatch(/box-shadow:\s*var\(--neuwo-shadow-focus\);/);
+  });
+
+  it("rings a focused button 1px clear of its edge: a solid blue line, a short blur, then the 20% band", () => {
+    const tokens = read("src/foundation/tokens.css");
+    expect(tokens).toContain(
+      "--neuwo-shadow-focus-ring: 0 0 0 1px var(--neuwo-color-blue), 0 0 2px 1px color-mix(in srgb, var(--neuwo-color-blue) 60%, transparent), 0 0 0 4px var(--neuwo-tint-blue-20);",
+    );
+    expect(tokens).toContain("--neuwo-shadow-focus-ring-offset: 1px;");
+  });
+
+  it.each(RINGED)("draws the ring on its own box, leaving the border alone, in %s", (file, selector, inset) => {
+    const css = read(file);
+    const body = ruleFor(css, selector);
+    expect(body).toMatch(/outline:\s*var\(--neuwo-outline-focus\);/);
+    expect(body).toMatch(/outline-offset:\s*var\(--neuwo-outline-focus-offset\);/);
+    expect(body).not.toMatch(/border-color|box-shadow/);
+    const ring = ruleFor(css, `${selector}::after`);
+    expect(ring).toContain('content: "";');
+    expect(ring).toContain("position: absolute;");
+    expect(ring).toContain(`inset: ${inset};`);
+    expect(ring).toContain("border-radius: inherit;");
+    expect(ring).toContain("box-shadow: var(--neuwo-shadow-focus-ring);");
+    expect(ring).toContain("pointer-events: none;");
   });
 
   it("lets focus win over the error state on a field", () => {

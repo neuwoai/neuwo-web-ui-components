@@ -883,6 +883,11 @@ The three wrappers are always rendered and are `display: contents`, so they draw
 no box and an empty one adds no gap. Style what they hold through inherited
 properties, or target the children you passed in.
 
+Keyboard focus rings a button on the control's `::after`, `--neuwo-shadow-focus-ring` drawn
+`--neuwo-shadow-focus-ring-offset` (1px) clear of its edge, and the copy button and the notice's
+close button ring the same way. Leave that pseudo-element to the ring, and restyle the ring
+through the two tokens.
+
 ```css
 .my-tag .neuwo-badge { font-weight: 500; }
 .deal-ref .neuwo-deal-id { font-family: ui-monospace, monospace; }

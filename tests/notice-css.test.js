@@ -63,7 +63,7 @@ describe("notice.css recipe", () => {
     expect(glyph).toMatch(/background: currentColor/);
     expect(glyph).toContain("mask:");
     expect(glyph).toContain("-webkit-mask:");
-    expect(ruleFor(".neuwo-notice__dismiss:focus-visible")).toContain("var(--neuwo-shadow-focus)");
+    expect(ruleFor(".neuwo-notice__dismiss:focus-visible::after")).toContain("var(--neuwo-shadow-focus-ring)");
   });
 
   it("gives a filled close button a subtle white background, stronger on hover and keyboard focus", () => {

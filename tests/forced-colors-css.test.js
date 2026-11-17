@@ -46,9 +46,11 @@ describe("forced colours", () => {
     for (const file of LIGHT_COMPONENT_CSS) {
       const css = strip(read(file));
       expect(css, file).not.toMatch(/outline:\s*(none|0)\s*;/);
-      for (const rule of flatRules(outsideForced(css))) {
+      const rules = flatRules(outsideForced(css));
+      const ringedBox = (selector) => rules.some((rule) => rule.selectors.includes(`${selector}::after`) && rule.declarations.has("box-shadow"));
+      for (const rule of rules) {
         const focused = rule.selectors.some((selector) => selector.includes(":focus-visible") && !/::[\w-]+$/.test(selector));
-        if (!focused || !rule.declarations.has("box-shadow")) continue;
+        if (!focused || !(rule.declarations.has("box-shadow") || rule.selectors.every(ringedBox))) continue;
         rings++;
         expect(rule.declarations.get("outline"), `${file} ${rule.selectors[0]}`).toBe("var(--neuwo-outline-focus)");
         expect(rule.declarations.get("outline-offset"), `${file} ${rule.selectors[0]}`).toBe("var(--neuwo-outline-focus-offset)");

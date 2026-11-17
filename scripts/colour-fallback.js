@@ -141,14 +141,14 @@ export function hex({ r, g, b, a }) {
 }
 
 /**
- * A token value with each `oklch()` and `color-mix()` in it replaced by its hex.
+ * A token value with each `oklch()`, `color-mix()` and colour `var()` in it replaced by its hex.
  * @param {string} value
  * @param {Map<string, string>} tokens
  */
 export function inHex(value, tokens) {
   let out = "";
   let at = 0;
-  for (const match of value.matchAll(/(oklch|color-mix)\(/g)) {
+  for (const match of value.matchAll(/(oklch|color-mix|var)\(/g)) {
     if (match.index < at) continue;
     const end = closingParen(value, match.index + match[1].length);
     out += value.slice(at, match.index) + hex(resolve(value.slice(match.index, end + 1), tokens));

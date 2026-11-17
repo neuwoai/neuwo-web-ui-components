@@ -527,9 +527,9 @@ describe("<neuwo-button> under React", () => {
 });
 
 describe("button.css", () => {
-  it("draws a keyboard focus ring on .neuwo-btn from the shadow-focus token", () => {
-    expect(buttonCss).toContain(".neuwo-btn:focus-visible");
-    expect(buttonCss).toContain("var(--neuwo-shadow-focus)");
+  it("draws a keyboard focus ring on .neuwo-btn::after from the shadow-focus-ring token", () => {
+    expect(buttonCss).toContain(".neuwo-btn:focus-visible::after");
+    expect(buttonCss).toContain("var(--neuwo-shadow-focus-ring)");
   });
 
   it("defines the hover-emphasis presets from tokens", () => {

@@ -4,8 +4,8 @@
 
 The rest of the Neuwo Design System's switch to the library: capitals and a steady height for
 the badge, the brand's hover burst on the spotlight CTA, a filled close button for the notice,
-and link underlines that scale with the text. It adds two attributes, so it is a minor release;
-nothing is renamed or removed.
+link underlines that scale with the text, and a focus ring that stands clear of a button's edge.
+It adds two attributes, so it is a minor release; nothing is renamed or removed.
 
 ### Added
 
@@ -24,6 +24,12 @@ nothing is renamed or removed.
 
 ### Changed
 
+- A focused `<neuwo-button>`, copy button or notice close button rings 1px clear of its edge, so
+  the ring reads against a solid fill: a 1px blue line, a 2px blur and the 20% band
+  (`--neuwo-shadow-focus-ring`), drawn on the control's `::after`
+  `--neuwo-shadow-focus-ring-offset` out, which leaves the gap see-through. The button's own
+  border no longer turns blue, which had doubled the line on the copy button. Fields, checkboxes,
+  radios and toggles keep the band against their blue border.
 - Links, bare `a` and `.neuwo-link`, set their underline `0.2em` below the text instead of `2px`,
   so the gap scales with the text: 3.2px at 16px, 4px at 20px, as the design system's prose links
   do.

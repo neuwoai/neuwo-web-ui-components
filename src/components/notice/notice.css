@@ -155,7 +155,16 @@ neuwo-notice {
 .neuwo-notice__dismiss:focus-visible {
   outline: var(--neuwo-outline-focus);
   outline-offset: var(--neuwo-outline-focus-offset);
-  box-shadow: var(--neuwo-shadow-focus);
+}
+
+/* Its own box, because a shadow on the button cannot leave a see-through gap. */
+.neuwo-notice__dismiss:focus-visible::after {
+  content: "";
+  position: absolute;
+  inset: calc(-1 * var(--neuwo-shadow-focus-ring-offset));
+  border-radius: inherit;
+  box-shadow: var(--neuwo-shadow-focus-ring);
+  pointer-events: none;
 }
 
 /* Reserved on the card, not the first line, so nothing collides with the button in either layout. */
