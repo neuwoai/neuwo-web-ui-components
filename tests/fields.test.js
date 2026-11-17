@@ -27,6 +27,10 @@ describe("field.css recipe", () => {
     expect(code).toMatch(/\.neuwo-input::placeholder\s*\{\s*color:\s*var\(--neuwo-color-grey-400\)/);
   });
 
+  it("draws the required marker in the label's colour, so it never reads as an error", () => {
+    expect(code).toMatch(/\.neuwo-field__required\s*\{\s*margin-inline-start:\s*var\(--neuwo-space-1\);\s*\}/);
+  });
+
   it("takes an empty label out of the flow so the column gap ignores it", () => {
     expect(code).toMatch(/\.neuwo-field__label--empty\s*\{\s*display:\s*none/);
   });

@@ -28,7 +28,6 @@ neuwo-combobox:not([hidden]) {
 
 .neuwo-field__required {
   margin-inline-start: var(--neuwo-space-1);
-  color: var(--neuwo-color-red);
 }
 
 .neuwo-input {

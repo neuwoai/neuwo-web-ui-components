@@ -6,6 +6,8 @@
 
 - A partly selected `<neuwo-checkbox>` (`indeterminate`) is filled blue with a white dash, like a
   checked one and like a native checkbox, instead of a white dash on the empty dark box.
+- A required field's asterisk (`.neuwo-field__required`) takes the label's colour instead of red,
+  so it no longer reads as an error message.
 
 ## 0.2.0
 
