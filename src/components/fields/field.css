@@ -44,6 +44,7 @@ neuwo-combobox:not([hidden]) {
 }
 
 .neuwo-input:focus-visible {
+  border-color: var(--neuwo-color-blue);
   outline: var(--neuwo-outline-focus);
   outline-offset: var(--neuwo-outline-focus-offset);
   box-shadow: var(--neuwo-shadow-focus);

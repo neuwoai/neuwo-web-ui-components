@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Changed
+
+- Keyboard focus looks the same on every control and matches neuwo.ai: the control's border turns
+  blue and a 3px band of 20% blue surrounds it, the shape the error state draws in red.
+  `--neuwo-shadow-focus` is now `0 0 0 3px var(--neuwo-tint-blue-20)`, replacing the offset ring
+  of 0.2.0, and buttons, the copy button, checkboxes, radios, the toggle and a focused Markdown
+  code panel turn their border blue too. A field, checkbox or radio that shows an error and has focus
+  shows focus.
+
 ### Fixed
 
 - A partly selected `<neuwo-checkbox>` (`indeterminate`) is filled blue with a white dash, like a

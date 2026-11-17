@@ -67,6 +67,7 @@ neuwo-toggle:not([hidden]) {
 }
 
 .neuwo-form-toggle__input:focus-visible + .neuwo-form-toggle__track {
+  border-color: var(--neuwo-color-blue);
   outline: var(--neuwo-outline-focus);
   outline-offset: var(--neuwo-outline-focus-offset);
   box-shadow: var(--neuwo-shadow-focus);

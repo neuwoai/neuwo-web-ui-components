@@ -76,6 +76,9 @@
 /* A scrollable panel is reachable by keyboard, so it shows where focus landed. */
 .neuwo-markdown pre:focus-visible {
   border-color: var(--neuwo-color-blue);
+  outline: var(--neuwo-outline-focus);
+  outline-offset: var(--neuwo-outline-focus-offset);
+  box-shadow: var(--neuwo-shadow-focus);
 }
 
 /* Derived from the control's own size and inset, so the two cannot drift. */

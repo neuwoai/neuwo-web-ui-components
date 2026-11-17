@@ -26,12 +26,6 @@ neuwo-checkbox:not([hidden]) {
   border-radius: var(--neuwo-radius-full);
 }
 
-.neuwo-form-check__input:focus-visible {
-  outline: var(--neuwo-outline-focus);
-  outline-offset: var(--neuwo-outline-focus-offset);
-  box-shadow: var(--neuwo-shadow-focus);
-}
-
 .neuwo-form-check__input:checked,
 .neuwo-form-check__input[type="checkbox"]:indeterminate {
   background-color: var(--neuwo-color-blue);
@@ -84,6 +78,14 @@ neuwo-checkbox:not([hidden]) {
 .neuwo-form-check--error > .neuwo-form-check__input {
   border-color: var(--neuwo-color-red);
   box-shadow: var(--neuwo-shadow-danger);
+}
+
+/* After the error rule, which weighs the same, so a focused control shows focus. */
+.neuwo-form-check__input:focus-visible {
+  border-color: var(--neuwo-color-blue);
+  outline: var(--neuwo-outline-focus);
+  outline-offset: var(--neuwo-outline-focus-offset);
+  box-shadow: var(--neuwo-shadow-focus);
 }
 
 /* Forced colours replace the white token with Canvas, the box's own colour, so the marks would vanish. */

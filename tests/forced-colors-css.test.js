@@ -35,9 +35,8 @@ function forcedRules(file) {
 const forced = (file, selector) => Object.fromEntries(forcedRules(file).find((rule) => rule.selectors.includes(selector))?.declarations ?? []);
 
 describe("forced colours", () => {
-  it("defines the focus outline from the focus ring's geometry: a 2px ring 2px out, transparent until forced colours paint it", () => {
+  it("defines the focus outline that forced colours paint in place of the focus band: 2px, 2px out, transparent until then", () => {
     const tokens = read("src/foundation/tokens.css");
-    expect(tokens).toContain("--neuwo-shadow-focus: 0 0 0 2px var(--neuwo-color-body-bg), 0 0 0 4px var(--neuwo-color-blue);");
     expect(tokens).toContain("--neuwo-outline-focus: 2px solid transparent;");
     expect(tokens).toContain("--neuwo-outline-focus-offset: 2px;");
   });

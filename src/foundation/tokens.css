@@ -180,7 +180,7 @@
   --neuwo-shadow-lg: 0 0.625rem 0.9375rem oklch(0% 0 none / 0.4);
   --neuwo-shadow-xl: 0 1.25rem 1.5625rem oklch(0% 0 none / 0.45);
   --neuwo-shadow-glow: 0 0 1.5rem oklch(66.623% 0.1177 217.10 / 0.35);
-  --neuwo-shadow-focus: 0 0 0 2px var(--neuwo-color-body-bg), 0 0 0 4px var(--neuwo-color-blue);
+  --neuwo-shadow-focus: 0 0 0 3px var(--neuwo-tint-blue-20);
   --neuwo-shadow-danger: 0 0 0 3px var(--neuwo-tint-red-20);
   --neuwo-outline-focus: 2px solid transparent;
   --neuwo-outline-focus-offset: 2px;
