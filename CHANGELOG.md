@@ -1,6 +1,11 @@
 # Changelog
 
-## Unreleased
+## 0.4.0
+
+The rest of the Neuwo Design System's switch to the library: capitals and a steady height for
+the badge, the brand's hover burst on the spotlight CTA, a filled close button for the notice,
+and link underlines that scale with the text. It adds two attributes, so it is a minor release;
+nothing is renamed or removed.
 
 ### Added
 
@@ -12,7 +17,6 @@
   pulse ring on the first action button (`neuwo-cta-button-burst`), as the brand's final CTA does;
   hovering the button itself plays none, and `intensity` scales the burst like the ring. Reduced
   motion turns it off, and the banner is unchanged.
-
 - `dismiss-filled` on `<neuwo-notice>` gives the close button a subtle background,
   `--neuwo-color-white` at 15%, which strengthens to 25% on hover and keyboard focus, so it stands
   out on a busy or coloured card (`.neuwo-notice__dismiss--filled`). Without it the button is

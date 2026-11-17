@@ -7,7 +7,7 @@
     "start": "next start"
   },
   "dependencies": {
-    "@neuwo/web-ui-library--demo": "^0.3.0",
+    "@neuwo/web-ui-library--demo": "^0.4.0",
     "next": "16.4.6",
     "react": "19.3.1",
     "react-dom": "19.3.1"
