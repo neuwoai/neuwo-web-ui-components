@@ -58,6 +58,7 @@ export const cases = {
     { name: "green borderless pulse", attrs: { variant: "green", borderless: "", motion: "pulse" }, children: ["Live"] },
     { name: "shimmer large intensity", attrs: { size: "l", motion: "shimmer", intensity: "l" }, children: ["New"] },
     { name: "small glow", attrs: { size: "s", glow: "", intensity: "s" }, children: ["Hot"] },
+    { name: "uppercase small green pulse", attrs: { variant: "green", size: "s", borderless: "", uppercase: "", motion: "pulse" }, children: ["Live"] },
     { name: "unknown values", attrs: { variant: "xyz", size: "xl", motion: "xyz" }, children: ["Plain"] },
     { name: "forwarded host attributes", attrs: { title: "Tip", "aria-label": "Status", "data-track": "badge" }, children: ["Beta"] },
     { name: "nested element", attrs: {}, children: ["Sale ", { tag: "b", text: "50%" }] },

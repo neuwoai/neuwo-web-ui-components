@@ -244,7 +244,7 @@ describe("custom-elements.json", () => {
 
   it("documents the badge's six axes", () => {
     const attrs = attributesFor(manifest, "neuwo-badge");
-    for (const a of ["variant", "size", "borderless", "motion", "intensity", "glow"]) expect(attrs).toContain(a);
+    for (const a of ["variant", "size", "borderless", "uppercase", "motion", "intensity", "glow"]) expect(attrs).toContain(a);
   });
 
   it("documents the badge shimmer percentage and not the 0.1 width name", () => {

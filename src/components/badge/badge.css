@@ -30,6 +30,10 @@ neuwo-badge {
   border-color: transparent;
 }
 
+.neuwo-badge--uppercase {
+  text-transform: uppercase;
+}
+
 .neuwo-badge--s { font-size: var(--neuwo-font-size-2xs); }
 .neuwo-badge--l { font-size: var(--neuwo-font-size-sm); }
 

@@ -29,6 +29,11 @@ describe("badgeTemplate()", () => {
     expect(classes({ size: "xl" })).toBe("neuwo-badge");
   });
 
+  it("adds the uppercase modifier when present", () => {
+    expect(classes({ uppercase: "" })).toBe("neuwo-badge neuwo-badge--uppercase");
+    expect(classes({})).toBe("neuwo-badge");
+  });
+
   it("adds the borderless and glow modifiers when present", () => {
     expect(classes({ borderless: "", glow: "" })).toBe("neuwo-badge neuwo-badge--borderless neuwo-badge--glow");
   });

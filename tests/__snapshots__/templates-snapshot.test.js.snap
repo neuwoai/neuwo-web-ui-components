@@ -16,6 +16,8 @@ exports[`template markup snapshots > neuwo-badge > small glow 1`] = `"<neuwo-bad
 
 exports[`template markup snapshots > neuwo-badge > unknown values 1`] = `"<neuwo-badge variant="xyz" size="xl" motion="xyz"><span class="neuwo-badge">Plain</span></neuwo-badge>"`;
 
+exports[`template markup snapshots > neuwo-badge > uppercase small green pulse 1`] = `"<neuwo-badge variant="green" size="s" borderless="" uppercase="" motion="pulse"><span class="neuwo-badge neuwo-badge--green neuwo-badge--s neuwo-badge--borderless neuwo-badge--uppercase neuwo-badge--pulse">Live</span></neuwo-badge>"`;
+
 exports[`template markup snapshots > neuwo-button > block 1`] = `"<neuwo-button block="" hover="l" xwide=""><button class="neuwo-btn neuwo-btn--solid neuwo-btn--hover-l neuwo-btn--xwide neuwo-btn--block" type="button"><span class="neuwo-btn__start"></span><span class="neuwo-btn__label">Full width</span><span class="neuwo-btn__end"></span></button></neuwo-button>"`;
 
 exports[`template markup snapshots > neuwo-button > disabled link 1`] = `"<neuwo-button href="https://neuwo.ai" disabled=""><button class="neuwo-btn neuwo-btn--solid" type="button" disabled=""><span class="neuwo-btn__start"></span><span class="neuwo-btn__label">Visit</span><span class="neuwo-btn__end"></span></button></neuwo-button>"`;

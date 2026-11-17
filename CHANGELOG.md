@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Added
+
+- `uppercase` on `<neuwo-badge>` sets the label in capitals with `text-transform: uppercase`
+  (`.neuwo-badge--uppercase`), so the text in the markup stays as written for search, copying and
+  assistive technology. It replaces a project rule such as
+  `.hero-tags neuwo-badge { text-transform: uppercase; }`.
+
 ### Fixed
 
 - A `<neuwo-badge motion="shimmer">` keeps the height and line of a badge without it. The sweep was

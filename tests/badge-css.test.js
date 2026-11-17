@@ -13,8 +13,8 @@ describe("badge.css recipe", () => {
   it("inlines eyebrow typography and the pill from tokens", () => {
     expect(css).toContain(".neuwo-badge");
     expect(css).toContain("var(--neuwo-font-heading)");
-    // The label renders as authored: the recipe must not force casing.
-    expect(css).not.toContain("text-transform: uppercase");
+    // The label renders as authored unless `uppercase` asks for capitals.
+    expect(css.match(/^\.neuwo-badge \{([^}]*)\}/m)?.[1]).not.toContain("text-transform");
     expect(css).toContain("var(--neuwo-radius-full)");
     expect(css).toContain("var(--neuwo-tint-blue-8)");
     expect(css).toContain("var(--neuwo-tint-blue-20)");
@@ -35,6 +35,10 @@ describe("badge.css recipe", () => {
     expect(css).toContain("@keyframes neuwo-badge-shimmer");
     expect(css).toContain("var(--neuwo-color-shimmer)");
     expect(css).toContain("prefers-reduced-motion: reduce");
+  });
+
+  it("sets an uppercase badge's label in capitals by CSS alone", () => {
+    expect(css).toMatch(/^\.neuwo-badge--uppercase \{\s*text-transform: uppercase;\s*\}/m);
   });
 
   it("clips the shimmer sweep without moving the pill's baseline, so a shimmer badge keeps its height and line", () => {

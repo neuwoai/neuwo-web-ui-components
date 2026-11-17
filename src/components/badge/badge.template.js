@@ -9,6 +9,7 @@ export function badgeTemplate(attrs) {
   if (attrs.variant === "green") classes.push("neuwo-badge--green");
   if (attrs.size === "s" || attrs.size === "l") classes.push(`neuwo-badge--${attrs.size}`);
   if (has(attrs, "borderless")) classes.push("neuwo-badge--borderless");
+  if (has(attrs, "uppercase")) classes.push("neuwo-badge--uppercase");
   if (has(attrs, "glow")) classes.push("neuwo-badge--glow");
   if (attrs.motion === "pulse" || attrs.motion === "shimmer") {
     classes.push(`neuwo-badge--${attrs.motion}`);

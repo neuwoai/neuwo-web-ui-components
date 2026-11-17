@@ -892,7 +892,7 @@ properties, or target the children you passed in.
 | --- | --- |
 | `.neuwo-badge` | the pill `<span>`, which holds the label |
 | `.neuwo-badge--green`, `.neuwo-badge--s`, `.neuwo-badge--l` | the pill, by `variant` and `size` |
-| `.neuwo-badge--borderless`, `.neuwo-badge--glow` | the pill, by the attribute of the same name |
+| `.neuwo-badge--borderless`, `.neuwo-badge--uppercase`, `.neuwo-badge--glow` | the pill, by the attribute of the same name |
 | `.neuwo-badge--pulse`, `.neuwo-badge--shimmer` | the pill, by `motion` |
 | `.neuwo-badge--intensity-s`, `.neuwo-badge--intensity-l` | the pill, by `intensity`, only alongside a `motion` |
 | `.neuwo-deal-id` | the value `<span>`, which holds the identifier |
@@ -970,10 +970,11 @@ properties, or target the children you passed in.
 | `.neuwo-segmented__options` | the hidden `<select>` that keeps your `<option>` children |
 | `.neuwo-segmented__form-value` | the visually hidden native input that submits the value |
 
-The badge and deal-id render their text as authored, so casing is yours:
+The badge and deal-id render their text as authored. For capitals on a badge, add `uppercase`,
+which sets them with `text-transform` and leaves the text as written:
 
-```css
-.hero-tags neuwo-badge { text-transform: uppercase; } /* eyebrow look */
+```html
+<neuwo-badge variant="green" size="s" borderless uppercase motion="pulse">Live</neuwo-badge>
 ```
 
 Prefer a size axis where one exists (`<neuwo-badge size>`, `<neuwo-deal-id

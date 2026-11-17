@@ -49,6 +49,16 @@ describe("<neuwo-badge>", () => {
     expect(classes(el).contains("neuwo-badge--green")).toBe(false);
   });
 
+  it("sets the label in capitals under uppercase, leaving the text as written, and reflects the property", () => {
+    const el = make(`<neuwo-badge uppercase>Live</neuwo-badge>`);
+    expect(classes(el).contains("neuwo-badge--uppercase")).toBe(true);
+    expect(el.textContent).toBe("Live");
+    expect(el.uppercase).toBe(true);
+    el.uppercase = false;
+    expect(el.hasAttribute("uppercase")).toBe(false);
+    expect(classes(el).contains("neuwo-badge--uppercase")).toBe(false);
+  });
+
   it("drops the border via the borderless axis and reflects the property", () => {
     expect(classes(make(`<neuwo-badge>x</neuwo-badge>`)).contains("neuwo-badge--borderless")).toBe(false);
     const el = make(`<neuwo-badge borderless>x</neuwo-badge>`);
