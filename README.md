@@ -283,6 +283,22 @@ emit `<a href>`, so a component would be bypassed by the very content it was bui
 class keeps the anchor in the source HTML: crawlable, and still a working link with the script
 blocked. The trade is that a host page's own CSS can override these rules.
 
+### Eyebrow
+
+`typography.css` also publishes `.neuwo-eyebrow`, the small uppercase kicker above a heading:
+`--neuwo-font-heading` (Outfit), `--neuwo-font-size-xs`, semibold, `0.08em` letter spacing and
+capitals by `text-transform`, so the text in the markup stays as written. It sets type only, no
+colour, margin or box, so it takes those from wherever you put it, on any element.
+
+```html
+<p class="neuwo-eyebrow">Classification API</p>
+<h2>Every page, understood in milliseconds</h2>
+```
+
+It ships in `foundation/typography.css` and `neuwo.css`, not in `neuwo-components.css`.
+`<neuwo-badge>` draws the same face, size, weight and spacing from the same tokens in its own
+recipe, with capitals only under `uppercase`, so a badge never depends on this sheet.
+
 ### Page surface
 
 `foundation/background.css` carries the two visuals a Neuwo page sits on, as two independent
