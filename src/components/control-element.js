@@ -90,26 +90,46 @@ export class NeuwoControlElement extends NeuwoElement {
     return this.control?.validationMessage ?? "";
   }
 
-  /** @returns {boolean} */
+  /**
+   * Whether the native control meets its constraints (`required`, `pattern`, a custom validity message), as
+   * `checkValidity()` on an `<input>` answers; an invalid control fires `invalid` on the native control. True while
+   * nothing has rendered yet.
+   * @returns {boolean}
+   */
   checkValidity() {
     return this.control?.checkValidity() ?? true;
   }
 
-  /** @returns {boolean} */
+  /**
+   * Like `checkValidity()`, and when the native control is invalid the browser also shows its validation message
+   * there, as `reportValidity()` on an `<input>` does. True while nothing has rendered yet.
+   * @returns {boolean}
+   */
   reportValidity() {
     return this.control?.reportValidity() ?? true;
   }
 
-  /** @param {string} message */
+  /**
+   * Sets a custom validation message on the native control, which keeps it invalid until the message is set back
+   * to an empty string, as `setCustomValidity()` on an `<input>` does. The browser shows the message on a form
+   * submit or `reportValidity()`; the error line shows only the `error` attribute.
+   * @param {string} message - the message, or an empty string to make the control valid again.
+   */
   setCustomValidity(message) {
     this.control?.setCustomValidity(message);
   }
 
-  /** @param {FocusOptions} [options] */
+  /**
+   * Moves focus to the part a visitor would focus: the native control, or the combobox's trigger, the radio group's
+   * checked radio (else its first enabled one) or the segmented control's selected option (else its first enabled
+   * one).
+   * @param {FocusOptions} [options] - passed on to the native `focus()`, such as `{ preventScroll: true }`.
+   */
   focus(options) {
     this.focusTarget?.focus(options);
   }
 
+  /** Removes focus from the part `focus()` moves it to. */
   blur() {
     this.focusTarget?.blur();
   }

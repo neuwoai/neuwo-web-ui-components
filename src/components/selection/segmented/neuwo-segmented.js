@@ -111,7 +111,7 @@ export class NeuwoSegmented extends NeuwoErrorMixin(NeuwoDefaultValueMixin(Neuwo
    * Picks a value as the user does: selects it, then dispatches `input` and `change` on the element when it
    * changed. A value no enabled option has picks nothing. On a host React controls it only dispatches them, with
    * `value` reading the picked value meanwhile, and React shows whatever the consumer's state then holds.
-   * @param {string} value
+   * @param {string} value - the `value` of the option to pick.
    */
   commit(value) {
     this.#widget.commit(value);

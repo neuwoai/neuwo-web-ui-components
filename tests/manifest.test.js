@@ -224,6 +224,23 @@ describe("custom-elements.json", () => {
     }
   });
 
+  it("describes every public method of every element, and each of its parameters", () => {
+    const missing = [];
+    let methods = 0;
+    for (const tag of EXPECTED_TAGS) {
+      for (const member of declByTag(manifest, tag).members ?? []) {
+        if (member.kind !== "method" || member.static || member.privacy || member.name.startsWith("#")) continue;
+        methods++;
+        if (!member.description?.trim()) missing.push(`${tag} ${member.name}()`);
+        for (const parameter of member.parameters ?? []) {
+          if (!parameter.description?.trim()) missing.push(`${tag} ${member.name}(${parameter.name})`);
+        }
+      }
+    }
+    expect(methods).toBeGreaterThan(50);
+    expect(missing).toEqual([]);
+  });
+
   it("documents flashError() once, on the text field base, for the input and the textarea only", () => {
     for (const tag of ["neuwo-input", "neuwo-textarea"]) {
       const method = declByTag(manifest, tag).members.find((member) => member.name === "flashError");

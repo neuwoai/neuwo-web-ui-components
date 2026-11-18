@@ -135,12 +135,16 @@ export class NeuwoCombobox extends NeuwoFieldElement {
    * Picks a value as the user does: shows it, then dispatches `input` and `change` on the element when it changed.
    * A value no enabled option has picks nothing. On a host React controls it only dispatches them, with `value`
    * reading the picked value meanwhile, and React shows whatever the consumer's state then holds.
-   * @param {string} value
+   * @param {string} value - the `value` of the option to pick.
    */
   commit(value) {
     this.#widget.commit(value);
   }
 
+  /**
+   * Opens the list, as a click on the trigger does, with the selected option highlighted, else the first enabled
+   * one. Does nothing while the combobox is disabled or has no option to show.
+   */
   open() {
     const trigger = this.trigger;
     const popup = this.popup;
@@ -171,6 +175,10 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     window.addEventListener("resize", this.#reposition);
   }
 
+  /**
+   * Closes the list, as Escape does, without picking. It clears any text typed to filter the list, and a
+   * `searchable` trigger shows the selected option's label again.
+   */
   close() {
     if (!this.#open) return;
     this.#open = false;

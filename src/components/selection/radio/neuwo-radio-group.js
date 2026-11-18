@@ -96,7 +96,7 @@ export class NeuwoRadioGroup extends NeuwoErrorMixin(NeuwoControlElement) {
 
   /**
    * Sets the message on every radio, so it holds, and clears, whichever radio is enabled at the time.
-   * @param {string} message
+   * @param {string} message - the message, or an empty string to make the group valid again.
    */
   setCustomValidity(message) {
     for (const radio of this.#radios()) radio.setCustomValidity(message);

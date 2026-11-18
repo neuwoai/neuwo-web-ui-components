@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- `custom-elements.json` describes every public method and its parameters, so a reference
+  generated from it lists them all: `checkValidity()`, `reportValidity()`, `setCustomValidity()`,
+  `focus()` and `blur()` on the form controls, and the combobox's `open()` and `close()`, had no
+  description.
+
 ## 0.5.0
 
 Two more of the Neuwo Design System's requests: a textarea that can turn its resize handle off,
