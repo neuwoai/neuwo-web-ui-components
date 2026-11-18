@@ -93,12 +93,19 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     return this.querySelector(`${BOX} > .neuwo-combobox__trigger`);
   }
 
-  /** @returns {HTMLElement | null} */
+  /**
+   * The popover around the list, `.neuwo-combobox__popup`; null before the combobox renders.
+   * @returns {HTMLElement | null}
+   */
   get popup() {
     return this.querySelector(`${BOX} > .neuwo-combobox__popup`);
   }
 
-  /** @returns {HTMLElement | null} */
+  /**
+   * The list of options inside the popover, `.neuwo-combobox__listbox` with `role="listbox"`; null before the
+   * combobox renders.
+   * @returns {HTMLElement | null}
+   */
   get listbox() {
     return this.querySelector(`${BOX} > .neuwo-combobox__popup > .neuwo-combobox__listbox`);
   }
@@ -127,6 +134,10 @@ export class NeuwoCombobox extends NeuwoFieldElement {
     else this.#widget.assign(next);
   }
 
+  /**
+   * Whether the list is open now, from `open()` or a visitor opening it until it closes. Read-only.
+   * @returns {boolean}
+   */
   get isOpen() {
     return this.#open;
   }

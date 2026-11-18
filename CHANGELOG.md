@@ -8,6 +8,9 @@
   generated from it lists them all: `checkValidity()`, `reportValidity()`, `setCustomValidity()`,
   `focus()` and `blur()` on the form controls, and the combobox's `open()` and `close()`, had no
   description.
+- It also describes the public properties no attribute stands for: `validity` and
+  `validationMessage` on the form controls, the live `value` of the fields, `checked` and `value`
+  on the checkbox, toggle and radio, and the combobox's `isOpen`, `popup` and `listbox`.
 - The README documents `.neuwo-eyebrow`, the uppercase kicker `typography.css` and `neuwo.css` have
   published all along, with the other published classes.
 - The README's links to the Eleventy, Next.js and React (Vite) examples are absolute links to the

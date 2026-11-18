@@ -241,6 +241,23 @@ describe("custom-elements.json", () => {
     expect(missing).toEqual([]);
   });
 
+  it("describes every public property that mirrors no attribute, whose attribute cannot describe it", () => {
+    const kebab = (name) => name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
+    const missing = [];
+    for (const tag of EXPECTED_TAGS) {
+      const declaration = declByTag(manifest, tag);
+      const attributes = new Set((declaration.attributes ?? []).map((attribute) => attribute.name));
+      for (const member of declaration.members ?? []) {
+        if (member.kind !== "field" || member.static || member.privacy || member.name.startsWith("#")) continue;
+        if (!member.description?.trim() && !attributes.has(kebab(member.name))) missing.push(`${tag} ${member.name}`);
+      }
+    }
+    expect(missing).toEqual([]);
+    for (const [tag, name] of [["neuwo-input", "validity"], ["neuwo-input", "value"], ["neuwo-checkbox", "checked"], ["neuwo-combobox", "isOpen"]]) {
+      expect(declByTag(manifest, tag).members.find((member) => member.name === name)?.description, `${tag} ${name}`).toBeTruthy();
+    }
+  });
+
   it("documents flashError() once, on the text field base, for the input and the textarea only", () => {
     for (const tag of ["neuwo-input", "neuwo-textarea"]) {
       const method = declByTag(manifest, tag).members.find((member) => member.name === "flashError");

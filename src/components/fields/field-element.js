@@ -52,7 +52,12 @@ export class NeuwoFieldElement extends NeuwoErrorMixin(NeuwoDefaultValueMixin(Ne
     return this.querySelector(":scope > .neuwo-field > .neuwo-input");
   }
 
-  /** @returns {string} */
+  /**
+   * The value the field shows now, read from and written to the native control; the `value` attribute is only the
+   * starting value. A write before the control renders is held until it does, and a write to a field React
+   * controls is ignored, since React holds its value.
+   * @returns {string}
+   */
   get value() {
     const control = this.control;
     return control ? control.value : (this.#pending ?? this.getAttribute("value") ?? "");

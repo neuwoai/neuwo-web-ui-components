@@ -80,12 +80,20 @@ export class NeuwoControlElement extends NeuwoElement {
     else this.setAttribute("form", String(value));
   }
 
-  /** @returns {ValidityState | undefined} */
+  /**
+   * The native control's validity state, as `validity` on an `<input>` reports it; undefined while nothing has
+   * rendered yet.
+   * @returns {ValidityState | undefined}
+   */
   get validity() {
     return this.control?.validity;
   }
 
-  /** @returns {string} */
+  /**
+   * The message the browser would show for the native control's validity now, as `validationMessage` on an
+   * `<input>` gives it; an empty string while the control is valid or nothing has rendered yet.
+   * @returns {string}
+   */
   get validationMessage() {
     return this.control?.validationMessage ?? "";
   }

@@ -40,7 +40,12 @@ export class NeuwoCheckableElement extends NeuwoControlElement {
     return "checkbox";
   }
 
-  /** @returns {boolean} */
+  /**
+   * Whether the control is checked now, read from and written to the native checkbox; the `checked` attribute is
+   * only the starting state. A write before the control renders is held until it does, and a write to a control
+   * React controls is ignored, since React holds its state.
+   * @returns {boolean}
+   */
   get checked() {
     const control = this.control;
     return control ? control.checked : (this.#pending ?? this.hasAttribute("checked"));
@@ -66,7 +71,11 @@ export class NeuwoCheckableElement extends NeuwoControlElement {
     this.toggleAttribute("checked", Boolean(value));
   }
 
-  /** @returns {string} */
+  /**
+   * The value the control submits with its form while checked: the `value` attribute, else `"on"`, as on a native
+   * checkbox. Setting it sets the attribute.
+   * @returns {string}
+   */
   get value() {
     return this.control?.value ?? this.getAttribute("value") ?? "on";
   }
