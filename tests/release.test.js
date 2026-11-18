@@ -6,7 +6,7 @@ import { distFile } from "./setup/dist.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (file) => readFileSync(join(root, file), "utf8");
-const { name, version, files } = JSON.parse(read("package.json"));
+const { name, version, files, repository } = JSON.parse(read("package.json"));
 const [major, minor] = version.split(".");
 const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const CDN = "https://cdn.jsdelivr.net/npm/";
@@ -74,6 +74,19 @@ describe("release", () => {
   it("the lockfile's top-level version fields are the package version", () => {
     const lock = JSON.parse(read("package-lock.json"));
     expect({ version: lock.version, root: lock.packages[""].version }).toEqual({ version, root: version });
+  });
+
+  it("every README link into the repository is absolute, at the release tag, and names a path that exists here", () => {
+    const repo = repository.url.replace(/^git\+/, "").replace(/\.git$/, "");
+    const targets = [...read("README.md").matchAll(/\]\(([^)\s]+)\)/g)].map(([, target]) => target);
+    expect(targets.filter((target) => !/^(https?:|mailto:|#)/.test(target))).toEqual([]);
+    const intoRepo = targets.filter((target) => target.startsWith(`${repo}/`));
+    expect(intoRepo.length).toBeGreaterThan(0);
+    for (const target of intoRepo) {
+      const ref = target.slice(repo.length).match(/^\/(?:tree|blob)\/([^/]+)\/(.+)$/);
+      expect(ref?.[1], target).toBe(`v${version}`);
+      expect(existsSync(join(root, ref?.[2] ?? "")), target).toBe(true);
+    }
   });
 
   it("every README CDN URL names a built file at the package's minor version", () => {

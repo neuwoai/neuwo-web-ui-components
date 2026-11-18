@@ -10,6 +10,9 @@
   description.
 - The README documents `.neuwo-eyebrow`, the uppercase kicker `typography.css` and `neuwo.css` have
   published all along, with the other published classes.
+- The README's links to the Eleventy, Next.js and React (Vite) examples are absolute links to the
+  release's tag in the repository. They were relative, so they led nowhere in the npm package or
+  on npmjs.com.
 
 ## 0.5.0
 

@@ -44,7 +44,7 @@ eleventyConfig.addPassthroughCopy({
 <script type="module" src="/vendor/neuwo/neuwo.js"></script>
 ```
 
-[demo/eleventy/](demo/eleventy/) is a complete Eleventy site set up this way.
+[demo/eleventy/](https://github.com/neuwoai/neuwo-web-ui-components/tree/v0.5.0/demo/eleventy) is a complete Eleventy site set up this way.
 
 Next.js and Vite serve `public/` verbatim, so a `prebuild` script copying the same directory
 into `public/vendor/neuwo` achieves the same thing.
@@ -161,9 +161,9 @@ Typography alone is also published as `foundation/typography.css`, and tokens al
 
 | Site | One-time setup |
 |---|---|
-| Next.js, server-rendered React (React Router, Remix) | `"jsxImportSource": "@neuwo/web-ui-library--demo"` in `tsconfig`; import the stylesheet in the root layout; import the library once from a client component; [demo/nextjs](demo/nextjs/) |
-| Client-only React (Vite) | the same `jsxImportSource` line; import the stylesheet and the library at the entry; [demo/react-vite](demo/react-vite/) |
-| Eleventy | `eleventyConfig.addPlugin(neuwo)`; link the stylesheet; script tag for `neuwo.js`; [demo/eleventy](demo/eleventy/) |
+| Next.js, server-rendered React (React Router, Remix) | `"jsxImportSource": "@neuwo/web-ui-library--demo"` in `tsconfig`; import the stylesheet in the root layout; import the library once from a client component; [demo/nextjs](https://github.com/neuwoai/neuwo-web-ui-components/tree/v0.5.0/demo/nextjs) |
+| Client-only React (Vite) | the same `jsxImportSource` line; import the stylesheet and the library at the entry; [demo/react-vite](https://github.com/neuwoai/neuwo-web-ui-components/tree/v0.5.0/demo/react-vite) |
+| Eleventy | `eleventyConfig.addPlugin(neuwo)`; link the stylesheet; script tag for `neuwo.js`; [demo/eleventy](https://github.com/neuwoai/neuwo-web-ui-components/tree/v0.5.0/demo/eleventy) |
 | Astro and other Node builds | call `expand(html)` from `@neuwo/web-ui-library--demo/server` on the output; link the stylesheet; load `neuwo.js` |
 | Plain HTML, non-JavaScript servers | link the stylesheet and load `neuwo.js`; components render when the script runs |
 | A page that can only add one script | `neuwo-standalone.js` alone; components render when the script runs |
@@ -217,7 +217,7 @@ export default function (eleventyConfig) {
 }
 ```
 
-Then link the stylesheet and load `neuwo.js` in your layout as above; [demo/eleventy](demo/eleventy/) is a working site. For Astro and other Node
+Then link the stylesheet and load `neuwo.js` in your layout as above; [demo/eleventy](https://github.com/neuwoai/neuwo-web-ui-components/tree/v0.5.0/demo/eleventy) is a working site. For Astro and other Node
 builds, call `expand` on each page's output before it is written.
 
 Expand a whole page once, or give each separately expanded fragment its own `prefix`. Every call
@@ -606,7 +606,7 @@ light DOM elements (`<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuw
 Components, and leave it to React, so without the setting a light DOM tag React renders stays bare.
 The same setting adds every element to JSX with each attribute's allowed values and each custom
 event's `detail`, so a misspelt variant fails the type check. React stays an optional peer
-dependency. A working project with controlled and uncontrolled forms is in [demo/react-vite](demo/react-vite/).
+dependency. A working project with controlled and uncontrolled forms is in [demo/react-vite](https://github.com/neuwoai/neuwo-web-ui-components/tree/v0.5.0/demo/react-vite).
 
 React renders the markup of all seventeen elements itself, so they show from the first paint.
 
@@ -822,7 +822,7 @@ export function Neuwo() {
 Render `<Neuwo />` once in the root layout. Because the JSX runtime expands all seventeen elements,
 the server-rendered HTML carries their full markup and they are on-brand from the first paint,
 before the bundle has run. Import `neuwo.css` instead of `neuwo-components.css` to add the
-typography and page surface. A working project is in [demo/nextjs](demo/nextjs/).
+typography and page surface. A working project is in [demo/nextjs](https://github.com/neuwoai/neuwo-web-ui-components/tree/v0.5.0/demo/nextjs).
 
 A value the browser restores on a back navigation, or one the user or a script enters before the
 page hydrates, stays: React keeps what the elements wrote into their markup by then, such as a

@@ -190,9 +190,11 @@ npm_config_offline=true npm run integration
    release fails review.
 3. Bump it everywhere it is written: `package.json` and the two version fields of
    `package-lock.json` (`npm version <version> --no-git-tag-version` sets all three), the
-   `## X.Y.Z` heading of the release's section in `CHANGELOG.md`, and, for a new minor version, the
-   `@X.Y` in every CDN URL in `README.md`, the `^X.Y.0` library range in each
-   `demo/*/package.json` and in each `demo/*/README.md`, and the tarball name in each `demo/*/README.md`. `tests/release.test.js` fails until all of them agree.
+   `## X.Y.Z` heading of the release's section in `CHANGELOG.md`, the `vX.Y.Z` tag in the
+   `README.md` links into the repository (absolute, because a relative link breaks on npm), and the
+   tarball name in each `demo/*/README.md`. For a new minor version, also the `@X.Y` in every CDN
+   URL in `README.md` and the `^X.Y.0` library range in each `demo/*/package.json` and in each
+   `demo/*/README.md`. `tests/release.test.js` fails until all of them agree.
 4. `npm run build` and `npm test` must pass.
 5. `npm run integration` passes in Chromium and Firefox.
 6. Publish.
