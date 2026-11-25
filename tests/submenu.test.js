@@ -420,4 +420,63 @@ describe("<neuwo-menu> submenus", () => {
     holder.querySelector("neuwo-menu-group").select = "many";
     expect(roles(holder)).toEqual({ name: "menuitemcheckbox", more: "menuitemcheckbox", reach: "menuitem", show: "menuitem", live: "menuitemcheckbox" });
   });
+
+  describe("a submenu the browser hides without an event, as it does one removed from the page", () => {
+    const stale = (menu) => ({
+      covered: menu.querySelectorAll(".neuwo-menu--covered").length,
+      drill: menu.querySelectorAll(".neuwo-menu--drill").length,
+      expanded: menu.querySelectorAll('[aria-expanded="true"]').length,
+    });
+
+    it("leaves nothing behind once the menu closes, so it opens again visible, on its first item", async () => {
+      const { button, menu, panel } = await opened(' submenu="drill"');
+      controlOf(menu, "move").click();
+      expect(stale(menu)).toEqual({ covered: 1, drill: 1, expanded: 1 });
+      const nested = panelOf(menu, "move").parentElement;
+      const fresh = document.createElement("div");
+      fresh.innerHTML = submenu(`<neuwo-menu-item value="sports">Sports</neuwo-menu-item>`);
+      nested.replaceWith(fresh.firstElementChild);
+      await Promise.resolve();
+      button.focus();
+      menu.close();
+      expect(isOpen(panel)).toBe(false);
+      expect(stale(menu)).toEqual({ covered: 0, drill: 0, expanded: 0 });
+      button.click();
+      await tick();
+      expect(isOpen(panel)).toBe(true);
+      expect(panel.classList.contains("neuwo-menu--covered")).toBe(false);
+      expect(focused()).toBe("rename");
+      controlOf(menu, "move").click();
+      expect([isOpen(panelOf(menu, "move")), panel.classList.contains("neuwo-menu--covered"), focused()]).toEqual([true, true, "sports"]);
+    });
+
+    it("stops placing a removed submenu and uncovers its parent at the next placing, as the page scrolls", async () => {
+      const { menu, panel } = await opened(' submenu="drill"');
+      controlOf(menu, "move").click();
+      const sub = panelOf(menu, "move");
+      sub.parentElement.remove();
+      menu.panel.getBoundingClientRect = at({ left: 80, right: 288, top: 94, bottom: 360 });
+      document.dispatchEvent(new Event("scroll"));
+      expect(sub.style.left).toBe("40px");
+      expect(isOpen(panel)).toBe(true);
+      expect(panel.classList.contains("neuwo-menu--covered")).toBe(false);
+      expect(controlOf(menu, "move").getAttribute("aria-expanded")).not.toBe("true");
+    });
+
+    it("leaves nothing behind when the whole menu leaves the page with a submenu open, so it opens again visible", async () => {
+      const { holder, button, menu, panel } = await opened(' submenu="drill"');
+      controlOf(menu, "move").click();
+      controlOf(menu, "past").click();
+      expect(stale(menu)).toEqual({ covered: 2, drill: 2, expanded: 2 });
+      menu.remove();
+      expect(stale(menu)).toEqual({ covered: 0, drill: 0, expanded: 0 });
+      holder.append(menu);
+      button.focus();
+      button.click();
+      await tick();
+      expect([isOpen(panel), panel.classList.contains("neuwo-menu--covered"), focused()]).toEqual([true, false, "rename"]);
+      expect(Array.from(menu.querySelectorAll(".neuwo-menu__back"), (back) => back.hidden)).toEqual([true, true, true, true]);
+    });
+  });
 });
+

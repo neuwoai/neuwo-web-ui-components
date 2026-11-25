@@ -4,7 +4,7 @@
  * dispatched at once, cancelable on opening, and a `toggle` a task later, coalesced as the browser does; a
  * `button[popovertarget]` toggling its popover once a click's listeners have run, unless one cancelled it; an
  * auto popover hiding the open ones that are not its ancestors as it shows, and its open descendants as it hides;
- * and Escape hiding the topmost.
+ * Escape hiding the topmost; and a popover removed from the document closing with no event, as the browser hides it.
  * @param {Document} doc
  * @returns {() => void} removes the stand-in and forgets every open popover
  */
@@ -17,7 +17,18 @@ export function installPopovers(doc) {
   const hiding = new Set();
   const pending = new Map();
 
-  const isOpen = (el) => stack.includes(el);
+  const isOpen = (el) => el.isConnected && stack.includes(el);
+
+  // A removed popover leaves the stack silently, and stays closed if it comes back.
+  const forget = (gone) => {
+    for (const el of [...stack]) if (gone(el)) stack.splice(stack.indexOf(el), 1);
+  };
+  const prune = () => forget((el) => !el.isConnected);
+  const removals = new win.MutationObserver((records) => {
+    const removed = records.flatMap((record) => Array.from(record.removedNodes));
+    forget((el) => removed.some((node) => node === el || node.contains?.(el)));
+  });
+  removals.observe(doc, { childList: true, subtree: true });
 
   function fire(el, type, oldState, newState, cancelable) {
     const event = new win.Event(type, { cancelable });
@@ -43,6 +54,7 @@ export function installPopovers(doc) {
 
   function show(el) {
     check(el);
+    prune();
     if (isOpen(el)) return;
     if (!fire(el, "beforetoggle", "closed", "open", true) || isOpen(el)) return;
     for (const other of [...stack].reverse()) if (!other.contains(el)) hide(other);
@@ -51,6 +63,7 @@ export function installPopovers(doc) {
   }
 
   function hide(el) {
+    prune();
     if (!isOpen(el) || hiding.has(el)) return;
     hiding.add(el);
     try {
@@ -109,6 +122,7 @@ export function installPopovers(doc) {
   };
 
   const onKeydown = (event) => {
+    prune();
     if (event.key === "Escape" && !event.defaultPrevented && stack.length) hide(stack.at(-1));
   };
 
@@ -118,6 +132,7 @@ export function installPopovers(doc) {
   return () => {
     doc.removeEventListener("click", onClick);
     doc.removeEventListener("keydown", onKeydown);
+    removals.disconnect();
     for (const { timer } of pending.values()) win.clearTimeout(timer);
     pending.clear();
     stack.length = 0;

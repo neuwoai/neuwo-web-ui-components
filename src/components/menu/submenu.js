@@ -107,7 +107,7 @@ export class Submenus {
   disconnect() {
     this.#menu.removeEventListener("mouseover", this.#onHover);
     this.#menu.removeEventListener("beforetoggle", this.#onBeforeToggle, true);
-    this.#clear();
+    this.#reset();
   }
 
   /**
@@ -135,9 +135,12 @@ export class Submenus {
     panel.hidePopover();
   }
 
-  /** Places every open submenu again, outer levels first, after the root panel has moved. */
+  /** Places every open submenu again, outer levels first, after the root panel has moved, and forgets a closed one. */
   place() {
-    for (const [panel, { control, side, drill }] of this.#placed) this.#put(panel, control, side, drill);
+    for (const [panel, { control, side, drill }] of Array.from(this.#placed)) {
+      if (panel.matches(":popover-open")) this.#put(panel, control, side, drill);
+      else this.#forget(panel, control);
+    }
   }
 
   /**
@@ -219,6 +222,31 @@ export class Submenus {
     this.#timers.clear();
   }
 
+  /**
+   * @param {HTMLElement} panel
+   * @param {HTMLElement} control
+   */
+  #forget(panel, control) {
+    this.#placed.delete(panel);
+    control.closest(PANEL)?.classList.toggle(COVERED, false);
+    draw(panel, control, false, false);
+  }
+
+  /**
+   * Forgets every submenu and undoes what one left in the menu, as the browser hides a submenu removed from the page
+   * without a `beforetoggle`.
+   */
+  #reset() {
+    this.#clear();
+    this.#placed.clear();
+    for (const panel of this.#menu.querySelectorAll(`.${COVERED}`)) panel.classList.remove(COVERED);
+    for (const panel of /** @type {NodeListOf<HTMLElement>} */ (this.#menu.querySelectorAll(PANEL))) {
+      const control = openerOf(panel);
+      if (control) draw(panel, control, false, false);
+    }
+    for (const control of this.#menu.querySelectorAll(`${CONTROL}[aria-expanded="true"]`)) control.setAttribute("aria-expanded", "false");
+  }
+
   /** @param {Event} event */
   #onHover = (event) => {
     const target = /** @type {Element} */ (event.target);
@@ -239,14 +267,12 @@ export class Submenus {
     if (!(panel instanceof HTMLElement) || !panel.matches(PANEL) || /** @type {ToggleEvent} */ (event).newState !== "closed") return;
     this.#cancel(panel);
     if (panel === this.#menu.panel) {
-      this.#clear();
+      this.#reset();
       return;
     }
     const control = openerOf(panel);
     if (!control) return;
-    this.#placed.delete(panel);
-    control.closest(PANEL)?.classList.toggle(COVERED, false);
-    draw(panel, control, false, false);
+    this.#forget(panel, control);
     const focused = control.ownerDocument.activeElement;
     if (focused && panel.contains(focused)) control.focus();
   };
