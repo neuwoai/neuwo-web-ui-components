@@ -10,12 +10,14 @@ import { MENU_LABEL, buttonTemplate } from "./button.template.js";
  *
  * With `menu`, the native button opens the `<neuwo-menu>` of that id through `popovertarget`: it is always a
  * `<button type="button">`, announces the menu, and is `aria-expanded` while the menu is open from it, so of several
- * buttons sharing one menu only the one that opened it reads expanded. A chevron follows the end children and turns
- * while the menu is open. A button naming no menu on the page stays an ordinary button.
+ * buttons sharing one menu only the one that opened it has `aria-expanded="true"`, though Chromium reports them all
+ * as expanded while the menu is open. A chevron follows the end children and turns while the menu is open. A button
+ * naming no menu on the page stays an ordinary button.
  *
  * With `split` as well, the button renders two halves in one pill. The main half is the button as it is without
  * `menu`, so `href`, `type` and the form attributes apply to it, and the toggle half, named by `menu-label`, opens the
- * menu. Only the main half's clicks reach the host's listeners. `disabled` and `loading` disable both halves.
+ * menu. Only the main half's clicks reach the host's listeners. `disabled` disables both halves; `loading` disables
+ * the toggle half, and the main half too unless it is a link, which stays a link marked busy.
  *
  * @summary Neuwo button (or link button). Public classes: `.neuwo-btn` on the `<button>` or `<a>`, with its modifiers `.neuwo-btn--solid`, `--outline`, `--glass`, `--sm`, `--lg`, `--hover-s`, `--hover-l`, `--wide`, `--xwide`, `--block`, `--loading` and `--icon-only`; `.neuwo-btn__spinner` while loading; the wrappers `.neuwo-btn__start`, `.neuwo-btn__label` and `.neuwo-btn__end` around the start children, the label and the end children; `.neuwo-btn__chevron` after the end wrapper while `menu` is set without `icon-only`; `.neuwo-btn__dots` after the label wrapper on an `icon-only` button with `menu` and no label content, unless it is loading; and with `split`, the wrapper `.neuwo-btn-split` around the main half `.neuwo-btn-split__main` and the toggle half `.neuwo-btn-split__toggle`, both `.neuwo-btn` with the variant, the toggle half holding the chevron.
  * @customElement neuwo-button

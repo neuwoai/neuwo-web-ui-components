@@ -49,9 +49,10 @@ adapters turn into the same markup. Follow `<neuwo-button>`.
    template with `control()` from `src/core/template.js`, so the React adapter maps `value`,
    `defaultValue`, `checked` and `defaultChecked` onto it, and return it from the `control` getter.
    To read an enclosing element's attributes, as a radio reads its group's, set the template's
-   `within` to that tag and read `ctx.within`. Through React it reaches only an element written in
-   place inside that tag: inside a component of the app's own, a portal or another React root it is
-   null, so the template must also render the element on its own. A control that renders its own
+   `within` to that tag, or to a comma-separated list of tags, of which the nearest enclosing one
+   wins, and read `ctx.within`. Through React it reaches only an element written in place inside
+   that tag: inside a component of the app's own, a portal or another React root it is null, so the
+   template must also render the element on its own. A control that renders its own
    error line extends `NeuwoErrorMixin(...)` from `src/components/error-mixin.js`, which documents
    `error`, `error-muted` and `no-error-line` and adds `noErrorLine`, and lists the three in its
    `observedAttributes`; one whose native control takes its `value` attribute as its default

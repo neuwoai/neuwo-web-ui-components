@@ -19,10 +19,10 @@
   Space, ArrowDown or ArrowUp on the trigger, and the arrows, Home, End, Enter, Space, Escape and
   Tab in the menu. In React, `onopen` and `onselect` bind the events.
   An item's `slot="submenu"` menu opens as a submenu, to any depth, on a click, Enter, Space or
-  ArrowRight (ArrowLeft right to left), and ArrowLeft or Escape closes one level. The root menu's
-  `submenu` attribute places them: `flyout` beside the menu, opening on hover after 120 ms too;
-  `drill` in the menu's place, with a Back row naming the item; `auto`, the default, beside the menu
-  when the submenu fits in the viewport and in its place when it does not.
+  ArrowRight (ArrowLeft right to left), and ArrowLeft (ArrowRight right to left) or Escape closes one
+  level. The root menu's `submenu` attribute places them: `flyout` beside the menu, opening on hover
+  after 120 ms too; `drill` in the menu's place, with a Back row naming the item; `auto`, the
+  default, beside the menu when the submenu fits in the viewport and in its place when it does not.
 - Icon tokens `--neuwo-icon-chevron`, `--neuwo-icon-check` and `--neuwo-icon-dot`, masks that the
   combobox's chevron, the checkbox's tick, the radio's dot and the menu now read.
 - `menu` on `<neuwo-button>`: the id of a `<neuwo-menu>` the button opens. The native button is
@@ -38,9 +38,10 @@
   pill, `.neuwo-btn-split`. The main half, `.neuwo-btn-split__main`, is the button as it is without
   `menu`, with `href`, `type` and the form attributes; the toggle half, `.neuwo-btn-split__toggle`,
   opens the menu, holds the chevron and is named by `menu-label` (More Options by default). Only the
-  main half's clicks reach listeners on the host. `disabled` and `loading` disable both halves.
-  Solid halves stand 1px apart, outline and glass halves share one border line, and neither lifts
-  on hover. Without `menu`, `split` changes nothing.
+  main half's clicks reach listeners on the host. `disabled` disables both halves; `loading`
+  disables the toggle half, and the main half too unless it is a link, which stays a link marked
+  busy, as a loading link does without `split`. Solid halves stand 1px apart, outline and glass
+  halves share one border line, and neither lifts on hover. Without `menu`, `split` changes nothing.
 
 ### Changed
 

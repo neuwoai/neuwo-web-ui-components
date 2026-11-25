@@ -1572,21 +1572,25 @@ so a `select` handler that moves focus, to a rename field for example, keeps it 
 
 - **`menu`**, the id of a `<neuwo-menu>`: the button opens that menu. Without `split`, the native
   button is always a `<button type="button">`, whatever `href` and `type` say. It carries
-  `popovertarget` and `aria-controls` naming the panel, `aria-haspopup="menu"`, and
-  `aria-expanded`, which is `true` only while the menu is open from this button, so of several
-  buttons sharing one menu only the one that opened it reads expanded. A chevron follows the label
-  and any `slot="end"` children and turns while the menu is open. A button naming no menu on the
-  page stays an ordinary button.
+  `popovertarget` and `aria-controls` naming the panel, `aria-haspopup="menu"`, and `aria-expanded`,
+  which is `true` only while the menu is open from this button, so of several buttons sharing one
+  menu only the one that opened it has `aria-expanded="true"`; Chromium still reports them all as
+  expanded while the menu is open (see the row menu below). A chevron follows the label and any
+  `slot="end"` children and turns while the menu is open. A button naming no menu on the page stays
+  an ordinary button.
 - **`split`**, with `menu`: two halves in one pill. The main half is the button as it is without
   `menu`, so `href` makes it a link and `type`, `form`, `name` and `value` act on its form. The
   toggle half is always a `<button type="button">`; it opens the menu and carries the chevron,
   `popovertarget` and the menu's `aria-*` attributes. A click on the toggle half, or on the 1px gap
   between solid halves, stops propagating at the `<neuwo-button>`, so only the main half's clicks
   reach its `click` listeners and bubble on to the page, and a click handler on the host runs the
-  default action alone. `disabled` and `loading` disable both halves, with the spinner on the main
-  half. The halves do not lift on hover, so they stay level. The menu lines up with the toggle half,
-  so give it `align="end"` to line it up with the pill's end. Without `menu`, `split` changes
-  nothing.
+  default action alone. `disabled` disables both halves. `loading` shows the spinner on the main
+  half and disables the toggle half, and the main half too unless it is a link: a loading link stays
+  a link, marked busy, that a pointer cannot click but Enter still follows, as it does without
+  `split`. The halves do not lift on hover, so they stay level. The menu lines up with the toggle
+  half, so give it `align="end"` to line it up with the pill's end. Without `menu`, `split` changes
+  nothing. With a `menu` that names no menu on the page, the toggle half still renders and does
+  nothing, since a server cannot know whether the menu exists.
 - **`menu-label`**: the accessible name of a `split` button's toggle half, More Options by
   default.
 - **`icon-only`**: a round button whose content is its icon, padded by its font size, so `size`
@@ -1597,9 +1601,10 @@ so a `select` handler that moves focus, to a rename field for example, keeps it 
 
 `variant`, `size`, `hover`, `disabled` and `loading` combine with all of them as they do on any
 button; on a `split` button, `variant`, `size`, `hover`, `disabled` and `loading` reach both halves,
-and the rest only the main half. The menu reports the `<neuwo-button>` as its `trigger`, not the native button inside
-it, so the page's own attributes on the host can be read in `open` and `select`. A table writes its
-row menu once and gives every row a button:
+`menu` and `menu-label` the toggle half, and the rest the main half. The menu reports the
+`<neuwo-button>` as its `trigger`, not the native button inside it, so the page's own attributes on
+the host can be read in `open` and `select`. A table writes its row menu once and gives every row a
+button:
 
 ```html
 <table>
@@ -1632,7 +1637,10 @@ row menu once and gives every row a button:
 ```
 
 A click on another row's button while the menu is open moves the menu to that row and fires `open`
-again for it.
+again for it. While a shared menu is open, Chromium reports every button that names it as expanded
+to assistive technology, whatever its `aria-expanded` says, since it exposes every `popovertarget`
+button of an open popover that way. A page that wants exact per-row state can give each row its own
+menu.
 
 ### Submenus
 

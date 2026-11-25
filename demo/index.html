@@ -644,8 +644,8 @@
     <p>
       <code>menu</code> names a <code>&lt;neuwo-menu&gt;</code> by its id, and the button opens it: a chevron follows
       the label and turns while the menu is open. Every button here opens the same Export menu, which lines up with
-      the button that opened it, and only that button reads expanded. The disabled and the loading button do not open
-      it.
+      the button that opened it, and only that button has <code>aria-expanded="true"</code>. The disabled and the
+      loading button do not open it.
     </p>
     <div class="row">
       <neuwo-button variant="solid" menu="export">Export</neuwo-button>
@@ -694,8 +694,9 @@
     <p>
       With <code>menu</code>, <code>split</code> renders two halves in one pill. The main half is the button as it is
       without a menu and runs the default action; the chevron half opens the menu, and <code>menu-label</code> names it
-      (More Options by default). The halves do not lift on hover, so they stay level. <code>disabled</code> and
-      <code>loading</code> disable both halves.
+      (More Options by default). The halves do not lift on hover, so they stay level. <code>disabled</code> disables
+      both halves; <code>loading</code> disables the chevron half, and the main half too unless it is a link, which
+      stays a link marked busy.
     </p>
     <div class="row">
       <neuwo-button split variant="solid" menu="demo-save">Save</neuwo-button>
