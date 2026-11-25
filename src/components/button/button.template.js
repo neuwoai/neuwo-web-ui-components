@@ -24,9 +24,9 @@ export const MENU_LABEL = "More Options";
 export function buttonTemplate(attrs, ctx) {
   const disabled = has(attrs, "disabled");
   const loading = has(attrs, "loading");
-  const iconOnly = has(attrs, "icon-only");
   const menu = attrs.menu || "";
   const split = Boolean(menu) && has(attrs, "split");
+  const iconOnly = has(attrs, "icon-only") && !split;
   const opens = Boolean(menu) && !split;
   const link = Boolean(attrs.href) && !disabled && !opens;
 
@@ -34,9 +34,10 @@ export function buttonTemplate(attrs, ctx) {
   if (attrs.size) shared.push(`neuwo-btn--${attrs.size}`);
   if (attrs.hover === "s" || attrs.hover === "l") shared.push(`neuwo-btn--hover-${attrs.hover}`);
   const classes = ["neuwo-btn", ...shared];
-  for (const modifier of ["wide", "xwide", "loading", "block", "icon-only"]) {
+  for (const modifier of ["wide", "xwide", "loading", "block"]) {
     if (has(attrs, modifier)) classes.push(`neuwo-btn--${modifier}`);
   }
+  if (iconOnly) classes.push("neuwo-btn--icon-only");
   if (split) classes.unshift("neuwo-btn-split__main");
 
   /** @type {Record<string, string | boolean>} */

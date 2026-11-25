@@ -36,7 +36,7 @@ import { MENU_LABEL, buttonTemplate } from "./button.template.js";
  * @attr rel - link rel, forwarded to the `<a>` when `href` is set.
  * @attr download - link download, forwarded to the `<a>` when `href` is set.
  * @attr menu - id of the `<neuwo-menu>` the button opens; without `split`, the native button is then a `<button type="button">` whatever `href` and `type` say, and shows a chevron.
- * @attr {boolean} icon-only - a round button whose content is its icon, padded by its font size; with `menu` and no content it shows three dots, and never the chevron; while loading, the spinner takes the icon's place. Name it with `aria-label`.
+ * @attr {boolean} icon-only - a round button whose content is its icon, padded by its font size; with `menu` and no content it shows three dots, and never the chevron; while loading, the spinner takes the icon's place. Name it with `aria-label`. Ignored on a `split` button.
  * @attr {boolean} split - with `menu`, splits the button into a main half that acts as the button does without `menu` and a toggle half that opens the menu; ignored without `menu`.
  * @attr menu-label - the accessible name of a `split` button's toggle half (default More Options).
  * @slot - the button label, or the icon of an `icon-only` button (default slot).

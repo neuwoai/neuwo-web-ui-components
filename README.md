@@ -1590,9 +1590,10 @@ so a `select` handler that moves focus, to a rename field for example, keeps it 
 - **`menu-label`**: the accessible name of a `split` button's toggle half, More Options by
   default.
 - **`icon-only`**: a round button whose content is its icon, padded by its font size, so `size`
-  scales it. With `menu` and no content it shows three dots, and it never shows the chevron. While it
-  loads, the spinner takes the icon's place, so it stays round. Name it with `aria-label`, which the
-  button forwards. It works without `menu` too, for a close or a copy button.
+  scales it. With `menu` and no content it shows three dots, and it never shows the chevron. While
+  it loads, the spinner takes the icon's place, so it stays round. Name it with `aria-label`, which
+  the button forwards. It works without `menu` too, for a close or a copy button. On a `split`
+  button it is ignored, and the split renders as it does without it.
 
 `variant`, `size`, `hover`, `disabled` and `loading` combine with all of them as they do on any
 button; on a `split` button, `variant`, `size`, `hover`, `disabled` and `loading` reach both halves,

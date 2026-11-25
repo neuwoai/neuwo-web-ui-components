@@ -101,6 +101,7 @@ export const cases = {
     },
     { name: "split menu-label", attrs: { split: "", menu: "save", "menu-label": "More Save Options", size: "lg", hover: "l", wide: "", disabled: "" }, children: ["Save"] },
     { name: "split without menu", attrs: { split: "", variant: "outline", "menu-label": "More Save Options" }, children: ["Save"] },
+    { name: "split with icon-only ignored", attrs: { split: "", "icon-only": "", menu: "save", variant: "outline", "aria-label": "Save Draft" }, children: ["Save"] },
   ],
   "neuwo-badge": [
     { name: "default", attrs: {}, children: ["For Publishers"] },

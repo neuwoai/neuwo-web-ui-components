@@ -213,6 +213,17 @@ describe("buttonTemplate()", () => {
       expect(halves().map((half) => half.props.disabled)).toEqual([undefined, undefined]);
     });
 
+    it("ignores icon-only, rendering the split as it is without it", () => {
+      for (const attrs of [{}, { loading: "" }, { variant: "outline", size: "sm", disabled: "" }]) {
+        const same = toHTML(split(attrs), { default: "Save" });
+        expect(toHTML(split({ "icon-only": "", ...attrs }), { default: "Save" }), JSON.stringify(attrs)).toBe(same);
+      }
+      const children = [{ tag: "svg", attrs: {}, slot: "default" }];
+      const withIcon = (attrs) => toHTML(buttonTemplate({ split: "", menu: "save", ...attrs }, { id: (suffix) => suffix, children, within: null }), { default: "<svg></svg>" });
+      expect(withIcon({ "icon-only": "" })).toBe(withIcon({}));
+      expect(withIcon({ "icon-only": "" })).not.toContain("icon-only");
+    });
+
     it("ignores split without menu", () => {
       for (const attrs of [{ variant: "outline" }, { href: "/docs", "menu-label": "More" }, { menu: "", loading: "" }]) {
         expect(toHTML(render({ split: "", ...attrs }))).toBe(toHTML(render(attrs)));
