@@ -186,8 +186,9 @@ describe("menu.css recipe", () => {
     }
   });
 
-  it("hides the new-tab text visually only", () => {
+  it("hides the new-tab and the Back to text visually only, in one rule", () => {
     expect(rule(".neuwo-menu-item__new-tab")).toMatchObject({ position: "absolute", "inline-size": "1px", "block-size": "1px", overflow: "hidden", "clip-path": "inset(50%)" });
+    expect(rule(".neuwo-menu__back-to")).toEqual(rule(".neuwo-menu-item__new-tab"));
     expect(rule(".neuwo-menu-item__control").position).toBe("relative");
   });
 

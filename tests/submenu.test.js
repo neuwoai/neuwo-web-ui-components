@@ -172,6 +172,15 @@ describe("<neuwo-menu> submenus", () => {
     expect(document.activeElement).toBe(back);
   });
 
+  it("names the Back row as going back to the parent, in text read but not shown", async () => {
+    const { menu } = await opened(' submenu="drill"');
+    controlOf(menu, "move").click();
+    const back = backOf(panelOf(menu, "move"));
+    expect(back.textContent).toMatch(/^Back to /);
+    expect(back.textContent).toBe("Back to Move To");
+    expect(back.querySelector(".neuwo-menu__back-to").textContent).toBe("Back to ");
+  });
+
   it("Back goes up one level", async () => {
     const { menu, panel } = await opened(' submenu="drill"');
     controlOf(menu, "move").click();

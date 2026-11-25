@@ -173,11 +173,11 @@ describe("<neuwo-menu> under React", () => {
     const sub = itemOf(menu, "move").querySelector(".neuwo-menu-item__submenu > neuwo-menu > .neuwo-menu");
     const back = sub.querySelector(".neuwo-menu__back");
     expect([sub.matches(":popover-open"), move.getAttribute("aria-expanded"), panel.classList.contains("neuwo-menu--covered"), back.hidden]).toEqual([true, "true", true, false]);
-    expect(back.textContent).toBe("Move To");
+    expect(back.textContent).toBe("Back to Move To");
     expect(records().filter((record) => record.target.localName.startsWith("neuwo-"))).toEqual([]);
     act(() => rename("F3"));
     expect(controlOf(menu, "rename").querySelector(".neuwo-menu-item__hint").textContent).toBe("F3");
-    expect([sub.matches(":popover-open"), move.getAttribute("aria-expanded"), panel.classList.contains("neuwo-menu--covered"), back.hidden, back.textContent]).toEqual([true, "true", true, false, "Move To"]);
+    expect([sub.matches(":popover-open"), move.getAttribute("aria-expanded"), panel.classList.contains("neuwo-menu--covered"), back.hidden, back.textContent]).toEqual([true, "true", true, false, "Back to Move To"]);
     act(() => back.click());
     expect([sub.matches(":popover-open"), move.getAttribute("aria-expanded"), panel.classList.contains("neuwo-menu--covered"), back.hidden, document.activeElement]).toEqual([false, "false", false, true, move]);
     expect(errors).not.toHaveBeenCalled();

@@ -46,6 +46,8 @@ describe("menuTemplate()", () => {
     expect(back.tag).toBe("button");
     expect(back.props).toEqual({ class: "neuwo-menu__back", type: "button", role: "menuitem", tabindex: "-1", hidden: true });
     expect(find(back, "neuwo-menu__back-icon").props["aria-hidden"]).toBe("true");
+    expect(back.children.map((child) => child.props.class)).toEqual(["neuwo-menu__back-icon", "neuwo-menu__back-to", "neuwo-menu__back-label"]);
+    expect(find(back, "neuwo-menu__back-to").children).toEqual(["Back to "]);
     expect(find(back, "neuwo-menu__back-label").live).toBe(true);
     expect(nested.children[1].props.class).toBe("neuwo-menu__items");
   });

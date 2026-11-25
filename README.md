@@ -1019,7 +1019,7 @@ through the two tokens.
 | `.neuwo-menu--drill` | a submenu's panel while it drills in over its parent's |
 | `.neuwo-menu--covered` | a panel while a submenu drills in over it, hidden |
 | `.neuwo-menu__items` | the wrapper around the menu's groups or items |
-| `.neuwo-menu__back`, `.neuwo-menu__back-icon`, `.neuwo-menu__back-label` | a submenu's Back row, hidden until it drills in, and its icon and its label, the label of the item that opened it |
+| `.neuwo-menu__back`, `.neuwo-menu__back-icon`, `.neuwo-menu__back-to`, `.neuwo-menu__back-label` | a submenu's Back row, hidden until it drills in, and its icon, its visually hidden "Back to" and its label, the label of the item that opened it |
 | `.neuwo-menu-group` | the group's `role="group"` `<div>` |
 | `.neuwo-menu-group--no-divider` | the group, by `no-divider` |
 | `.neuwo-menu-group__divider` | the line above the group, hidden in the first group |
@@ -1647,7 +1647,7 @@ The root menu's `submenu` attribute sets how every submenu in it opens:
 | `submenu` | Opens the submenu | Pointer |
 | --- | --- | --- |
 | `flyout` | Beside the menu, at its inline end, else its inline start, with its first item level with the item that opened it. With no room on either side it overlaps the menu at the viewport's inline end. | Resting on an item opens its submenu after 120 ms; resting on another item of the same menu for 250 ms closes it, unless the pointer reaches the submenu first. |
-| `drill` | In the menu's place: on its top and inline-start edges, at least as wide, with the menu hidden under it and a Back row at its top naming the item. The Back row, ArrowLeft or Escape go up one level. | A click opens it. |
+| `drill` | In the menu's place: on its top and inline-start edges, at least as wide, with the menu hidden under it and a Back row at its top naming the item, which screen readers hear as "Back to" and the item's label. The Back row, ArrowLeft or Escape go up one level. | A click opens it. |
 | `auto` (default) | Beside the menu when the submenu fits there, in its place when it does not, decided each time it opens. | As `flyout` while it would open beside the menu; a click otherwise. |
 
 Room is measured against the viewport, less an 8px margin, since the panels are top-layer popovers

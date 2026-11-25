@@ -61,7 +61,7 @@ function check(item, checked, radio) {
  * `submenu` places every submenu in it: beside the menu, also on hover, in its place under a Back row, or beside it
  * when it fits in the viewport and in its place when it does not.
  *
- * @summary Neuwo menu. Public classes: `.neuwo-menu` on the popover panel, with `--drill` while a submenu drills in and `--covered` on the panel it covers, which holds `.neuwo-menu__items` around the groups or items; a submenu's panel also holds the `.neuwo-menu__back` row, hidden until it drills in, with `.neuwo-menu__back-icon` and `.neuwo-menu__back-label`.
+ * @summary Neuwo menu. Public classes: `.neuwo-menu` on the popover panel, with `--drill` while a submenu drills in and `--covered` on the panel it covers, which holds `.neuwo-menu__items` around the groups or items; a submenu's panel also holds the `.neuwo-menu__back` row, hidden until it drills in, with `.neuwo-menu__back-icon`, the visually hidden "Back to" text `.neuwo-menu__back-to` and `.neuwo-menu__back-label`.
  * @customElement neuwo-menu
  * @attr id - names the panel `<id>-panel`, the id a trigger's `popovertarget` gives.
  * @attr {flyout|drill|auto} submenu - how submenus open, set on the root menu (default auto): beside the menu, in its place, or beside it when it fits and in its place when it does not.

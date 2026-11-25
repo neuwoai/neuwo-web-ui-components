@@ -25,6 +25,7 @@ export function menuTemplate(attrs, ctx) {
         "button",
         { class: "neuwo-menu__back", type: "button", role: "menuitem", tabindex: "-1", hidden: true },
         h("span", { class: "neuwo-menu__back-icon", "aria-hidden": "true" }),
+        h("span", { class: "neuwo-menu__back-to" }, "Back to "),
         live(h("span", { class: "neuwo-menu__back-label" })),
       ),
     h("div", { class: "neuwo-menu__items", role: "none" }, region()),
