@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { resolveFontUrls } from "../src/core/fonts.js";
-import { fallbackCss, readTables } from "../scripts/fallback-metrics.js";
+import { characters, fallbackCss, readTables } from "../scripts/fallback-metrics.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const fontsCss = readFileSync(join(__dirname, "../src/foundation/fonts.css"), "utf8");
@@ -15,9 +15,13 @@ describe("font URLs", () => {
   it("finds the woff2 files fonts.css declares", () => {
     expect(fontFiles).toEqual([
       "fonts/outfit-variable.woff2",
+      "fonts/outfit-ext-variable.woff2",
       "fonts/noto-sans-variable.woff2",
+      "fonts/noto-sans-ext-variable.woff2",
       "fonts/noto-sans-italic-variable.woff2",
+      "fonts/noto-sans-italic-ext-variable.woff2",
       "fonts/jetbrains-mono-variable.woff2",
+      "fonts/jetbrains-mono-ext-variable.woff2",
     ]);
   });
 
@@ -31,6 +35,74 @@ describe("font URLs", () => {
     for (const rel of fontFiles) {
       expect(existsSync(join(__dirname, "../src/foundation", rel))).toBe(true);
     }
+  });
+});
+
+const SOURCES = join(__dirname, "../src/foundation/font-sources");
+const sources = readdirSync(SOURCES).sort();
+const extensionOf = (/** @type {string} */ file) => file.replace("-variable.woff2", "-ext-variable.woff2");
+const charactersOf = (/** @type {string} */ path) => characters(readTables(path).cmap);
+const faceOf = (/** @type {string} */ file) => fontsCss.match(new RegExp(`@font-face\\s*{[^}]*url\\('fonts/${file}'\\)[^}]*}`))?.[0] ?? "";
+const rangeOf = (/** @type {string} */ file) => faceOf(file).match(/unicode-range: ([^;]+);/)?.[1] ?? "";
+
+/**
+ * @param {number[]} codes in order
+ */
+const unicodeRange = (codes) =>
+  codes
+    .reduce((/** @type {number[][]} */ spans, code) => {
+      const last = spans.at(-1);
+      if (last && code === last[1] + 1) last[1] = code;
+      else spans.push([code, code]);
+      return spans;
+    }, [])
+    .map(([start, end]) => {
+      const hex = (/** @type {number} */ code) => code.toString(16).toUpperCase().padStart(4, "0");
+      return start === end ? `U+${hex(start)}` : `U+${hex(start)}-${hex(end)}`;
+    })
+    .join(", ");
+
+/**
+ * @param {string} range
+ * @param {number} code
+ */
+const inRange = (range, code) =>
+  range.split(", ").some((span) => {
+    const [start, end = start] = span.slice(2).split("-").map((hex) => parseInt(hex, 16));
+    return code >= start && code <= end;
+  });
+
+describe("font subsets", () => {
+  it("cut each source font into a Latin file under its own name and an extension file", () => {
+    expect(sources).toEqual(["jetbrains-mono-variable.woff2", "noto-sans-italic-variable.woff2", "noto-sans-variable.woff2", "outfit-variable.woff2"]);
+    expect(readdirSync(join(__dirname, "../src/foundation/fonts")).sort()).toEqual(sources.flatMap((file) => [file, extensionOf(file)]).sort());
+  });
+
+  it.each(sources)("%s: the Latin and extension files hold every character of the source, each once", (file) => {
+    const latin = charactersOf(join(__dirname, "../src/foundation/fonts", file));
+    const extension = charactersOf(join(__dirname, "../src/foundation/fonts", extensionOf(file)));
+    expect(latin.filter((code) => extension.includes(code))).toEqual([]);
+    expect([...latin, ...extension].sort((a, b) => a - b)).toEqual(charactersOf(join(SOURCES, file)));
+  });
+
+  it.each(sources)("%s: the Latin face declares the shared Latin range, which holds every character of its file and none of the extension's", (file) => {
+    expect(rangeOf(file)).toBe(rangeOf(sources[0]));
+    const range = rangeOf(file);
+    expect(charactersOf(join(__dirname, "../src/foundation/fonts", file)).filter((code) => !inRange(range, code))).toEqual([]);
+    expect(charactersOf(join(__dirname, "../src/foundation/fonts", extensionOf(file))).filter((code) => inRange(range, code))).toEqual([]);
+  });
+
+  it.each(sources)("%s: the extension face declares exactly its file's characters, so no other character downloads it", (file) => {
+    expect(rangeOf(extensionOf(file))).toBe(unicodeRange(charactersOf(join(__dirname, "../src/foundation/fonts", extensionOf(file)))));
+  });
+
+  it.each(sources)("%s: the extension face matches the Latin face but for its file and range", (file) => {
+    const descriptors = (/** @type {string} */ face) => face.replaceAll(extensionOf(file), file).replace(/unicode-range: [^;]+;/, "");
+    expect(descriptors(faceOf(extensionOf(file)))).toBe(descriptors(faceOf(file)));
+  });
+
+  it("keeps Finnish and Estonian in the Latin files", () => {
+    for (const letter of "äöåõüšžÄÖÅÕÜŠŽ€") expect(inRange(rangeOf(sources[0]), letter.codePointAt(0) ?? 0), letter).toBe(true);
   });
 });
 
@@ -86,8 +158,8 @@ describe("fallback faces", () => {
     }
   });
 
-  it("ships JetBrains Mono without its code ligatures, so text reads exactly as typed", () => {
-    const { GSUB } = readTables(join(__dirname, "../src/foundation/fonts/jetbrains-mono-variable.woff2"));
+  it.each(["jetbrains-mono-variable.woff2", "jetbrains-mono-ext-variable.woff2"])("ships %s without code ligatures, so text reads exactly as typed", (file) => {
+    const { GSUB } = readTables(join(__dirname, "../src/foundation/fonts", file));
     const list = GSUB.subarray(GSUB.readUInt16BE(6));
     const tags = Array.from({ length: list.readUInt16BE(0) }, (_, index) => list.toString("latin1", 2 + index * 6, 6 + index * 6));
     expect(tags.length).toBeGreaterThan(0);

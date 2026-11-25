@@ -5,6 +5,17 @@
   font-display: swap;
   src: url('fonts/outfit-variable.woff2') format('woff2-variations'),
        url('fonts/outfit-variable.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+0160-0161, U+017D-017E, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('fonts/outfit-ext-variable.woff2') format('woff2-variations'),
+       url('fonts/outfit-ext-variable.woff2') format('woff2');
+  unicode-range: U+0100-0107, U+010A-0113, U+0116-011B, U+011E-0123, U+0126-0127, U+012A-012B, U+012E-0130, U+0132-0133, U+0136-0137, U+0139-013E, U+0141-0148, U+014A-014D, U+0150-0151, U+0154-015B, U+015E-015F, U+0164-0165, U+016A-017C, U+01CD-01CE, U+0218-021B, U+0237, U+1E80-1E85, U+1E9E, U+1EF2-1EF3, U+2074, U+2120, U+2190, U+2192, U+2196-2199;
 }
 
 @font-face {
@@ -14,6 +25,17 @@
   font-display: swap;
   src: url('fonts/noto-sans-variable.woff2') format('woff2-variations'),
        url('fonts/noto-sans-variable.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+0160-0161, U+017D-017E, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('fonts/noto-sans-ext-variable.woff2') format('woff2-variations'),
+       url('fonts/noto-sans-ext-variable.woff2') format('woff2');
+  unicode-range: U+0100-0130, U+0132-0151, U+0154-015F, U+0162-017C, U+017F-024F, U+0259, U+1E00-1EFF, U+2070-2071, U+2074-208E, U+2090-209C, U+20A0-20AB, U+20AD-20C0, U+2100-2121, U+2123-214F;
 }
 
 @font-face {
@@ -23,6 +45,17 @@
   font-display: swap;
   src: url('fonts/noto-sans-italic-variable.woff2') format('woff2-variations'),
        url('fonts/noto-sans-italic-variable.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+0160-0161, U+017D-017E, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('fonts/noto-sans-italic-ext-variable.woff2') format('woff2-variations'),
+       url('fonts/noto-sans-italic-ext-variable.woff2') format('woff2');
+  unicode-range: U+0100-0130, U+0132-0151, U+0154-015F, U+0162-017C, U+017F-024F, U+0259, U+1E00-1EFF, U+2070-2071, U+2074-208E, U+2090-209C, U+20A0-20AB, U+20AD-20BF, U+2100-2121, U+2123-214F;
 }
 
 @font-face {
@@ -32,6 +65,17 @@
   font-display: swap;
   src: url('fonts/jetbrains-mono-variable.woff2') format('woff2-variations'),
        url('fonts/jetbrains-mono-variable.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+0160-0161, U+017D-017E, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url('fonts/jetbrains-mono-ext-variable.woff2') format('woff2-variations'),
+       url('fonts/jetbrains-mono-ext-variable.woff2') format('woff2');
+  unicode-range: U+0100-0130, U+0134-0151, U+0154-015F, U+0162-017C, U+017F, U+018F, U+0192, U+01A0-01A1, U+01AF-01B0, U+01CD-01CE, U+01E6-01E7, U+01EA-01EB, U+01F4-01F5, U+01FC-01FF, U+0218-021B, U+0232-0233, U+0237, U+0259, U+1E80-1E85, U+1E9E, U+1EA0-1EF9, U+2070, U+2074-207A, U+2080-2089, U+20AB, U+20AE, U+20BD, U+20BF, U+2113, U+2115-2116, U+212E;
 }
 
 /* From `npm run fonts:fallback`: Capsize's method, each face sized to the font at its token weight by advance widths weighted by English letter frequency with spaces as 18% of characters, against Arial (2048 units, ascent 1854, descent 434, line gap 67, average width 904), Arial Bold (977.7) and their italics, and the monospace face against Courier New (2048 units, every advance 1229) and Courier New Bold. */

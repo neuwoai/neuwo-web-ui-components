@@ -71,8 +71,15 @@ stylesheet. A bundler treats them as ordinary CSS `url()`s: Vite, webpack and Tu
 woff2 files into the app's output and rewrite the URLs with no configuration. This is verified
 with Vite 8 (dev server and build) and Next.js 16 (Turbopack and webpack).
 
+Each font is two files. The Latin file, such as `noto-sans-variable.woff2`, covers English,
+Finnish, Swedish, Estonian and the other Western European languages. The extension file, such as
+`noto-sans-ext-variable.woff2`, holds Central European and Vietnamese letters and further symbols.
+Each face has a `unicode-range`, so the browser downloads the extension file only when the page
+uses one of its characters. An English or Finnish page downloads 179 KB of fonts in all.
+
 To serve the fonts from somewhere else, override the faces by declaring your own `@font-face`
-rules after the stylesheet. To avoid a swap on first paint, preload a file:
+rules after the stylesheet, one per file, each with the library face's `unicode-range`. To avoid a
+swap on first paint, preload a file:
 
 ```html
 <link rel="preload" as="font" type="font/woff2" crossorigin
@@ -106,6 +113,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 - TypeScript needs a declaration for the import. Vite's `vite/client` types have one; in Next.js
   add `declare module "*.woff2" { const src: string; export default src; }` to a `.d.ts` file.
 - Preload what the first screen shows: Noto Sans for text, and Outfit when a heading is in view.
+  Preload the Latin file only. A preloaded extension file downloads on every page, which undoes
+  the split.
   A preload helps where the page is rendered on the server; in an app rendered only in the browser,
   the font is requested as soon as text needs it either way.
 
@@ -1446,6 +1455,7 @@ npm install
 npm start     # build + watch + serve the demo at http://localhost:8000/demo/
 npm run build # produce dist/ (neuwo.js, neuwo.css, fonts/, logos/, foundation/*.css, components/**/*.css, types/)
 npm test      # Vitest + happy-dom
+npm run fonts:subset # cut each font in src/foundation/font-sources into its Latin and extension files (needs Python fonttools and brotli)
 npm run fonts:fallback # print the fallback @font-face rules computed from the woff2 files
 npm run tokens:fallback # rewrite the hex fallbacks at the end of tokens.css from the colour tokens
 ```

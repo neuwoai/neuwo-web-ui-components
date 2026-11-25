@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+### Changed
+
+- Each font is two files, split by `unicode-range`. The Latin file keeps the font's current name
+  and covers English, Finnish, Swedish, Estonian and the other Western European languages. The new
+  extension file holds the rest, Central European and Vietnamese letters and further symbols, and
+  the browser downloads it only when a page uses one of its characters. An English or Finnish page
+  downloads 179 KB of fonts instead of 356 KB. A page that needs both files of a family downloads a
+  little more than before: 157 KB instead of 136 KB for Noto Sans.
+- Preloads of the current files keep working. A site that copies the fonts must also copy the four
+  new files: `outfit-ext-variable.woff2`, `noto-sans-ext-variable.woff2`,
+  `noto-sans-italic-ext-variable.woff2` and `jetbrains-mono-ext-variable.woff2`. A site that
+  declares its own `@font-face` rules needs one per file, with the library face's `unicode-range`.
+
 ### Fixed
 
 - `custom-elements.json` describes every public method and its parameters, so a reference

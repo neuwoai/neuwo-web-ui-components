@@ -12,6 +12,13 @@ npm warns on any other.
   lives once in its own file. Never re-type a value elsewhere. The hex fallbacks at the end of
   `tokens.css` are computed: after changing a colour token, run `npm run tokens:fallback`, which
   `tests/colour-fallback.test.js` checks.
+- The published fonts are computed too. Each full font lives in `src/foundation/font-sources/`, and
+  `npm run fonts:subset` cuts it into a Latin file under the same name and an extension file
+  (`*-ext-variable.woff2`) in `src/foundation/fonts/`, and writes each face's `unicode-range` in
+  `fonts.css`. It needs Python with `fonttools` and `brotli` (`pip install fonttools brotli`).
+  After replacing or adding a font, run it, then `npm run fonts:fallback` for the fallback faces;
+  `tests/fonts.test.js` checks both. A new font also needs its two faces in `fonts.css` and its two
+  URLs in `src/core/fonts.js`.
 - Visually meaningful styling goes on the portable selector (`.neuwo-btn` and variants). Reserve
   the element-name rule (`neuwo-button { ... }`) for the outer box only, so the recipe the design
   system shows and non-web outputs copy is complete without it.

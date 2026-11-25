@@ -111,9 +111,9 @@ export function readTables(file) {
 
 /**
  * @param {Buffer} cmap
- * @returns {(code: number) => number}
+ * @returns {Buffer}
  */
-function glyphs(cmap) {
+function unicodeTable(cmap) {
   const records = Array.from({ length: cmap.readUInt16BE(2) }, (_, index) => ({
     platform: cmap.readUInt16BE(4 + index * 8),
     encoding: cmap.readUInt16BE(6 + index * 8),
@@ -125,7 +125,36 @@ function glyphs(cmap) {
     records.find((r) => r.platform === 3 && r.encoding === 1) ??
     records.find((r) => r.platform === 0);
   if (!record) throw new Error("no Unicode cmap");
-  const table = cmap.subarray(record.offset);
+  return cmap.subarray(record.offset);
+}
+
+/**
+ * Every code point the font maps to a glyph, in order.
+ * @param {Buffer} cmap
+ * @returns {number[]}
+ */
+export function characters(cmap) {
+  const table = unicodeTable(cmap);
+  const glyph = glyphs(cmap);
+  /** @type {number[][]} */
+  let spans;
+  if (table.readUInt16BE(0) === 12) {
+    spans = Array.from({ length: table.readUInt32BE(12) }, (_, group) => [table.readUInt32BE(16 + group * 12), table.readUInt32BE(20 + group * 12)]);
+  } else {
+    const segments = table.readUInt16BE(6) / 2;
+    spans = Array.from({ length: segments }, (_, segment) => [table.readUInt16BE(16 + segments * 2 + segment * 2), table.readUInt16BE(14 + segment * 2)]);
+  }
+  const codes = new Set();
+  for (const [start, end] of spans) for (let code = start; code <= end; code++) if (glyph(code)) codes.add(code);
+  return [...codes].sort((a, b) => a - b);
+}
+
+/**
+ * @param {Buffer} cmap
+ * @returns {(code: number) => number}
+ */
+function glyphs(cmap) {
+  const table = unicodeTable(cmap);
   const format = table.readUInt16BE(0);
   if (format === 12) {
     return (code) => {

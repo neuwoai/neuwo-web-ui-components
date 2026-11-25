@@ -50,6 +50,7 @@
     "integration": "node integration/run.mjs",
     "types": "tsc -p tsconfig.json",
     "types:jsx": "node scripts/jsx-types.js && tsc -p tests/react/tsconfig.json",
+    "fonts:subset": "python3 scripts/subset-fonts.py",
     "fonts:fallback": "node scripts/fallback-metrics.js",
     "tokens:fallback": "node scripts/colour-fallback.js",
     "prepack": "npm run build"
