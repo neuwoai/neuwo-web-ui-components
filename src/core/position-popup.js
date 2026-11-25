@@ -60,8 +60,9 @@ export function positionPopup(trigger, popup, options = {}) {
 
   const below = viewportHeight - r.bottom;
   const above = r.top;
-  if (fitHeight) popup.style.maxHeight = "";
-  const height = popup.offsetHeight || 0;
+  // Its content's height, read under the cap from before: lifting the cap would lay it out anew and clamp its scroll.
+  const content = (popup.scrollHeight || 0) + (popup.offsetHeight || 0) - (popup.clientHeight || 0);
+  const height = fitHeight ? content : popup.offsetHeight || 0;
   // Flip only when the preferred side cannot fit AND the other side is roomier.
   const flip =
     placement === "top" ? above < height && below > above : below < height && above > below;

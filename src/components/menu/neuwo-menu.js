@@ -30,7 +30,10 @@ export class NeuwoMenu extends NeuwoElement {
   /** @type {"bottom" | "top" | undefined} */
   #side;
 
-  #reposition = () => this.#position(this.#side);
+  /** @param {Event} event */
+  #reposition = (event) => {
+    if (!(event.target instanceof Node && this.panel?.contains(event.target))) this.#position(this.#side);
+  };
 
   get submenu() {
     return this.getAttribute("submenu") || "auto";

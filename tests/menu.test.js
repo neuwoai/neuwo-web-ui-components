@@ -152,6 +152,19 @@ describe("<neuwo-menu>", () => {
     expect(panel.style.top).toBe("54px");
   });
 
+  it("does not reposition for a scroll inside its own panel, which moves no trigger", async () => {
+    const { button, panel } = opener();
+    button.click();
+    await tick();
+    const style = panel.getAttribute("style");
+    button.getBoundingClientRect = at({ top: 60, bottom: 90, left: 40, right: 140 });
+    panel.dispatchEvent(new Event("scroll"));
+    panel.querySelector(".neuwo-menu-item__control").dispatchEvent(new Event("scroll"));
+    expect(panel.getAttribute("style")).toBe(style);
+    document.dispatchEvent(new Event("scroll"));
+    expect(panel.style.top).toBe("94px");
+  });
+
   it("stops repositioning once removed from the page while open", async () => {
     const { button, menu, panel } = opener();
     button.click();

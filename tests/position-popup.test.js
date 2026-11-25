@@ -181,6 +181,21 @@ describe("positionPopup", () => {
     expect(unfitted.style.maxHeight).toBeUndefined();
   });
 
+  it("measures a fitted popup's full content without lifting the cap it has, which would clamp its scroll position", () => {
+    const writes = [];
+    const style = new Proxy({ maxHeight: "250px" }, {
+      set(target, name, value) {
+        if (name === "maxHeight") writes.push(value);
+        target[name] = value;
+        return true;
+      },
+    });
+    // Capped at 250px from before, it scrolls 600px of content: 260px below the trigger does not fit it, 500px above is roomier.
+    const fitted = { style, offsetHeight: 250, clientHeight: 248, scrollHeight: 600, offsetWidth: 0 };
+    expect(positionPopup(trigger({ left: 0, right: 200, top: 500, bottom: 540, width: 200 }), fitted, { fitHeight: true })).toBe("top");
+    expect(writes).toEqual(["488px"]); // 500 - 4 - 8
+  });
+
   it("flips below when placement is top but there is not enough room above", () => {
     const p = popup(200);
     // 20px above, 740px below: prefers top, must flip.
