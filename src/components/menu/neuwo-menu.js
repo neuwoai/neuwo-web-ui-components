@@ -217,7 +217,7 @@ export class NeuwoMenu extends NeuwoElement {
       panel.hidePopover();
     }
     this.#invoker = invoker;
-    panel.showPopover();
+    /** @type {HTMLElement & { showPopover(options?: { source?: HTMLElement }): void }} */ (panel).showPopover({ source: invoker ?? undefined });
     if (!this.isOpen) return;
     this.#position();
     this.#arrive(panel, edge);

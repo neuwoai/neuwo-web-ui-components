@@ -632,6 +632,29 @@ describe("<neuwo-menu> picks, events and keyboard", () => {
     expect(panel.matches(":popover-open")).toBe(false);
   });
 
+  it("shows the panel from script with its trigger as the source, so a popover holding the trigger stays open", async () => {
+    const { holder, button, menu, panel } = opener(KINDS);
+    const second = document.createElement("button");
+    second.setAttribute("popovertarget", "m-panel");
+    holder.append(second);
+    const show = vi.spyOn(panel, "showPopover");
+    cleanup.push(() => vi.restoreAllMocks());
+    button.focus();
+    press(button, "ArrowDown");
+    expect(show).toHaveBeenLastCalledWith({ source: button });
+    second.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+    expect(show).toHaveBeenLastCalledWith({ source: second });
+    menu.close();
+    await tick();
+    menu.open(button);
+    expect(show).toHaveBeenLastCalledWith({ source: button });
+    menu.close();
+    await tick();
+    menu.open();
+    expect(show).toHaveBeenLastCalledWith({ source: undefined });
+    expect(show).toHaveBeenCalledTimes(4);
+  });
+
   it("measures the panel in the frame it first paints, flipping it above a trigger with no room below", async () => {
     const frames = [];
     vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => frames.push(callback));
