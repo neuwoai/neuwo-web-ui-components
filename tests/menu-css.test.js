@@ -87,16 +87,18 @@ describe("menu.css recipe", () => {
     });
   });
 
-  it("draws the divider edge to edge, hides it in the first group and with --no-divider, and hides a group with no item shown", () => {
+  it("draws the divider edge to edge, only after a group that shows and without --no-divider, and hides a group with no item shown", () => {
+    const shown = ":not([hidden]):has(> .neuwo-menu-group > .neuwo-menu-group__items > :not([hidden]))";
     expect(rule(".neuwo-menu-group__divider")).toEqual({
+      display: "none",
       "block-size": "1px",
       "margin-block": "var(--neuwo-space-2)",
       "margin-inline": "calc(-1 * var(--neuwo-space-2))",
       background: "var(--neuwo-glass-border)",
     });
-    for (const selector of [".neuwo-menu__items > :first-child > .neuwo-menu-group > .neuwo-menu-group__divider", ".neuwo-menu-group--no-divider > .neuwo-menu-group__divider"]) {
-      expect(rule(selector), selector).toEqual({ display: "none" });
-    }
+    expect(rule(`.neuwo-menu__items > ${shown} ~ * > .neuwo-menu-group:not(.neuwo-menu-group--no-divider) > .neuwo-menu-group__divider`)).toEqual({ display: "block" });
+    expect(code).not.toContain(":first-child");
+    expect(rule(".neuwo-menu-group--no-divider > .neuwo-menu-group__divider")).toEqual({});
     expect(rule(".neuwo-menu-group:not(:has(> .neuwo-menu-group__items > :not([hidden])))")).toEqual({ display: "none" });
   });
 

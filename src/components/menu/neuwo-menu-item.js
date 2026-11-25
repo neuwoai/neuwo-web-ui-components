@@ -7,7 +7,8 @@ import { menuItemTemplate } from "./menu-item.template.js";
  * A menu item inside a `<neuwo-menu-group>` or directly in a `<neuwo-menu>`. Its control is a button, or a real link
  * with `href`, focusable but not activatable while `disabled`. In a group with `select` it is a radio or checkbox
  * item, its check in the start position. A `<neuwo-menu>` in its `submenu` slot makes it open that menu, with a
- * chevron at its inline end. The global `hidden` attribute removes it from the menu.
+ * chevron at its inline end. The global `hidden` attribute removes it from the menu and from the keyboard order.
+ * Picking it fires `select` on the menu; its own `click` bubbles too.
  *
  * @summary Neuwo menu item. Public classes: `.neuwo-menu-item` on the `role="none"` `<div>`, with `--red` and `--green`; `.neuwo-menu-item__control` on the `<button>` or `<a>`, which holds `.neuwo-menu-item__check` on a checkable item, the wrappers `.neuwo-menu-item__start` and `.neuwo-menu-item__label` around the start icon and the label, `.neuwo-menu-item__hint`, a new-tab link's `.neuwo-menu-item__external` mark and visually hidden `.neuwo-menu-item__new-tab` text, and a submenu parent's `.neuwo-menu-item__chevron`; `.neuwo-menu-item__submenu` around the submenu.
  * @customElement neuwo-menu-item
@@ -15,7 +16,7 @@ import { menuItemTemplate } from "./menu-item.template.js";
  * @attr hint - short trailing text, such as a shortcut, a file type or a plan.
  * @attr {red|green} tone - colours the label and the icon.
  * @attr {boolean} disabled - dims the item, which stays focusable but cannot be picked.
- * @attr {boolean} checked - the starting state of an item in a group with `select`.
+ * @attr {boolean} checked - the state of an item in a group with `select`, which a pick changes; on a host React rendered, React's state does.
  * @attr href - makes the item a link, unless it is disabled, checkable or opens a submenu.
  * @attr target - link target, forwarded to the `<a>`; `_blank` adds the external mark and tells screen readers it opens a new tab.
  * @attr rel - link rel, forwarded to the `<a>`.

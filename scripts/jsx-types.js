@@ -30,12 +30,14 @@ function attributeType(text) {
   return members.map((value) => (/^\d+$/.test(value) ? `${value} | "${value}"` : JSON.stringify(value))).join(" | ");
 }
 
+const hasChange = (declaration) => (declaration.events ?? []).some(({ name }) => name === "change");
+
 function isCheckable(declaration) {
-  return (declaration.attributes ?? []).some(({ name }) => name === "checked");
+  return (declaration.attributes ?? []).some(({ name }) => name === "checked") && hasChange(declaration);
 }
 
 function isFormControl(declaration) {
-  return (declaration.attributes ?? []).some(({ name }) => name === "value") && (declaration.events ?? []).some(({ name }) => name === "change");
+  return (declaration.attributes ?? []).some(({ name }) => name === "value") && hasChange(declaration);
 }
 
 function propType(name, type, { checkable, form }) {

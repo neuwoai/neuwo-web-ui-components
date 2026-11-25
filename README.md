@@ -609,7 +609,8 @@ createRoot(document.getElementById("root")!).render(<App />);
 light DOM elements (`<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuwo-status-dot>`,
 `<neuwo-logo>`, `<neuwo-copy>`, `<neuwo-notice>`, `<neuwo-cta>`, `<neuwo-input>`, `<neuwo-textarea>`,
 `<neuwo-range>`, `<neuwo-combobox>`, `<neuwo-checkbox>`, `<neuwo-toggle>`, `<neuwo-radio>`,
-`<neuwo-radio-group>` and `<neuwo-segmented>`) into their markup; MDX reads its own
+`<neuwo-radio-group>`, `<neuwo-segmented>`, `<neuwo-menu>`, `<neuwo-menu-group>` and
+`<neuwo-menu-item>`) into their markup; MDX reads its own
 `jsxImportSource` option, not tsconfig's, so set it there too (in
 `@mdx-js/*` or Next's MDX config). Elements recognise markup React rendered, from Client or Server
 Components, and leave it to React, so without the setting a light DOM tag React renders stays bare.
@@ -617,7 +618,7 @@ The same setting adds every element to JSX with each attribute's allowed values 
 event's `detail`, so a misspelt variant fails the type check. React stays an optional peer
 dependency. A working project with controlled and uncontrolled forms is in [demo/react-vite](https://github.com/neuwoai/neuwo-web-ui-components/tree/v0.5.0/demo/react-vite).
 
-React renders the markup of all seventeen elements itself, so they show from the first paint.
+React renders the markup of all twenty elements itself, so they show from the first paint.
 
 React 19 sets a property where the element has one and binds events, so the elements behave like
 native controls:
@@ -632,8 +633,12 @@ native controls:
 - `onChange` fires as it does on native fields. On the form fields, the checkbox, the toggle, the
   radio group and the segmented control that means React's own controlled and uncontrolled models, in
   [Form fields in React](#form-fields-in-react).
-- A custom event binds by its exact name, so it is lower case: `oncopied`, `ondismiss`.
-  `onCopied` listens for an event called `Copied`, which never fires; the types reject it.
+- A custom event binds by its exact name, so it is lower case: `oncopied`, `ondismiss`, and the
+  menu's `onopen` and `onselect`. `onCopied` listens for an event called `Copied`, which never
+  fires; the types reject it. React's own `onSelect`, for text selected in a field, is a different
+  prop and never sees a menu's pick.
+- A menu item React renders only fires `select` when it is picked; drive its `checked` from state,
+  as you drive a checkbox's.
 - Cancel the notice's `dismiss` and drive `hidden` from state. Left alone, the element hides
   itself by setting `hidden` on a host React renders, which React does not know about.
 
@@ -828,7 +833,7 @@ export function Neuwo() {
 }
 ```
 
-Render `<Neuwo />` once in the root layout. Because the JSX runtime expands all seventeen elements,
+Render `<Neuwo />` once in the root layout. Because the JSX runtime expands all twenty elements,
 the server-rendered HTML carries their full markup and they are on-brand from the first paint,
 before the bundle has run. Import `neuwo.css` instead of `neuwo-components.css` to add the
 typography and page surface. A working project is in [demo/nextjs](https://github.com/neuwoai/neuwo-web-ui-components/tree/v0.5.0/demo/nextjs).
@@ -1467,7 +1472,7 @@ directly, as one group without a heading; a menu of groups and items mixed is no
 - **`select`**: absent, the items are actions; `one`, radio items, one checked at a time; `many`,
   checkbox items. The check, or the radio's dot, sits in the start position.
 - **`no-divider`** drops the divider that separates the group from the one before it. The first
-  group never has one.
+  group shown never has one.
 
 `<neuwo-menu-item>`:
 
@@ -1477,12 +1482,67 @@ directly, as one group without a heading; a menu of groups and items mixed is no
 - **`hint`**: short trailing text, such as a shortcut, a file type or a plan.
 - **`tone`**: `red` or `green` colours the label and the icon. Blue is left out because hover is.
 - **`disabled`** dims the item, which stays focusable but cannot be picked.
-- **`checked`**: the starting state of an item in a group with `select`.
+- **`checked`**: the state of an item in a group with `select`, which a pick changes.
 - **`href`**, with `target`, `rel` and `download`, makes a link item, a real `<a>`, unless the item
   is disabled, checkable or opens a submenu. With `target="_blank"` it shows an external-link mark
   and tells screen readers it opens a new tab.
-- **`hidden`**, the global attribute, removes the item from the menu. A group whose items are all
-  hidden is hidden with its heading and divider.
+- **`hidden`**, the global attribute, removes the item from the menu and from the keyboard order. A
+  group whose items are all hidden is hidden with its heading and divider, and a divider only ever
+  follows a group that shows.
+
+Opening the menu focuses its first enabled item. Picking an item works like this:
+
+- An action item, or a link item, closes the menu and returns focus to the trigger; a link item
+  then follows its link.
+- A checkable item changes and the menu stays open: in a `select="one"` group the picked item is
+  checked and the others are unchecked, and in a `select="many"` group the item toggles.
+- A `disabled` item cannot be picked, and the menu stays open.
+
+The menu fires two events, both bubbling and cancelable:
+
+- **`open`**, just before the panel shows, with `detail.trigger`, the element that opens it.
+  Cancelling it keeps the menu closed. A menu that several rows share uses it to hide, disable or
+  check items for the row that opened it; a `hidden` item leaves the menu and the keyboard order.
+- **`select`**, when an item is picked, before the pick takes effect, as a native click comes
+  before its default action. `detail` holds `value`, `item` (the `<neuwo-menu-item>`), `trigger`
+  and, on a checkable item only, `checked`, the state the item is about to take. Cancelling it
+  stops the pick: an action leaves the menu open, a checkable item keeps its state, and a link item
+  does not navigate.
+
+The item's own `click` bubbles as well, so a page can listen on one item instead.
+
+```js
+const menu = document.getElementById("segment-actions");
+menu.addEventListener("open", (event) => {
+  const live = event.detail.trigger?.dataset.status === "live";
+  menu.querySelector('neuwo-menu-item[value="publish"]').hidden = live;
+});
+menu.addEventListener("select", (event) => {
+  if (event.detail.value === "delete" && !confirm("Delete this segment?")) event.preventDefault();
+});
+```
+
+`trigger` is the element that opened the menu while it is open, else null: the `<neuwo-button>`
+around the button that opened it, so the page's own `data-*` attributes on it can be read, or the
+button itself. `isOpen` says whether the menu is open. `open(trigger)` opens it as if `trigger`
+had, firing `open` and focusing the first enabled item, and `close()` closes it as Escape does.
+Clicking a second trigger while the menu is open reopens it as that trigger's menu, firing `open`
+again. On a host React rendered, a pick of a checkable item only fires `select`, and React's state
+decides `checked`.
+
+The keyboard follows the WAI-ARIA menu button pattern, moving real focus between the items:
+
+| Key | On | Does |
+| --- | --- | --- |
+| Enter, Space or ArrowDown | the trigger | Opens the menu on its first enabled item |
+| ArrowUp | the trigger | Opens the menu on its last enabled item |
+| ArrowDown and ArrowUp | an item | Moves to the next or previous item, wrapping; `hidden` items are skipped, disabled ones are not |
+| Home and End | an item | Moves to the first or the last item |
+| Enter or Space | an item | Picks it |
+| Escape | an item | Closes the menu and returns focus to the trigger |
+| Tab | an item | Closes the menu and moves on from the trigger |
+
+A click outside the menu closes it, and so does a click on the trigger that opened it.
 
 The elements render into their own light DOM, so `expand()` renders a whole menu on the server and
 the panel is styled from the first paint once it opens; the classes are listed under restyling

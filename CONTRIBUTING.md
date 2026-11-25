@@ -150,7 +150,13 @@ The `demo` target serves the repository root, so it checks the demo page against
 page's `.btn` and `button` rules reach plain buttons and no component, that a host rule restyles a
 component, and that the range readout never shows `NaN`, with `neuwo.js` held back for 500 ms and
 again after definition. The target's server delays the bundle, so both browsers run the held
-reading.
+reading. Then `integration/menus.mjs` drives the every-kind menu, `#demo-kinds`, from its plain
+trigger: `menuOpens` (a click opens it on its first item), `menuKeys` (ArrowDown moves focus, and
+Escape closes it and returns focus to the trigger), `menuPick` (a click on an item fires `select`,
+which the demo records in `window.__menuPicks`, and closes it) and `menuTree` (the accessibility
+tree holds a `menu` with `menuitem`, `menuitemradio` and `menuitemcheckbox` items, and the detail
+records whether the plain trigger reports itself expanded). Puppeteer reads no accessibility tree
+over WebDriver BiDi, so `menuTree` is `n/a` in Firefox.
 
 The `next-dev` and `next-prod` targets run the app in `integration/apps/next` under `next dev`, and
 under `next build` then `next start`. Besides the five checks they run `forms` on the `Forms`

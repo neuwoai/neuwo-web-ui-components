@@ -166,22 +166,42 @@ describe("JSX types", () => {
     expect(props).not.toMatch(/orientation|checked/i);
   });
 
-  it("reads a checked attribute whatever its declared type, with or without a change event", () => {
+  it("reads a checked attribute whatever its declared type on an element with a change event, and leaves one without to React's own props", () => {
     const generated = jsxElementsTypes({
       modules: [
         {
           declarations: [
             { kind: "class", name: "Check", tagName: "x-check", attributes: [{ name: "checked" }, { name: "value" }], events: [{ name: "change", type: { text: "Event" } }] },
-            { kind: "class", name: "Lone", tagName: "x-lone", attributes: [{ name: "checked", type: { text: "boolean" } }] },
+            { kind: "class", name: "Lone", tagName: "x-lone", attributes: [{ name: "checked", type: { text: "boolean" } }, { name: "value" }] },
           ],
         },
       ],
     });
-    expect(generated).toContain("checked?: boolean;");
+    const of = (tag) => generated.slice(generated.indexOf(`"${tag}"`), generated.indexOf("}>;", generated.indexOf(`"${tag}"`)));
+    expect(of("x-check")).toContain("checked?: boolean;");
+    expect(of("x-check")).toContain("defaultChecked?: boolean;");
+    expect(of("x-check")).toContain("onChange?: NeuwoChangeHandler<Check>;");
+    expect(of("x-lone")).toContain("checked?: boolean;");
+    expect(of("x-lone")).toContain("value?: string;");
+    expect(of("x-lone")).not.toMatch(/defaultChecked|defaultValue|onChange/);
     expect(generated).not.toContain("checked?: string;");
-    expect(generated).toContain("onChange?: NeuwoChangeHandler<Check>;");
-    expect(generated).toContain("onChange?: NeuwoChangeHandler<Lone>;");
     expect(generated).not.toContain("defaultValue?: string | number;");
+  });
+
+  it("gives the menu item, which is no form control, none of React's form props, and the form controls theirs", () => {
+    const item = block("neuwo-menu-item");
+    expect(item).toContain("checked?: boolean;");
+    expect(item).toContain("value?: string;");
+    expect(item).not.toMatch(/defaultChecked|defaultValue|onChange/);
+    for (const [tag, name] of [["neuwo-checkbox", "NeuwoCheckbox"], ["neuwo-toggle", "NeuwoToggle"], ["neuwo-radio", "NeuwoRadio"]]) {
+      expect(block(tag), tag).toContain(`defaultChecked?: boolean;\n        defaultValue?: never;\n        onChange?: NeuwoChangeHandler<${name}, HTMLInputElement>;`);
+    }
+  });
+
+  it("binds the menu's open and select events with their details", () => {
+    const menu = block("neuwo-menu");
+    expect(menu).toContain("onopen?: (event: CustomEvent<{ trigger: HTMLElement | null }>) => void;");
+    expect(menu).toContain("onselect?: (event: CustomEvent<{ value: string; item: NeuwoMenuItem; trigger: HTMLElement | null; checked?: boolean }>) => void;");
   });
 
   it("leaves an element with a value but no change event to React's own props", () => {

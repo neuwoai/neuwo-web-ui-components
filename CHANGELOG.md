@@ -10,6 +10,14 @@
   or checkbox items, and `no-divider`; its items a start icon, `hint`, `tone`, `disabled`,
   `checked`, link attributes and a submenu slot. The panel and rows share the combobox's look in
   `components/popup.css`; the rest is the new published `components/menu/menu.css`.
+  The menu fires a cancelable `open` with the trigger just before it shows, and a cancelable
+  `select` with the item's `value`, the item, the trigger and a checkable item's coming `checked`
+  state before a pick takes effect. An action or link closes the menu and returns focus to the
+  trigger; a checkable item changes and the menu stays open. Its `trigger` and `isOpen` properties
+  report who opened it and whether it is open, and `open(trigger)` and `close()` drive it from a
+  script. The keyboard follows the WAI-ARIA menu button pattern: Enter,
+  Space, ArrowDown or ArrowUp on the trigger, and the arrows, Home, End, Enter, Space, Escape and
+  Tab in the menu. In React, `onopen` and `onselect` bind the events.
 - Icon tokens `--neuwo-icon-chevron`, `--neuwo-icon-check` and `--neuwo-icon-dot`, masks that the
   combobox's chevron, the checkbox's tick, the radio's dot and the menu now read.
 

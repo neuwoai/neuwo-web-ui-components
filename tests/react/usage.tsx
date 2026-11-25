@@ -39,6 +39,14 @@ export function Usage() {
         <pre>npm install</pre>
       </neuwo-copy>
       <neuwo-notice dismissible ondismiss={(event) => event.preventDefault()} />
+      <neuwo-menu id="m" onopen={(e) => e.detail.trigger} onselect={(e) => e.detail.value}>
+        <neuwo-menu-group heading="Show" select="many">
+          <neuwo-menu-item value="live" checked={agreed}>
+            Live Segments
+          </neuwo-menu-item>
+        </neuwo-menu-group>
+      </neuwo-menu>
+      <neuwo-menu onselect={(e) => e.detail.checked === e.detail.item.checked && e.detail.trigger?.dataset.row} onopen={(e) => e.preventDefault()} />
       <neuwo-cta heading-level={3} />
       <neuwo-cta heading-level="3" />
       <neuwo-textarea rows={4} className="notes" />
@@ -108,6 +116,8 @@ export function Usage() {
       <neuwo-badge glow="yes" />
       {/* @ts-expect-error React only binds the exact event name */}
       <neuwo-copy onCopied={() => {}} />
+      {/* @ts-expect-error a pick reports a string value */}
+      <neuwo-menu onselect={(e) => e.detail.value.toFixed()} />
       {/* @ts-expect-error not an element the library defines */}
       <neuwo-nope />
     </>

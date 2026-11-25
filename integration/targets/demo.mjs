@@ -1,5 +1,6 @@
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { checkMenus } from "../menus.mjs";
 import { serveStatic } from "../serve.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -86,5 +87,6 @@ export async function interact(page, url) {
   else results.push(judgeReadout("readoutBeforeDefinition", before, false));
   const readout = await page.evaluate(() => ({ defined: Boolean(customElements.get("neuwo-range")), readout: document.getElementById("demo-views-value").value }));
   results.push(judgeReadout("readoutAfterDefinition", readout, true));
+  results.push(...(await checkMenus(page)));
   return results;
 }

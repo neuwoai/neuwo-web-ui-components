@@ -418,14 +418,17 @@
       });
     </script>
 
-    <h2>Menu (opened by a plain button; picks come next)</h2>
+    <h2>Menu (every item kind)</h2>
     <p>
       A plain <code>&lt;button popovertarget&gt;</code> opens each menu and the menu positions against it. The first
-      shows every item kind; the second has 40 items and scrolls inside the viewport.
+      shows every item kind; the second has 40 items and scrolls inside the viewport. Down or Up on a trigger opens its
+      menu on the first or last item; in the menu, the arrows, Home and End move, Enter and Space pick, Escape closes
+      and Tab moves on. An action or a link closes the menu; a Sort By or Show item stays checked in it.
     </p>
     <div class="row">
       <button class="neuwo-btn neuwo-btn--outline" popovertarget="demo-kinds-panel">Item Kinds</button>
       <button class="neuwo-btn neuwo-btn--outline" popovertarget="demo-long-panel">40 Items</button>
+      <output id="demo-kinds-pick">No pick yet</output>
     </div>
     <neuwo-menu id="demo-kinds">
       <neuwo-menu-group heading="Export As">
@@ -477,6 +480,13 @@
       document.getElementById("demo-long").append(
         ...Array.from({ length: 40 }, (_, index) => Object.assign(document.createElement("neuwo-menu-item"), { textContent: `Segment ${index + 1}` })),
       );
+      window.__menuPicks = [];
+      document.getElementById("demo-kinds").addEventListener("select", (event) => {
+        const { value, checked } = event.detail;
+        window.__menuPicks.push({ value, checked });
+        document.getElementById("demo-kinds-pick").value =
+          checked === undefined ? `Last pick: ${value}` : `Last pick: ${value}, ${checked ? "checked" : "unchecked"}`;
+      });
     </script>
 
     <h2>Icon tokens (masks: --neuwo-icon-chevron, --neuwo-icon-check, --neuwo-icon-dot)</h2>
