@@ -5,19 +5,20 @@ const ROLES = { one: "menuitemradio", many: "menuitemcheckbox" };
 
 /**
  * A menu item: its control, a link or a button with the role its group's `select` gives it, then the wrapper a
- * submenu sits in. It reads the nearer of its group and its menu, so an outer group's `select` never reaches an item
- * placed directly in a submenu. The control holds the check of a checkable item, the start icon, the label, the hint,
- * a new-tab link's mark and a submenu parent's chevron.
+ * submenu sits in. A submenu parent is always a `menuitem`, since ARIA gives the radio and checkbox items no popup.
+ * It reads the nearer of its group and its menu, so an outer group's `select` never reaches an item placed directly
+ * in a submenu. The control holds the check of a checkable item, the start icon, the label, the hint, a new-tab
+ * link's mark and a submenu parent's chevron.
  * @param {Record<string, string>} attrs
  * @param {import("../../core/template.js").TemplateContext} ctx
  * @returns {import("../../core/template.js").TemplateNode}
  */
 export function menuItemTemplate(attrs, ctx) {
+  const submenu = ctx.children.some((child) => child.slot === "submenu");
   const select = ctx.within?.select;
-  const role = Object.hasOwn(ROLES, select) ? ROLES[select] : "menuitem";
+  const role = !submenu && Object.hasOwn(ROLES, select) ? ROLES[select] : "menuitem";
   const checkable = role !== "menuitem";
   const disabled = has(attrs, "disabled");
-  const submenu = ctx.children.some((child) => child.slot === "submenu");
   const link = Boolean(attrs.href) && !disabled && !checkable && !submenu;
   const newTab = link && attrs.target === "_blank";
 

@@ -412,7 +412,7 @@ describe("<neuwo-menu> submenus", () => {
     expect(isOpen(sub)).toBe(true);
   });
 
-  it("gives a bare item in a submenu no role from its parent's select group, and one in the submenu's own group that group's", () => {
+  it("gives a submenu parent and a bare item in its submenu no role from the parent's select group, and one in the submenu's own group that group's", () => {
     const html =
       `<neuwo-menu id="v"><neuwo-menu-group select="one"><neuwo-menu-item value="name" checked>Name</neuwo-menu-item>` +
       `<neuwo-menu-item value="more">More${submenu(`<neuwo-menu-item value="reach">Reach</neuwo-menu-item>`)}</neuwo-menu-item></neuwo-menu-group></neuwo-menu>` +
@@ -420,14 +420,14 @@ describe("<neuwo-menu> submenus", () => {
     const roles = (holder) => Object.fromEntries(Array.from(holder.querySelectorAll("neuwo-menu-item"), (item) => [item.value, item.querySelector(".neuwo-menu-item__control").getAttribute("role")]));
     const served = document.createElement("div");
     served.innerHTML = expand(html);
-    expect(roles(served)).toEqual({ name: "menuitemradio", more: "menuitemradio", reach: "menuitem", show: "menuitem", live: "menuitemcheckbox" });
+    expect(roles(served)).toEqual({ name: "menuitemradio", more: "menuitem", reach: "menuitem", show: "menuitem", live: "menuitemcheckbox" });
     const holder = document.createElement("div");
     holder.innerHTML = html;
     document.body.append(holder);
     cleanup.push(() => holder.remove());
     expect(roles(holder)).toEqual(roles(served));
     holder.querySelector("neuwo-menu-group").select = "many";
-    expect(roles(holder)).toEqual({ name: "menuitemcheckbox", more: "menuitemcheckbox", reach: "menuitem", show: "menuitem", live: "menuitemcheckbox" });
+    expect(roles(holder)).toEqual({ name: "menuitemcheckbox", more: "menuitem", reach: "menuitem", show: "menuitem", live: "menuitemcheckbox" });
   });
 
   describe("a submenu the browser hides without an event, as it does one removed from the page", () => {

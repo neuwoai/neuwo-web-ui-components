@@ -1655,8 +1655,9 @@ placed in viewport coordinates; a container's edges do not count. A submenu foll
 the page scrolls. A drill-in slides in from the inline end, and the panel and drill-in animations
 stop under `prefers-reduced-motion`.
 
-A group's `select` applies to its own items: an item placed directly in a submenu, with no group of
-its own there, is an action even when the item that opens the submenu sits in a `select` group.
+An item that opens a submenu is always an action item, a `menuitem`, even in a `select` group: it
+shows no check, and `checked` does nothing on it. A group's `select` applies to its own items, so an
+item placed directly in a submenu, with no group of its own there, is an action too.
 
 The elements render into their own light DOM, so `expand()` renders a whole menu on the server and
 the panel is styled from the first paint once it opens; the classes are listed under restyling

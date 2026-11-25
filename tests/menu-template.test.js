@@ -165,6 +165,17 @@ describe("menuItemTemplate()", () => {
     expect(find(plain, "neuwo-menu-item__chevron")).toBeNull();
   });
 
+  it("keeps a submenu parent a plain menuitem in a select group, with no check", () => {
+    for (const select of ["one", "many"]) {
+      const control = controlOf({ checked: "" }, { select }, SUBMENU);
+      expect(control.props.role, select).toBe("menuitem");
+      expect(control.props, select).not.toHaveProperty("aria-checked");
+      expect(control.props["aria-haspopup"], select).toBe("menu");
+      expect(find(control, "neuwo-menu-item__check"), select).toBeNull();
+      expect(control.children[0].props.class, select).toBe("neuwo-menu-item__start");
+    }
+  });
+
   it("colours the item by tone, red or green only", () => {
     expect(menuItemTemplate({ tone: "red" }, ctx()).props.class).toBe("neuwo-menu-item neuwo-menu-item--red");
     expect(menuItemTemplate({ tone: "green" }, ctx()).props.class).toBe("neuwo-menu-item neuwo-menu-item--green");
