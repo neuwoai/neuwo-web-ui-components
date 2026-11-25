@@ -470,6 +470,7 @@ describe("<neuwo-menu> submenus", () => {
       expect(stale(menu)).toEqual({ covered: 2, drill: 2, expanded: 2 });
       menu.remove();
       expect(stale(menu)).toEqual({ covered: 0, drill: 0, expanded: 0 });
+      expect([panel, panelOf(menu, "move"), panelOf(menu, "past")].map(isOpen)).toEqual([false, false, false]);
       holder.append(menu);
       button.focus();
       button.click();
