@@ -118,6 +118,28 @@ const untilRows = (page, step, accept) => untilRead(page, readRows, ROWS, step, 
 
 const onlyRow = (row) => (state) => state.open && state.row === row && state.expanded.every((value, index) => value === String(index + 1 === row));
 
+/**
+ * The expanded state the accessibility tree gives each named button, or null where the browser offers no snapshot.
+ * @param {import("puppeteer-core").Page} page
+ * @param {string[]} names
+ */
+async function expandedInTree(page, names) {
+  let snapshot;
+  try {
+    snapshot = await page.accessibility.snapshot();
+  } catch (error) {
+    if (error instanceof UnsupportedOperation) return { states: null, reason: error.message };
+    throw error;
+  }
+  const buttons = nodesIn(snapshot).filter((node) => node.role === "button");
+  const stateOf = (name) => {
+    const node = buttons.find((each) => each.name === name);
+    if (!node) return "not in the tree";
+    return "expanded" in node ? `expanded ${node.expanded}` : "no expanded state";
+  };
+  return { states: names.map(stateOf), reason: "" };
+}
+
 // The panel opens below its trigger and covers the buttons of the rows under it, so the second click goes to a row above.
 async function menuShared(page) {
   const button = (row) => `#demo-rows-table tbody tr:nth-child(${row}) .neuwo-btn`;
@@ -130,7 +152,14 @@ async function menuShared(page) {
   await page.click(button(1));
   const second = await untilRows(page, "clicking row 1 while the menu is open from row 2", onlyRow(1));
   if (second.publish !== false) return { status: "fail", detail: "Publish shows on row 1, a Live row" };
-  return { status: "pass", detail: `opened from row 2, then a click on row 1: open with row ${second.row} as the trigger, aria-expanded ${second.expanded.join(", ")}, Publish hidden on the Live row` };
+  const dom = `opened from row 2, then a click on row 1: open with row ${second.row} as the trigger, aria-expanded ${second.expanded.join(", ")}, Publish hidden on the Live row`;
+  const names = await Promise.all([1, 2].map((row) => page.$eval(button(row), (each) => each.getAttribute("aria-label"))));
+  const { states, reason } = await expandedInTree(page, names);
+  if (!states) return { status: "pass", detail: `${dom}; accessibility tree n/a: no accessibility snapshot: ${reason}` };
+  const [opener, other] = states;
+  const tree = `the accessibility tree reports the opener, row 1, ${opener} and row 2 ${other}`;
+  if (opener !== "expanded true") return { status: "fail", detail: `${dom}, but ${tree}` };
+  return { status: "pass", detail: `${dom}; ${tree}` };
 }
 
 const SPLIT = "demo-split";
@@ -204,8 +233,8 @@ async function menuTree(page) {
 
 /**
  * Drives the demo's every-kind menu, `#demo-kinds`, from its plain trigger, then the flyout and auto submenu menus,
- * the auto one at 360px, after which the viewport is restored, then the shared row menu from two rows' buttons, then the
- * split button's two halves.
+ * the auto one at 360px, after which the viewport is restored, then the shared row menu from two rows' buttons, with the
+ * expanded state the accessibility tree gives both, then the split button's two halves.
  * @param {import("puppeteer-core").Page} page
  * @returns {Promise<import("./checks.mjs").CheckResult[]>}
  */
