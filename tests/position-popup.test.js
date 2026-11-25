@@ -107,6 +107,32 @@ describe("positionPopup", () => {
     expect(p.style.minWidth).toBe("984px");
   });
 
+  it("keeps a narrower pixel max-width the popup's stylesheet gives it, inside the viewport less the margins", () => {
+    const style = document.createElement("style");
+    style.textContent = ".capped { max-width: 300px; } .relative { max-width: 50%; }";
+    document.head.append(style);
+    const capped = Object.assign(document.createElement("div"), { className: "capped" });
+    const relative = Object.assign(document.createElement("div"), { className: "relative" });
+    document.body.append(capped, relative);
+    const below = trigger({ left: 0, right: 200, top: 200, bottom: 240, width: 200 });
+    try {
+      positionPopup(below, capped, { matchWidth: false });
+      expect(capped.style.maxWidth).toBe("300px");
+      positionPopup(below, capped, { matchWidth: false });
+      expect(capped.style.maxWidth).toBe("300px");
+      window.innerWidth = 250;
+      positionPopup(below, capped, { matchWidth: false });
+      expect(capped.style.maxWidth).toBe("234px");
+      window.innerWidth = 1000;
+      positionPopup(below, relative, { matchWidth: false });
+      expect(relative.style.maxWidth).toBe("984px");
+    } finally {
+      style.remove();
+      capped.remove();
+      relative.remove();
+    }
+  });
+
   it("shifts a popup that would cross the far edge back toward the trigger's other edge, inside the margin", () => {
     const ltr = popup(100, 300);
     positionPopup(trigger({ left: 900, right: 980, top: 200, bottom: 240, width: 80 }), ltr);
@@ -137,6 +163,22 @@ describe("positionPopup", () => {
     positionPopup(trigger({ left: 0, right: 200, top: 700, bottom: 740, width: 200 }), p);
     expect(p.style.bottom).toBe("104px"); // 800 - 700 + 4
     expect(p.style.top).toBe("auto");
+  });
+
+  it("caps the height to the room on the side it opens on, less the gap and the margin, with fitHeight", () => {
+    const below = popup(1000);
+    below.style.maxHeight = "300px";
+    expect(positionPopup(trigger({ left: 0, right: 200, top: 200, bottom: 240, width: 200 }), below, { fitHeight: true })).toBe("bottom");
+    expect(below.style.maxHeight).toBe("548px"); // 800 - 240 - 4 - 8
+    const above = popup(1000);
+    expect(positionPopup(trigger({ left: 0, right: 200, top: 600, bottom: 640, width: 200 }), above, { fitHeight: true })).toBe("top");
+    expect(above.style.maxHeight).toBe("588px"); // 600 - 4 - 8
+    const scrolledAway = popup(1000);
+    positionPopup(trigger({ left: 0, right: 200, top: -90, bottom: -50, width: 200 }), scrolledAway, { fitHeight: true });
+    expect(scrolledAway.style.maxHeight).toBe("784px"); // never taller than the viewport less a margin on each side
+    const unfitted = popup(1000);
+    positionPopup(trigger({ left: 0, right: 200, top: 200, bottom: 240, width: 200 }), unfitted);
+    expect(unfitted.style.maxHeight).toBeUndefined();
   });
 
   it("flips below when placement is top but there is not enough room above", () => {

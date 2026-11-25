@@ -15,7 +15,7 @@ describe("combobox.css recipe", () => {
   it("styles the popup and options from tokens", () => {
     const popup = read("../src/components/popup.css");
     for (const selector of [".neuwo-combobox__popup", ".neuwo-combobox__option", ".neuwo-combobox__option--active"]) {
-      expect(popup).toContain(`:is(${selector})`);
+      expect(popup).toContain(`:is(${selector}, `);
     }
     expect(css).not.toContain("--neuwo-color-surface-solid");
     expect(css).not.toContain("neuwo-combobox-in");
@@ -56,7 +56,7 @@ describe("combobox.css recipe", () => {
   });
 
   it("wraps a long option label inside the list, which the positioner caps to the viewport", () => {
-    expect(read("../src/components/popup.css")).toMatch(/:is\(\.neuwo-combobox__option\) \{[^}]*overflow-wrap: anywhere/);
+    expect(read("../src/components/popup.css")).toMatch(/:is\(\.neuwo-combobox__option, \.neuwo-menu-item__control\) \{[^}]*overflow-wrap: anywhere/);
   });
 
   it("tightens the chevron gutter at the compact size", () => {

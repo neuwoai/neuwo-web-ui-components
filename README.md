@@ -859,6 +859,7 @@ React's own controlled inputs do.
 | CTA band | `<neuwo-cta>` | Stable |
 | Notice card | `<neuwo-notice>` | Stable |
 | Logo | `<neuwo-logo>` | Stable |
+| Menu | `<neuwo-menu>` / `<neuwo-menu-group>` / `<neuwo-menu-item>` | Stable |
 | Modal | `<neuwo-modal>` | Planned |
 | Card | `<neuwo-card>` | Planned |
 
@@ -877,6 +878,7 @@ Published styling files, for direct linking or non-web use:
 | Component reset (before any recipe) | `@neuwo/web-ui-library--demo/components/reset.css` |
 | Popup panel and row (combobox, menu) | `@neuwo/web-ui-library--demo/components/popup.css` |
 | Button recipe | `@neuwo/web-ui-library--demo/components/button/button.css` |
+| Menu recipe (menu, menu group, menu item) | `@neuwo/web-ui-library--demo/components/menu/menu.css` |
 | Field chrome | `@neuwo/web-ui-library--demo/components/fields/field.css` |
 | Selection shell (checkbox, toggle, radio group, segmented control) | `@neuwo/web-ui-library--demo/components/selection/controls.css` |
 | Checkbox and radio recipe | `@neuwo/web-ui-library--demo/components/selection/form-check.css` |
@@ -1002,6 +1004,23 @@ through the two tokens.
 | `.neuwo-segmented__option-label` | the `<span>` around each option's label |
 | `.neuwo-segmented__options` | the hidden `<select>` that keeps your `<option>` children |
 | `.neuwo-segmented__form-value` | the visually hidden native input that submits the value |
+| `.neuwo-menu` | the menu's popover panel, `role="menu"`, with the id `<id>-panel` on a root menu |
+| `.neuwo-menu__items` | the wrapper around the menu's groups or items |
+| `.neuwo-menu__back`, `.neuwo-menu__back-icon`, `.neuwo-menu__back-label` | a submenu's Back row, hidden until it drills in, and its icon and label |
+| `.neuwo-menu-group` | the group's `role="group"` `<div>` |
+| `.neuwo-menu-group--no-divider` | the group, by `no-divider` |
+| `.neuwo-menu-group__divider` | the line above the group, hidden in the first group |
+| `.neuwo-menu-group__heading` | the heading, while `heading` is set |
+| `.neuwo-menu-group__items` | the wrapper around the group's items |
+| `.neuwo-menu-item` | the item's `role="none"` `<div>`, around the control and the submenu wrapper |
+| `.neuwo-menu-item--red`, `.neuwo-menu-item--green` | the item, by `tone` |
+| `.neuwo-menu-item__control` | the item's `<button>`, or the `<a>` of a link item, with the `menuitem`, `menuitemradio` or `menuitemcheckbox` role |
+| `.neuwo-menu-item__check` | the check, or the dot in a `select="one"` group, shown while `aria-checked="true"` |
+| `.neuwo-menu-item__start`, `.neuwo-menu-item__label` | the wrappers around the `slot="start"` children and the label |
+| `.neuwo-menu-item__hint` | the `hint` text, at the inline end |
+| `.neuwo-menu-item__external`, `.neuwo-menu-item__new-tab` | a `target="_blank"` link's mark and its visually hidden "(opens in a new tab)" |
+| `.neuwo-menu-item__chevron` | the chevron of an item with a submenu, pointing to the inline end |
+| `.neuwo-menu-item__submenu` | the wrapper around the `slot="submenu"` menu |
 
 The badge and deal-id render their text as authored. For capitals on a badge, add `uppercase`,
 which sets them with `text-transform` and leaves the text as written:
@@ -1387,6 +1406,87 @@ share a tree with the card, so a rule such as `neuwo-notice .neuwo-notice__messa
 A notice announces itself politely, with `role="status"` on the `.neuwo-notice` card, unless you
 declare something stronger on the element; a consent banner is a question, so give it
 `role="dialog"` and a label, and the card then carries no role of its own.
+
+## Menus
+
+`<neuwo-menu>` is an action menu: a list of `<neuwo-menu-group>` elements, each a list of
+`<neuwo-menu-item>` elements. It renders a top-layer popover panel, hidden until a trigger opens it,
+so served markup shows nothing before the script runs. Any button opens it through the browser's
+own `popovertarget`, naming the panel, whose id is the menu's id followed by `-panel`. One menu can
+serve any number of triggers.
+
+```html
+<button popovertarget="segment-actions-panel">Actions</button>
+
+<neuwo-menu id="segment-actions" submenu="auto" align="start">
+  <neuwo-menu-group heading="Segment">
+    <neuwo-menu-item value="rename" hint="F2"><svg slot="start">...</svg>Rename</neuwo-menu-item>
+    <neuwo-menu-item>
+      <svg slot="start">...</svg>Move To
+      <neuwo-menu slot="submenu">
+        <neuwo-menu-group>
+          <neuwo-menu-item value="sports">Sports</neuwo-menu-item>
+          <neuwo-menu-item value="travel">Travel</neuwo-menu-item>
+        </neuwo-menu-group>
+      </neuwo-menu>
+    </neuwo-menu-item>
+  </neuwo-menu-group>
+  <neuwo-menu-group heading="Sort By" select="one">
+    <neuwo-menu-item value="name" checked>Name</neuwo-menu-item>
+    <neuwo-menu-item value="reach">Reach</neuwo-menu-item>
+  </neuwo-menu-group>
+  <neuwo-menu-group>
+    <neuwo-menu-item href="https://example.com/docs" target="_blank">Open API Docs</neuwo-menu-item>
+  </neuwo-menu-group>
+  <neuwo-menu-group>
+    <neuwo-menu-item value="publish" tone="green">Publish</neuwo-menu-item>
+    <neuwo-menu-item value="delete" tone="red">Delete</neuwo-menu-item>
+  </neuwo-menu-group>
+</neuwo-menu>
+```
+
+The menu lines the panel up with the trigger that opened it, below it, or above it when there is
+more room there, and keeps it attached while the page scrolls or resizes. The panel is 13rem to
+20rem wide, so long labels wrap, and never taller than the room beside its trigger less a margin: a
+longer menu scrolls inside it. A trigger the menu did not render, such as a plain
+`<button popovertarget>`, is never written to. For a simple menu, put the items in the menu
+directly, as one group without a heading; a menu of groups and items mixed is not supported.
+
+`<neuwo-menu>`:
+
+- **`id`** names the panel `<id>-panel`, the id a trigger's `popovertarget` gives. A menu in an
+  item's `submenu` slot needs none.
+- **`align`**: `start` (default) or `end`, the trigger edge the panel lines up with.
+- **`submenu`**: `flyout`, `drill` or `auto` (default), how submenus open, set on the root menu:
+  beside the menu, in its place with a Back row, or beside it when it fits and in its place when it
+  does not.
+
+`<neuwo-menu-group>`:
+
+- **`heading`**: a label above the items, which names the group for screen readers.
+- **`select`**: absent, the items are actions; `one`, radio items, one checked at a time; `many`,
+  checkbox items. The check, or the radio's dot, sits in the start position.
+- **`no-divider`** drops the divider that separates the group from the one before it. The first
+  group never has one.
+
+`<neuwo-menu-item>`:
+
+- **The label** is its content; **`slot="start"`** holds a start icon, muted and blue on hover, and
+  **`slot="submenu"`** a nested `<neuwo-menu>`, which adds a chevron at the item's inline end.
+- **`value`** is reported when the item is picked; without it, the label text is.
+- **`hint`**: short trailing text, such as a shortcut, a file type or a plan.
+- **`tone`**: `red` or `green` colours the label and the icon. Blue is left out because hover is.
+- **`disabled`** dims the item, which stays focusable but cannot be picked.
+- **`checked`**: the starting state of an item in a group with `select`.
+- **`href`**, with `target`, `rel` and `download`, makes a link item, a real `<a>`, unless the item
+  is disabled, checkable or opens a submenu. With `target="_blank"` it shows an external-link mark
+  and tells screen readers it opens a new tab.
+- **`hidden`**, the global attribute, removes the item from the menu. A group whose items are all
+  hidden is hidden with its heading and divider.
+
+The elements render into their own light DOM, so `expand()` renders a whole menu on the server and
+the panel is styled from the first paint once it opens; the classes are listed under restyling
+above.
 
 ## Logo
 

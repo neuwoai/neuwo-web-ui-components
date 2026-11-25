@@ -13,7 +13,7 @@ const COMPONENTS = "src/components";
 const folders = readdirSync(join(root, COMPONENTS), { recursive: true })
   .map((path) => posix.join(COMPONENTS, path))
   .filter((path) => statSync(join(root, path)).isDirectory());
-const FOLDERS = { "neuwo-radio-group": "radio" };
+const FOLDERS = { "neuwo-radio-group": "radio", "neuwo-menu-group": "menu", "neuwo-menu-item": "menu" };
 const cssIn = (folder) =>
   readdirSync(join(root, folder))
     .filter((file) => file.endsWith(".css"))

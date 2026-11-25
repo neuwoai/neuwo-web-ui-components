@@ -26,6 +26,23 @@ const radio = (value, label, attrs = {}) => ({ tag: "neuwo-radio", attrs: { valu
  */
 const view = (value, label, attrs = {}) => ({ tag: "option", attrs: { value, ...attrs }, text: label });
 
+/**
+ * @param {string} label
+ * @param {Record<string, string>} [attrs]
+ * @returns {ChildElement}
+ */
+const item = (label, attrs = {}) => ({ tag: "neuwo-menu-item", attrs, text: label });
+
+/**
+ * @param {Record<string, string>} attrs
+ * @param {Child[]} children
+ * @returns {ChildElement}
+ */
+const group = (attrs, children) => ({ tag: "neuwo-menu-group", attrs, children });
+
+/** @type {ChildElement} */
+const icon = { tag: "svg", attrs: { slot: "start" }, children: [{ tag: "path", attrs: { d: "M0 0" } }] };
+
 /** @type {Record<string, TemplateCase[]>} */
 export const cases = {
   "neuwo-button": [
@@ -346,6 +363,46 @@ export const cases = {
     { name: "unknown values", attrs: { variant: "xyz", motion: "xyz", halo: "xl", glow: "xl" }, children: [] },
     { name: "unknown size", attrs: { size: "xl" }, children: [] },
     { name: "forwarded host attributes", attrs: { title: "Online", "aria-label": "Online" }, children: [] },
+  ],
+  "neuwo-menu": [
+    { name: "root with id", attrs: { id: "export" }, children: [item("CSV", { value: "csv" }), item("JSON", { value: "json" })] },
+    { name: "items directly", attrs: {}, children: ["\n  ", item("Rename"), "\n  ", item("Delete", { tone: "red" }), "\n"] },
+    {
+      name: "groups",
+      attrs: { id: "segment-actions" },
+      children: [
+        group({}, [item("Rename", { hint: "F2" }), item("Archive", { disabled: "" })]),
+        group({ heading: "Sort By", select: "one" }, [item("Name", { value: "name", checked: "" }), item("Reach", { value: "reach" })]),
+      ],
+    },
+    {
+      name: "submenu flyout end",
+      attrs: { id: "m", submenu: "flyout", align: "end" },
+      children: [
+        group({}, [
+          { tag: "neuwo-menu-item", children: ["Move To", { tag: "neuwo-menu", attrs: { slot: "submenu" }, children: [item("Sports"), item("Travel")] }] },
+        ]),
+      ],
+    },
+  ],
+  "neuwo-menu-group": [
+    { name: "plain", attrs: {}, children: [item("Rename"), item("Duplicate")] },
+    { name: "heading", attrs: { heading: "Export As" }, children: [item("CSV", { hint: ".csv" }), item("JSON", { hint: ".json" })] },
+    { name: "select one", attrs: { heading: "Sort By", select: "one" }, children: [item("Name", { value: "name", checked: "" }), item("Reach", { value: "reach" })] },
+    { name: "select many with no divider", attrs: { select: "many", "no-divider": "" }, children: [item("Live", { checked: "" }), item("Draft"), item("Archived", { disabled: "" })] },
+  ],
+  "neuwo-menu-item": [
+    { name: "action with start icon and hint", attrs: { value: "rename", hint: "F2" }, children: [icon, "Rename"] },
+    { name: "disabled", attrs: { disabled: "" }, children: ["PDF Report"] },
+    { name: "red tone", attrs: { tone: "red", value: "delete" }, children: [icon, "Delete"] },
+    { name: "green tone", attrs: { tone: "green" }, children: ["Publish"] },
+    { name: "link new tab", attrs: { href: "https://example.com/docs", target: "_blank", rel: "noopener" }, children: ["Open API Docs"] },
+    { name: "disabled link", attrs: { href: "https://example.com/docs", disabled: "", download: "" }, children: ["Docs"] },
+    {
+      name: "with submenu",
+      attrs: { href: "https://example.com/move" },
+      children: ["Move To", { tag: "neuwo-menu", attrs: { slot: "submenu" }, children: [] }],
+    },
   ],
 };
 

@@ -7,6 +7,9 @@ import { ctaTemplate } from "./components/cta/cta.template.js";
 import { dealIdTemplate } from "./components/deal-id/deal-id.template.js";
 import { inputTemplate } from "./components/fields/input/input.template.js";
 import { logoTemplate } from "./components/logo/logo.template.js";
+import { menuGroupTemplate } from "./components/menu/menu-group.template.js";
+import { menuItemTemplate } from "./components/menu/menu-item.template.js";
+import { menuTemplate } from "./components/menu/menu.template.js";
 import { noticeTemplate } from "./components/notice/notice.template.js";
 import { radioGroupTemplate } from "./components/selection/radio/radio-group.template.js";
 import { radioTemplate } from "./components/selection/radio/radio.template.js";
@@ -27,6 +30,9 @@ export const templates = {
   "neuwo-deal-id": dealIdTemplate,
   "neuwo-input": inputTemplate,
   "neuwo-logo": logoTemplate,
+  "neuwo-menu": menuTemplate,
+  "neuwo-menu-group": menuGroupTemplate,
+  "neuwo-menu-item": menuItemTemplate,
   "neuwo-notice": noticeTemplate,
   "neuwo-radio": radioTemplate,
   "neuwo-radio-group": radioGroupTemplate,

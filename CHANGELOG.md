@@ -2,9 +2,21 @@
 
 ## Unreleased
 
+### Added
+
+- Menus: `<neuwo-menu>`, `<neuwo-menu-group>` and `<neuwo-menu-item>`. A menu renders a top-layer
+  popover panel, `<id>-panel`, that any button opens through `popovertarget`, and lines it up with
+  the trigger that opened it. Its groups take a `heading`, a `select` of `one` or `many` for radio
+  or checkbox items, and `no-divider`; its items a start icon, `hint`, `tone`, `disabled`,
+  `checked`, link attributes and a submenu slot. The panel and rows share the combobox's look in
+  `components/popup.css`; the rest is the new published `components/menu/menu.css`.
+- Icon tokens `--neuwo-icon-chevron`, `--neuwo-icon-check` and `--neuwo-icon-dot`, masks that the
+  combobox's chevron, the checkbox's tick, the radio's dot and the menu now read.
+
 ### Changed
 
-- The combobox's popup and option look moved to the new published `components/popup.css`. A site
+- The combobox's popup and option look moved to the new published `components/popup.css`, and the
+  popup's entrance keyframes are now named `neuwo-popup-in` (they were `neuwo-combobox-in`). A site
   that links `components/fields/combobox/combobox.css` on its own must link `components/popup.css`
   before it.
 - Each font is two files, split by `unicode-range`. The Latin file keeps the font's current name

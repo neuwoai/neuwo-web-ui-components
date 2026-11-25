@@ -30,11 +30,17 @@ describe("form-check.css recipe", () => {
     expect(css.replace(/\/\*[\s\S]*?\*\//g, "").replaceAll("var(--neuwo-color-white)", "")).not.toMatch(/white/i);
     expect(css).not.toContain("background-image");
     const body = (selectors) => css.match(new RegExp(`(?<!,\\n)^${selectors.replace(/[[\]().*]/g, "\\$&")}\\s*\\{([^}]*)\\}`, "m"))?.[1] ?? "";
-    for (const state of ['[type="checkbox"]:checked', '[type="checkbox"]:indeterminate', '[type="radio"]:checked']) {
+    const tokens = read("../src/foundation/tokens.css");
+    for (const [state, image] of [
+      ['[type="checkbox"]:checked', "var(--neuwo-icon-check)"],
+      ['[type="checkbox"]:indeterminate', 'url("data:image/svg+xml,'],
+      ['[type="radio"]:checked', "var(--neuwo-icon-dot)"],
+    ]) {
       const mark = body(`.neuwo-form-check__input${state}::before`);
-      expect(mark, state).toMatch(/(^|\s)mask: url\("data:image\/svg\+xml,[^"]*"\)/);
-      expect(mark, state).toMatch(/-webkit-mask: url\("data:image\/svg\+xml,[^"]*"\)/);
+      expect(mark, state).toMatch(new RegExp(`(^|\\s)mask: ${image.replace(/[()+]/g, "\\$&")}`));
+      expect(mark, state).toMatch(new RegExp(`-webkit-mask: ${image.replace(/[()+]/g, "\\$&")}`));
     }
+    for (const token of ["--neuwo-icon-check", "--neuwo-icon-dot"]) expect(tokens, token).toMatch(new RegExp(`${token}: url\\("data:image/svg\\+xml,[^"]*"\\);`));
     const shared = body('.neuwo-form-check__input:checked::before,\n.neuwo-form-check__input[type="checkbox"]:indeterminate::before');
     expect(shared).toContain('content: "";');
     expect(shared).toContain("background: var(--neuwo-color-white);");

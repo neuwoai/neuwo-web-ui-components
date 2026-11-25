@@ -42,8 +42,8 @@ neuwo-checkbox:not([hidden]) {
 }
 
 .neuwo-form-check__input[type="checkbox"]:checked::before {
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 8.5l3 3 7-7'/%3E%3C/svg%3E") center / 0.8rem no-repeat;
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 8.5l3 3 7-7'/%3E%3C/svg%3E") center / 0.8rem no-repeat;
+  mask: var(--neuwo-icon-check) center / 0.8rem no-repeat;
+  -webkit-mask: var(--neuwo-icon-check) center / 0.8rem no-repeat;
 }
 
 .neuwo-form-check__input[type="checkbox"]:indeterminate::before {
@@ -52,8 +52,8 @@ neuwo-checkbox:not([hidden]) {
 }
 
 .neuwo-form-check__input[type="radio"]:checked::before {
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='3.5'/%3E%3C/svg%3E") center / contain no-repeat;
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='3.5'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: var(--neuwo-icon-dot) center / contain no-repeat;
+  -webkit-mask: var(--neuwo-icon-dot) center / contain no-repeat;
 }
 
 .neuwo-form-check__input:disabled {

@@ -57,6 +57,7 @@ const EXPECTED_TAGS = [
   "neuwo-combobox", "neuwo-range", "neuwo-checkbox", "neuwo-toggle", "neuwo-radio",
   "neuwo-radio-group", "neuwo-segmented", "neuwo-badge", "neuwo-deal-id",
   "neuwo-status-dot", "neuwo-cta", "neuwo-notice", "neuwo-logo", "neuwo-copy",
+  "neuwo-menu", "neuwo-menu-group", "neuwo-menu-item",
 ];
 
 // Removed on purpose: the combobox replaces `neuwo-select`, and `foundation/navigation.css` `neuwo-dropdown`.
@@ -322,6 +323,17 @@ describe("custom-elements.json", () => {
   it("documents the logo's variant and label", () => {
     const attrs = attributesFor(manifest, "neuwo-logo");
     for (const a of ["variant", "label"]) expect(attrs).toContain(a);
+  });
+
+  it("documents the menu's, the menu group's and the menu item's attributes, slots and panel", () => {
+    const names = (tag) => declByTag(manifest, tag).attributes.map((attribute) => attribute.name);
+    expect(names("neuwo-menu")).toEqual(["id", "submenu", "align"]);
+    expect(names("neuwo-menu-group")).toEqual(["heading", "select", "no-divider"]);
+    expect(names("neuwo-menu-item")).toEqual(["value", "hint", "tone", "disabled", "checked", "href", "target", "rel", "download"]);
+    expect(declByTag(manifest, "neuwo-menu-item").slots.map((slot) => slot.name).sort()).toEqual(["", "start", "submenu"]);
+    const panel = declByTag(manifest, "neuwo-menu").members.find((member) => member.name === "panel");
+    expect(panel.description).toMatch(/popover panel/);
+    expect(panel.readonly).toBe(true);
   });
 
   it("documents the copy wrapper's three labels", () => {

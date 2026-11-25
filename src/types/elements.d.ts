@@ -18,6 +18,9 @@ import type { NeuwoCta } from "../components/cta/neuwo-cta.js";
 import type { NeuwoNotice } from "../components/notice/neuwo-notice.js";
 import type { NeuwoLogo } from "../components/logo/neuwo-logo.js";
 import type { NeuwoCopy } from "../components/copy/neuwo-copy.js";
+import type { NeuwoMenu } from "../components/menu/neuwo-menu.js";
+import type { NeuwoMenuGroup } from "../components/menu/neuwo-menu-group.js";
+import type { NeuwoMenuItem } from "../components/menu/neuwo-menu-item.js";
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -38,5 +41,8 @@ declare global {
     "neuwo-notice": NeuwoNotice;
     "neuwo-logo": NeuwoLogo;
     "neuwo-copy": NeuwoCopy;
+    "neuwo-menu": NeuwoMenu;
+    "neuwo-menu-group": NeuwoMenuGroup;
+    "neuwo-menu-item": NeuwoMenuItem;
   }
 }

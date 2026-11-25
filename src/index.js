@@ -15,6 +15,9 @@ import "./components/cta/neuwo-cta.js"; // self-registers <neuwo-cta>
 import "./components/notice/neuwo-notice.js"; // self-registers <neuwo-notice>
 import "./components/logo/neuwo-logo.js"; // self-registers <neuwo-logo>
 import "./components/copy/neuwo-copy.js"; // self-registers <neuwo-copy>
+import "./components/menu/neuwo-menu.js"; // self-registers <neuwo-menu>
+import "./components/menu/neuwo-menu-group.js"; // self-registers <neuwo-menu-group>
+import "./components/menu/neuwo-menu-item.js"; // self-registers <neuwo-menu-item>
 
 export { NeuwoButton } from "./components/button/neuwo-button.js";
 export { NeuwoInput } from "./components/fields/input/neuwo-input.js";
@@ -33,3 +36,6 @@ export { NeuwoCta } from "./components/cta/neuwo-cta.js";
 export { NeuwoNotice } from "./components/notice/neuwo-notice.js";
 export { NeuwoLogo } from "./components/logo/neuwo-logo.js";
 export { NeuwoCopy } from "./components/copy/neuwo-copy.js";
+export { NeuwoMenu } from "./components/menu/neuwo-menu.js";
+export { NeuwoMenuGroup } from "./components/menu/neuwo-menu-group.js";
+export { NeuwoMenuItem } from "./components/menu/neuwo-menu-item.js";

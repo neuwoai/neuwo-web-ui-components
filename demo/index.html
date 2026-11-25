@@ -115,6 +115,13 @@
       h2 {
         margin-top: 2.5rem;
       }
+      .icon-token {
+        width: 1.5rem;
+        height: 1.5rem;
+        background: var(--neuwo-color-blue);
+        mask: center / contain no-repeat;
+        -webkit-mask: center / contain no-repeat;
+      }
     </style>
     <link rel="stylesheet" href="/dist/neuwo.css" />
     <script type="module" src="/dist/neuwo.js"></script>
@@ -410,6 +417,74 @@
           "submitted " + [...data.entries()].map(([k, v]) => k + "=" + v).join(", ");
       });
     </script>
+
+    <h2>Menu (opened by a plain button; picks come next)</h2>
+    <p>
+      A plain <code>&lt;button popovertarget&gt;</code> opens each menu and the menu positions against it. The first
+      shows every item kind; the second has 40 items and scrolls inside the viewport.
+    </p>
+    <div class="row">
+      <button class="neuwo-btn neuwo-btn--outline" popovertarget="demo-kinds-panel">Item Kinds</button>
+      <button class="neuwo-btn neuwo-btn--outline" popovertarget="demo-long-panel">40 Items</button>
+    </div>
+    <neuwo-menu id="demo-kinds">
+      <neuwo-menu-group heading="Export As">
+        <neuwo-menu-item value="csv" hint=".csv">
+          <svg slot="start" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><polyline points="14 3 14 9 20 9" /></svg>
+          CSV
+        </neuwo-menu-item>
+        <neuwo-menu-item value="json" hint=".json">
+          <svg slot="start" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5a2 2 0 0 0 2 2h1" /><path d="M16 21h1a2 2 0 0 0 2-2v-5a2 2 0 0 1 2-2 2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1" /></svg>
+          JSON
+        </neuwo-menu-item>
+        <neuwo-menu-item value="pdf" hint="Pro" disabled>
+          <svg slot="start" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><polyline points="14 3 14 9 20 9" /></svg>
+          PDF Report
+        </neuwo-menu-item>
+      </neuwo-menu-group>
+      <neuwo-menu-group no-divider>
+        <neuwo-menu-item value="copy-request" hint="Ctrl+Shift+C">
+          <svg slot="start" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+          Copy API Request
+        </neuwo-menu-item>
+      </neuwo-menu-group>
+      <neuwo-menu-group heading="Sort By" select="one">
+        <neuwo-menu-item value="name" checked>Name</neuwo-menu-item>
+        <neuwo-menu-item value="reach">Reach</neuwo-menu-item>
+        <neuwo-menu-item value="created">Date Created</neuwo-menu-item>
+      </neuwo-menu-group>
+      <neuwo-menu-group heading="Show" select="many">
+        <neuwo-menu-item value="live" checked>Live Segments</neuwo-menu-item>
+        <neuwo-menu-item value="draft" checked>Drafts</neuwo-menu-item>
+        <neuwo-menu-item value="archived">Archived Segments</neuwo-menu-item>
+      </neuwo-menu-group>
+      <neuwo-menu-group>
+        <neuwo-menu-item href="https://example.com/docs" target="_blank" rel="noopener">Open API Docs</neuwo-menu-item>
+      </neuwo-menu-group>
+      <neuwo-menu-group>
+        <neuwo-menu-item value="publish" tone="green">
+          <svg slot="start" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2L11 13" /><path d="M22 2l-7 20-4-9-9-4z" /></svg>
+          Publish
+        </neuwo-menu-item>
+        <neuwo-menu-item value="delete" tone="red">
+          <svg slot="start" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" /></svg>
+          Delete
+        </neuwo-menu-item>
+      </neuwo-menu-group>
+    </neuwo-menu>
+    <neuwo-menu id="demo-long"></neuwo-menu>
+    <script>
+      document.getElementById("demo-long").append(
+        ...Array.from({ length: 40 }, (_, index) => Object.assign(document.createElement("neuwo-menu-item"), { textContent: `Segment ${index + 1}` })),
+      );
+    </script>
+
+    <h2>Icon tokens (masks: --neuwo-icon-chevron, --neuwo-icon-check, --neuwo-icon-dot)</h2>
+    <div class="row">
+      <span class="icon-token" title="--neuwo-icon-chevron" style="mask-image: var(--neuwo-icon-chevron); -webkit-mask-image: var(--neuwo-icon-chevron)"></span>
+      <span class="icon-token" title="--neuwo-icon-check" style="mask-image: var(--neuwo-icon-check); -webkit-mask-image: var(--neuwo-icon-check)"></span>
+      <span class="icon-token" title="--neuwo-icon-dot" style="mask-image: var(--neuwo-icon-dot); -webkit-mask-image: var(--neuwo-icon-dot)"></span>
+    </div>
 
     <h2>Navigation links</h2>
     <p>

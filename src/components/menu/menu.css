@@ -1,0 +1,176 @@
+neuwo-menu:not([hidden]) {
+  display: contents;
+}
+
+neuwo-menu-group:not([hidden]),
+neuwo-menu-item:not([hidden]) {
+  display: block;
+}
+
+.neuwo-menu {
+  position: fixed;
+  inset: auto;
+  min-inline-size: 13rem;
+  max-inline-size: 20rem;
+  max-block-size: calc(100dvh - 2 * var(--neuwo-space-2));
+  overflow-y: auto;
+  color: var(--neuwo-color-text);
+  font-size: var(--neuwo-font-size-sm);
+  text-align: start;
+}
+
+.neuwo-menu-group__divider {
+  block-size: 1px;
+  margin-block: var(--neuwo-space-2);
+  margin-inline: calc(-1 * var(--neuwo-space-2));
+  background: var(--neuwo-glass-border);
+}
+
+.neuwo-menu__items > :first-child > .neuwo-menu-group > .neuwo-menu-group__divider,
+.neuwo-menu-group--no-divider > .neuwo-menu-group__divider {
+  display: none;
+}
+
+.neuwo-menu-group:not(:has(> .neuwo-menu-group__items > :not([hidden]))) {
+  display: none;
+}
+
+.neuwo-menu-group__heading {
+  padding: var(--neuwo-space-2) var(--neuwo-space-3) var(--neuwo-space-1);
+  color: var(--neuwo-color-text-muted);
+  font-size: var(--neuwo-font-size-xs);
+}
+
+.neuwo-menu-item__control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--neuwo-space-3);
+  inline-size: 100%;
+  text-align: start;
+}
+
+/* Transparent: the tinted row from popup.css shows focus in place of the browser's ring. */
+.neuwo-menu-item__control:focus-visible {
+  outline: var(--neuwo-outline-focus);
+  outline-offset: calc(-1 * var(--neuwo-outline-focus-offset));
+}
+
+/* An empty region adds no gap because it has no box of its own. */
+.neuwo-menu-item__start {
+  display: contents;
+  color: var(--neuwo-color-text-muted);
+}
+
+.neuwo-menu-item__control:not([aria-disabled="true"]):hover > .neuwo-menu-item__start {
+  color: var(--neuwo-color-blue);
+}
+
+.neuwo-menu-item__hint {
+  margin-inline-start: auto;
+  padding-inline-start: var(--neuwo-space-4);
+  color: var(--neuwo-color-text-muted);
+  font-size: var(--neuwo-font-size-xs);
+}
+
+.neuwo-menu-item__check,
+.neuwo-menu-item__external,
+.neuwo-menu-item__chevron {
+  flex: none;
+  inline-size: 1.125em;
+  block-size: 1.125em;
+}
+
+.neuwo-menu-item__check {
+  visibility: hidden;
+  background-color: currentColor;
+  mask: var(--neuwo-icon-check) center / contain no-repeat;
+  -webkit-mask: var(--neuwo-icon-check) center / contain no-repeat;
+}
+
+.neuwo-menu-item__control[role="menuitemradio"] > .neuwo-menu-item__check {
+  mask-image: var(--neuwo-icon-dot);
+  -webkit-mask-image: var(--neuwo-icon-dot);
+}
+
+.neuwo-menu-item__control[aria-checked="true"] {
+  color: var(--neuwo-color-blue);
+}
+
+.neuwo-menu-item__control[aria-checked="true"] > .neuwo-menu-item__check {
+  visibility: visible;
+}
+
+.neuwo-menu-item__external,
+.neuwo-menu-item__chevron {
+  background-color: var(--neuwo-color-text-muted);
+}
+
+/* Only the first mark after the label takes the free space, so a hint and a chevron stay together. */
+.neuwo-menu-item__label + .neuwo-menu-item__external,
+.neuwo-menu-item__label + .neuwo-menu-item__chevron {
+  margin-inline-start: auto;
+}
+
+.neuwo-menu-item__external {
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3Cpolyline points='15 3 21 3 21 9'/%3E%3Cpath d='M10 14L21 3'/%3E%3C/svg%3E") center / contain no-repeat;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3Cpolyline points='15 3 21 3 21 9'/%3E%3Cpath d='M10 14L21 3'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.neuwo-menu-item__new-tab {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.neuwo-menu-item__chevron {
+  transform: rotate(-90deg);
+  mask: var(--neuwo-icon-chevron) center / contain no-repeat;
+  -webkit-mask: var(--neuwo-icon-chevron) center / contain no-repeat;
+}
+
+.neuwo-menu-item__chevron:dir(rtl) {
+  transform: rotate(90deg);
+}
+
+.neuwo-menu-item--red > .neuwo-menu-item__control,
+.neuwo-menu-item--red > .neuwo-menu-item__control > .neuwo-menu-item__start,
+.neuwo-menu-item--red > .neuwo-menu-item__control:hover > .neuwo-menu-item__start {
+  color: var(--neuwo-color-red);
+}
+
+.neuwo-menu-item--red > .neuwo-menu-item__control:hover {
+  background: color-mix(in srgb, var(--neuwo-color-red) 12%, transparent);
+}
+
+.neuwo-menu-item--green > .neuwo-menu-item__control,
+.neuwo-menu-item--green > .neuwo-menu-item__control > .neuwo-menu-item__start,
+.neuwo-menu-item--green > .neuwo-menu-item__control:hover > .neuwo-menu-item__start {
+  color: var(--neuwo-color-green);
+}
+
+.neuwo-menu-item--green > .neuwo-menu-item__control:hover {
+  background: var(--neuwo-tint-green-10);
+}
+
+/* After the tones, which weigh the same: a disabled row takes no hover tint. */
+.neuwo-menu-item__control[aria-disabled="true"]:hover {
+  background: none;
+}
+
+/* Forced colours paint backgrounds over with Canvas, so the masks, the dividers and the focused row would vanish. */
+@media (forced-colors: active) {
+  .neuwo-menu-item__check,
+  .neuwo-menu-item__external,
+  .neuwo-menu-item__chevron,
+  .neuwo-menu-group__divider {
+    background: CanvasText;
+  }
+
+  .neuwo-menu-item__control:focus-visible {
+    outline-color: Highlight;
+  }
+}

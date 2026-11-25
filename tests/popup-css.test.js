@@ -12,8 +12,8 @@ const rule = (selector) => {
 };
 
 describe("popup.css recipe", () => {
-  it("gives the popup panel its surface, border, radius, shadow and padding from tokens", () => {
-    const panel = rule(":is(.neuwo-combobox__popup)");
+  it("gives the combobox's and the menu's panel its surface, border, radius, shadow and padding from tokens", () => {
+    const panel = rule(":is(.neuwo-combobox__popup, .neuwo-menu)");
     for (const value of [
       "var(--neuwo-color-surface-solid)",
       "1px solid var(--neuwo-glass-border)",
@@ -28,17 +28,23 @@ describe("popup.css recipe", () => {
   });
 
   it("enters with neuwo-popup-in and stills it under reduced motion", () => {
-    expect(rule(":is(.neuwo-combobox__popup):popover-open")).toContain("animation: neuwo-popup-in");
+    expect(rule(":is(.neuwo-combobox__popup, .neuwo-menu):popover-open")).toContain("animation: neuwo-popup-in");
     expect(css).toContain("@keyframes neuwo-popup-in");
-    expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*:popover-open\s*\{\s*animation:\s*none/);
+    expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{\s*:is\(\.neuwo-combobox__popup, \.neuwo-menu\):popover-open\s*\{\s*animation:\s*none;/);
   });
 
-  it("gives the row its padding, radius, hover and keyboard tints", () => {
-    expect(rule(":is(.neuwo-combobox__option)")).toContain("var(--neuwo-space-2) var(--neuwo-space-3)");
-    expect(rule(":is(.neuwo-combobox__option)")).toContain("var(--neuwo-radius-md)");
-    expect(rule(":is(.neuwo-combobox__option):hover")).toContain("var(--neuwo-tint-blue-10)");
-    expect(rule(":is(.neuwo-combobox__option--active)")).toContain("var(--neuwo-tint-blue-15)");
-    expect(rule(':is(.neuwo-combobox__option)[aria-disabled="true"]')).toContain("var(--neuwo-opacity-disabled)");
+  it("gives the combobox's option and the menu's item the row padding, radius, hover and keyboard tints", () => {
+    const row = ":is(.neuwo-combobox__option, .neuwo-menu-item__control)";
+    expect(rule(row)).toContain("var(--neuwo-space-2) var(--neuwo-space-3)");
+    expect(rule(row)).toContain("var(--neuwo-radius-md)");
+    expect(rule(`${row}:hover`)).toContain("var(--neuwo-tint-blue-10)");
+    expect(rule(":is(.neuwo-combobox__option--active, .neuwo-menu-item__control:where(:focus-visible))")).toContain("var(--neuwo-tint-blue-15)");
+    expect(rule(`${row}[aria-disabled="true"]`)).toContain("var(--neuwo-opacity-disabled)");
+    expect(css, "the keyboard row weighs one class, so a hovered row outweighs it as before").not.toMatch(/__control:focus-visible/);
+  });
+
+  it("gives the menu's panel the theme's palette under forced colours, as the combobox's", () => {
+    expect(css).toMatch(/@media \(forced-colors: active\) \{[\s\S]*?:is\(\.neuwo-combobox__popup, \.neuwo-menu\) \{\s*color-scheme: light dark;/);
   });
 
   it("is listed after the reset and before every recipe", () => {

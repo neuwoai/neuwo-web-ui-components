@@ -8,24 +8,27 @@ const EDGE = 8;
  *
  * The preferred side flips to the opposite one when it cannot fit and the
  * opposite one has more room. The popup is never wider than the viewport less
- * an 8px margin on each side, and one that would cross the viewport edge is
+ * an 8px margin on each side, nor than a pixel `max-width` its stylesheet gives
+ * it, such as the menu's, and one that would cross the viewport edge is
  * moved back towards the trigger's other edge, to that margin. Both the horizontal and vertical anchors clear
  * their opposite property, so repositioning never leaves a stale value behind.
  *
  * @param {HTMLElement} trigger - the element to position against.
  * @param {HTMLElement} popup - the popup to move.
- * @param {{ placement?: "bottom" | "top", align?: "start" | "end", gap?: number, matchWidth?: boolean }} [options]
+ * @param {{ placement?: "bottom" | "top", align?: "start" | "end", gap?: number, matchWidth?: boolean, fitHeight?: boolean }} [options]
  *   `placement` is the preferred side (default bottom); pass the side a popup is already on to keep it there
  *   while it fits. `align` is the trigger edge the popup lines up with (default start), in the trigger's own
  *   direction, so start is its right edge when it runs right to left, `gap` the offset in px (default 4),
  *   `matchWidth` sets the popup's `min-width` to the trigger's width (default true); pass false when the popup
- *   wants its own width floor instead of matching a possibly-narrower trigger.
+ *   wants its own width floor instead of matching a possibly-narrower trigger. `fitHeight` caps the popup's
+ *   `max-height` to the room on the side it is placed on, less the gap and the margin (default false), for a popup
+ *   that scrolls inside rather than crossing the viewport edge.
  * @returns {"bottom" | "top" | undefined} the side the popup is placed on, or undefined for a trigger that cannot
  *   be measured.
  */
 export function positionPopup(trigger, popup, options = {}) {
   if (!trigger || typeof trigger.getBoundingClientRect !== "function") return;
-  const { placement = "bottom", align = "start", gap = 4, matchWidth = true } = options;
+  const { placement = "bottom", align = "start", gap = 4, matchWidth = true, fitHeight = false } = options;
   const r = trigger.getBoundingClientRect();
 
   // The viewport inside classic scrollbars, where a fixed popup's right and bottom are measured; without a doctype the root's is the document's.
@@ -34,7 +37,9 @@ export function positionPopup(trigger, popup, options = {}) {
   const viewportHeight = frame.clientHeight || window.innerHeight;
   const room = Math.max(0, viewport - 2 * EDGE);
   popup.style.position = "fixed";
-  popup.style.maxWidth = `${room}px`;
+  popup.style.maxWidth = "";
+  const own = popup instanceof Element ? getComputedStyle(popup).maxWidth : "";
+  popup.style.maxWidth = `${own.endsWith("px") ? Math.min(parseFloat(own), room) : room}px`;
   if (matchWidth) popup.style.minWidth = `${Math.min(r.width, room)}px`;
 
   const rtl = trigger instanceof Element && getComputedStyle(trigger).direction === "rtl";
@@ -55,6 +60,7 @@ export function positionPopup(trigger, popup, options = {}) {
 
   const below = viewportHeight - r.bottom;
   const above = r.top;
+  if (fitHeight) popup.style.maxHeight = "";
   const height = popup.offsetHeight || 0;
   // Flip only when the preferred side cannot fit AND the other side is roomier.
   const flip =
@@ -68,5 +74,6 @@ export function positionPopup(trigger, popup, options = {}) {
     popup.style.bottom = "auto";
     popup.style.top = `${r.bottom + gap}px`;
   }
+  if (fitHeight) popup.style.maxHeight = `${Math.max(0, Math.min((onTop ? above : below) - gap, viewportHeight - EDGE) - EDGE)}px`;
   return onTop ? "top" : "bottom";
 }
