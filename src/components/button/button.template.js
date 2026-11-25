@@ -1,18 +1,35 @@
-import { h, has, region } from "../../core/template.js";
+import { DEFAULT_REGION, h, has, live, region } from "../../core/template.js";
+import { menuPanelId } from "../menu/menu.template.js";
+
+/**
+ * The attributes that make a native button open the menu whose id is `menu`.
+ * @param {string} menu
+ * @returns {Record<string, string>}
+ */
+export const menuTrigger = (menu) => ({
+  type: "button",
+  popovertarget: menuPanelId(menu),
+  "aria-haspopup": "menu",
+  "aria-controls": menuPanelId(menu),
+  "aria-expanded": "false",
+});
 
 /**
  * @param {Record<string, string>} attrs
+ * @param {import("../../core/template.js").TemplateContext} ctx
  * @returns {import("../../core/template.js").TemplateNode}
  */
-export function buttonTemplate(attrs) {
+export function buttonTemplate(attrs, ctx) {
   const disabled = has(attrs, "disabled");
   const loading = has(attrs, "loading");
-  const link = Boolean(attrs.href) && !disabled;
+  const iconOnly = has(attrs, "icon-only");
+  const menu = attrs.menu || "";
+  const link = Boolean(attrs.href) && !disabled && !menu;
 
   const classes = ["neuwo-btn", `neuwo-btn--${attrs.variant || "solid"}`];
   if (attrs.size) classes.push(`neuwo-btn--${attrs.size}`);
   if (attrs.hover === "s" || attrs.hover === "l") classes.push(`neuwo-btn--hover-${attrs.hover}`);
-  for (const modifier of ["wide", "xwide", "loading", "block"]) {
+  for (const modifier of ["wide", "xwide", "loading", "block", "icon-only"]) {
     if (has(attrs, modifier)) classes.push(`neuwo-btn--${modifier}`);
   }
 
@@ -30,13 +47,18 @@ export function buttonTemplate(attrs) {
     if (name === "title" || name.startsWith("aria-")) props[name] = value;
   }
   if (loading) props["aria-busy"] = "true";
+  if (menu) Object.assign(props, menuTrigger(menu));
 
-  return h(
+  const empty = !ctx.children.some((child) => child.slot === DEFAULT_REGION);
+  const node = h(
     link ? "a" : "button",
     props,
     loading && h("span", { class: "neuwo-btn__spinner", "aria-hidden": "true" }),
     h("span", { class: "neuwo-btn__start" }, region("start")),
     h("span", { class: "neuwo-btn__label" }, region()),
+    iconOnly && menu && empty && h("span", { class: "neuwo-btn__dots", "aria-hidden": "true" }),
     h("span", { class: "neuwo-btn__end" }, region("end")),
+    menu && !iconOnly && h("span", { class: "neuwo-btn__chevron", "aria-hidden": "true" }),
   );
+  return menu ? live(node) : node;
 }

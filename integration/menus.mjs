@@ -89,6 +89,48 @@ async function submenuAuto(page) {
   }
 }
 
+const ROWS = "demo-rows-panel";
+
+function readRows(id) {
+  const panel = document.getElementById(id);
+  const menu = panel?.closest("neuwo-menu");
+  const hosts = Array.from(document.querySelectorAll("#demo-rows-table neuwo-button"));
+  const publish = menu?.querySelector('neuwo-menu-item[value="publish"]');
+  return {
+    open: Boolean(panel?.matches(":popover-open")),
+    row: hosts.indexOf(menu?.trigger) + 1,
+    expanded: hosts.map((host) => host.querySelector(".neuwo-btn")?.getAttribute("aria-expanded")),
+    publish: publish ? !publish.hidden : null,
+  };
+}
+
+async function untilRows(page, step, accept) {
+  const deadline = Date.now() + STEP_TIMEOUT;
+  for (;;) {
+    const state = await page.evaluate(readRows, ROWS);
+    if (accept(state)) return state;
+    if (Date.now() > deadline) throw new Error(`${step}: ${JSON.stringify(state)}`);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+}
+
+const onlyRow = (row) => (state) => state.open && state.row === row && state.expanded.every((value, index) => value === String(index + 1 === row));
+
+// The panel opens below its trigger and covers the buttons of the rows under it, so the second click goes to a row above.
+async function menuShared(page) {
+  const button = (row) => `#demo-rows-table tbody tr:nth-child(${row}) .neuwo-btn`;
+  await page.evaluate(hideMenu, ROWS);
+  await untilRows(page, "closing the row menu", (state) => !state.open && state.expanded.every((value) => value === "false"));
+  await page.evaluate(() => document.getElementById("demo-rows-table").scrollIntoView({ block: "start" }));
+  await page.click(button(2));
+  const first = await untilRows(page, "opening from row 2", onlyRow(2));
+  if (first.publish !== true) return { status: "fail", detail: "Publish is hidden on row 2, a Draft row" };
+  await page.click(button(1));
+  const second = await untilRows(page, "clicking row 1 while the menu is open from row 2", onlyRow(1));
+  if (second.publish !== false) return { status: "fail", detail: "Publish shows on row 1, a Live row" };
+  return { status: "pass", detail: `opened from row 2, then a click on row 1: open with row ${second.row} as the trigger, aria-expanded ${second.expanded.join(", ")}, Publish hidden on the Live row` };
+}
+
 async function run(check, steps) {
   try {
     return { check, status: "pass", detail: await steps() };
@@ -127,7 +169,7 @@ async function menuTree(page) {
 
 /**
  * Drives the demo's every-kind menu, `#demo-kinds`, from its plain trigger, then the flyout and auto submenu menus,
- * the auto one at 360px, after which the viewport is restored.
+ * the auto one at 360px, after which the viewport is restored, then the shared row menu from two rows' buttons.
  * @param {import("puppeteer-core").Page} page
  * @returns {Promise<import("./checks.mjs").CheckResult[]>}
  */
@@ -178,5 +220,11 @@ export async function checkMenus(page) {
     }
   }
   await page.evaluate(hideMenu, "demo-flyout-panel");
+  try {
+    results.push({ check: "menuShared", ...(await menuShared(page)) });
+  } catch (error) {
+    results.push({ check: "menuShared", status: "fail", detail: error.message });
+  }
+  await page.evaluate(hideMenu, ROWS);
   return results;
 }

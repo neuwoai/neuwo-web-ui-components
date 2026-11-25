@@ -100,6 +100,45 @@ describe("buttonTemplate()", () => {
     expect(render({ "aria-busy": "false", loading: "" }).props["aria-busy"]).toBe("true");
   });
 
+  it("points a menu button at the menu panel", () => {
+    for (const attrs of [{ menu: "export" }, { menu: "export", href: "/docs", target: "_blank", type: "submit" }]) {
+      const node = render(attrs);
+      expect(node.tag).toBe("button");
+      expect(node.live).toBe(true);
+      expect(node.props).toMatchObject({
+        type: "button",
+        popovertarget: "export-panel",
+        "aria-controls": "export-panel",
+        "aria-haspopup": "menu",
+        "aria-expanded": "false",
+      });
+      expect(node.props.href).toBeUndefined();
+      expect(node.props.target).toBeUndefined();
+    }
+    expect(render({ menu: "" }).props.popovertarget).toBeUndefined();
+    expect(render({}).live).toBeUndefined();
+  });
+
+  it("shows a chevron after the end wrapper, but not on an icon-only button", () => {
+    expect(toHTML(render({ menu: "export" }))).toBe(
+      `<button class="neuwo-btn neuwo-btn--solid" type="button" popovertarget="export-panel" aria-haspopup="menu" aria-controls="export-panel" aria-expanded="false">${wrappers}<span class="neuwo-btn__chevron" aria-hidden="true"></span></button>`,
+    );
+    expect(toHTML(render({ menu: "export", "icon-only": "" }))).not.toContain("neuwo-btn__chevron");
+    expect(toHTML(render())).not.toContain("neuwo-btn__chevron");
+  });
+
+  it("shows three dots on an empty icon-only menu button, and the author's icon otherwise", () => {
+    const icon = { tag: "svg", attrs: {}, text: "", slot: "default", children: [] };
+    const start = { ...icon, attrs: { slot: "start" }, slot: "start" };
+    const dots = '<span class="neuwo-btn__dots" aria-hidden="true"></span>';
+    const iconOnly = (attrs, children = []) => buttonTemplate({ "icon-only": "", ...attrs }, { id: (suffix) => suffix, children, within: null });
+    expect(iconOnly({}).props.class).toBe("neuwo-btn neuwo-btn--solid neuwo-btn--icon-only");
+    expect(toHTML(iconOnly({ menu: "rows" }))).toContain(`<span class="neuwo-btn__label"></span>${dots}<span class="neuwo-btn__end">`);
+    expect(toHTML(iconOnly({ menu: "rows" }, [start]))).toContain(dots);
+    expect(toHTML(iconOnly({ menu: "rows" }, [icon]))).not.toContain(dots);
+    expect(toHTML(iconOnly({}))).not.toContain(dots);
+  });
+
   it("places start, default and end children in their wrappers", () => {
     const html = toHTML(render(), { start: "<i>s</i>", default: "Go", end: "<i>e</i>" });
     expect(html).toBe(

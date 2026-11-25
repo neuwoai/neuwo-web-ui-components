@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -11,8 +11,10 @@ import { buttonTemplate } from "../src/components/button/button.template.js";
 import { renderElement } from "../src/core/adapters/html.js";
 import { idScope } from "../src/core/ids.js";
 import { normalizeProps } from "../src/core/template.js";
+import { expand } from "../src/server/index.js";
 import { jsx, jsxs } from "../src/react/jsx-runtime.js";
 import { normalise } from "./fixtures/template-cases.js";
+import { installPopovers } from "./fixtures/popover.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const buttonCss = readFileSync(join(__dirname, "../src/components/button/button.css"), "utf8");
@@ -382,6 +384,143 @@ describe("<neuwo-button> in a form", () => {
   });
 });
 
+describe("<neuwo-button> opening a menu", () => {
+  beforeEach(() => {
+    cleanup.push(installPopovers(document));
+  });
+
+  const ROWS = `<neuwo-menu id="rows"><neuwo-menu-item value="rename">Rename</neuwo-menu-item><neuwo-menu-item value="publish">Publish</neuwo-menu-item></neuwo-menu>`;
+  const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
+  const expanded = (...hosts) => hosts.map((host) => control(host).getAttribute("aria-expanded"));
+
+  function page(html) {
+    const holder = document.createElement("div");
+    holder.innerHTML = html;
+    attach(holder);
+    return { buttons: Array.from(holder.querySelectorAll("neuwo-button")), menu: holder.querySelector("neuwo-menu") };
+  }
+
+  it("sets aria-expanded only on the button that opened a shared menu", async () => {
+    const { buttons, menu } = page(`<neuwo-button icon-only menu="rows" aria-label="Row 1"></neuwo-button><neuwo-button icon-only menu="rows" aria-label="Row 2"></neuwo-button>${ROWS}`);
+    const [first, second] = buttons;
+    expect(expanded(first, second)).toEqual(["false", "false"]);
+
+    control(first).click();
+    await tick();
+    expect([menu.isOpen, menu.trigger]).toEqual([true, first]);
+    expect(expanded(first, second)).toEqual(["true", "false"]);
+
+    control(second).click();
+    await tick();
+    expect([menu.isOpen, menu.trigger]).toEqual([true, second]);
+    expect(expanded(first, second)).toEqual(["false", "true"]);
+
+    menu.close();
+    await tick();
+    expect(expanded(first, second)).toEqual(["false", "false"]);
+  });
+
+  it("keeps aria-expanded on the open button through a re-render, and follows a menu named after it connected", async () => {
+    const { buttons, menu } = page(`<neuwo-button>Export</neuwo-button>${ROWS}`);
+    const [button] = buttons;
+    button.menu = "rows";
+    await Promise.resolve();
+    expect(control(button).getAttribute("popovertarget")).toBe("rows-panel");
+    control(button).click();
+    await tick();
+    expect(expanded(button)).toEqual(["true"]);
+
+    button.iconOnly = true;
+    button.setAttribute("variant", "glass");
+    await Promise.resolve();
+    expect(control(button).className).toBe("neuwo-btn neuwo-btn--glass neuwo-btn--icon-only");
+    expect(button.querySelector(".neuwo-btn__chevron")).toBeNull();
+    expect(expanded(button)).toEqual(["true"]);
+
+    button.menu = "";
+    await Promise.resolve();
+    expect(control(button).hasAttribute("aria-expanded")).toBe(false);
+    menu.close();
+    await tick();
+    expect(control(button).hasAttribute("aria-expanded")).toBe(false);
+  });
+
+  it("leaves a button naming a missing menu working, without errors", async () => {
+    const errors = [];
+    const onError = (event) => errors.push(event.error ?? event.message);
+    window.addEventListener("error", onError);
+    cleanup.push(() => window.removeEventListener("error", onError));
+    const consoleError = vi.spyOn(console, "error");
+    const { buttons, menu } = page(`<neuwo-button menu="nowhere">Export</neuwo-button><button popovertarget="rows-panel">Rows</button>${ROWS}`);
+    const [button] = buttons;
+    const clicks = [];
+    button.addEventListener("click", (event) => clicks.push(event.target));
+
+    expect(() => control(button).click()).not.toThrow();
+    await tick();
+    expect(clicks).toEqual([control(button)]);
+    expect(expanded(button)).toEqual(["false"]);
+
+    menu.parentElement.querySelector(":scope > button").click();
+    await tick();
+    expect(menu.isOpen).toBe(true);
+    expect(expanded(button)).toEqual(["false"]);
+    expect(errors).toEqual([]);
+    expect(consoleError).not.toHaveBeenCalled();
+  });
+
+  it("reports the neuwo-button host as the trigger", async () => {
+    const { buttons, menu } = page(`<neuwo-button menu="rows" data-row="7">Actions</neuwo-button>${ROWS}`);
+    const [button] = buttons;
+    const opened = [];
+    const picked = [];
+    menu.addEventListener("open", (event) => opened.push(event.detail.trigger));
+    menu.addEventListener("select", (event) => picked.push([event.detail.trigger, event.detail.trigger.dataset.row]));
+
+    control(button).click();
+    await tick();
+    expect(opened).toEqual([button]);
+    menu.querySelector('neuwo-menu-item[value="rename"] .neuwo-menu-item__control').click();
+    expect(picked).toEqual([[button, "7"]]);
+  });
+
+  it("adopts a served menu button and icon-only button with zero writes", async () => {
+    const holder = document.createElement("div");
+    holder.innerHTML = expand(
+      `<neuwo-button variant="outline" menu="rows">Export</neuwo-button>` +
+        `<neuwo-button icon-only menu="rows" aria-label="Actions"></neuwo-button>` +
+        `<neuwo-button icon-only variant="glass" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12"></path></svg></neuwo-button>`,
+    );
+    const records = [];
+    const observer = new MutationObserver((list) => records.push(...list));
+    observer.observe(holder, { subtree: true, childList: true, attributes: true, characterData: true });
+    attach(holder);
+    await Promise.resolve();
+    records.push(...observer.takeRecords());
+    observer.disconnect();
+    expect(records).toEqual([]);
+    const [menuButton, dots, close] = holder.querySelectorAll("neuwo-button");
+    expect(menuButton).toBeInstanceOf(NeuwoButton);
+    expect([menuButton.menu, dots.iconOnly, close.iconOnly, close.menu]).toEqual(["rows", true, true, ""]);
+    expect(holder.querySelectorAll(".neuwo-btn__chevron")).toHaveLength(1);
+    expect(dots.querySelectorAll(".neuwo-btn__dots")).toHaveLength(1);
+    expect(close.querySelector(".neuwo-btn__dots")).toBeNull();
+  });
+
+  it("swaps the dots for an icon the page adds, and back when it goes", async () => {
+    const { buttons } = page(`<neuwo-button icon-only menu="rows" aria-label="Actions"></neuwo-button>`);
+    const [button] = buttons;
+    expect(button.querySelector(".neuwo-btn__dots")).not.toBeNull();
+    const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    button.querySelector(".neuwo-btn__label").append(icon);
+    await Promise.resolve();
+    expect(button.querySelector(".neuwo-btn__dots")).toBeNull();
+    icon.remove();
+    await Promise.resolve();
+    expect(button.querySelector(".neuwo-btn__dots")).not.toBeNull();
+  });
+});
+
 describe("<neuwo-button> under React", () => {
   it("matches buttonTemplate through every re-render, with nothing for the element to patch and no React warning", () => {
     const error = vi.spyOn(console, "error");
@@ -563,6 +702,36 @@ describe("button.css", () => {
     expect(buttonCss).toContain("@keyframes neuwo-button-spin");
     expect(buttonCss).toContain("animation: neuwo-button-spin");
     expect(buttonCss).toMatch(/prefers-reduced-motion: reduce/);
+  });
+
+  it("pads an icon-only button by its font size, after the size and width modifiers it overrides", () => {
+    expect(buttonCss).toMatch(/\.neuwo-btn--icon-only \{\s*padding: 0\.5em;\s*\}/);
+    for (const modifier of ["--sm", "--lg", "--wide", "--xwide"]) {
+      expect(buttonCss.indexOf(".neuwo-btn--icon-only {"), modifier).toBeGreaterThan(buttonCss.indexOf(`.neuwo-btn${modifier} {`));
+    }
+  });
+
+  it("draws the chevron from the chevron token in the text colour, turned while the menu is open", () => {
+    const chevron = /\.neuwo-btn__chevron \{([^}]*)\}/.exec(buttonCss)?.[1] ?? "";
+    expect(chevron).toContain("inline-size: 1em;");
+    expect(chevron).toContain("block-size: 1em;");
+    expect(chevron).toContain("background-color: currentColor;");
+    expect(chevron).toContain("mask: var(--neuwo-icon-chevron) center / contain no-repeat;");
+    expect(chevron).toContain("transition: transform var(--neuwo-transition-fast);");
+    expect(buttonCss).toMatch(/\.neuwo-btn\[aria-expanded="true"\] > \.neuwo-btn__chevron \{\s*transform: rotate\(180deg\);/);
+  });
+
+  it("draws three dots as a mask in the text colour", () => {
+    const dots = /\.neuwo-btn__dots \{([^}]*)\}/.exec(buttonCss)?.[1] ?? "";
+    expect(dots).toContain("inline-size: 1.125em;");
+    expect(dots).toContain("block-size: 1.125em;");
+    expect(dots).toContain("background-color: currentColor;");
+    expect(dots.match(/circle/g)).toHaveLength(6);
+  });
+
+  it("paints both glyphs in ButtonText under forced colours, and stops the chevron's turn under reduced motion", () => {
+    expect(buttonCss).toMatch(/@media \(forced-colors: active\) \{\s*\.neuwo-btn__chevron,\s*\.neuwo-btn__dots \{\s*background-color: ButtonText;/);
+    expect(buttonCss).toMatch(/@media \(prefers-reduced-motion: reduce\) \{[^@]*\.neuwo-btn__chevron \{\s*transition: none;/);
   });
 
   it("uses tokens, not raw colours, and no shadow-only selectors", () => {

@@ -122,6 +122,58 @@
         mask: center / contain no-repeat;
         -webkit-mask: center / contain no-repeat;
       }
+      .rows-demo {
+        max-width: 48rem;
+        margin-block: 1.5rem;
+        background: var(--neuwo-glass-bg);
+        border: 1px solid var(--neuwo-glass-border);
+        border-radius: var(--neuwo-radius-xl);
+      }
+      .rows-demo table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: var(--neuwo-font-size-sm);
+      }
+      .rows-demo th,
+      .rows-demo td {
+        padding: var(--neuwo-space-3) var(--neuwo-space-5);
+        text-align: start;
+        vertical-align: middle;
+      }
+      .rows-demo th {
+        font-weight: var(--neuwo-font-weight-medium);
+        color: var(--neuwo-color-text-muted);
+        border-block-end: 1px solid var(--neuwo-glass-border);
+      }
+      .rows-demo td {
+        border-block-end: 1px solid var(--neuwo-color-grid-line);
+      }
+      .rows-demo tr:last-child td {
+        border-block-end: 0;
+      }
+      .rows-demo td:first-child {
+        color: var(--neuwo-color-heading);
+        font-weight: var(--neuwo-font-weight-medium);
+      }
+      .rows-demo th:last-child,
+      .rows-demo td:last-child {
+        width: 1%;
+        white-space: nowrap;
+        text-align: end;
+      }
+      .rows-demo__status {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--neuwo-space-2);
+      }
+      .rows-demo__hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
     </style>
     <link rel="stylesheet" href="/dist/neuwo.css" />
     <script type="module" src="/dist/neuwo.js"></script>
@@ -587,6 +639,195 @@
       }
     </script>
     <iframe src="menu-narrow.html" title="Menus at 360px" width="360" height="560" style="border: 1px dashed var(--neuwo-glass-border); border-radius: 0.5rem"></iframe>
+
+    <h2>Menu button (menu="export")</h2>
+    <p>
+      <code>menu</code> names a <code>&lt;neuwo-menu&gt;</code> by its id, and the button opens it: a chevron follows
+      the label and turns while the menu is open. Every button here opens the same Export menu, which lines up with
+      the button that opened it, and only that button reads expanded. The disabled and the loading button do not open
+      it.
+    </p>
+    <div class="row">
+      <neuwo-button variant="solid" menu="export">Export</neuwo-button>
+      <neuwo-button variant="outline" menu="export">Export</neuwo-button>
+      <neuwo-button variant="glass" menu="export">Export</neuwo-button>
+    </div>
+    <div class="row">
+      <neuwo-button variant="outline" size="sm" menu="export">Export</neuwo-button>
+      <neuwo-button variant="outline" menu="export">Export</neuwo-button>
+      <neuwo-button variant="outline" size="lg" menu="export">Export</neuwo-button>
+    </div>
+    <div class="row">
+      <neuwo-button variant="outline" menu="export">
+        <svg slot="start" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12" /><polyline points="7 10 12 15 17 10" /><path d="M5 21h14" /></svg>
+        Export
+      </neuwo-button>
+      <neuwo-button variant="outline" menu="export" disabled>Export</neuwo-button>
+      <neuwo-button variant="solid" menu="export" loading>Exporting</neuwo-button>
+      <output id="demo-export-pick">No pick yet</output>
+    </div>
+    <neuwo-menu id="export">
+      <neuwo-menu-group heading="Export As">
+        <neuwo-menu-item value="csv" hint=".csv">
+          <svg slot="start" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><polyline points="14 3 14 9 20 9" /></svg>
+          CSV
+        </neuwo-menu-item>
+        <neuwo-menu-item value="json" hint=".json">
+          <svg slot="start" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5a2 2 0 0 0 2 2h1" /><path d="M16 21h1a2 2 0 0 0 2-2v-5a2 2 0 0 1 2-2 2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1" /></svg>
+          JSON
+        </neuwo-menu-item>
+      </neuwo-menu-group>
+      <neuwo-menu-group>
+        <neuwo-menu-item value="copy-request">
+          <svg slot="start" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+          Copy API Request
+        </neuwo-menu-item>
+      </neuwo-menu-group>
+    </neuwo-menu>
+    <script>
+      document.getElementById("export").addEventListener("select", (event) => {
+        document.getElementById("demo-export-pick").value = `Last pick: ${event.detail.value}`;
+      });
+    </script>
+
+    <h2>Icon-only button (icon-only)</h2>
+    <p>
+      A round button whose content is its icon, padded by its font size, so the three sizes scale. With
+      <code>menu</code> and no content it shows three dots, and with an icon of the page's own it shows that; it never
+      shows the chevron. Its <code>aria-label</code> names it. The last button has no menu, since
+      <code>icon-only</code> suits any action.
+    </p>
+    <div class="row">
+      <neuwo-button icon-only variant="solid" menu="demo-more" aria-label="More Actions"></neuwo-button>
+      <neuwo-button icon-only variant="outline" menu="demo-more" aria-label="More Actions"></neuwo-button>
+      <neuwo-button icon-only variant="glass" menu="demo-more" aria-label="More Actions"></neuwo-button>
+    </div>
+    <div class="row">
+      <neuwo-button icon-only variant="outline" size="sm" menu="demo-more" aria-label="More Actions"></neuwo-button>
+      <neuwo-button icon-only variant="outline" menu="demo-more" aria-label="More Actions"></neuwo-button>
+      <neuwo-button icon-only variant="outline" size="lg" menu="demo-more" aria-label="More Actions"></neuwo-button>
+    </div>
+    <div class="row">
+      <neuwo-button icon-only variant="outline" menu="demo-more" aria-label="Settings">
+        <svg width="1.125em" height="1.125em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1" /><circle cx="15" cy="6" r="2" /><circle cx="9" cy="12" r="2" /><circle cx="17" cy="18" r="2" /></svg>
+      </neuwo-button>
+      <neuwo-button id="demo-close" icon-only variant="glass" aria-label="Close">
+        <svg width="1.125em" height="1.125em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </neuwo-button>
+      <output id="demo-more-pick">No pick yet</output>
+    </div>
+    <neuwo-menu id="demo-more">
+      <neuwo-menu-group>
+        <neuwo-menu-item value="rename">
+          <svg slot="start" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" /></svg>
+          Rename
+        </neuwo-menu-item>
+        <neuwo-menu-item value="duplicate">
+          <svg slot="start" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+          Duplicate
+        </neuwo-menu-item>
+        <neuwo-menu-item value="archive">
+          <svg slot="start" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="4" rx="1" /><path d="M5 8v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8" /><path d="M10 12h4" /></svg>
+          Archive
+        </neuwo-menu-item>
+      </neuwo-menu-group>
+      <neuwo-menu-group>
+        <neuwo-menu-item value="delete" tone="red">
+          <svg slot="start" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" /></svg>
+          Delete
+        </neuwo-menu-item>
+      </neuwo-menu-group>
+    </neuwo-menu>
+    <script>
+      document.getElementById("demo-more").addEventListener("select", (event) => {
+        document.getElementById("demo-more-pick").value = `Last pick: ${event.detail.value}, from ${event.detail.trigger?.getAttribute("aria-label")}`;
+      });
+      document.getElementById("demo-close").addEventListener("click", () => {
+        document.getElementById("demo-more-pick").value = "Close clicked";
+      });
+    </script>
+
+    <h2>Shared row menu (one menu, a button per row)</h2>
+    <p>
+      Every row's button opens one menu, written once. Its <code>open</code> handler reads <code>data-status</code>
+      from <code>event.detail.trigger</code>, the row's <code>&lt;neuwo-button&gt;</code>, and hides Publish on Live
+      rows; its <code>select</code> handler names the row and the pick. A click on another row's button while the menu
+      is open moves the menu to that row.
+    </p>
+    <div class="rows-demo">
+      <table id="demo-rows-table">
+        <thead>
+          <tr><th>Segment</th><th>Status</th><th>Category</th><th>Reach</th><th><span class="rows-demo__hidden">Actions</span></th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Sports Fans</td>
+            <td><span class="rows-demo__status"><neuwo-status-dot variant="green" size="s"></neuwo-status-dot>Live</span></td>
+            <td><neuwo-badge variant="blue" size="s">Sports</neuwo-badge></td>
+            <td>4,812,300</td>
+            <td><neuwo-button icon-only variant="outline" size="sm" menu="demo-rows" data-status="live" aria-label="Actions for Sports Fans"></neuwo-button></td>
+          </tr>
+          <tr>
+            <td>Luxury Travel</td>
+            <td><span class="rows-demo__status"><neuwo-status-dot variant="blue" size="s" halo="none"></neuwo-status-dot>Draft</span></td>
+            <td><neuwo-badge variant="blue" size="s">Travel</neuwo-badge></td>
+            <td>612,040</td>
+            <td><neuwo-button icon-only variant="outline" size="sm" menu="demo-rows" data-status="draft" aria-label="Actions for Luxury Travel"></neuwo-button></td>
+          </tr>
+          <tr>
+            <td>Eco Shoppers</td>
+            <td><span class="rows-demo__status"><neuwo-status-dot variant="green" size="s"></neuwo-status-dot>Live</span></td>
+            <td><neuwo-badge variant="green" size="s">Sustainability</neuwo-badge></td>
+            <td>1,204,950</td>
+            <td><neuwo-button icon-only variant="outline" size="sm" menu="demo-rows" data-status="live" aria-label="Actions for Eco Shoppers"></neuwo-button></td>
+          </tr>
+          <tr>
+            <td>Tech Early Adopters</td>
+            <td><span class="rows-demo__status"><neuwo-status-dot variant="blue" size="s" halo="none"></neuwo-status-dot>Draft</span></td>
+            <td><neuwo-badge variant="blue" size="s">Technology</neuwo-badge></td>
+            <td>2,377,815</td>
+            <td><neuwo-button icon-only variant="outline" size="sm" menu="demo-rows" data-status="draft" aria-label="Actions for Tech Early Adopters"></neuwo-button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <output id="demo-rows-pick">No pick yet</output>
+    <neuwo-menu id="demo-rows" align="end">
+      <neuwo-menu-group>
+        <neuwo-menu-item value="rename">
+          <svg slot="start" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" /></svg>
+          Rename
+        </neuwo-menu-item>
+        <neuwo-menu-item value="duplicate">
+          <svg slot="start" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+          Duplicate
+        </neuwo-menu-item>
+        <neuwo-menu-item value="publish" tone="green">
+          <svg slot="start" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2L11 13" /><path d="M22 2l-7 20-4-9-9-4z" /></svg>
+          Publish
+        </neuwo-menu-item>
+        <neuwo-menu-item value="archive">
+          <svg slot="start" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="4" rx="1" /><path d="M5 8v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8" /><path d="M10 12h4" /></svg>
+          Archive
+        </neuwo-menu-item>
+      </neuwo-menu-group>
+      <neuwo-menu-group>
+        <neuwo-menu-item value="delete" tone="red">
+          <svg slot="start" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" /></svg>
+          Delete
+        </neuwo-menu-item>
+      </neuwo-menu-group>
+    </neuwo-menu>
+    <script>
+      document.getElementById("demo-rows").addEventListener("open", (event) => {
+        const publish = event.currentTarget.querySelector('neuwo-menu-item[value="publish"]');
+        publish.hidden = event.detail.trigger?.dataset.status === "live";
+      });
+      document.getElementById("demo-rows").addEventListener("select", (event) => {
+        const segment = event.detail.trigger?.closest("tr")?.cells[0].textContent;
+        document.getElementById("demo-rows-pick").value = `Last pick: ${event.detail.value}, for ${segment}`;
+      });
+    </script>
 
     <h2>Icon tokens (masks: --neuwo-icon-chevron, --neuwo-icon-check, --neuwo-icon-dot)</h2>
     <div class="row">

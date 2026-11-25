@@ -133,8 +133,14 @@ describe("custom-elements.json", () => {
 
   it("documents the button's own attributes", () => {
     const attrs = attributesFor(manifest, "neuwo-button");
-    for (const a of ["variant", "size", "hover", "wide", "xwide", "block", "href", "disabled", "loading", "type"])
+    for (const a of ["variant", "size", "hover", "wide", "xwide", "block", "href", "disabled", "loading", "type", "menu", "icon-only"])
       expect(attrs).toContain(a);
+    const button = declByTag(manifest, "neuwo-button");
+    expect(button.attributes.find((attribute) => attribute.name === "icon-only").type.text).toBe("boolean");
+    expect(button.attributes.find((attribute) => attribute.name === "menu").description).toMatch(/<neuwo-menu>/);
+    expect(button.summary).toMatch(/--icon-only/);
+    expect(button.summary).toMatch(/\.neuwo-btn__chevron/);
+    expect(button.summary).toMatch(/\.neuwo-btn__dots/);
   });
 
   it("documents the input's type and constraint attributes and its change event", () => {

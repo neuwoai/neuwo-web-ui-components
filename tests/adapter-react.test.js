@@ -358,6 +358,18 @@ describe("createRuntime()", () => {
     );
     expect(errors).not.toHaveBeenCalled();
   });
+
+  it("renders popovertarget without a React warning", async () => {
+    const errors = vi.spyOn(console, "error");
+    const view = () => runtime.jsx("neuwo-button", { menu: "export", children: "Export" });
+    const container = mount();
+    const root = createRoot(container);
+    await act(async () => root.render(view()));
+    expect(container.querySelector("button").getAttribute("popovertarget")).toBe("export-panel");
+    act(() => root.unmount());
+    expect(parse(renderToString(view()))).toContain('popovertarget="export-panel"');
+    expect(errors).not.toHaveBeenCalled();
+  });
 });
 
 describe("JSX runtime: the nodes an element writes live state into", () => {
@@ -370,6 +382,7 @@ describe("JSX runtime: the nodes an element writes live state into", () => {
     "input.neuwo-combobox__trigger",
     "input.neuwo-range",
     "button.neuwo-segmented__option",
+    "button.neuwo-btn--solid",
   ].sort();
 
   /** @param {(type: string, props: Record<string, unknown>, key?: string) => unknown} create */
@@ -378,6 +391,7 @@ describe("JSX runtime: the nodes an element writes live state into", () => {
     const options = () => [option("a"), create("optgroup", { label: "G", children: option("b") }, "g")];
     return [
       ...Object.keys(templates).map((tag) => create(tag, {})),
+      create("neuwo-button", { menu: "m" }),
       create("neuwo-combobox", { children: options() }),
       create("neuwo-combobox", { searchable: true, children: options() }),
       create("neuwo-segmented", { children: [option("a"), option("b")] }),

@@ -40,6 +40,7 @@ const NAMES = new Map([
   ["tabindex", "tabIndex"],
   ["autocomplete", "autoComplete"],
   ["inputmode", "inputMode"],
+  ["popovertarget", "popoverTarget"],
   ...BOOLEAN.map((name) => /** @type {[string, string]} */ ([name.toLowerCase(), name])),
 ]);
 

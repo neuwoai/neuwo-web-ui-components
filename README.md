@@ -904,13 +904,16 @@ neuwo-button .neuwo-btn { border-radius: 0; }
 
 | Class | On |
 | --- | --- |
-| `.neuwo-btn` | the native `<button>`, or the `<a>` when `href` is set |
+| `.neuwo-btn` | the native `<button>`, or the `<a>` when `href` is set without `menu` |
 | `.neuwo-btn--solid`, `.neuwo-btn--outline`, `.neuwo-btn--glass` | the control, by `variant` |
 | `.neuwo-btn--sm`, `.neuwo-btn--lg` | the control, by `size` |
 | `.neuwo-btn--hover-s`, `.neuwo-btn--hover-l` | the control, by `hover` |
 | `.neuwo-btn--wide`, `.neuwo-btn--xwide`, `.neuwo-btn--block`, `.neuwo-btn--loading` | the control, by the attribute of the same name |
 | `.neuwo-btn__spinner` | the spinner, the control's first child while `loading` |
 | `.neuwo-btn__start`, `.neuwo-btn__label`, `.neuwo-btn__end` | the wrappers around the `slot="start"` children, the label and the `slot="end"` children |
+| `.neuwo-btn--icon-only` | the control, by `icon-only` |
+| `.neuwo-btn__chevron` | the chevron after the end wrapper while `menu` is set without `icon-only`; it turns while the control has `aria-expanded="true"` |
+| `.neuwo-btn__dots` | the three dots after the label wrapper, on an `icon-only` control with `menu` and no label content |
 
 The three wrappers are always rendered and are `display: contents`, so they draw
 no box and an empty one adds no gap. Style what they hold through inherited
@@ -1419,8 +1422,9 @@ declare something stronger on the element; a consent banner is a question, so gi
 `<neuwo-menu>` is an action menu: a list of `<neuwo-menu-group>` elements, each a list of
 `<neuwo-menu-item>` elements. It renders a top-layer popover panel, hidden until a trigger opens it,
 so served markup shows nothing before the script runs. Any button opens it through the browser's
-own `popovertarget`, naming the panel, whose id is the menu's id followed by `-panel`. One menu can
-serve any number of triggers.
+own `popovertarget`, naming the panel, whose id is the menu's id followed by `-panel`, and a
+`<neuwo-button>` opens it by its id (see [Menu buttons](#menu-buttons)). One menu can serve any
+number of triggers.
 
 ```html
 <button popovertarget="segment-actions-panel">Actions</button>
@@ -1552,6 +1556,64 @@ The keyboard follows the WAI-ARIA menu button pattern, moving real focus between
 A click outside the menu closes it, and so does a click on the trigger that opened it. A pick
 returns focus to the trigger only while focus is still in the menu, on the page's body or nowhere,
 so a `select` handler that moves focus, to a rename field for example, keeps it there.
+
+### Menu buttons
+
+`<neuwo-button>` opens a menu itself, and takes two attributes for it:
+
+```html
+<neuwo-button variant="outline" menu="export">Export</neuwo-button>
+<neuwo-button icon-only variant="outline" size="sm" menu="row-actions" aria-label="Actions for Sports Fans"></neuwo-button>
+```
+
+- **`menu`**, the id of a `<neuwo-menu>`: the button opens that menu. The native button is always a
+  `<button type="button">`, whatever `href` and `type` say. It carries `popovertarget` and
+  `aria-controls` naming the panel, `aria-haspopup="menu"`, and `aria-expanded`, which is `true`
+  only while the menu is open from this button, so of several buttons sharing one menu only the one
+  that opened it reads expanded. A chevron follows the label and any `slot="end"` children and
+  turns while the menu is open. A button naming no menu on the page stays an ordinary button.
+- **`icon-only`**: a round button whose content is its icon, padded by its font size, so `size`
+  scales it. With `menu` and no content it shows three dots, and it never shows the chevron. Name it
+  with `aria-label`, which the button forwards. It works without `menu` too, for a close or a copy
+  button.
+
+`variant`, `size`, `hover`, `disabled` and `loading` combine with both as they do on any button. The
+menu reports the `<neuwo-button>` as its `trigger`, not the native button inside it, so the page's
+own attributes on the host can be read in `open` and `select`. A table writes its row menu once and
+gives every row a button:
+
+```html
+<table>
+  <tr>
+    <td>Sports Fans</td>
+    <td><neuwo-button icon-only variant="outline" size="sm" menu="row-actions" data-status="live" aria-label="Actions for Sports Fans"></neuwo-button></td>
+  </tr>
+  <tr>
+    <td>Luxury Travel</td>
+    <td><neuwo-button icon-only variant="outline" size="sm" menu="row-actions" data-status="draft" aria-label="Actions for Luxury Travel"></neuwo-button></td>
+  </tr>
+</table>
+
+<neuwo-menu id="row-actions" align="end">
+  <neuwo-menu-item value="rename">Rename</neuwo-menu-item>
+  <neuwo-menu-item value="publish" tone="green">Publish</neuwo-menu-item>
+  <neuwo-menu-item value="delete" tone="red">Delete</neuwo-menu-item>
+</neuwo-menu>
+
+<script>
+  const rows = document.getElementById("row-actions");
+  rows.addEventListener("open", (event) => {
+    rows.querySelector('neuwo-menu-item[value="publish"]').hidden = event.detail.trigger?.dataset.status === "live";
+  });
+  rows.addEventListener("select", (event) => {
+    const segment = event.detail.trigger?.closest("tr")?.cells[0].textContent;
+    console.log(`${event.detail.value} ${segment}`);
+  });
+</script>
+```
+
+A click on another row's button while the menu is open moves the menu to that row and fires `open`
+again for it.
 
 ### Submenus
 

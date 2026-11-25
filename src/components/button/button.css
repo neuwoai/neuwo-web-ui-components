@@ -125,6 +125,10 @@ neuwo-button[disabled] {
   padding-inline: var(--neuwo-space-16);
 }
 
+.neuwo-btn--icon-only {
+  padding: 0.5em;
+}
+
 neuwo-button[block]:not([hidden]) {
   display: flex;
   width: 100%;
@@ -155,6 +159,41 @@ neuwo-button[block]:not([hidden]) {
   to { transform: rotate(360deg); }
 }
 
+.neuwo-btn__chevron {
+  flex: none;
+  inline-size: 1em;
+  block-size: 1em;
+  background-color: currentColor;
+  mask: var(--neuwo-icon-chevron) center / contain no-repeat;
+  -webkit-mask: var(--neuwo-icon-chevron) center / contain no-repeat;
+  transition: transform var(--neuwo-transition-fast);
+}
+
+.neuwo-btn[aria-expanded="true"] > .neuwo-btn__chevron {
+  transform: rotate(180deg);
+}
+
+.neuwo-btn__dots {
+  flex: none;
+  inline-size: 1.125em;
+  block-size: 1.125em;
+  background-color: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='5' cy='12' r='1.6'/%3E%3Ccircle cx='12' cy='12' r='1.6'/%3E%3Ccircle cx='19' cy='12' r='1.6'/%3E%3C/svg%3E") center / contain no-repeat;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='5' cy='12' r='1.6'/%3E%3Ccircle cx='12' cy='12' r='1.6'/%3E%3Ccircle cx='19' cy='12' r='1.6'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* Forced colours paint backgrounds over with Canvas, so the masked glyphs would vanish. */
+@media (forced-colors: active) {
+  .neuwo-btn__chevron,
+  .neuwo-btn__dots {
+    background-color: ButtonText;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .neuwo-btn__spinner { animation: none; }
+
+  .neuwo-btn__chevron {
+    transition: none;
+  }
 }

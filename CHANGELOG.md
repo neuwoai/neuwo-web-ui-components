@@ -25,6 +25,14 @@
   when the submenu fits in the viewport and in its place when it does not.
 - Icon tokens `--neuwo-icon-chevron`, `--neuwo-icon-check` and `--neuwo-icon-dot`, masks that the
   combobox's chevron, the checkbox's tick, the radio's dot and the menu now read.
+- `menu` on `<neuwo-button>`: the id of a `<neuwo-menu>` the button opens. The native button is
+  then always a `<button type="button">`, with `popovertarget`, `aria-controls`,
+  `aria-haspopup="menu"` and an `aria-expanded` that is `true` only on the button that opened the
+  menu, and `.neuwo-btn__chevron` follows the label and turns while the menu is open. The menu
+  reports the `<neuwo-button>` as its trigger.
+- `icon-only` on `<neuwo-button>`: a round button whose content is its icon, padded by its font
+  size, with `.neuwo-btn--icon-only` on the control. With `menu` and no content it shows three dots,
+  `.neuwo-btn__dots`, and it never shows the chevron.
 
 ### Changed
 

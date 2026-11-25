@@ -70,6 +70,23 @@ export const cases = {
       children: ["Next", { tag: "svg", attrs: { slot: "end" }, children: [{ tag: "path", attrs: { d: "M0 0" } }] }],
     },
     { name: "nested badge", attrs: {}, children: ["Inbox ", { tag: "neuwo-badge", text: "New" }] },
+    { name: "menu", attrs: { variant: "outline", menu: "export" }, children: ["Export"] },
+    {
+      name: "menu with href and submit ignored",
+      attrs: { menu: "export", href: "https://neuwo.ai", target: "_blank", type: "submit" },
+      children: ["Export"],
+    },
+    { name: "icon-only menu", attrs: { "icon-only": "", menu: "row-actions", size: "sm", "aria-label": "Actions for Sports Fans" }, children: [] },
+    {
+      name: "icon-only with own icon",
+      attrs: { "icon-only": "", menu: "row-actions", variant: "glass", "aria-label": "Settings" },
+      children: [{ tag: "svg", children: [{ tag: "path", attrs: { d: "M0 0" } }] }],
+    },
+    {
+      name: "icon-only without menu",
+      attrs: { "icon-only": "", variant: "outline", "aria-label": "Close" },
+      children: [{ tag: "svg", children: [{ tag: "path", attrs: { d: "M0 0" } }] }],
+    },
   ],
   "neuwo-badge": [
     { name: "default", attrs: {}, children: ["For Publishers"] },
