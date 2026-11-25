@@ -1,0 +1,54 @@
+:is(.neuwo-combobox__popup) {
+  /* popover defaults to position: fixed; the JS positioner sets inset. */
+  margin: 0;
+  padding: var(--neuwo-space-2);
+  background: var(--neuwo-color-surface-solid);
+  border: 1px solid var(--neuwo-glass-border);
+  border-radius: var(--neuwo-radius-lg);
+  box-shadow: var(--neuwo-shadow-xl);
+  color-scheme: dark;
+}
+
+:is(.neuwo-combobox__popup):popover-open {
+  animation: neuwo-popup-in var(--neuwo-transition-fast);
+}
+
+:is(.neuwo-combobox__option) {
+  padding: var(--neuwo-space-2) var(--neuwo-space-3);
+  border-radius: var(--neuwo-radius-md);
+  color: var(--neuwo-color-text);
+  cursor: pointer;
+  user-select: none;
+  overflow-wrap: anywhere;
+}
+
+:is(.neuwo-combobox__option):hover {
+  background: var(--neuwo-tint-blue-10);
+}
+
+:is(.neuwo-combobox__option--active) {
+  background: var(--neuwo-tint-blue-15);
+}
+
+:is(.neuwo-combobox__option)[aria-disabled="true"] {
+  opacity: var(--neuwo-opacity-disabled);
+  cursor: not-allowed;
+}
+
+@keyframes neuwo-popup-in {
+  from { opacity: 0; transform: translateY(-0.25rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (forced-colors: active) {
+  /* The theme's palette, light or dark, rather than the dark one the list declares for its scrollbar. */
+  :is(.neuwo-combobox__popup) {
+    color-scheme: light dark;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(.neuwo-combobox__popup):popover-open {
+    animation: none;
+  }
+}

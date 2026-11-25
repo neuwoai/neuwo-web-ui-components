@@ -80,20 +80,8 @@
 }
 
 .neuwo-combobox__popup {
-  /* popover defaults to position: fixed; the JS positioner sets inset. */
-  margin: 0;
-  padding: var(--neuwo-space-2);
   max-height: 16rem;
   overflow-y: auto;
-  background: var(--neuwo-color-surface-solid);
-  border: 1px solid var(--neuwo-glass-border);
-  border-radius: var(--neuwo-radius-lg);
-  box-shadow: var(--neuwo-shadow-xl);
-  color-scheme: dark;
-}
-
-.neuwo-combobox__popup:popover-open {
-  animation: neuwo-combobox-in var(--neuwo-transition-fast);
 }
 
 .neuwo-combobox__listbox {
@@ -104,12 +92,6 @@
 
 .neuwo-combobox__option {
   display: block;
-  padding: var(--neuwo-space-2) var(--neuwo-space-3);
-  border-radius: var(--neuwo-radius-md);
-  color: var(--neuwo-color-text);
-  cursor: pointer;
-  user-select: none;
-  overflow-wrap: anywhere;
 }
 
 /* The display above outranks the user agent's [hidden] rule. */
@@ -117,21 +99,8 @@
   display: none;
 }
 
-.neuwo-combobox__option:hover {
-  background: var(--neuwo-tint-blue-10);
-}
-
-.neuwo-combobox__option--active {
-  background: var(--neuwo-tint-blue-15);
-}
-
 .neuwo-combobox__option[aria-selected="true"] {
   color: var(--neuwo-color-blue);
-}
-
-.neuwo-combobox__option[aria-disabled="true"] {
-  opacity: var(--neuwo-opacity-disabled);
-  cursor: not-allowed;
 }
 
 .neuwo-combobox__group {
@@ -145,18 +114,8 @@
   color: var(--neuwo-color-text-muted);
 }
 
-@keyframes neuwo-combobox-in {
-  from { opacity: 0; transform: translateY(-0.25rem); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
 /* Forced colours replace these colours with Canvas, so the chevron, the selection and the active row would not show; Chromium's text backplate would hide the rows' labels. */
 @media (forced-colors: active) {
-  /* The theme's palette, light or dark, rather than the dark one the list declares for its scrollbar. */
-  .neuwo-combobox__popup {
-    color-scheme: light dark;
-  }
-
   .neuwo-combobox__chevron {
     background: CanvasText;
   }
@@ -178,10 +137,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .neuwo-combobox__popup:popover-open {
-    animation: none;
-  }
-
   .neuwo-combobox__chevron {
     transition: none;
   }

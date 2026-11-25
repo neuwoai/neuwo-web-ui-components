@@ -4,6 +4,9 @@
 
 ### Changed
 
+- The combobox's popup and option look moved to the new published `components/popup.css`. A site
+  that links `components/fields/combobox/combobox.css` on its own must link `components/popup.css`
+  before it.
 - Each font is two files, split by `unicode-range`. The Latin file keeps the font's current name
   and covers English, Finnish, Swedish, Estonian and the other Western European languages. The new
   extension file holds the rest, Central European and Vietnamese letters and further symbols, and

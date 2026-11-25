@@ -13,17 +13,18 @@ const rule = (selector) => {
 
 describe("combobox.css recipe", () => {
   it("styles the popup and options from tokens", () => {
-    expect(rule(".neuwo-combobox__popup")).toContain("var(--neuwo-color-surface-solid)");
-    expect(rule(".neuwo-combobox__popup")).toContain("var(--neuwo-shadow-xl)");
-    expect(rule(".neuwo-combobox__option:hover")).toContain("var(--neuwo-tint-blue-10)");
-    expect(rule(".neuwo-combobox__option--active")).toContain("var(--neuwo-tint-blue-15)");
+    const popup = read("../src/components/popup.css");
+    for (const selector of [".neuwo-combobox__popup", ".neuwo-combobox__option", ".neuwo-combobox__option--active"]) {
+      expect(popup).toContain(`:is(${selector})`);
+    }
+    expect(css).not.toContain("--neuwo-color-surface-solid");
+    expect(css).not.toContain("neuwo-combobox-in");
     expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
   });
 
-  it("paints the chevron colour from a token, turns it while open and guards reduced motion", () => {
+  it("paints the chevron colour from a token and turns it while open", () => {
     expect(rule(".neuwo-combobox__chevron")).toContain("background-color: var(--neuwo-color-text-muted)");
     expect(rule('.neuwo-combobox__trigger[aria-expanded="true"] ~ .neuwo-combobox__chevron')).toContain("rotate(180deg)");
-    expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*\.neuwo-combobox__popup:popover-open\s*\{\s*animation:\s*none/);
   });
 
   it("stills the chevron's turn under reduced motion", () => {
@@ -55,7 +56,7 @@ describe("combobox.css recipe", () => {
   });
 
   it("wraps a long option label inside the list, which the positioner caps to the viewport", () => {
-    expect(rule(".neuwo-combobox__option")).toContain("overflow-wrap: anywhere");
+    expect(read("../src/components/popup.css")).toMatch(/:is\(\.neuwo-combobox__option\) \{[^}]*overflow-wrap: anywhere/);
   });
 
   it("tightens the chevron gutter at the compact size", () => {

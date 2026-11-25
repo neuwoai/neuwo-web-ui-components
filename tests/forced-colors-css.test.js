@@ -124,7 +124,7 @@ describe("forced colours", () => {
       outline: "2px solid CanvasText",
       "outline-offset": "-2px",
     });
-    expect(forced(file, ".neuwo-combobox__popup")).toEqual({ "color-scheme": "light dark" });
+    expect(forced("src/components/popup.css", ":is(.neuwo-combobox__popup)")).toEqual({ "color-scheme": "light dark" });
     expect(Object.fromEntries(rules[active].declarations)).toEqual({ "forced-color-adjust": "none", background: "Highlight", color: "HighlightText" });
     expect(active).toBeGreaterThan(selected);
   });

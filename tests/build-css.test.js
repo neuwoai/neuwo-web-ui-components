@@ -53,10 +53,11 @@ describe("combined stylesheets", () => {
     expect(full.startsWith(components())).toBe(true);
   });
 
-  it("composes the reset first, then the recipes of every registered template and nothing else", () => {
+  it("composes the reset and the popup sheet first, then the recipes of every registered template and nothing else", () => {
     const recipes = new Set(Object.keys(templates).flatMap(recipesOf));
     expect(LIGHT_COMPONENT_CSS[0]).toBe("src/components/reset.css");
-    expect(LIGHT_COMPONENT_CSS.slice(1).sort()).toEqual([...recipes].sort());
+    expect(LIGHT_COMPONENT_CSS[1]).toBe("src/components/popup.css");
+    expect(LIGHT_COMPONENT_CSS.slice(2).sort()).toEqual([...recipes].sort());
     for (const file of LIGHT_COMPONENT_CSS) expect(existsSync(join(root, file)), file).toBe(true);
   });
 

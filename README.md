@@ -875,6 +875,7 @@ Published styling files, for direct linking or non-web use:
 | Font faces, tokens, reset and light DOM component recipes (one file) | `@neuwo/web-ui-library--demo/neuwo-components.css` |
 | `neuwo-components.css` plus typography, page surface, navigation links and Markdown surface (one file) | `@neuwo/web-ui-library--demo/neuwo.css` |
 | Component reset (before any recipe) | `@neuwo/web-ui-library--demo/components/reset.css` |
+| Popup panel and row (combobox, menu) | `@neuwo/web-ui-library--demo/components/popup.css` |
 | Button recipe | `@neuwo/web-ui-library--demo/components/button/button.css` |
 | Field chrome | `@neuwo/web-ui-library--demo/components/fields/field.css` |
 | Selection shell (checkbox, toggle, radio group, segmented control) | `@neuwo/web-ui-library--demo/components/selection/controls.css` |
