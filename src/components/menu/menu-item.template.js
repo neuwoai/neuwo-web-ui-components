@@ -5,8 +5,9 @@ const ROLES = { one: "menuitemradio", many: "menuitemcheckbox" };
 
 /**
  * A menu item: its control, a link or a button with the role its group's `select` gives it, then the wrapper a
- * submenu sits in. The control holds the check of a checkable item, the start icon, the label, the hint, a new-tab
- * link's mark and a submenu parent's chevron.
+ * submenu sits in. It reads the nearer of its group and its menu, so an outer group's `select` never reaches an item
+ * placed directly in a submenu. The control holds the check of a checkable item, the start icon, the label, the hint,
+ * a new-tab link's mark and a submenu parent's chevron.
  * @param {Record<string, string>} attrs
  * @param {import("../../core/template.js").TemplateContext} ctx
  * @returns {import("../../core/template.js").TemplateNode}
@@ -54,4 +55,4 @@ export function menuItemTemplate(attrs, ctx) {
     h("div", { class: "neuwo-menu-item__submenu", role: "none" }, region("submenu")),
   );
 }
-menuItemTemplate.within = "neuwo-menu-group";
+menuItemTemplate.within = "neuwo-menu-group, neuwo-menu";

@@ -1,5 +1,6 @@
 import { adopt, forget, hasLooseContent, isRendered, reconcile, regions, render, reslot, separate, withinOf } from "./adapters/dom.js";
 import { REACT } from "./marks.js";
+import { withinTags } from "./template.js";
 
 /** @type {Map<string, Set<string>>} */
 const readers = new Map();
@@ -137,7 +138,7 @@ export class NeuwoElement extends /** @type {typeof HTMLElement} */ (globalThis.
     }
     if (this.#early.size) queueMicrotask(() => this.#restore());
     const within = this.#template?.within;
-    if (within) readers.set(within, (readers.get(within) ?? new Set()).add(this.localName));
+    for (const tag of this.#template ? withinTags(this.#template) : []) readers.set(tag, (readers.get(tag) ?? new Set()).add(this.localName));
     if (!this.hasAttributes() && !this.hasChildNodes()) return;
     const observed = /** @type {{ observedAttributes?: string[] }} */ (this.constructor).observedAttributes ?? [];
     this.#initial = new Map(observed.filter((name) => this.hasAttribute(name)).map((name) => [name, /** @type {string} */ (this.getAttribute(name))]));

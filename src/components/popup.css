@@ -13,7 +13,7 @@
   animation: neuwo-popup-in var(--neuwo-transition-fast);
 }
 
-:is(.neuwo-combobox__option, .neuwo-menu-item__control) {
+:is(.neuwo-combobox__option, .neuwo-menu-item__control, .neuwo-menu__back) {
   padding: var(--neuwo-space-2) var(--neuwo-space-3);
   border-radius: var(--neuwo-radius-md);
   color: var(--neuwo-color-text);
@@ -22,12 +22,13 @@
   overflow-wrap: anywhere;
 }
 
-:is(.neuwo-combobox__option, .neuwo-menu-item__control):hover {
+:is(.neuwo-combobox__option, .neuwo-menu-item__control, .neuwo-menu__back):hover,
+.neuwo-menu-item__control:where([aria-expanded="true"]) {
   background: var(--neuwo-tint-blue-10);
 }
 
 /* :where() keeps this at one class, so a hovered row still outweighs the keyboard one, as in the combobox. */
-:is(.neuwo-combobox__option--active, .neuwo-menu-item__control:where(:focus-visible)) {
+:is(.neuwo-combobox__option--active, .neuwo-menu-item__control:where(:focus-visible), .neuwo-menu__back:where(:focus-visible)) {
   background: var(--neuwo-tint-blue-15);
 }
 

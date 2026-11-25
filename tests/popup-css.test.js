@@ -33,14 +33,15 @@ describe("popup.css recipe", () => {
     expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{\s*:is\(\.neuwo-combobox__popup, \.neuwo-menu\):popover-open\s*\{\s*animation:\s*none;/);
   });
 
-  it("gives the combobox's option and the menu's item the row padding, radius, hover and keyboard tints", () => {
-    const row = ":is(.neuwo-combobox__option, .neuwo-menu-item__control)";
+  it("gives the combobox's option, the menu's item and its Back row the row padding, radius, hover and keyboard tints", () => {
+    const row = ":is(.neuwo-combobox__option, .neuwo-menu-item__control, .neuwo-menu__back)";
     expect(rule(row)).toContain("var(--neuwo-space-2) var(--neuwo-space-3)");
     expect(rule(row)).toContain("var(--neuwo-radius-md)");
-    expect(rule(`${row}:hover`)).toContain("var(--neuwo-tint-blue-10)");
-    expect(rule(":is(.neuwo-combobox__option--active, .neuwo-menu-item__control:where(:focus-visible))")).toContain("var(--neuwo-tint-blue-15)");
-    expect(rule(`${row}[aria-disabled="true"]`)).toContain("var(--neuwo-opacity-disabled)");
-    expect(css, "the keyboard row weighs one class, so a hovered row outweighs it as before").not.toMatch(/__control:focus-visible/);
+    expect(rule(`${row}:hover,\n.neuwo-menu-item__control:where([aria-expanded="true"])`)).toContain("var(--neuwo-tint-blue-10)");
+    expect(css.indexOf('.neuwo-menu-item__control:where([aria-expanded="true"])'), "the keyboard row comes later and weighs the same, so it shows on an open submenu's item").toBeLessThan(css.indexOf(".neuwo-menu__back:where(:focus-visible)"));
+    expect(rule(":is(.neuwo-combobox__option--active, .neuwo-menu-item__control:where(:focus-visible), .neuwo-menu__back:where(:focus-visible))")).toContain("var(--neuwo-tint-blue-15)");
+    expect(rule(':is(.neuwo-combobox__option, .neuwo-menu-item__control)[aria-disabled="true"]')).toContain("var(--neuwo-opacity-disabled)");
+    expect(css, "the keyboard row weighs one class, so a hovered row outweighs it as before").not.toMatch(/(__control|__back):focus-visible/);
   });
 
   it("gives the menu's panel the theme's palette under forced colours, as the combobox's", () => {

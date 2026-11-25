@@ -38,18 +38,54 @@ describe("menu.css recipe", () => {
     expect(rule("neuwo-menu-item:not([hidden])")).toEqual({ display: "block" });
   });
 
-  it("shares the combobox's panel, row, hover and keyboard row, entering with its keyframes", () => {
+  it("shares the combobox's panel, row, hover and keyboard row, the Back row's too, entering with its keyframes", () => {
     expect(popup).toContain(":is(.neuwo-combobox__popup, .neuwo-menu) {");
     expect(popup).toContain(":is(.neuwo-combobox__popup, .neuwo-menu):popover-open {\n  animation: neuwo-popup-in");
-    expect(popup).toContain(":is(.neuwo-combobox__option, .neuwo-menu-item__control) {");
-    expect(popup).toContain(":is(.neuwo-combobox__option, .neuwo-menu-item__control):hover {");
-    expect(popup).toContain(":is(.neuwo-combobox__option--active, .neuwo-menu-item__control:where(:focus-visible)) {");
+    expect(popup).toContain(":is(.neuwo-combobox__option, .neuwo-menu-item__control, .neuwo-menu__back) {");
+    expect(popup).toContain(':is(.neuwo-combobox__option, .neuwo-menu-item__control, .neuwo-menu__back):hover,\n.neuwo-menu-item__control:where([aria-expanded="true"]) {');
+    expect(popup).toContain(":is(.neuwo-combobox__option--active, .neuwo-menu-item__control:where(:focus-visible), .neuwo-menu__back:where(:focus-visible)) {");
     expect(popup).toContain(':is(.neuwo-combobox__option, .neuwo-menu-item__control)[aria-disabled="true"] {');
-    expect(code).not.toMatch(/@keyframes|animation:/);
   });
 
   it("stills the panel's entrance under reduced motion", () => {
     expect(popup).toMatch(/@media \(prefers-reduced-motion: reduce\) \{\s*:is\(\.neuwo-combobox__popup, \.neuwo-menu\):popover-open\s*\{\s*animation:\s*none;/);
+  });
+
+  it("slides a drilled submenu in from the inline end, mirrored by the dir attribute, and stills it under reduced motion", () => {
+    expect(rule(".neuwo-menu--drill:popover-open")).toEqual({ animation: "neuwo-menu-drill-in var(--neuwo-transition-fast)" });
+    expect(rule(".neuwo-menu--drill:dir(rtl):popover-open")).toEqual({ "animation-name": "neuwo-menu-drill-in-rtl" });
+    expect(code).toMatch(/@keyframes neuwo-menu-drill-in \{\s*from \{ opacity: 0; translate: 0\.75rem 0; \}\s*\}/);
+    expect(code).toMatch(/@keyframes neuwo-menu-drill-in-rtl \{\s*from \{ opacity: 0; translate: -0\.75rem 0; \}\s*\}/);
+    expect(code.match(/@keyframes [\w-]+/g)).toEqual(["@keyframes neuwo-menu-drill-in", "@keyframes neuwo-menu-drill-in-rtl"]);
+    const still = block("prefers-reduced-motion: reduce");
+    const stilled = still?.find((each) => each.selectors.includes(".neuwo-menu--drill:popover-open"));
+    expect(stilled?.selectors).toEqual([".neuwo-menu--drill:popover-open", ".neuwo-menu--drill:dir(rtl):popover-open"]);
+    expect(Object.fromEntries(stilled?.declarations ?? [])).toEqual({ animation: "none" });
+  });
+
+  it("hides a panel a drilled submenu covers, but not the submenu inside it, nor a deeper covered one", () => {
+    expect(rule(".neuwo-menu--covered")).toEqual({ visibility: "hidden" });
+    expect(rule(".neuwo-menu--covered .neuwo-menu:not(.neuwo-menu--covered)")).toEqual({ visibility: "visible" });
+  });
+
+  it("lays the Back row out as an item, muted and semibold, its chevron pointing to the inline start, a divider below it", () => {
+    expect(rule(".neuwo-menu__back:not([hidden])")).toMatchObject({ display: "flex", "align-items": "center", gap: "var(--neuwo-space-3)", "inline-size": "100%" });
+    expect(rule(".neuwo-menu__back")).toEqual({ color: "var(--neuwo-color-text-muted)", "font-weight": "var(--neuwo-font-weight-semibold)" });
+    expect(rule(".neuwo-menu__back:focus-visible").outline).toBe("var(--neuwo-outline-focus)");
+    expect(rule(".neuwo-menu__back-icon")).toMatchObject({
+      "inline-size": "1.125em",
+      transform: "rotate(90deg)",
+      mask: "var(--neuwo-icon-chevron) center / contain no-repeat",
+      "background-color": "var(--neuwo-color-text-muted)",
+    });
+    expect(rule(".neuwo-menu__back-icon:dir(rtl)")).toEqual({ transform: "rotate(-90deg)" });
+    expect(rule(".neuwo-menu__back:not([hidden]) + .neuwo-menu__items")).toEqual({
+      "margin-block-start": "var(--neuwo-space-2)",
+      "margin-inline": "calc(-1 * var(--neuwo-space-2))",
+      "padding-block-start": "var(--neuwo-space-2)",
+      "padding-inline": "var(--neuwo-space-2)",
+      "border-block-start": "1px solid var(--neuwo-glass-border)",
+    });
   });
 
   it("sizes the panel between 13rem and 20rem, never taller than the viewport less a margin, scrolling inside", () => {
@@ -167,7 +203,7 @@ describe("menu.css recipe", () => {
   it("keeps the masks, the dividers and the focused row visible under forced colours", () => {
     const forced = block("forced-colors: active");
     const of = (selector) => Object.fromEntries(forced.find((each) => each.selectors.includes(selector))?.declarations ?? []);
-    for (const selector of [".neuwo-menu-item__check", ".neuwo-menu-item__external", ".neuwo-menu-item__chevron", ".neuwo-menu-group__divider"]) {
+    for (const selector of [".neuwo-menu-item__check", ".neuwo-menu-item__external", ".neuwo-menu-item__chevron", ".neuwo-menu__back-icon", ".neuwo-menu-group__divider"]) {
       expect(of(selector), selector).toEqual({ background: "CanvasText" });
     }
     expect(of(".neuwo-menu-item__control:focus-visible")).toEqual({ "outline-color": "Highlight" });

@@ -418,12 +418,14 @@
       });
     </script>
 
-    <h2>Menu (every item kind)</h2>
+    <h2>Menu with every item kind, nested two levels</h2>
     <p>
       A plain <code>&lt;button popovertarget&gt;</code> opens each menu and the menu positions against it. The first
-      shows every item kind; the second has 40 items and scrolls inside the viewport. Down or Up on a trigger opens its
-      menu on the first or last item; in the menu, the arrows, Home and End move, Enter and Space pick, Escape closes
-      and Tab moves on. An action or a link closes the menu; a Sort By or Show item stays checked in it.
+      shows every item kind, with Move To opening a submenu whose Past Campaigns opens another; the second has 40 items
+      and scrolls inside the viewport. Down or Up on a trigger opens its menu on the first or last item; in the menu,
+      the arrows, Home and End move, Enter and Space pick, Right opens a submenu, Left or Escape closes it, Escape on
+      the first level closes the menu and Tab moves on. An action or a link closes the menu; a Sort By or Show item
+      stays checked in it.
     </p>
     <div class="row">
       <button class="neuwo-btn neuwo-btn--outline" popovertarget="demo-kinds-panel">Item Kinds</button>
@@ -449,6 +451,31 @@
         <neuwo-menu-item value="copy-request" hint="Ctrl+Shift+C">
           <svg slot="start" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
           Copy API Request
+        </neuwo-menu-item>
+      </neuwo-menu-group>
+      <neuwo-menu-group heading="Segment">
+        <neuwo-menu-item value="move">
+          <svg slot="start" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg>
+          Move To
+          <neuwo-menu slot="submenu">
+            <neuwo-menu-group>
+              <neuwo-menu-item value="sports">Sports</neuwo-menu-item>
+              <neuwo-menu-item value="travel">Travel</neuwo-menu-item>
+              <neuwo-menu-item value="past">
+                Past Campaigns
+                <neuwo-menu slot="submenu">
+                  <neuwo-menu-item value="2025">2025</neuwo-menu-item>
+                  <neuwo-menu-item value="2026">2026</neuwo-menu-item>
+                </neuwo-menu>
+              </neuwo-menu-item>
+            </neuwo-menu-group>
+            <neuwo-menu-group>
+              <neuwo-menu-item value="new-folder">
+                <svg slot="start" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                New Folder
+              </neuwo-menu-item>
+            </neuwo-menu-group>
+          </neuwo-menu>
         </neuwo-menu-item>
       </neuwo-menu-group>
       <neuwo-menu-group heading="Sort By" select="one">
@@ -488,6 +515,78 @@
           checked === undefined ? `Last pick: ${value}` : `Last pick: ${value}, ${checked ? "checked" : "unchecked"}`;
       });
     </script>
+
+    <h2>Menu submenus (submenu="flyout", "drill" and "auto")</h2>
+    <p>
+      The same menu three times, one per <code>submenu</code> value. Hover or click Move To or Export As; Move To opens
+      a second level under Past Campaigns. <code>flyout</code> opens a submenu beside its menu, on hover after a short
+      delay or on click, and over it when neither side has room; <code>drill</code> opens it in the menu's place, with a
+      Back row naming its item; <code>auto</code> flies out when the submenu fits beside the menu and drills in when it
+      does not. The frame below shows the three at 360px, where <code>auto</code> drills in.
+    </p>
+    <div class="row">
+      <button class="neuwo-btn neuwo-btn--outline" popovertarget="demo-flyout-panel">Flyout</button>
+      <button class="neuwo-btn neuwo-btn--outline" popovertarget="demo-drill-panel">Drill-In</button>
+      <button class="neuwo-btn neuwo-btn--outline" popovertarget="demo-auto-panel">Auto</button>
+      <output id="demo-submenu-pick">No pick yet</output>
+    </div>
+    <template id="demo-segment-menu">
+      <neuwo-menu-group heading="Segment">
+        <neuwo-menu-item value="rename" hint="F2">
+          <svg slot="start" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" /></svg>
+          Rename
+        </neuwo-menu-item>
+        <neuwo-menu-item value="duplicate" hint="Ctrl D">
+          <svg slot="start" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+          Duplicate
+        </neuwo-menu-item>
+        <neuwo-menu-item value="move">
+          <svg slot="start" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg>
+          Move To
+          <neuwo-menu slot="submenu">
+            <neuwo-menu-group>
+              <neuwo-menu-item value="sports">Sports</neuwo-menu-item>
+              <neuwo-menu-item value="travel">Travel</neuwo-menu-item>
+              <neuwo-menu-item value="past">
+                Past Campaigns
+                <neuwo-menu slot="submenu">
+                  <neuwo-menu-item value="2025">2025</neuwo-menu-item>
+                  <neuwo-menu-item value="2026">2026</neuwo-menu-item>
+                </neuwo-menu>
+              </neuwo-menu-item>
+            </neuwo-menu-group>
+            <neuwo-menu-group>
+              <neuwo-menu-item value="new-folder">
+                <svg slot="start" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                New Folder
+              </neuwo-menu-item>
+            </neuwo-menu-group>
+          </neuwo-menu>
+        </neuwo-menu-item>
+        <neuwo-menu-item value="export">
+          <svg slot="start" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12" /><polyline points="7 10 12 15 17 10" /><path d="M5 21h14" /></svg>
+          Export As
+          <neuwo-menu slot="submenu">
+            <neuwo-menu-item value="csv" hint=".csv">CSV</neuwo-menu-item>
+            <neuwo-menu-item value="json" hint=".json">JSON</neuwo-menu-item>
+            <neuwo-menu-item value="pdf" hint="Pro" disabled>PDF Report</neuwo-menu-item>
+          </neuwo-menu>
+        </neuwo-menu-item>
+      </neuwo-menu-group>
+    </template>
+    <neuwo-menu id="demo-flyout" submenu="flyout"></neuwo-menu>
+    <neuwo-menu id="demo-drill" submenu="drill"></neuwo-menu>
+    <neuwo-menu id="demo-auto" submenu="auto"></neuwo-menu>
+    <script>
+      for (const id of ["demo-flyout", "demo-drill", "demo-auto"]) {
+        const menu = document.getElementById(id);
+        menu.append(document.getElementById("demo-segment-menu").content.cloneNode(true));
+        menu.addEventListener("select", (event) => {
+          document.getElementById("demo-submenu-pick").value = `Last pick: ${event.detail.value}, from ${menu.submenu}`;
+        });
+      }
+    </script>
+    <iframe src="menu-narrow.html" title="Menus at 360px" width="360" height="560" style="border: 1px dashed var(--neuwo-glass-border); border-radius: 0.5rem"></iframe>
 
     <h2>Icon tokens (masks: --neuwo-icon-chevron, --neuwo-icon-check, --neuwo-icon-dot)</h2>
     <div class="row">

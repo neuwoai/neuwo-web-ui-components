@@ -11,7 +11,7 @@ import { CONTROLLED } from "../src/core/marks.js";
 import { control, h } from "../src/core/template.js";
 import { expandWith } from "../src/server/expand.js";
 import { templates } from "../src/templates.js";
-import { boxTemplate, itemTemplate, withinTemplates } from "./fixtures/within.js";
+import { boxTemplate, itemTemplate, nearestTemplates, withinTemplates } from "./fixtures/within.js";
 import { normalise } from "./fixtures/template-cases.js";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -173,6 +173,16 @@ function spy(template, { withChildren = false } = {}) {
   return { seen, wrapped };
 }
 
+/** @param {unknown} element */
+async function renderClient(element) {
+  const container = document.body.appendChild(document.createElement("div"));
+  cleanups.push(() => container.remove());
+  const root = createRoot(container);
+  cleanups.unshift(() => act(() => root.unmount()));
+  await act(async () => root.render(element));
+  return { container, rerender: (/** @type {unknown} */ next) => act(async () => root.render(next)) };
+}
+
 /** @param {Element} el */
 const fiberOf = (el) => el[/** @type {string} */ (Object.keys(el).find((key) => key.startsWith("__reactFiber$")))];
 
@@ -268,16 +278,6 @@ describe("within in the DOM adapter", () => {
 });
 
 describe("within in the React adapter", () => {
-  /** @param {unknown} element */
-  async function renderClient(element) {
-    const container = document.body.appendChild(document.createElement("div"));
-    cleanups.push(() => container.remove());
-    const root = createRoot(container);
-    cleanups.unshift(() => act(() => root.unmount()));
-    await act(async () => root.render(element));
-    return { container, rerender: (/** @type {unknown} */ next) => act(async () => root.render(next)) };
-  }
-
   const group = (/** @type {Record<string, unknown>} */ props, /** @type {unknown[]} */ children = [runtime.jsx("x-item", { children: "One" }, "1"), runtime.jsx("x-item", { children: "Two" }, "2")]) =>
     runtime.jsxs("x-group", { name: "size", ...props, children });
 
@@ -486,5 +486,43 @@ describe("within in the React adapter", () => {
     await renderClient(groupOf(runtime, runtime.jsx(Row, { children: reader(runtime) })));
     expect(warn).not.toHaveBeenCalled();
     expect(errors).not.toHaveBeenCalled();
+  });
+});
+
+describe("within naming several tags", () => {
+  const SOURCE =
+    `<x-group name="size" value="m"><x-entry>Group</x-entry><x-wrap><x-entry>Wrap</x-entry></x-wrap></x-group>` +
+    `<x-wrap><x-group name="inner"><x-entry>Inner</x-entry></x-group></x-wrap><x-entry>Alone</x-entry>`;
+  const names = (holder) => Array.from(holder.querySelectorAll(".x-entry"), (el) => el.getAttribute("data-name"));
+
+  it("reads the nearest enclosing element of any of them, across the HTML, React and DOM adapters", () => {
+    const errors = vi.spyOn(console, "error");
+    const html = normalise(expandWith(SOURCE, nearestTemplates, "neuwo-s"), true);
+    expect(names(mount(html))).toEqual(["size", "none", "inner", "none"]);
+    const near = createRuntime(nearestTemplates);
+    const entry = (label, key) => near.jsx("x-entry", { children: label }, key);
+    const tree = [
+      near.jsxs("x-group", { name: "size", value: "m", children: [entry("Group", "a"), near.jsx("x-wrap", { children: entry("Wrap") }, "b")] }, "g"),
+      near.jsx("x-wrap", { children: near.jsx("x-group", { name: "inner", children: entry("Inner") }) }, "w"),
+      entry("Alone", "e"),
+    ];
+    expect(normalise(renderToStaticMarkup(tree), true)).toBe(html);
+    const container = mount(SOURCE);
+    for (const host of Array.from(container.querySelectorAll(Object.keys(nearestTemplates).join(",")))) render(host, nearestTemplates[host.localName]);
+    expect(normalise(container.innerHTML, false)).toBe(html);
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it("warns in development only for a reader whose missing attributes would change its markup", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const dev = createRuntime(nearestTemplates, { dev: true });
+    const Row = ({ children }) => dev.jsx("div", { children });
+    await renderClient(dev.jsx("x-wrap", { children: dev.jsx(Row, { children: dev.jsx("x-entry", { children: "In a wrap" }) }) }));
+    expect(warn).not.toHaveBeenCalled();
+    await renderClient(dev.jsx("x-group", { name: "size", children: dev.jsx(Row, { children: dev.jsx("x-entry", { children: "In a group" }) }) }));
+    expect(warn).toHaveBeenCalledTimes(1);
+    const [message] = warn.mock.calls[0];
+    expect(message).toContain("<x-entry> is inside <x-group>");
+    expect(message).toContain("found no <x-group> around it");
   });
 });

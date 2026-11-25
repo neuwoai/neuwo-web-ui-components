@@ -37,3 +37,16 @@ export const wrapTemplate = (attrs) => h("div", { class: "x-wrap" }, region());
 
 /** @type {Record<string, Template>} */
 export const withinTemplates = { "x-group": groupTemplate, "x-item": itemTemplate, "x-box": boxTemplate, "x-wrap": wrapTemplate };
+
+/**
+ * Reads the nearer of a group and a wrap, and shows a group's `name`, so a wrap between it and a group hides the name.
+ * @param {Record<string, string>} attrs
+ * @param {TemplateContext} ctx
+ */
+export function entryTemplate(attrs, ctx) {
+  return h("span", { class: "x-entry", "data-name": ctx.within?.name ?? "none" }, region());
+}
+entryTemplate.within = "x-group, x-wrap";
+
+/** @type {Record<string, Template>} */
+export const nearestTemplates = { ...withinTemplates, "x-entry": entryTemplate };

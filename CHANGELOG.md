@@ -18,6 +18,11 @@
   script. The keyboard follows the WAI-ARIA menu button pattern: Enter,
   Space, ArrowDown or ArrowUp on the trigger, and the arrows, Home, End, Enter, Space, Escape and
   Tab in the menu. In React, `onopen` and `onselect` bind the events.
+  An item's `slot="submenu"` menu opens as a submenu, to any depth, on a click, Enter, Space or
+  ArrowRight (ArrowLeft right to left), and ArrowLeft or Escape closes one level. The root menu's
+  `submenu` attribute places them: `flyout` beside the menu, opening on hover after 120 ms too;
+  `drill` in the menu's place, with a Back row naming the item; `auto`, the default, beside the menu
+  when the submenu fits in the viewport and in its place when it does not.
 - Icon tokens `--neuwo-icon-chevron`, `--neuwo-icon-check` and `--neuwo-icon-dot`, masks that the
   combobox's chevron, the checkbox's tick, the radio's dot and the menu now read.
 

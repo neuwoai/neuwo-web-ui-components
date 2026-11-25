@@ -15,8 +15,9 @@
  * combination and carries a class unique within the template that is one of its blocks or a `<block>__<name>`
  * class, never a `--` modifier. Template text and elements appear only in elements that hold no region. The
  * adapters rely on this to tell template markup from author content: a wrapper's children are the author's,
- * every other node under the root is the template's. A template may name a tag as its `within`: every adapter then
- * hands it, as `ctx.within`, the attributes of the nearest enclosing element of that tag, never the host, or null.
+ * every other node under the root is the template's. A template may name a tag as its `within`, or several separated by
+ * commas: every adapter then hands it, as `ctx.within`, the attributes of the nearest enclosing element of any of them,
+ * never the host, or null.
  * Through React the enclosing host passes them down through elements, fragments, context providers, `Suspense`
  * and its fallback, `StrictMode`, `Profiler`, `Activity` and other Neuwo hosts, but not into a component of the app's
  * own, whose output it cannot see, nor through a portal, so a reader there gets null.
@@ -24,6 +25,13 @@
  */
 
 export const DEFAULT_REGION = "default";
+
+/**
+ * The tags a template's `within` names.
+ * @param {Template} template
+ * @returns {string[]}
+ */
+export const withinTags = (template) => (template.within ? template.within.split(",").map((tag) => tag.trim()) : []);
 
 const NOT_ATTRIBUTES = new Set(["children", "key", "ref", "className", "style"]);
 

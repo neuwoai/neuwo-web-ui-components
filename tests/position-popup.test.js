@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { positionPopup } from "../src/core/position-popup.js";
+import { positionBeside, positionOver, positionPopup, roomBeside } from "../src/core/position-popup.js";
 
 function trigger(rect) {
   return { getBoundingClientRect: () => rect };
@@ -224,5 +224,115 @@ describe("positionPopup", () => {
       matchWidth: false,
     });
     expect(p.style.minWidth).toBeUndefined();
+  });
+});
+
+/**
+ * A real element measured at `rect`, `width` by `height`, inside `dir="rtl"` when asked.
+ * @param {{ left: number, right: number, top: number, bottom: number }} rect
+ */
+function box(rect, { width = rect.right - rect.left, height = rect.bottom - rect.top, rtl = false, style = "" } = {}) {
+  const holder = document.createElement("div");
+  // happy-dom computes no direction from the dir attribute, so the inline style says it too.
+  if (rtl) {
+    holder.setAttribute("dir", "rtl");
+    holder.style.direction = "rtl";
+  }
+  const el = document.createElement("div");
+  el.setAttribute("style", style);
+  el.getBoundingClientRect = () => ({ x: rect.left, y: rect.top, width: rect.right - rect.left, height: rect.bottom - rect.top, toJSON() {}, ...rect });
+  Object.defineProperty(el, "offsetWidth", { configurable: true, get: () => width });
+  Object.defineProperty(el, "offsetHeight", { configurable: true, get: () => height });
+  holder.append(el);
+  document.body.append(holder);
+  return el;
+}
+
+describe("roomBeside", () => {
+  beforeEach(() => {
+    window.innerWidth = 1000;
+    window.innerHeight = 800;
+    document.body.replaceChildren();
+  });
+
+  it("prefers the inline end, then the start, overlapping the panel by 4px and keeping 8px from the viewport", () => {
+    expect(roomBeside(box({ left: 100, right: 300, top: 0, bottom: 200 }), 200)).toBe("end");
+    expect(roomBeside(box({ left: 300, right: 796, top: 0, bottom: 200 }), 200)).toBe("end"); // 796 - 4 + 200 = 1000 - 8
+    expect(roomBeside(box({ left: 300, right: 797, top: 0, bottom: 200 }), 200)).toBe("start");
+    expect(roomBeside(box({ left: 204, right: 900, top: 0, bottom: 200 }), 200)).toBe("start"); // 204 + 4 - 200 = 8
+    expect(roomBeside(box({ left: 203, right: 900, top: 0, bottom: 200 }), 200)).toBeNull();
+  });
+
+  it("reads the inline end as the left side in a right-to-left panel", () => {
+    expect(roomBeside(box({ left: 300, right: 500, top: 0, bottom: 200 }, { rtl: true }), 200)).toBe("end");
+    expect(roomBeside(box({ left: 100, right: 300, top: 0, bottom: 200 }, { rtl: true }), 200)).toBe("start");
+    expect(roomBeside(box({ left: 100, right: 900, top: 0, bottom: 200 }, { rtl: true }), 200)).toBeNull();
+  });
+});
+
+describe("positionBeside", () => {
+  beforeEach(() => {
+    window.innerWidth = 1000;
+    window.innerHeight = 800;
+    document.body.replaceChildren();
+  });
+
+  const parent = (rtl = false) => box({ left: 100, right: 300, top: 50, bottom: 450 }, { rtl, style: "border-top: 1px solid; padding-top: 8px" });
+  const item = () => box({ left: 109, right: 291, top: 200, bottom: 236 });
+
+  it("puts the popup at the panel's inline end or start, overlapping it by 4px, its first row level with the item", () => {
+    const popup = box({ left: 0, right: 0, top: 0, bottom: 0 }, { width: 240, height: 120 });
+    popup.style.minWidth = "200px";
+    positionBeside(parent(), item(), popup, "end");
+    expect([popup.style.position, popup.style.left, popup.style.right, popup.style.top, popup.style.bottom]).toEqual(["fixed", "296px", "auto", "191px", "auto"]);
+    expect(popup.style.minWidth).toBe("");
+    positionBeside(parent(), item(), popup, "start");
+    expect([popup.style.left, popup.style.right]).toEqual(["auto", "896px"]); // 1000 - (100 + 4)
+  });
+
+  it("mirrors the sides in a right-to-left panel", () => {
+    const popup = box({ left: 0, right: 0, top: 0, bottom: 0 }, { width: 240, height: 120 });
+    positionBeside(parent(true), item(), popup, "end");
+    expect([popup.style.left, popup.style.right]).toEqual(["auto", "896px"]);
+    positionBeside(parent(true), item(), popup, "start");
+    expect([popup.style.left, popup.style.right]).toEqual(["296px", "auto"]);
+  });
+
+  it("sits at the viewport's inline end less 8px, over the panel, with no room on either side", () => {
+    const popup = box({ left: 0, right: 0, top: 0, bottom: 0 }, { width: 240, height: 120 });
+    positionBeside(parent(), item(), popup, null);
+    expect([popup.style.left, popup.style.right]).toEqual(["auto", "8px"]);
+    positionBeside(parent(true), item(), popup, null);
+    expect([popup.style.left, popup.style.right]).toEqual(["8px", "auto"]);
+  });
+
+  it("moves the popup up to stay in the viewport, never above its top margin", () => {
+    const tall = box({ left: 0, right: 0, top: 0, bottom: 0 }, { width: 240, height: 300 });
+    positionBeside(parent(), box({ left: 109, right: 291, top: 700, bottom: 736 }), tall, "end");
+    expect(tall.style.top).toBe("492px"); // 800 - 8 - 300
+    positionBeside(parent(), box({ left: 109, right: 291, top: -40, bottom: -4 }), tall, "end");
+    expect(tall.style.top).toBe("8px");
+  });
+});
+
+describe("positionOver", () => {
+  beforeEach(() => {
+    window.innerWidth = 1000;
+    window.innerHeight = 800;
+    document.body.replaceChildren();
+  });
+
+  it("puts the popup on the panel's top and inline-start edges, at least as wide as the panel", () => {
+    const popup = box({ left: 0, right: 0, top: 0, bottom: 0 }, { width: 240, height: 120 });
+    positionOver(box({ left: 100, right: 324, top: 50, bottom: 450 }), popup);
+    expect([popup.style.position, popup.style.left, popup.style.right, popup.style.top, popup.style.bottom, popup.style.minWidth]).toEqual(["fixed", "100px", "auto", "50px", "auto", "224px"]);
+    positionOver(box({ left: 100, right: 324, top: 50, bottom: 450 }, { rtl: true }), popup);
+    expect([popup.style.left, popup.style.right]).toEqual(["auto", "676px"]); // 1000 - 324
+  });
+
+  it("moves a popup taller than the room below the panel's top up into the viewport", () => {
+    const popup = box({ left: 0, right: 0, top: 0, bottom: 0 }, { width: 240, height: 400 });
+    positionOver(box({ left: 100, right: 324, top: 600, bottom: 700 }), popup);
+    expect(popup.style.top).toBe("392px"); // 800 - 8 - 400
   });
 });

@@ -1,7 +1,7 @@
 import { Children, Fragment, cloneElement, isValidElement, useCallback, useId } from "react";
 // Server Components' React has no useRef or useLayoutEffect, so naming them in an import would fail to link there.
 import * as React from "react";
-import { DEFAULT_REGION, blocksOf, distribute, keyClassOf, normalizeProps } from "../template.js";
+import { DEFAULT_REGION, blocksOf, distribute, keyClassOf, normalizeProps, withinTags } from "../template.js";
 import { CONTROLLED, REACT } from "../marks.js";
 
 /** @typedef {import("react").ReactNode} ReactNode */
@@ -72,10 +72,16 @@ const noop = () => {};
 
 /** @type {WeakMap<Function, string>} */
 const hostTags = new WeakMap();
-/** @type {WeakMap<Function, string>} */
+/** @type {WeakMap<Function, string[]>} */
 const hostWithin = new WeakMap();
 /** @type {WeakMap<object, Within>} */
 const lentTo = new WeakMap();
+
+/**
+ * @param {Element} el
+ * @returns {Record<string, string>}
+ */
+const attributesIn = (el) => Object.fromEntries(Array.from(el.attributes, ({ name, value }) => [name, value]));
 
 /**
  * @param {ReactNode} item
@@ -153,7 +159,7 @@ function lend(node, tag, within, rendered) {
   const el = asElement(node);
   if (!el) return node;
   if (typeof el.type === "string") rendered?.(el.type);
-  const reads = typeof el.type === "function" && hostWithin.get(el.type) === tag;
+  const reads = typeof el.type === "function" && hostWithin.get(el.type)?.includes(tag) === true;
   const own = /** @type {ReactNode} */ (el.props.children);
   const children = tagOf(el) !== tag && isTransparent(el) ? lend(own, tag, within, rendered) : own;
   const ownFallback = /** @type {ReactNode} */ (el.props.fallback);
@@ -529,14 +535,23 @@ function useMark(authorRef, controlled, handlers, mounted) {
 function hostFor(tag, template, { markHost, server, readers, dev, warned, create }) {
   const { within: enclosing } = template;
   const provider = readers.size > 0;
-  /** @param {Element} el */
+  /**
+   * Warns once about a reader rendered without the attributes of the element around it in the page, when they would
+   * change its markup.
+   * @param {Element} el
+   */
   const unlent = (el) => {
-    if (warned.has(tag) || !el.parentElement?.closest(enclosing)) return;
+    const outer = warned.has(tag) ? null : el.parentElement?.closest(/** @type {string} */ (enclosing));
+    if (!outer) return;
+    /** @param {Record<string, string> | null} within */
+    const draw = (within) => JSON.stringify(template(attributesIn(el), { id: (suffix) => suffix, children: [], within }));
+    if (draw(attributesIn(outer)) === draw(null)) return;
+    const name = outer.localName;
     warned.add(tag);
     console.warn(
-      `<${tag}> is inside <${enclosing}> in the page but was rendered without its attributes, as the JSX runtime found no ` +
-        `<${enclosing}> around it in React's tree. That happens inside a component of your own, which the runtime cannot ` +
-        `see into, through a portal, or in another React root. Render <${tag}> inside <${enclosing}> in the same component.`,
+      `<${tag}> is inside <${name}> in the page but was rendered without its attributes, as the JSX runtime found no ` +
+        `<${name}> around it in React's tree. That happens inside a component of your own, which the runtime cannot ` +
+        `see into, through a portal, or in another React root. Render <${tag}> inside <${name}> in the same component.`,
     );
   };
   /** @param {string} reader */
@@ -612,7 +627,7 @@ function hostFor(tag, template, { markHost, server, readers, dev, warned, create
   }
   NeuwoHost.displayName = tag;
   hostTags.set(NeuwoHost, tag);
-  if (template.within) hostWithin.set(NeuwoHost, template.within);
+  if (template.within) hostWithin.set(NeuwoHost, withinTags(template));
   return NeuwoHost;
 }
 
@@ -630,7 +645,7 @@ export function createRuntime(registry, { factory, markHost = true, server = fal
   const hosts = new Map();
   /** @type {Map<string, Set<string>>} */
   const readers = new Map();
-  for (const [tag, { within }] of Object.entries(registry)) if (within) readers.set(within, (readers.get(within) ?? new Set()).add(tag));
+  for (const [tag, template] of Object.entries(registry)) for (const within of withinTags(template)) readers.set(within, (readers.get(within) ?? new Set()).add(tag));
   /** @type {Set<string>} */
   const warned = new Set();
   /** @param {ElementType} type */

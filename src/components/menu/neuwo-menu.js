@@ -1,13 +1,11 @@
 import { NeuwoElement, define, ownedByReact } from "../../core/element.js";
 import { positionPopup } from "../../core/position-popup.js";
 import { menuTemplate } from "./menu.template.js";
+import { CONTROL, Submenus, enabled, openerOf, refit, rowsIn } from "./submenu.js";
 
 /** @typedef {import("./neuwo-menu-item.js").NeuwoMenuItem} NeuwoMenuItem */
 
-const CONTROL = ".neuwo-menu-item__control";
-
-/** @param {Element} control */
-const enabled = (control) => control.getAttribute("aria-disabled") !== "true";
+const INVOKER = "button[popovertarget]";
 
 /** @param {HTMLElement | null} invoker */
 const triggerOf = (invoker) => (invoker ? /** @type {HTMLElement | null} */ (invoker.closest("neuwo-button")) ?? invoker : null);
@@ -20,7 +18,7 @@ const triggerOf = (invoker) => (invoker ? /** @type {HTMLElement | null} */ (inv
  */
 function invokerIn(trigger, id) {
   if (!trigger || trigger.getAttribute("popovertarget") === id) return trigger;
-  const inside = Array.from(trigger.querySelectorAll("[popovertarget]")).find((each) => each.getAttribute("popovertarget") === id);
+  const inside = Array.from(trigger.querySelectorAll(INVOKER)).find((each) => each.getAttribute("popovertarget") === id);
   return inside instanceof HTMLElement ? inside : trigger;
 }
 
@@ -53,11 +51,17 @@ function check(item, checked, radio) {
  * trigger too. In the menu, ArrowDown and ArrowUp move through the items that are not `hidden`, wrapping, Home and
  * End jump to the first and last, Enter and Space pick, Escape closes it and returns focus to the trigger, and Tab
  * closes it and moves on from the trigger. Picking an action or a link closes the menu and returns focus to the
- * trigger; picking a checkable item checks it, unchecks the others of a `select="one"` group, and keeps the menu open.
- * A disabled item cannot be picked. On a host React rendered, a pick only fires `select`: React's state decides
- * `checked`. Clicking a second trigger while the menu is open reopens it as that trigger's menu.
+ * trigger, unless a `select` handler moved focus out of the menu; picking a checkable item checks it, unchecks the
+ * others of a `select="one"` group, and keeps the menu open. A disabled item cannot be picked. On a host React
+ * rendered, a pick only fires `select`: React's state decides `checked`. Clicking a second trigger while the menu is
+ * open reopens it as that trigger's menu.
  *
- * @summary Neuwo menu. Public classes: `.neuwo-menu` on the popover panel, which holds `.neuwo-menu__items` around the groups or items; a submenu's panel also holds the `.neuwo-menu__back` row, hidden until it drills in, with `.neuwo-menu__back-icon` and `.neuwo-menu__back-label`.
+ * An item's submenu opens on a click, Enter, Space or ArrowRight (ArrowLeft right to left), on its first enabled
+ * item; ArrowLeft (ArrowRight right to left) or Escape closes it and returns focus to the item. The root menu's
+ * `submenu` places every submenu in it: beside the menu, also on hover, in its place under a Back row, or beside it
+ * when it fits in the viewport and in its place when it does not.
+ *
+ * @summary Neuwo menu. Public classes: `.neuwo-menu` on the popover panel, with `--drill` while a submenu drills in and `--covered` on the panel it covers, which holds `.neuwo-menu__items` around the groups or items; a submenu's panel also holds the `.neuwo-menu__back` row, hidden until it drills in, with `.neuwo-menu__back-icon` and `.neuwo-menu__back-label`.
  * @customElement neuwo-menu
  * @attr id - names the panel `<id>-panel`, the id a trigger's `popovertarget` gives.
  * @attr {flyout|drill|auto} submenu - how submenus open, set on the root menu (default auto): beside the menu, in its place, or beside it when it fits and in its place when it does not.
@@ -81,6 +85,8 @@ export class NeuwoMenu extends NeuwoElement {
   #frame = 0;
   /** @type {"bottom" | "top" | undefined} */
   #side;
+  /** @type {Submenus | null} */
+  #submenus = null;
 
   /** @param {Event} event */
   #reposition = (event) => {
@@ -142,7 +148,11 @@ export class NeuwoMenu extends NeuwoElement {
 
   /** Closes the menu, as Escape does, and returns focus to its trigger when focus was inside it. */
   close() {
-    if (this.isOpen) this.panel?.hidePopover();
+    const panel = this.panel;
+    if (!panel || !this.isOpen) return;
+    const focused = this.#focused();
+    if (focused && panel.contains(focused)) this.#invoker?.focus();
+    panel.hidePopover();
   }
 
   connect() {
@@ -154,6 +164,8 @@ export class NeuwoMenu extends NeuwoElement {
     this.addEventListener("keydown", this.#onKeydown);
     this.addEventListener("beforetoggle", this.#onBeforeToggle, true);
     this.addEventListener("toggle", this.#onToggle, true);
+    this.#submenus ??= new Submenus(this);
+    this.#submenus.connect();
   }
 
   disconnect() {
@@ -164,6 +176,7 @@ export class NeuwoMenu extends NeuwoElement {
     this.#root?.removeEventListener("click", this.#onTriggerClick, true);
     this.#root?.removeEventListener("keydown", this.#onTriggerKeydown, true);
     this.#root = null;
+    this.#submenus?.disconnect();
     cancelAnimationFrame(this.#frame);
     this.#invoker = null;
     this.#refocus = null;
@@ -172,11 +185,13 @@ export class NeuwoMenu extends NeuwoElement {
 
   updated() {
     if (this.#open) this.#position(this.#side);
+    refit(this);
   }
 
   /** @param {"bottom" | "top"} [placement] the side to keep while the panel fits there */
   #position(placement) {
     this.#side = this.#place(placement);
+    this.#submenus?.place();
   }
 
   /** @param {"bottom" | "top"} [placement] */
@@ -226,15 +241,10 @@ export class NeuwoMenu extends NeuwoElement {
     return "activeElement" in root ? /** @type {Document | ShadowRoot} */ (root).activeElement : null;
   }
 
-  /**
-   * The items the keyboard moves through in one panel: its own controls, not a submenu's, that are not hidden.
-   * @param {Element} panel
-   * @returns {HTMLElement[]}
-   */
-  #items(panel) {
-    return /** @type {HTMLElement[]} */ (
-      Array.from(panel.querySelectorAll(CONTROL)).filter((control) => control.closest(".neuwo-menu") === panel && !control.closest("[hidden]"))
-    );
+  /** Whether focus is in the panel, a submenu's included, on the body or nowhere, so closing may take it back. */
+  #lost() {
+    const focused = this.#focused();
+    return !focused || focused === this.ownerDocument.body || Boolean(this.panel?.contains(focused));
   }
 
   /**
@@ -245,21 +255,24 @@ export class NeuwoMenu extends NeuwoElement {
   #arrive(panel, edge = "first") {
     const focused = this.#focused();
     if (focused && panel.contains(focused)) return;
-    const items = this.#items(panel);
+    const items = rowsIn(panel);
     const usable = items.filter(enabled);
     const pool = usable.length ? usable : items;
     (edge === "last" ? pool.at(-1) : pool[0])?.focus();
   }
 
-  /** Returns focus to the trigger, then closes, so the panel never hides with focus inside it. */
+  /**
+   * Returns focus to the trigger, then closes, so the panel never hides with focus inside it; focus a `select`
+   * handler moved out of the menu stays where it went.
+   */
   #dismiss() {
-    this.#invoker?.focus();
+    if (this.#lost()) this.#invoker?.focus();
     this.close();
   }
 
   /** @param {Event} event */
   #onTriggerClick = (event) => {
-    const button = /** @type {Element} */ (event.target).closest?.("button[popovertarget]");
+    const button = /** @type {Element} */ (event.target).closest?.(INVOKER);
     const id = this.panel?.id;
     if (!(button instanceof HTMLElement) || !id || button.getAttribute("popovertarget") !== id) return;
     if (!this.isOpen) this.#invoker = button;
@@ -273,7 +286,7 @@ export class NeuwoMenu extends NeuwoElement {
   #onTriggerKeydown = (event) => {
     const { key, altKey, ctrlKey, metaKey } = /** @type {KeyboardEvent} */ (event);
     if ((key !== "ArrowDown" && key !== "ArrowUp") || altKey || ctrlKey || metaKey || event.defaultPrevented) return;
-    const invoker = /** @type {Element} */ (event.target).closest?.("[popovertarget]");
+    const invoker = /** @type {Element} */ (event.target).closest?.(INVOKER);
     const id = this.panel?.id;
     if (!(invoker instanceof HTMLElement) || !id || invoker.getAttribute("popovertarget") !== id) return;
     event.preventDefault();
@@ -282,9 +295,20 @@ export class NeuwoMenu extends NeuwoElement {
 
   /** @param {Event} event */
   #onClick = (event) => {
-    const control = /** @type {Element} */ (event.target).closest?.(CONTROL);
+    const target = /** @type {Element} */ (event.target);
+    const back = target.closest?.(".neuwo-menu__back");
+    const above = back && this.contains(back) ? openerOf(/** @type {Element} */ (back.closest(".neuwo-menu"))) : null;
+    if (above) {
+      this.#submenus?.closeFrom(above);
+      return;
+    }
+    const control = /** @type {HTMLElement | null} */ (target.closest?.(CONTROL) ?? null);
     const item = control?.closest("neuwo-menu-item");
-    if (!control || !item || !this.contains(control) || !enabled(control) || control.hasAttribute("aria-haspopup")) return;
+    if (!control || !item || !this.contains(control) || !enabled(control)) return;
+    if (control.hasAttribute("aria-haspopup")) {
+      this.#submenus?.openFrom(control, true);
+      return;
+    }
     const role = control.getAttribute("role");
     const radio = role === "menuitemradio";
     const checkable = radio || role === "menuitemcheckbox";
@@ -305,32 +329,51 @@ export class NeuwoMenu extends NeuwoElement {
   #onKeydown = (event) => {
     const keyboard = /** @type {KeyboardEvent} */ (event);
     if (event.defaultPrevented || keyboard.altKey || keyboard.ctrlKey || keyboard.metaKey) return;
-    const target = /** @type {Element} */ (event.target);
+    const target = /** @type {HTMLElement} */ (event.target);
     const panel = target.closest?.(".neuwo-menu");
     if (!panel || !this.contains(panel)) return;
+    const parent = target.matches(`${CONTROL}[aria-haspopup]`) ? target : null;
+    const above = openerOf(panel);
     switch (keyboard.key) {
       case "ArrowDown":
       case "ArrowUp":
       case "Home":
       case "End": {
         event.preventDefault();
-        const items = this.#items(panel);
-        const at = items.indexOf(/** @type {HTMLElement} */ (target));
+        const items = rowsIn(panel);
+        const at = items.indexOf(target);
         const last = items.length - 1;
         const next = { ArrowDown: at < last ? at + 1 : 0, ArrowUp: at > 0 ? at - 1 : last, Home: 0, End: last }[keyboard.key];
         items[next]?.focus();
         break;
       }
-      case " ":
-        // Space scrolls from a link, where it picks a button natively.
-        if (target.localName === "a" && target.matches(CONTROL)) {
+      case "ArrowRight":
+      case "ArrowLeft": {
+        const inward = (keyboard.key === "ArrowRight") === (getComputedStyle(target).direction !== "rtl");
+        if (inward && parent) {
           event.preventDefault();
-          /** @type {HTMLElement} */ (target).click();
+          this.#submenus?.openFrom(parent, true);
+        } else if (!inward && above) {
+          event.preventDefault();
+          this.#submenus?.closeFrom(above);
+        }
+        break;
+      }
+      case "Enter":
+      case " ":
+        if (parent) {
+          event.preventDefault();
+          this.#submenus?.openFrom(parent, true);
+        } else if (keyboard.key === " " && target.localName === "a" && target.matches(CONTROL)) {
+          // Space scrolls from a link, where it picks a button natively.
+          event.preventDefault();
+          target.click();
         }
         break;
       case "Escape":
         event.preventDefault();
-        this.#dismiss();
+        if (above) this.#submenus?.closeFrom(above);
+        else this.#dismiss();
         break;
       case "Tab":
         this.#dismiss();
@@ -376,9 +419,7 @@ export class NeuwoMenu extends NeuwoElement {
     cancelAnimationFrame(this.#frame);
     const refocus = this.#refocus;
     this.#refocus = null;
-    const focused = this.#focused();
-    const lost = !focused || focused === this.ownerDocument.body || panel.contains(focused);
-    if (refocus?.isConnected && lost) refocus.focus();
+    if (refocus?.isConnected && this.#lost()) refocus.focus();
   };
 }
 

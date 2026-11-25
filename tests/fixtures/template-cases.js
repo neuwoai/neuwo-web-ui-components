@@ -3,6 +3,7 @@ import { renderElement } from "../../src/core/adapters/html.js";
 import { idScope } from "../../src/core/ids.js";
 import { expand } from "../../src/server/index.js";
 import { expandWith } from "../../src/server/expand.js";
+import { withinTags } from "../../src/core/template.js";
 import { templates } from "../../src/templates.js";
 
 /** @typedef {{ tag: string, attrs?: Record<string, string>, text?: string, children?: Child[] }} ChildElement */
@@ -384,6 +385,16 @@ export const cases = {
         ]),
       ],
     },
+    {
+      name: "submenu of plain items in a select group",
+      attrs: { id: "view" },
+      children: [
+        group({ heading: "Sort By", select: "one" }, [
+          item("Name", { value: "name", checked: "" }),
+          { tag: "neuwo-menu-item", children: ["More", { tag: "neuwo-menu", attrs: { slot: "submenu" }, children: [item("Reach"), item("Last Updated")] }] },
+        ]),
+      ],
+    },
   ],
   "neuwo-menu-group": [
     { name: "plain", attrs: {}, children: [item("Rename"), item("Duplicate")] },
@@ -437,18 +448,28 @@ function describe(child) {
   return { tag: child.tag, attrs, text: textOf(child), slot: attrs.slot || "default", children: nested.map(describe) };
 }
 
-const PROVIDERS = new Set(Object.values(templates).flatMap((template) => template.within ?? []));
+const PROVIDERS = new Set(Object.values(templates).flatMap((template) => withinTags(template)));
 
 /**
- * Expands a child inside its host, so a reader of the host as its `within` gets its attributes; the host stays as it is.
+ * Expands a child as if inside its host: a reader of the host's tag that finds no nearer enclosing element in the
+ * child gets the host's attributes, as it would in the host, and an element of the host's own tag in the child expands.
  * @param {string} html
  * @param {{ tag: string, attrs: Record<string, string> }} host
  */
 function expandIn(html, { tag, attrs }) {
-  const registry = Object.fromEntries(Object.entries(templates).filter(([name]) => name !== tag));
-  const close = `</${tag}>`;
-  const open = markup({ tag, attrs, children: [] }).slice(0, -close.length);
-  return expandWith(`${open}${html}${close}`, registry, "neuwo-s").slice(open.length, -close.length);
+  /** @type {Record<string, import("../../src/core/template.js").Template>} */
+  const registry = {};
+  for (const [name, template] of Object.entries(templates)) {
+    if (!withinTags(template).includes(tag)) {
+      registry[name] = template;
+      continue;
+    }
+    /** @type {import("../../src/core/template.js").Template} */
+    const lent = (own, ctx) => template(own, { ...ctx, within: ctx.within ?? attrs });
+    lent.within = template.within;
+    registry[name] = lent;
+  }
+  return expandWith(html, registry, "neuwo-s");
 }
 
 /**

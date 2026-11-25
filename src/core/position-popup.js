@@ -1,4 +1,14 @@
 const EDGE = 8;
+const OVERLAP = 4;
+
+/** The viewport inside classic scrollbars, where a fixed popup's right and bottom are measured; without a doctype the root's is the document's. */
+function viewport() {
+  const frame = document.scrollingElement ?? document.documentElement;
+  return { width: frame.clientWidth || window.innerWidth, height: frame.clientHeight || window.innerHeight };
+}
+
+/** @param {Element} el */
+const rightToLeft = (el) => getComputedStyle(el).direction === "rtl";
 
 /**
  * Place a top-layer popup against its trigger. The popup is expected to be a
@@ -31,28 +41,25 @@ export function positionPopup(trigger, popup, options = {}) {
   const { placement = "bottom", align = "start", gap = 4, matchWidth = true, fitHeight = false } = options;
   const r = trigger.getBoundingClientRect();
 
-  // The viewport inside classic scrollbars, where a fixed popup's right and bottom are measured; without a doctype the root's is the document's.
-  const frame = document.scrollingElement ?? document.documentElement;
-  const viewport = frame.clientWidth || window.innerWidth;
-  const viewportHeight = frame.clientHeight || window.innerHeight;
-  const room = Math.max(0, viewport - 2 * EDGE);
+  const { width: viewportWidth, height: viewportHeight } = viewport();
+  const room = Math.max(0, viewportWidth - 2 * EDGE);
   popup.style.position = "fixed";
   popup.style.maxWidth = "";
   const own = popup instanceof Element ? getComputedStyle(popup).maxWidth : "";
   popup.style.maxWidth = `${own.endsWith("px") ? Math.min(parseFloat(own), room) : room}px`;
   if (matchWidth) popup.style.minWidth = `${Math.min(r.width, room)}px`;
 
-  const rtl = trigger instanceof Element && getComputedStyle(trigger).direction === "rtl";
+  const rtl = trigger instanceof Element && rightToLeft(trigger);
   const toRight = (align === "end") !== rtl;
   // Measured from one edge only: with both set from before, an auto width would stretch between them.
   popup.style.left = "0px";
   popup.style.right = "auto";
   const width = popup.offsetWidth || 0;
   let left = toRight ? r.right - width : r.left;
-  if (left < 0 || left + width > viewport) left = Math.max(EDGE, Math.min(left, viewport - EDGE - width));
+  if (left < 0 || left + width > viewportWidth) left = Math.max(EDGE, Math.min(left, viewportWidth - EDGE - width));
   if (toRight) {
     popup.style.left = "auto";
-    popup.style.right = `${viewport - left - width}px`;
+    popup.style.right = `${viewportWidth - left - width}px`;
   } else {
     popup.style.right = "auto";
     popup.style.left = `${left}px`;
@@ -77,4 +84,79 @@ export function positionPopup(trigger, popup, options = {}) {
   }
   if (fitHeight) popup.style.maxHeight = `${Math.max(0, Math.min((onTop ? above : below) - gap, viewportHeight - EDGE) - EDGE)}px`;
   return onTop ? "top" : "bottom";
+}
+
+/**
+ * Which side of a menu panel fits a popup `width` px wide, overlapping the panel by 4px and keeping 8px from the
+ * viewport's edge: the panel's inline end, else its inline start, read in the panel's own direction, else null.
+ * @param {HTMLElement} panel
+ * @param {number} width
+ * @returns {"end" | "start" | null}
+ */
+export function roomBeside(panel, width) {
+  const r = panel.getBoundingClientRect();
+  const right = r.right - OVERLAP + width <= viewport().width - EDGE;
+  const left = r.left + OVERLAP - width >= EDGE;
+  const [end, start] = rightToLeft(panel) ? [left, right] : [right, left];
+  if (end) return "end";
+  return start ? "start" : null;
+}
+
+/**
+ * @param {HTMLElement} popup
+ * @param {number} top
+ */
+function placeTop(popup, top) {
+  const room = viewport().height - EDGE - (popup.offsetHeight || 0);
+  popup.style.top = `${Math.max(EDGE, Math.min(top, room))}px`;
+  popup.style.bottom = "auto";
+}
+
+/**
+ * Place a submenu beside its parent panel, overlapping it by 4px, its first row level with `item`: its top is the
+ * item's less the panel's top border and padding, moved up to stay in the viewport. `side` is the panel's side,
+ * read in its direction, as `roomBeside` gives it; null puts the popup at the viewport's inline end, less 8px, over
+ * the panel. It clears a `min-width` that `positionOver` left.
+ * @param {HTMLElement} panel - the parent panel.
+ * @param {HTMLElement} item - the row the popup opens from.
+ * @param {HTMLElement} popup
+ * @param {"end" | "start" | null} side
+ */
+export function positionBeside(panel, item, popup, side) {
+  const r = panel.getBoundingClientRect();
+  const rtl = rightToLeft(panel);
+  const style = getComputedStyle(panel);
+  const inset = (parseFloat(style.borderTopWidth) || 0) + (parseFloat(style.paddingTop) || 0);
+  popup.style.position = "fixed";
+  popup.style.minWidth = "";
+  let left = "auto";
+  let right = "auto";
+  if (side === null) {
+    if (rtl) left = `${EDGE}px`;
+    else right = `${EDGE}px`;
+  } else if ((side === "end") !== rtl) left = `${r.right - OVERLAP}px`;
+  else right = `${viewport().width - r.left - OVERLAP}px`;
+  popup.style.left = left;
+  popup.style.right = right;
+  placeTop(popup, item.getBoundingClientRect().top - inset);
+}
+
+/**
+ * Place a submenu over its parent panel, on the panel's top and inline-start edges, at least as wide as the panel,
+ * moved up to stay in the viewport.
+ * @param {HTMLElement} panel - the parent panel.
+ * @param {HTMLElement} popup
+ */
+export function positionOver(panel, popup) {
+  const r = panel.getBoundingClientRect();
+  popup.style.position = "fixed";
+  popup.style.minWidth = `${r.width}px`;
+  if (rightToLeft(panel)) {
+    popup.style.left = "auto";
+    popup.style.right = `${viewport().width - r.right}px`;
+  } else {
+    popup.style.right = "auto";
+    popup.style.left = `${r.left}px`;
+  }
+  placeTop(popup, r.top);
 }

@@ -156,7 +156,11 @@ Escape closes it and returns focus to the trigger), `menuPick` (a click on an it
 which the demo records in `window.__menuPicks`, and closes it) and `menuTree` (the accessibility
 tree holds a `menu` with `menuitem`, `menuitemradio` and `menuitemcheckbox` items, and the detail
 records whether the plain trigger reports itself expanded). Puppeteer reads no accessibility tree
-over WebDriver BiDi, so `menuTree` is `n/a` in Firefox.
+over WebDriver BiDi, so `menuTree` is `n/a` in Firefox. Then `submenuFlyout` opens the
+`submenu="flyout"` menu's Move To with ArrowRight and asserts the submenu starts at the menu's right
+edge less 8px or further right, and `submenuAuto` does the same for the `submenu="auto"` menu in a
+360px viewport, where the submenu drills in over the menu and shares its left edge; it restores the
+viewport afterwards.
 
 The `next-dev` and `next-prod` targets run the app in `integration/apps/next` under `next dev`, and
 under `next build` then `next start`. Besides the five checks they run `forms` on the `Forms`

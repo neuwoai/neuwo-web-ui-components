@@ -1,7 +1,7 @@
 import { DomUtils, ElementType, parseDocument } from "htmlparser2";
 import { renderElement } from "../core/adapters/html.js";
 import { idScope } from "../core/ids.js";
-import { DEFAULT_REGION } from "../core/template.js";
+import { DEFAULT_REGION, withinTags } from "../core/template.js";
 
 /** @import { ChildNode, Element, Text } from "domhandler" */
 /** @import { ChildInfo, Template } from "../core/template.js" */
@@ -82,8 +82,8 @@ function span(html, node, limit) {
  * @returns {Record<string, string> | null}
  */
 function withinOf(el, template) {
-  if (!template.within) return null;
-  for (let node = el.parent; node; node = node.parent) if ("attribs" in node && node.name === template.within) return { ...node.attribs };
+  const tags = withinTags(template);
+  for (let node = el.parent; node && tags.length; node = node.parent) if ("attribs" in node && tags.includes(node.name)) return { ...node.attribs };
   return null;
 }
 

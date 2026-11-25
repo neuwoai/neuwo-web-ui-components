@@ -141,4 +141,45 @@ describe("<neuwo-menu> under React", () => {
     await tick();
     expect(panel.matches(":popover-open")).toBe(false);
   });
+
+  it("drills into a submenu React rendered, writing only the live state, which a re-render keeps", async () => {
+    const errors = vi.spyOn(console, "error");
+    let rename = null;
+    function Menu() {
+      const [hint, setHint] = useState("F2");
+      rename = setHint;
+      return jsxs("neuwo-menu", {
+        id: "m",
+        submenu: "drill",
+        children: [
+          jsx("neuwo-menu-item", { value: "rename", hint, children: "Rename" }, "rename"),
+          jsxs(
+            "neuwo-menu-item",
+            {
+              value: "move",
+              children: ["Move To", jsxs("neuwo-menu", { slot: "submenu", children: [jsx("neuwo-menu-item", { value: "sports", children: "Sports" }, "s"), jsx("neuwo-menu-item", { value: "travel", children: "Travel" }, "t")] }, "sub")],
+            },
+            "move",
+          ),
+        ],
+      });
+    }
+    const { trigger, menu, panel } = render(jsx(Menu, {}));
+    trigger.click();
+    await tick();
+    const records = watch(menu);
+    const move = controlOf(menu, "move");
+    move.click();
+    const sub = itemOf(menu, "move").querySelector(".neuwo-menu-item__submenu > neuwo-menu > .neuwo-menu");
+    const back = sub.querySelector(".neuwo-menu__back");
+    expect([sub.matches(":popover-open"), move.getAttribute("aria-expanded"), panel.classList.contains("neuwo-menu--covered"), back.hidden]).toEqual([true, "true", true, false]);
+    expect(back.textContent).toBe("Move To");
+    expect(records().filter((record) => record.target.localName.startsWith("neuwo-"))).toEqual([]);
+    act(() => rename("F3"));
+    expect(controlOf(menu, "rename").querySelector(".neuwo-menu-item__hint").textContent).toBe("F3");
+    expect([sub.matches(":popover-open"), move.getAttribute("aria-expanded"), panel.classList.contains("neuwo-menu--covered"), back.hidden, back.textContent]).toEqual([true, "true", true, false, "Move To"]);
+    act(() => back.click());
+    expect([sub.matches(":popover-open"), move.getAttribute("aria-expanded"), panel.classList.contains("neuwo-menu--covered"), back.hidden, document.activeElement]).toEqual([false, "false", false, true, move]);
+    expect(errors).not.toHaveBeenCalled();
+  });
 });

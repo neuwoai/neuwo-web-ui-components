@@ -1,8 +1,8 @@
 import { UnsupportedOperation } from "puppeteer-core";
+import { VIEWPORT } from "./checks.mjs";
 
 const STEP_TIMEOUT = 5_000;
 const PANEL = "demo-kinds-panel";
-const TRIGGER = `button[popovertarget="${PANEL}"]`;
 const FIRST = "csv";
 const ITEM_ROLES = ["menuitem", "menuitemradio", "menuitemcheckbox"];
 
@@ -21,21 +21,72 @@ function hideMenu(id) {
   if (panel?.matches(":popover-open")) panel.hidePopover();
 }
 
-async function until(page, step, accept) {
+async function until(page, step, accept, id = PANEL) {
   const deadline = Date.now() + STEP_TIMEOUT;
   for (;;) {
-    const state = await page.evaluate(readMenu, PANEL);
+    const state = await page.evaluate(readMenu, id);
     if (accept(state)) return state;
     if (Date.now() > deadline) throw new Error(`${step}: the menu is ${state.open ? "open" : "closed"}, focus on ${state.focused}`);
     await new Promise((resolve) => setTimeout(resolve, 50));
   }
 }
 
-async function openFromTrigger(page) {
-  await page.evaluate(hideMenu, PANEL);
-  await until(page, "closing the menu", (state) => !state.open);
-  await page.click(TRIGGER);
-  return until(page, "clicking the trigger", (state) => state.open && state.focused === FIRST);
+async function openFromTrigger(page, id = PANEL, first = FIRST) {
+  await page.evaluate(hideMenu, id);
+  await until(page, "closing the menu", (state) => !state.open, id);
+  await page.click(`button[popovertarget="${id}"]`);
+  return until(page, "clicking the trigger", (state) => state.open && state.focused === first, id);
+}
+
+async function edgesOf(id, value) {
+  const panel = document.getElementById(id);
+  const item = Array.from(panel.querySelectorAll("neuwo-menu-item")).find((each) => each.value === value);
+  const sub = item.querySelector(":scope > .neuwo-menu-item > .neuwo-menu-item__submenu > neuwo-menu > .neuwo-menu");
+  // The drill-in slide translates the panel, which its bounding box includes until the slide ends.
+  await Promise.all(sub.getAnimations().map((animation) => animation.finished));
+  const [parent, opened] = [panel, sub].map((each) => each.getBoundingClientRect());
+  return { parent: { left: parent.left, right: parent.right }, sub: { left: opened.left, right: opened.right }, covered: panel.classList.contains("neuwo-menu--covered") };
+}
+
+/**
+ * Opens the menu whose panel is `id` from its trigger and its Move To submenu with ArrowRight, and measures both.
+ * @param {import("puppeteer-core").Page} page
+ * @param {string} id
+ */
+async function openMoveTo(page, id) {
+  await openFromTrigger(page, id, "rename");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowDown");
+  await until(page, "ArrowDown to Move To", (state) => state.focused === "move", id);
+  await page.keyboard.press("ArrowRight");
+  await until(page, "ArrowRight on Move To", (state) => state.focused === "sports", id);
+  return page.evaluate(edgesOf, id, "move");
+}
+
+const px = (value) => `${Math.round(value)}px`;
+
+async function submenuFlyout(page) {
+  const { parent, sub } = await openMoveTo(page, "demo-flyout-panel");
+  if (sub.left < parent.right - 8) return { status: "fail", detail: `the submenu's left edge, ${px(sub.left)}, is left of the menu's right edge, ${px(parent.right)}, less 8` };
+  return { status: "pass", detail: `ArrowRight on Move To opened its submenu at ${px(sub.left)}, beside the menu ending at ${px(parent.right)}` };
+}
+
+async function submenuAuto(page) {
+  try {
+    await page.setViewport({ width: 360, height: 800 });
+  } catch (error) {
+    if (error instanceof UnsupportedOperation) return { status: "n/a", detail: `no viewport to set: ${error.message}` };
+    throw error;
+  }
+  try {
+    const { parent, sub, covered } = await openMoveTo(page, "demo-auto-panel");
+    const shared = Math.abs(sub.left - parent.left) < 1;
+    if (!shared || !covered) return { status: "fail", detail: `at 360px the submenu starts at ${px(sub.left)} and the menu at ${px(parent.left)}, the menu ${covered ? "" : "not "}covered` };
+    return { status: "pass", detail: `at 360px the submenu drilled in over the menu, both starting at ${px(sub.left)}` };
+  } finally {
+    await page.evaluate(hideMenu, "demo-auto-panel");
+    await page.setViewport(VIEWPORT);
+  }
 }
 
 async function run(check, steps) {
@@ -75,7 +126,8 @@ async function menuTree(page) {
 }
 
 /**
- * Drives the demo's every-kind menu, `#demo-kinds`, from its plain trigger.
+ * Drives the demo's every-kind menu, `#demo-kinds`, from its plain trigger, then the flyout and auto submenu menus,
+ * the auto one at 360px, after which the viewport is restored.
  * @param {import("puppeteer-core").Page} page
  * @returns {Promise<import("./checks.mjs").CheckResult[]>}
  */
@@ -115,5 +167,16 @@ export async function checkMenus(page) {
     results.push({ check: "menuTree", status: "fail", detail: error.message });
   }
   await page.evaluate(hideMenu, PANEL);
+  for (const [check, steps] of [
+    ["submenuFlyout", submenuFlyout],
+    ["submenuAuto", submenuAuto],
+  ]) {
+    try {
+      results.push({ check, ...(await steps(page)) });
+    } catch (error) {
+      results.push({ check, status: "fail", detail: error.message });
+    }
+  }
+  await page.evaluate(hideMenu, "demo-flyout-panel");
   return results;
 }

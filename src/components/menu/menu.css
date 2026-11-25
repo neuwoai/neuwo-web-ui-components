@@ -19,6 +19,32 @@ neuwo-menu-item:not([hidden]) {
   text-align: start;
 }
 
+.neuwo-menu--covered {
+  visibility: hidden;
+}
+
+/* A submenu sits inside its parent's panel, which would hide it too. */
+.neuwo-menu--covered .neuwo-menu:not(.neuwo-menu--covered) {
+  visibility: visible;
+}
+
+.neuwo-menu--drill:popover-open {
+  animation: neuwo-menu-drill-in var(--neuwo-transition-fast);
+}
+
+/* A translate cannot follow the writing direction, so the dir attribute mirrors the slide. */
+.neuwo-menu--drill:dir(rtl):popover-open {
+  animation-name: neuwo-menu-drill-in-rtl;
+}
+
+@keyframes neuwo-menu-drill-in {
+  from { opacity: 0; translate: 0.75rem 0; }
+}
+
+@keyframes neuwo-menu-drill-in-rtl {
+  from { opacity: 0; translate: -0.75rem 0; }
+}
+
 .neuwo-menu-group__divider {
   display: none;
   block-size: 1px;
@@ -42,7 +68,9 @@ neuwo-menu-item:not([hidden]) {
   font-size: var(--neuwo-font-size-xs);
 }
 
-.neuwo-menu-item__control {
+/* Not on a hidden Back row: it would outweigh the reset's display: none for [hidden]. */
+.neuwo-menu-item__control,
+.neuwo-menu__back:not([hidden]) {
   position: relative;
   display: flex;
   align-items: center;
@@ -52,7 +80,8 @@ neuwo-menu-item:not([hidden]) {
 }
 
 /* Transparent: the tinted row from popup.css shows focus in place of the browser's ring. */
-.neuwo-menu-item__control:focus-visible {
+.neuwo-menu-item__control:focus-visible,
+.neuwo-menu__back:focus-visible {
   outline: var(--neuwo-outline-focus);
   outline-offset: calc(-1 * var(--neuwo-outline-focus-offset));
 }
@@ -74,9 +103,23 @@ neuwo-menu-item:not([hidden]) {
   font-size: var(--neuwo-font-size-xs);
 }
 
+.neuwo-menu__back {
+  color: var(--neuwo-color-text-muted);
+  font-weight: var(--neuwo-font-weight-semibold);
+}
+
+.neuwo-menu__back:not([hidden]) + .neuwo-menu__items {
+  margin-block-start: var(--neuwo-space-2);
+  margin-inline: calc(-1 * var(--neuwo-space-2));
+  padding-block-start: var(--neuwo-space-2);
+  padding-inline: var(--neuwo-space-2);
+  border-block-start: 1px solid var(--neuwo-glass-border);
+}
+
 .neuwo-menu-item__check,
 .neuwo-menu-item__external,
-.neuwo-menu-item__chevron {
+.neuwo-menu-item__chevron,
+.neuwo-menu__back-icon {
   flex: none;
   inline-size: 1.125em;
   block-size: 1.125em;
@@ -103,7 +146,8 @@ neuwo-menu-item:not([hidden]) {
 }
 
 .neuwo-menu-item__external,
-.neuwo-menu-item__chevron {
+.neuwo-menu-item__chevron,
+.neuwo-menu__back-icon {
   background-color: var(--neuwo-color-text-muted);
 }
 
@@ -127,14 +171,26 @@ neuwo-menu-item:not([hidden]) {
   white-space: nowrap;
 }
 
-.neuwo-menu-item__chevron {
-  transform: rotate(-90deg);
+.neuwo-menu-item__chevron,
+.neuwo-menu__back-icon {
   mask: var(--neuwo-icon-chevron) center / contain no-repeat;
   -webkit-mask: var(--neuwo-icon-chevron) center / contain no-repeat;
 }
 
+.neuwo-menu-item__chevron {
+  transform: rotate(-90deg);
+}
+
 .neuwo-menu-item__chevron:dir(rtl) {
   transform: rotate(90deg);
+}
+
+.neuwo-menu__back-icon {
+  transform: rotate(90deg);
+}
+
+.neuwo-menu__back-icon:dir(rtl) {
+  transform: rotate(-90deg);
 }
 
 .neuwo-menu-item--red > .neuwo-menu-item__control,
@@ -167,11 +223,19 @@ neuwo-menu-item:not([hidden]) {
   .neuwo-menu-item__check,
   .neuwo-menu-item__external,
   .neuwo-menu-item__chevron,
+  .neuwo-menu__back-icon,
   .neuwo-menu-group__divider {
     background: CanvasText;
   }
 
   .neuwo-menu-item__control:focus-visible {
     outline-color: Highlight;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neuwo-menu--drill:popover-open,
+  .neuwo-menu--drill:dir(rtl):popover-open {
+    animation: none;
   }
 }

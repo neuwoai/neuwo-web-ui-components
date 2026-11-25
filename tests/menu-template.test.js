@@ -81,9 +81,10 @@ describe("menuGroupTemplate()", () => {
 });
 
 describe("menuItemTemplate()", () => {
-  it("is registered under its tag and reads an enclosing group", () => {
+  it("is registered under its tag and reads the nearer of an enclosing group and menu, so a group's select stops at a submenu", () => {
     expect(templates["neuwo-menu-item"]).toBe(menuItemTemplate);
-    expect(menuItemTemplate.within).toBe("neuwo-menu-group");
+    expect(menuItemTemplate.within).toBe("neuwo-menu-group, neuwo-menu");
+    expect(controlOf({}, { slot: "submenu" }).props.role).toBe("menuitem");
   });
 
   it("renders the control, then the submenu wrapper that is always there", () => {

@@ -6,7 +6,7 @@ import { menuItemTemplate } from "./menu-item.template.js";
 /**
  * A menu item inside a `<neuwo-menu-group>` or directly in a `<neuwo-menu>`. Its control is a button, or a real link
  * with `href`, focusable but not activatable while `disabled`. In a group with `select` it is a radio or checkbox
- * item, its check in the start position. A `<neuwo-menu>` in its `submenu` slot makes it open that menu, with a
+ * item, its check in the start position; placed directly in a submenu, it takes no role from a group outside it. A `<neuwo-menu>` in its `submenu` slot makes it open that menu, with a
  * chevron at its inline end. The global `hidden` attribute removes it from the menu and from the keyboard order.
  * Picking it fires `select` on the menu; its own `click` bubbles too.
  *

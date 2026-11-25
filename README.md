@@ -1010,8 +1010,10 @@ through the two tokens.
 | `.neuwo-segmented__options` | the hidden `<select>` that keeps your `<option>` children |
 | `.neuwo-segmented__form-value` | the visually hidden native input that submits the value |
 | `.neuwo-menu` | the menu's popover panel, `role="menu"`, with the id `<id>-panel` on a root menu |
+| `.neuwo-menu--drill` | a submenu's panel while it drills in over its parent's |
+| `.neuwo-menu--covered` | a panel while a submenu drills in over it, hidden |
 | `.neuwo-menu__items` | the wrapper around the menu's groups or items |
-| `.neuwo-menu__back`, `.neuwo-menu__back-icon`, `.neuwo-menu__back-label` | a submenu's Back row, hidden until it drills in, and its icon and label |
+| `.neuwo-menu__back`, `.neuwo-menu__back-icon`, `.neuwo-menu__back-label` | a submenu's Back row, hidden until it drills in, and its icon and its label, the label of the item that opened it |
 | `.neuwo-menu-group` | the group's `role="group"` `<div>` |
 | `.neuwo-menu-group--no-divider` | the group, by `no-divider` |
 | `.neuwo-menu-group__divider` | the line above the group, hidden in the first group |
@@ -1464,7 +1466,7 @@ directly, as one group without a heading; a menu of groups and items mixed is no
 - **`align`**: `start` (default) or `end`, the trigger edge the panel lines up with.
 - **`submenu`**: `flyout`, `drill` or `auto` (default), how submenus open, set on the root menu:
   beside the menu, in its place with a Back row, or beside it when it fits and in its place when it
-  does not.
+  does not. See [Submenus](#submenus).
 
 `<neuwo-menu-group>`:
 
@@ -1477,7 +1479,8 @@ directly, as one group without a heading; a menu of groups and items mixed is no
 `<neuwo-menu-item>`:
 
 - **The label** is its content; **`slot="start"`** holds a start icon, muted and blue on hover, and
-  **`slot="submenu"`** a nested `<neuwo-menu>`, which adds a chevron at the item's inline end.
+  **`slot="submenu"`** a nested `<neuwo-menu>`, which adds a chevron at the item's inline end and
+  makes the item open it (see [Submenus](#submenus)).
 - **`value`** is reported when the item is picked; without it, the label text is.
 - **`hint`**: short trailing text, such as a shortcut, a file type or a plan.
 - **`tone`**: `red` or `green` colours the label and the icon. Blue is left out because hover is.
@@ -1539,10 +1542,42 @@ The keyboard follows the WAI-ARIA menu button pattern, moving real focus between
 | ArrowDown and ArrowUp | an item | Moves to the next or previous item, wrapping; `hidden` items are skipped, disabled ones are not |
 | Home and End | an item | Moves to the first or the last item |
 | Enter or Space | an item | Picks it |
-| Escape | an item | Closes the menu and returns focus to the trigger |
+| ArrowRight (ArrowLeft right to left) | an item with a submenu | Opens the submenu on its first enabled item |
+| Enter or Space | an item with a submenu | Opens the submenu on its first enabled item |
+| ArrowLeft (ArrowRight right to left) | an item in a submenu | Closes the submenu and returns focus to its item |
+| Escape | an item in a submenu | Closes the submenu and returns focus to its item |
+| Escape | an item in the first level | Closes the menu and returns focus to the trigger |
 | Tab | an item | Closes the menu and moves on from the trigger |
 
-A click outside the menu closes it, and so does a click on the trigger that opened it.
+A click outside the menu closes it, and so does a click on the trigger that opened it. A pick
+returns focus to the trigger only while focus is still in the menu, on the page's body or nowhere,
+so a `select` handler that moves focus, to a rename field for example, keeps it there.
+
+### Submenus
+
+An item with a `<neuwo-menu slot="submenu">` opens that menu as a submenu, on a click, on Enter or
+Space, or on ArrowRight (ArrowLeft in a right-to-left page); its first enabled item takes focus.
+Submenus nest to any depth, and the nested menus need no id. Each submenu is a popover of its own
+inside its item, so closing a level closes the levels it opened, and opening a submenu closes the
+one its sibling had open. A pick in a submenu fires `select` on the root menu and closes every
+level, as in the first. ArrowLeft (ArrowRight right to left) or Escape closes one level and returns
+focus to the item that opened it; Escape on the first level closes the menu.
+
+The root menu's `submenu` attribute sets how every submenu in it opens:
+
+| `submenu` | Opens the submenu | Pointer |
+| --- | --- | --- |
+| `flyout` | Beside the menu, at its inline end, else its inline start, with its first item level with the item that opened it. With no room on either side it overlaps the menu at the viewport's inline end. | Resting on an item opens its submenu after 120 ms; resting on another item of the same menu for 250 ms closes it, unless the pointer reaches the submenu first. |
+| `drill` | In the menu's place: on its top and inline-start edges, at least as wide, with the menu hidden under it and a Back row at its top naming the item. The Back row, ArrowLeft or Escape go up one level. | A click opens it. |
+| `auto` (default) | Beside the menu when the submenu fits there, in its place when it does not, decided each time it opens. | As `flyout` while it would open beside the menu; a click otherwise. |
+
+Room is measured against the viewport, less an 8px margin, since the panels are top-layer popovers
+placed in viewport coordinates; a container's edges do not count. A submenu follows its menu while
+the page scrolls. A drill-in slides in from the inline end, and the panel and drill-in animations
+stop under `prefers-reduced-motion`.
+
+A group's `select` applies to its own items: an item placed directly in a submenu, with no group of
+its own there, is an action even when the item that opens the submenu sits in a `select` group.
 
 The elements render into their own light DOM, so `expand()` renders a whole menu on the server and
 the panel is styled from the first paint once it opens; the classes are listed under restyling

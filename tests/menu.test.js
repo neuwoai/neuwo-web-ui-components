@@ -652,3 +652,59 @@ describe("<neuwo-menu> picks, events and keyboard", () => {
     expect(panel.style.bottom).toBe("64px");
   });
 });
+
+describe("<neuwo-menu> focus on close", () => {
+  it("returns focus to the trigger after a pick only when focus is still in the menu, on the body or nowhere", async () => {
+    const { holder, button, menu, panel } = await opened(MENU);
+    const field = holder.appendChild(document.createElement("input"));
+    const rename = (event) => {
+      if (event.detail.value === "rename") field.focus();
+      else document.activeElement.blur();
+    };
+    menu.addEventListener("select", rename);
+    controlOf(menu, "rename").click();
+    expect(panel.matches(":popover-open")).toBe(false);
+    expect(document.activeElement).toBe(field);
+    await tick();
+    expect(document.activeElement).toBe(field);
+
+    button.click();
+    await tick();
+    controlOf(menu, "Delete").click();
+    expect(panel.matches(":popover-open")).toBe(false);
+    expect(document.activeElement).toBe(button);
+  });
+
+  it("moves focus to the trigger before hiding on close(), when focus is inside, as Escape does", async () => {
+    const { holder, button, menu, panel } = opener(KINDS);
+    const field = holder.appendChild(document.createElement("input"));
+    let focusedAsItCloses = null;
+    panel.addEventListener("beforetoggle", (event) => {
+      if (event.newState === "closed") focusedAsItCloses = document.activeElement;
+    });
+    field.focus();
+    menu.open(button);
+    expect(focused()).toBe("b");
+    menu.close();
+    expect(focusedAsItCloses).toBe(button);
+    expect(document.activeElement).toBe(button);
+
+    menu.open(button);
+    field.focus();
+    menu.close();
+    expect(focusedAsItCloses).toBe(field);
+    expect(document.activeElement).toBe(field);
+  });
+
+  it("opens only from a button naming its panel, by click and by key alike", async () => {
+    const { holder, menu, panel } = opener(KINDS);
+    const fake = holder.appendChild(document.createElement("span"));
+    fake.setAttribute("popovertarget", "m-panel");
+    fake.tabIndex = 0;
+    fake.focus();
+    expect(press(fake, "ArrowDown").defaultPrevented).toBe(false);
+    fake.click();
+    expect(panel.matches(":popover-open")).toBe(false);
+    expect(menu.trigger).toBeNull();
+  });
+});
