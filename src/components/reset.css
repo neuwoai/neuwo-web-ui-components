@@ -9,6 +9,7 @@
   & :is(
     .neuwo-badge, [class*="neuwo-badge__"], [class*="neuwo-badge--"],
     .neuwo-btn, [class*="neuwo-btn__"], [class*="neuwo-btn--"],
+    .neuwo-btn-split, [class*="neuwo-btn-split__"], [class*="neuwo-btn-split--"],
     .neuwo-choice, [class*="neuwo-choice__"], [class*="neuwo-choice--"],
     .neuwo-combobox, [class*="neuwo-combobox__"], [class*="neuwo-combobox--"],
     .neuwo-copy, [class*="neuwo-copy__"], [class*="neuwo-copy--"],

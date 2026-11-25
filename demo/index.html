@@ -690,12 +690,68 @@
       });
     </script>
 
+    <h2>Split button (split)</h2>
+    <p>
+      With <code>menu</code>, <code>split</code> renders two halves in one pill. The main half is the button as it is
+      without a menu and runs the default action; the chevron half opens the menu, and <code>menu-label</code> names it
+      (More Options by default). The halves do not lift on hover, so they stay level. <code>disabled</code> and
+      <code>loading</code> disable both halves.
+    </p>
+    <div class="row">
+      <neuwo-button split variant="solid" menu="demo-save">Save</neuwo-button>
+      <neuwo-button split variant="outline" menu="demo-save">Save</neuwo-button>
+      <neuwo-button split variant="glass" menu="demo-save">Save</neuwo-button>
+    </div>
+    <div class="row">
+      <neuwo-button split size="sm" menu="demo-save">Save</neuwo-button>
+      <neuwo-button split menu="demo-save">Save</neuwo-button>
+      <neuwo-button split size="lg" menu="demo-save">Save</neuwo-button>
+    </div>
+    <div class="row">
+      <neuwo-button split menu="demo-save" menu-label="More Ways to Save">Save</neuwo-button>
+      <neuwo-button split variant="outline" menu="demo-save" disabled>Save</neuwo-button>
+      <neuwo-button split menu="demo-save" loading>Saving</neuwo-button>
+    </div>
+    <p>
+      In a form the main half keeps the button's form behaviour, so <code>type="submit"</code> submits it. The chevron
+      half is always <code>type="button"</code>, and only the main half's clicks reach a listener on the
+      <code>&lt;neuwo-button&gt;</code>, which counts them here.
+    </p>
+    <form class="row" id="demo-split-form">
+      <neuwo-input name="segment" value="Sports Fans" aria-label="Segment" style="width: 12rem"></neuwo-input>
+      <neuwo-button id="demo-split" split type="submit" menu="demo-save" menu-label="More Ways to Save">Save Segment</neuwo-button>
+      <output id="demo-split-out">Not submitted yet, 0 main half clicks</output>
+    </form>
+    <neuwo-menu id="demo-save" align="end">
+      <neuwo-menu-item value="draft">Save as Draft</neuwo-menu-item>
+      <neuwo-menu-item value="template">Save as Template</neuwo-menu-item>
+      <neuwo-menu-item value="copy">Save a Copy</neuwo-menu-item>
+    </neuwo-menu>
+    <script>
+      window.__splitClicks = 0;
+      window.__splitSubmits = [];
+      function showSplit(pick) {
+        const submitted = window.__splitSubmits.length ? `Submitted ${window.__splitSubmits.at(-1)}` : "Not submitted yet";
+        document.getElementById("demo-split-out").value = `${submitted}, ${window.__splitClicks} main half clicks${pick ? `, last pick: ${pick}` : ""}`;
+      }
+      document.getElementById("demo-split").addEventListener("click", () => {
+        window.__splitClicks += 1;
+        showSplit();
+      });
+      document.getElementById("demo-split-form").addEventListener("submit", (event) => {
+        event.preventDefault();
+        window.__splitSubmits.push(new FormData(event.target).get("segment"));
+        showSplit();
+      });
+      document.getElementById("demo-save").addEventListener("select", (event) => showSplit(event.detail.value));
+    </script>
+
     <h2>Icon-only button (icon-only)</h2>
     <p>
       A round button whose content is its icon, padded by its font size, so the three sizes scale. With
       <code>menu</code> and no content it shows three dots, and with an icon of the page's own it shows that; it never
-      shows the chevron. Its <code>aria-label</code> names it. The last button has no menu, since
-      <code>icon-only</code> suits any action.
+      shows the chevron. While it loads, the spinner takes the icon's place, so it stays round. Its
+      <code>aria-label</code> names it. The Close button has no menu, since <code>icon-only</code> suits any action.
     </p>
     <div class="row">
       <neuwo-button icon-only variant="solid" menu="demo-more" aria-label="More Actions"></neuwo-button>
@@ -714,6 +770,7 @@
       <neuwo-button id="demo-close" icon-only variant="glass" aria-label="Close">
         <svg width="1.125em" height="1.125em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
       </neuwo-button>
+      <neuwo-button icon-only variant="outline" menu="demo-more" loading aria-label="More Actions"></neuwo-button>
       <output id="demo-more-pick">No pick yet</output>
     </div>
     <neuwo-menu id="demo-more">

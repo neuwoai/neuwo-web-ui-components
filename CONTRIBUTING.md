@@ -160,7 +160,13 @@ over WebDriver BiDi, so `menuTree` is `n/a` in Firefox. Then `submenuFlyout` ope
 `submenu="flyout"` menu's Move To with ArrowRight and asserts the submenu starts at the menu's right
 edge less 8px or further right, and `submenuAuto` does the same for the `submenu="auto"` menu in a
 360px viewport, where the submenu drills in over the menu and shares its left edge; it restores the
-viewport afterwards.
+viewport afterwards. Then `menuShared` opens the shared row menu, `#demo-rows`, from row 2's button
+and clicks row 1's while it is open: the menu must stay open with row 1's `<neuwo-button>` as its
+trigger, only that button `aria-expanded`, and Publish hidden, since row 1 is Live. Last,
+`splitIsolation` clicks the toggle half of the split button `#demo-split`: the menu must open with
+the host as its trigger, and the click must reach neither the host's `click` listener, which the
+demo counts in `window.__splitClicks`, nor the form. A click on the main half must then reach that
+listener once and submit the form, which the demo records in `window.__splitSubmits`.
 
 The `next-dev` and `next-prod` targets run the app in `integration/apps/next` under `next dev`, and
 under `next build` then `next start`. Besides the five checks they run `forms` on the `Forms`

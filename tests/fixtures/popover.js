@@ -1,10 +1,11 @@
 /**
  * Stands in for the browser's popover API, which happy-dom and jsdom lack, as far as the menus use it:
  * `showPopover`, `hidePopover`, `togglePopover` and `matches(":popover-open")` on every element; a `beforetoggle`
- * dispatched at once, cancelable on opening, and a `toggle` a task later, coalesced as the browser does; a
- * `button[popovertarget]` toggling its popover once a click's listeners have run, unless one cancelled it; an
- * auto popover hiding the open ones that are not its ancestors as it shows, and its open descendants as it hides;
- * Escape hiding the topmost; and a popover removed from the document closing with no event, as the browser hides it.
+ * dispatched at once, cancelable on opening, and a `toggle` a task later, coalesced as the browser does; a connected
+ * `button[popovertarget]` toggling its popover once a click's dispatch is over, unless a listener cancelled it, so a
+ * listener stopping its propagation does not stop the toggle; an auto popover hiding the open ones that are not its
+ * ancestors as it shows, and its open descendants as it hides; Escape hiding the topmost; and a popover removed from
+ * the document closing with no event, as the browser hides it.
  * The stand-in notices a removal the next time it is used, so a popover removed and put back with no call between
  * still counts as open, where a browser would have closed it.
  * @param {Document} doc
@@ -15,6 +16,9 @@ export function installPopovers(doc) {
   const proto = win.HTMLElement.prototype;
   const saved = new Map(["showPopover", "hidePopover", "togglePopover", "matches"].map((name) => [name, Object.getOwnPropertyDescriptor(proto, name)]));
   const matches = win.Element.prototype.matches;
+  let events = win.Node.prototype;
+  while (!Object.hasOwn(events, "dispatchEvent")) events = Object.getPrototypeOf(events);
+  const dispatch = events.dispatchEvent;
   const stack = [];
   const hiding = new Set();
   const pending = new Map();
@@ -107,9 +111,9 @@ export function installPopovers(doc) {
     },
   });
 
-  const onClick = (event) => {
+  const activate = (event) => {
     const button = event.target?.closest?.("button[popovertarget]");
-    if (!button || event.defaultPrevented) return;
+    if (!button?.isConnected || event.defaultPrevented) return;
     const target = button.getRootNode().getElementById(button.getAttribute("popovertarget"));
     if (!target?.hasAttribute("popover")) return;
     const action = button.getAttribute("popovertargetaction") ?? "toggle";
@@ -122,11 +126,16 @@ export function installPopovers(doc) {
     if (event.key === "Escape" && !event.defaultPrevented && stack.length) hide(stack.at(-1));
   };
 
-  doc.addEventListener("click", onClick);
+  // happy-dom dispatches to each node on the path through dispatchEvent too; only the outermost call ends out of every phase.
+  events.dispatchEvent = function (event) {
+    const result = dispatch.call(this, event);
+    if (event.type === "click" && event.eventPhase === win.Event.NONE) activate(event);
+    return result;
+  };
   doc.addEventListener("keydown", onKeydown);
 
   return () => {
-    doc.removeEventListener("click", onClick);
+    events.dispatchEvent = dispatch;
     doc.removeEventListener("keydown", onKeydown);
     for (const { timer } of pending.values()) win.clearTimeout(timer);
     pending.clear();

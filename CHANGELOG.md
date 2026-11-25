@@ -32,7 +32,15 @@
   reports the `<neuwo-button>` as its trigger.
 - `icon-only` on `<neuwo-button>`: a round button whose content is its icon, padded by its font
   size, with `.neuwo-btn--icon-only` on the control. With `menu` and no content it shows three dots,
-  `.neuwo-btn__dots`, and it never shows the chevron.
+  `.neuwo-btn__dots`, and it never shows the chevron. While it loads, the spinner takes the icon's
+  or the dots' place, so it stays round.
+- `split` and `menu-label` on `<neuwo-button>`: with `menu`, the button renders two halves in one
+  pill, `.neuwo-btn-split`. The main half, `.neuwo-btn-split__main`, is the button as it is without
+  `menu`, with `href`, `type` and the form attributes; the toggle half, `.neuwo-btn-split__toggle`,
+  opens the menu, holds the chevron and is named by `menu-label` (More Options by default). Only the
+  main half's clicks reach listeners on the host. `disabled` and `loading` disable both halves.
+  Solid halves stand 1px apart, outline and glass halves share one border line, and neither lifts
+  on hover. Without `menu`, `split` changes nothing.
 
 ### Changed
 

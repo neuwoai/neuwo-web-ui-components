@@ -14,6 +14,8 @@ export const menuTrigger = (menu) => ({
   "aria-expanded": "false",
 });
 
+export const MENU_LABEL = "More Options";
+
 /**
  * @param {Record<string, string>} attrs
  * @param {import("../../core/template.js").TemplateContext} ctx
@@ -24,14 +26,18 @@ export function buttonTemplate(attrs, ctx) {
   const loading = has(attrs, "loading");
   const iconOnly = has(attrs, "icon-only");
   const menu = attrs.menu || "";
-  const link = Boolean(attrs.href) && !disabled && !menu;
+  const split = Boolean(menu) && has(attrs, "split");
+  const opens = Boolean(menu) && !split;
+  const link = Boolean(attrs.href) && !disabled && !opens;
 
-  const classes = ["neuwo-btn", `neuwo-btn--${attrs.variant || "solid"}`];
-  if (attrs.size) classes.push(`neuwo-btn--${attrs.size}`);
-  if (attrs.hover === "s" || attrs.hover === "l") classes.push(`neuwo-btn--hover-${attrs.hover}`);
+  const shared = [`neuwo-btn--${attrs.variant || "solid"}`];
+  if (attrs.size) shared.push(`neuwo-btn--${attrs.size}`);
+  if (attrs.hover === "s" || attrs.hover === "l") shared.push(`neuwo-btn--hover-${attrs.hover}`);
+  const classes = ["neuwo-btn", ...shared];
   for (const modifier of ["wide", "xwide", "loading", "block", "icon-only"]) {
     if (has(attrs, modifier)) classes.push(`neuwo-btn--${modifier}`);
   }
+  if (split) classes.unshift("neuwo-btn-split__main");
 
   /** @type {Record<string, string | boolean>} */
   const props = { class: classes.join(" ") };
@@ -47,18 +53,30 @@ export function buttonTemplate(attrs, ctx) {
     if (name === "title" || name.startsWith("aria-")) props[name] = value;
   }
   if (loading) props["aria-busy"] = "true";
-  if (menu) Object.assign(props, menuTrigger(menu));
+  if (opens) Object.assign(props, menuTrigger(menu));
 
   const empty = !ctx.children.some((child) => child.slot === DEFAULT_REGION);
+  const chevron = h("span", { class: "neuwo-btn__chevron", "aria-hidden": "true" });
   const node = h(
     link ? "a" : "button",
     props,
     loading && h("span", { class: "neuwo-btn__spinner", "aria-hidden": "true" }),
     h("span", { class: "neuwo-btn__start" }, region("start")),
     h("span", { class: "neuwo-btn__label" }, region()),
-    iconOnly && menu && empty && h("span", { class: "neuwo-btn__dots", "aria-hidden": "true" }),
+    iconOnly && opens && !loading && empty && h("span", { class: "neuwo-btn__dots", "aria-hidden": "true" }),
     h("span", { class: "neuwo-btn__end" }, region("end")),
-    menu && !iconOnly && h("span", { class: "neuwo-btn__chevron", "aria-hidden": "true" }),
+    opens && !iconOnly && chevron,
   );
-  return menu ? live(node) : node;
+  if (!split) return opens ? live(node) : node;
+  const toggle = h(
+    "button",
+    {
+      class: ["neuwo-btn-split__toggle", "neuwo-btn", ...shared].join(" "),
+      ...menuTrigger(menu),
+      "aria-label": attrs["menu-label"] || MENU_LABEL,
+      disabled: disabled || loading,
+    },
+    chevron,
+  );
+  return h("span", { class: "neuwo-btn-split" }, node, live(toggle));
 }

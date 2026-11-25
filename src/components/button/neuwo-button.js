@@ -1,6 +1,6 @@
 import { NeuwoElement, define } from "../../core/element.js";
 import { menuPanelId } from "../menu/menu.template.js";
-import { buttonTemplate } from "./button.template.js";
+import { MENU_LABEL, buttonTemplate } from "./button.template.js";
 
 /** @typedef {import("../menu/neuwo-menu.js").NeuwoMenu} NeuwoMenu */
 
@@ -13,7 +13,11 @@ import { buttonTemplate } from "./button.template.js";
  * buttons sharing one menu only the one that opened it reads expanded. A chevron follows the end children and turns
  * while the menu is open. A button naming no menu on the page stays an ordinary button.
  *
- * @summary Neuwo button (or link button). Public classes: `.neuwo-btn` on the `<button>` or `<a>`, with its modifiers `.neuwo-btn--solid`, `--outline`, `--glass`, `--sm`, `--lg`, `--hover-s`, `--hover-l`, `--wide`, `--xwide`, `--block`, `--loading` and `--icon-only`; `.neuwo-btn__spinner` while loading; the wrappers `.neuwo-btn__start`, `.neuwo-btn__label` and `.neuwo-btn__end` around the start children, the label and the end children; `.neuwo-btn__chevron` after the end wrapper while `menu` is set without `icon-only`; and `.neuwo-btn__dots` after the label wrapper on an `icon-only` button with `menu` and no label content.
+ * With `split` as well, the button renders two halves in one pill. The main half is the button as it is without
+ * `menu`, so `href`, `type` and the form attributes apply to it, and the toggle half, named by `menu-label`, opens the
+ * menu. Only the main half's clicks reach the host's listeners. `disabled` and `loading` disable both halves.
+ *
+ * @summary Neuwo button (or link button). Public classes: `.neuwo-btn` on the `<button>` or `<a>`, with its modifiers `.neuwo-btn--solid`, `--outline`, `--glass`, `--sm`, `--lg`, `--hover-s`, `--hover-l`, `--wide`, `--xwide`, `--block`, `--loading` and `--icon-only`; `.neuwo-btn__spinner` while loading; the wrappers `.neuwo-btn__start`, `.neuwo-btn__label` and `.neuwo-btn__end` around the start children, the label and the end children; `.neuwo-btn__chevron` after the end wrapper while `menu` is set without `icon-only`; `.neuwo-btn__dots` after the label wrapper on an `icon-only` button with `menu` and no label content, unless it is loading; and with `split`, the wrapper `.neuwo-btn-split` around the main half `.neuwo-btn-split__main` and the toggle half `.neuwo-btn-split__toggle`, both `.neuwo-btn` with the variant, the toggle half holding the chevron.
  * @customElement neuwo-button
  * @attr {solid|outline|glass} variant - visual style (default solid).
  * @attr {sm|lg} size - size preset (default medium when unset).
@@ -31,8 +35,10 @@ import { buttonTemplate } from "./button.template.js";
  * @attr target - link target, forwarded to the `<a>` when `href` is set.
  * @attr rel - link rel, forwarded to the `<a>` when `href` is set.
  * @attr download - link download, forwarded to the `<a>` when `href` is set.
- * @attr menu - id of the `<neuwo-menu>` the button opens; the native button is then a `<button type="button">` whatever `href` and `type` say, and shows a chevron.
- * @attr {boolean} icon-only - a round button whose content is its icon, padded by its font size; with `menu` and no content it shows three dots, and never the chevron. Name it with `aria-label`.
+ * @attr menu - id of the `<neuwo-menu>` the button opens; without `split`, the native button is then a `<button type="button">` whatever `href` and `type` say, and shows a chevron.
+ * @attr {boolean} icon-only - a round button whose content is its icon, padded by its font size; with `menu` and no content it shows three dots, and never the chevron; while loading, the spinner takes the icon's place. Name it with `aria-label`.
+ * @attr {boolean} split - with `menu`, splits the button into a main half that acts as the button does without `menu` and a toggle half that opens the menu; ignored without `menu`.
+ * @attr menu-label - the accessible name of a `split` button's toggle half (default More Options).
  * @slot - the button label, or the icon of an `icon-only` button (default slot).
  * @slot start - leading icon, sits before the label.
  * @slot end - trailing icon, sits after the label.
@@ -59,10 +65,17 @@ export class NeuwoButton extends NeuwoElement {
     "download",
     "menu",
     "icon-only",
+    "split",
+    "menu-label",
   ];
 
   /** @type {Node | null} */
   #root = null;
+
+  /** @param {Event} event */
+  #onClick = (event) => {
+    if (event.target instanceof Element && event.target.closest(".neuwo-btn-split__toggle")) event.stopPropagation();
+  };
 
   /** @param {Event} event */
   #onToggle = (event) => {
@@ -112,21 +125,39 @@ export class NeuwoButton extends NeuwoElement {
     this.toggleAttribute("icon-only", Boolean(value));
   }
 
+  get split() {
+    return this.hasAttribute("split");
+  }
+
+  set split(value) {
+    this.toggleAttribute("split", Boolean(value));
+  }
+
+  get menuLabel() {
+    return this.getAttribute("menu-label") || MENU_LABEL;
+  }
+
+  set menuLabel(value) {
+    if (value == null || value === "") this.removeAttribute("menu-label");
+    else this.setAttribute("menu-label", String(value));
+  }
+
   connect() {
     this.#root = this.getRootNode();
     this.#root.addEventListener("toggle", this.#onToggle, true);
+    this.addEventListener("click", this.#onClick, true);
   }
 
   disconnect() {
     this.#root?.removeEventListener("toggle", this.#onToggle, true);
     this.#root = null;
+    this.removeEventListener("click", this.#onClick, true);
   }
 
   updated() {
     this.#mark();
   }
 
-  /** Writes `aria-expanded` on the native button that opens the menu: true only while the menu is open from this button. */
   #mark() {
     const menu = this.menu;
     if (!menu) return;

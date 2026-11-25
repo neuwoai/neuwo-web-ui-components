@@ -139,6 +139,87 @@ describe("buttonTemplate()", () => {
     expect(toHTML(iconOnly({}))).not.toContain(dots);
   });
 
+  it("puts the spinner in place of the dots or the icon on a loading icon-only button", () => {
+    const icon = { tag: "svg", attrs: {}, text: "", slot: "default", children: [] };
+    const loading = (children = []) => buttonTemplate({ "icon-only": "", menu: "rows", loading: "" }, { id: (suffix) => suffix, children, within: null });
+    expect(toHTML(loading())).not.toContain("neuwo-btn__dots");
+    expect(loading().children[0]).toEqual({ tag: "span", props: { class: "neuwo-btn__spinner", "aria-hidden": "true" }, children: [] });
+    expect(loading([icon]).children[0].props.class).toBe("neuwo-btn__spinner");
+  });
+
+  describe("split", () => {
+    const split = (attrs = {}) => render({ split: "", menu: "save", ...attrs });
+    const halves = (attrs) => split(attrs).children;
+    const chevron = '<span class="neuwo-btn__chevron" aria-hidden="true"></span>';
+
+    it("renders two halves sharing the variant", () => {
+      const toggle = `<button class="neuwo-btn-split__toggle neuwo-btn neuwo-btn--solid" type="button" popovertarget="save-panel" aria-haspopup="menu" aria-controls="save-panel" aria-expanded="false" aria-label="More Options">${chevron}</button>`;
+      expect(toHTML(split())).toBe(
+        `<span class="neuwo-btn-split"><button class="neuwo-btn-split__main neuwo-btn neuwo-btn--solid" type="button">${wrappers}</button>${toggle}</span>`,
+      );
+      const [main, button] = halves({ variant: "outline", size: "sm", hover: "l", wide: "", block: "" });
+      expect(main.props.class).toBe("neuwo-btn-split__main neuwo-btn neuwo-btn--outline neuwo-btn--sm neuwo-btn--hover-l neuwo-btn--wide neuwo-btn--block");
+      expect(button.props.class).toBe("neuwo-btn-split__toggle neuwo-btn neuwo-btn--outline neuwo-btn--sm neuwo-btn--hover-l");
+      expect([split().live, main.live, button.live]).toEqual([undefined, undefined, true]);
+    });
+
+    it("keeps every existing rule on the main half", () => {
+      const [link] = halves({ href: "/docs", target: "_blank", rel: "noopener", download: "", type: "submit" });
+      expect(link.tag).toBe("a");
+      expect(link.props).toEqual({ class: "neuwo-btn-split__main neuwo-btn neuwo-btn--solid", href: "/docs", target: "_blank", rel: "noopener", download: "" });
+
+      const [submit, toggle] = halves({ type: "submit", form: "draft", name: "action", value: "save", title: "Save now", "aria-describedby": "hint" });
+      expect(submit.props).toEqual({
+        class: "neuwo-btn-split__main neuwo-btn neuwo-btn--solid",
+        type: "submit",
+        form: "draft",
+        name: "action",
+        value: "save",
+        title: "Save now",
+        "aria-describedby": "hint",
+      });
+      expect(toggle.props).toEqual({
+        class: "neuwo-btn-split__toggle neuwo-btn neuwo-btn--solid",
+        type: "button",
+        popovertarget: "save-panel",
+        "aria-haspopup": "menu",
+        "aria-controls": "save-panel",
+        "aria-expanded": "false",
+        "aria-label": "More Options",
+      });
+
+      const [busy] = halves({ loading: "" });
+      expect(toHTML(busy)).toBe(
+        `<button class="neuwo-btn-split__main neuwo-btn neuwo-btn--solid neuwo-btn--loading" type="button" disabled="" aria-busy="true"><span class="neuwo-btn__spinner" aria-hidden="true"></span>${wrappers}</button>`,
+      );
+      expect(toHTML(split(), { start: "<i>s</i>", default: "Save", end: "<i>e</i>" })).toContain(
+        '<span class="neuwo-btn__start"><i>s</i></span><span class="neuwo-btn__label">Save</span><span class="neuwo-btn__end"><i>e</i></span></button><button',
+      );
+    });
+
+    it("names the toggle half from menu-label, More Options by default", () => {
+      expect(halves()[1].props["aria-label"]).toBe("More Options");
+      expect(halves({ "menu-label": "" })[1].props["aria-label"]).toBe("More Options");
+      expect(halves({ "menu-label": "More Save Options", "aria-label": "Save Draft" }).map((half) => half.props["aria-label"])).toEqual(["Save Draft", "More Save Options"]);
+    });
+
+    it("disables both halves when disabled or loading", () => {
+      for (const attrs of [{ disabled: "" }, { loading: "" }, { disabled: "", href: "/docs" }]) {
+        const [main, toggle] = halves(attrs);
+        expect([main.tag, main.props.disabled, toggle.props.disabled], JSON.stringify(attrs)).toEqual(["button", true, true]);
+      }
+      const [link, toggle] = halves({ loading: "", href: "/docs" });
+      expect([link.tag, link.props["aria-busy"], toggle.props.disabled]).toEqual(["a", "true", true]);
+      expect(halves().map((half) => half.props.disabled)).toEqual([undefined, undefined]);
+    });
+
+    it("ignores split without menu", () => {
+      for (const attrs of [{ variant: "outline" }, { href: "/docs", "menu-label": "More" }, { menu: "", loading: "" }]) {
+        expect(toHTML(render({ split: "", ...attrs }))).toBe(toHTML(render(attrs)));
+      }
+    });
+  });
+
   it("places start, default and end children in their wrappers", () => {
     const html = toHTML(render(), { start: "<i>s</i>", default: "Go", end: "<i>e</i>" });
     expect(html).toBe(

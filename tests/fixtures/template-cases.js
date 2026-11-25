@@ -87,6 +87,20 @@ export const cases = {
       attrs: { "icon-only": "", variant: "outline", "aria-label": "Close" },
       children: [{ tag: "svg", children: [{ tag: "path", attrs: { d: "M0 0" } }] }],
     },
+    { name: "icon-only loading", attrs: { "icon-only": "", menu: "row-actions", loading: "", "aria-label": "Actions for Sports Fans" }, children: [] },
+    { name: "split", attrs: { split: "", menu: "save" }, children: ["Save"] },
+    {
+      name: "split link",
+      attrs: { split: "", menu: "save", variant: "outline", href: "https://neuwo.ai", target: "_blank", rel: "noopener" },
+      children: [{ tag: "span", attrs: { slot: "start" }, text: "+" }, "Open"],
+    },
+    {
+      name: "split submit loading",
+      attrs: { split: "", menu: "save", variant: "glass", size: "sm", type: "submit", form: "draft", name: "action", value: "save", loading: "", "aria-label": "Save Draft" },
+      children: ["Saving"],
+    },
+    { name: "split menu-label", attrs: { split: "", menu: "save", "menu-label": "More Save Options", size: "lg", hover: "l", wide: "", disabled: "" }, children: ["Save"] },
+    { name: "split without menu", attrs: { split: "", variant: "outline", "menu-label": "More Save Options" }, children: ["Save"] },
   ],
   "neuwo-badge": [
     { name: "default", attrs: {}, children: ["For Publishers"] },

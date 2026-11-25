@@ -507,6 +507,103 @@ describe("<neuwo-button> opening a menu", () => {
     expect(close.querySelector(".neuwo-btn__dots")).toBeNull();
   });
 
+  it("lets only the main half's click reach the host", async () => {
+    const form = attach(document.createElement("form"));
+    form.innerHTML = `<neuwo-button split type="submit" menu="rows">Save</neuwo-button>`;
+    const { menu } = page(ROWS);
+    const button = form.querySelector("neuwo-button");
+    const [main, toggle] = button.firstElementChild.children;
+    const submits = submitsOf(form);
+    const clicks = [];
+    button.addEventListener("click", (event) => clicks.push(event.target));
+
+    toggle.click();
+    await tick();
+    expect(menu.isOpen).toBe(true);
+    toggle.querySelector(".neuwo-btn__chevron").click();
+    await tick();
+    expect(menu.isOpen).toBe(false);
+    expect(clicks).toEqual([]);
+    expect(submits).toHaveLength(0);
+
+    main.click();
+    expect(clicks).toEqual([main]);
+    expect(submits).toHaveLength(1);
+    expect(submits[0].submitter).toBe(main);
+    expect(menu.isOpen).toBe(false);
+  });
+
+  it("reports the host as the trigger when the toggle half opens the menu", async () => {
+    const { buttons, menu } = page(`<neuwo-button split menu="rows" data-row="3">Save</neuwo-button>${ROWS}`);
+    const [button] = buttons;
+    const [main, toggle] = button.firstElementChild.children;
+    const opened = [];
+    menu.addEventListener("open", (event) => opened.push(event.detail.trigger));
+
+    toggle.click();
+    await tick();
+    expect([opened, menu.trigger]).toEqual([[button], button]);
+    expect([main.getAttribute("aria-expanded"), toggle.getAttribute("aria-expanded")]).toEqual([null, "true"]);
+    menu.close();
+    await tick();
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(document.activeElement).toBe(toggle);
+  });
+
+  it("adopts a served split button with zero writes", async () => {
+    const holder = document.createElement("div");
+    holder.innerHTML = expand(
+      `<neuwo-button split variant="outline" menu="rows" menu-label="More Save Options"><svg slot="start" viewBox="0 0 24 24"><path d="M0 0"></path></svg>Save</neuwo-button>` +
+        `<neuwo-button split menu="rows" href="/docs" loading>Opening</neuwo-button>` +
+        `<neuwo-button split variant="glass">Plain</neuwo-button>`,
+    );
+    const records = [];
+    const observer = new MutationObserver((list) => records.push(...list));
+    observer.observe(holder, { subtree: true, childList: true, attributes: true, characterData: true });
+    attach(holder);
+    await Promise.resolve();
+    records.push(...observer.takeRecords());
+    observer.disconnect();
+    expect(records).toEqual([]);
+    const [split, link, plain] = holder.querySelectorAll("neuwo-button");
+    expect(split).toBeInstanceOf(NeuwoButton);
+    expect([split.split, split.menuLabel, link.split, plain.split, plain.menuLabel]).toEqual([true, "More Save Options", true, true, "More Options"]);
+    expect(Array.from(holder.querySelectorAll(".neuwo-btn-split__main"), (main) => main.localName)).toEqual(["button", "a"]);
+    expect(plain.firstElementChild.className).toBe("neuwo-btn neuwo-btn--glass");
+  });
+
+  it("switches between plain and split in place, keeping the label nodes", async () => {
+    const { buttons } = page(`<neuwo-button menu="rows"><b slot="start">*</b>Save<i slot="end">!</i></neuwo-button>${ROWS}`);
+    const [button] = buttons;
+    const held = () => [".neuwo-btn__start", ".neuwo-btn__label", ".neuwo-btn__end"].map((wrapper) => button.querySelector(wrapper).firstChild);
+    const nodes = held();
+    expect(nodes.map((node) => node.textContent)).toEqual(["*", "Save", "!"]);
+    expect(button.split).toBe(false);
+
+    button.split = true;
+    expect(button.getAttribute("split")).toBe("");
+    const [main, toggle] = button.firstElementChild.children;
+    expect(button.firstElementChild.className).toBe("neuwo-btn-split");
+    expect([main.className, toggle.className]).toEqual(["neuwo-btn-split__main neuwo-btn neuwo-btn--solid", "neuwo-btn-split__toggle neuwo-btn neuwo-btn--solid"]);
+    held().forEach((node, index) => expect(node).toBe(nodes[index]));
+    expect(nodes.every((node) => main.contains(node))).toBe(true);
+    expect(Array.from(button.querySelectorAll("[popovertarget]"))).toStrictEqual([toggle]);
+    expect(toggle.querySelectorAll(".neuwo-btn__chevron")).toHaveLength(1);
+
+    expect(toggle.getAttribute("aria-label")).toBe("More Options");
+    button.menuLabel = "More Save Options";
+    expect([button.getAttribute("menu-label"), toggle.getAttribute("aria-label")]).toEqual(["More Save Options", "More Save Options"]);
+    button.menuLabel = "";
+    expect([button.hasAttribute("menu-label"), button.menuLabel, toggle.getAttribute("aria-label")]).toEqual([false, "More Options", "More Options"]);
+
+    button.split = false;
+    expect(button.hasAttribute("split")).toBe(false);
+    expect(button.firstElementChild.className).toBe("neuwo-btn neuwo-btn--solid");
+    held().forEach((node, index) => expect(node).toBe(nodes[index]));
+    expect(button.querySelectorAll(".neuwo-btn__chevron")).toHaveLength(1);
+    expect(button.querySelector(".neuwo-btn-split")).toBeNull();
+  });
+
   it("swaps the dots for an icon the page adds, and back when it goes", async () => {
     const { buttons } = page(`<neuwo-button icon-only menu="rows" aria-label="Actions"></neuwo-button>`);
     const [button] = buttons;
@@ -732,6 +829,44 @@ describe("button.css", () => {
   it("paints both glyphs in ButtonText under forced colours, and stops the chevron's turn under reduced motion", () => {
     expect(buttonCss).toMatch(/@media \(forced-colors: active\) \{\s*\.neuwo-btn__chevron,\s*\.neuwo-btn__dots \{\s*background-color: ButtonText;/);
     expect(buttonCss).toMatch(/@media \(prefers-reduced-motion: reduce\) \{[^@]*\.neuwo-btn__chevron \{\s*transition: none;/);
+  });
+
+  it("hides a loading icon-only button's content for a spinner the size of the dots, so it stays round", () => {
+    expect(buttonCss).toMatch(/\.neuwo-btn--icon-only\.neuwo-btn--loading > :is\(\.neuwo-btn__start, \.neuwo-btn__label, \.neuwo-btn__end\) \{\s*display: none;\s*\}/);
+    expect(buttonCss).toMatch(/\.neuwo-btn--icon-only > \.neuwo-btn__spinner \{\s*inline-size: 1\.125em;\s*block-size: 1\.125em;\s*\}/);
+  });
+
+  describe("split", () => {
+    const body = (selector) => new RegExp(`(?:^|\\n)${selector.replace(/[.()>+:]/g, "\\$&")} \\{([^}]*)\\}`).exec(buttonCss)?.[1] ?? "";
+
+    it("joins the halves into one pill, with the mock's padding, after the modifiers it overrides", () => {
+      expect(body(".neuwo-btn-split")).toMatch(/display: inline-flex;/);
+      const main = body(".neuwo-btn-split__main");
+      expect(main).toContain("border-start-end-radius: 0;");
+      expect(main).toContain("border-end-end-radius: 0;");
+      expect(main).toContain("padding-inline-end: var(--neuwo-space-4);");
+      const toggle = body(".neuwo-btn-split__toggle");
+      expect(toggle).toContain("border-start-start-radius: 0;");
+      expect(toggle).toContain("border-end-start-radius: 0;");
+      expect(toggle).toContain("padding-inline: var(--neuwo-space-3) var(--neuwo-space-4);");
+      for (const modifier of ["--sm", "--lg", "--wide", "--xwide", "--icon-only"]) {
+        expect(buttonCss.indexOf(".neuwo-btn-split__main {"), modifier).toBeGreaterThan(buttonCss.indexOf(`.neuwo-btn${modifier} {`));
+      }
+    });
+
+    it("parts the solid halves by 1px, and lays the outline and glass halves on one border line", () => {
+      expect(body(".neuwo-btn-split__toggle")).toContain("margin-inline-start: 1px;");
+      expect(body(".neuwo-btn-split__toggle:is(.neuwo-btn--outline, .neuwo-btn--glass)")).toMatch(/^\s*margin-inline-start: -1px;\s*$/);
+    });
+
+    it("keeps the halves level and lifts the hovered or focused half above the other", () => {
+      expect(buttonCss).toMatch(/\.neuwo-btn-split > \.neuwo-btn:hover,\s*\.neuwo-btn-split > \.neuwo-btn:focus \{\s*z-index: 1;\s*\}/);
+      expect(body(".neuwo-btn-split > .neuwo-btn:hover")).toMatch(/^\s*transform: none;\s*$/);
+    });
+
+    it("keeps the toggle half at full colour while the main half loads", () => {
+      expect(body(".neuwo-btn--loading + .neuwo-btn-split__toggle:disabled")).toMatch(/^\s*opacity: 1;\s*$/);
+    });
   });
 
   it("uses tokens, not raw colours, and no shadow-only selectors", () => {

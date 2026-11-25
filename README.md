@@ -904,7 +904,7 @@ neuwo-button .neuwo-btn { border-radius: 0; }
 
 | Class | On |
 | --- | --- |
-| `.neuwo-btn` | the native `<button>`, or the `<a>` when `href` is set without `menu` |
+| `.neuwo-btn` | the native `<button>`, or the `<a>` when `href` is set without `menu`; each half of a `split` button |
 | `.neuwo-btn--solid`, `.neuwo-btn--outline`, `.neuwo-btn--glass` | the control, by `variant` |
 | `.neuwo-btn--sm`, `.neuwo-btn--lg` | the control, by `size` |
 | `.neuwo-btn--hover-s`, `.neuwo-btn--hover-l` | the control, by `hover` |
@@ -912,8 +912,11 @@ neuwo-button .neuwo-btn { border-radius: 0; }
 | `.neuwo-btn__spinner` | the spinner, the control's first child while `loading` |
 | `.neuwo-btn__start`, `.neuwo-btn__label`, `.neuwo-btn__end` | the wrappers around the `slot="start"` children, the label and the `slot="end"` children |
 | `.neuwo-btn--icon-only` | the control, by `icon-only` |
-| `.neuwo-btn__chevron` | the chevron after the end wrapper while `menu` is set without `icon-only`; it turns while the control has `aria-expanded="true"` |
-| `.neuwo-btn__dots` | the three dots after the label wrapper, on an `icon-only` control with `menu` and no label content |
+| `.neuwo-btn__chevron` | the chevron after the end wrapper while `menu` is set without `icon-only` or `split`, and the content of a `split` button's toggle half; it turns while its control has `aria-expanded="true"` |
+| `.neuwo-btn__dots` | the three dots after the label wrapper, on an `icon-only` control with `menu` and no label content, unless it is loading |
+| `.neuwo-btn-split` | the wrapper holding a `split` button's two halves, in place of a single `.neuwo-btn` |
+| `.neuwo-btn-split__main` | the main half: a `.neuwo-btn`, the `<button>` or the `<a>` when `href` is set, with every modifier |
+| `.neuwo-btn-split__toggle` | the toggle half: a `<button>` `.neuwo-btn` with the variant, size and hover modifiers, holding the chevron |
 
 The three wrappers are always rendered and are `display: contents`, so they draw
 no box and an empty one adds no gap. Style what they hold through inherited
@@ -1559,28 +1562,42 @@ so a `select` handler that moves focus, to a rename field for example, keeps it 
 
 ### Menu buttons
 
-`<neuwo-button>` opens a menu itself, and takes two attributes for it:
+`<neuwo-button>` opens a menu itself, and takes four attributes for it:
 
 ```html
 <neuwo-button variant="outline" menu="export">Export</neuwo-button>
+<neuwo-button split type="submit" menu="save-options" menu-label="More Ways to Save">Save</neuwo-button>
 <neuwo-button icon-only variant="outline" size="sm" menu="row-actions" aria-label="Actions for Sports Fans"></neuwo-button>
 ```
 
-- **`menu`**, the id of a `<neuwo-menu>`: the button opens that menu. The native button is always a
-  `<button type="button">`, whatever `href` and `type` say. It carries `popovertarget` and
-  `aria-controls` naming the panel, `aria-haspopup="menu"`, and `aria-expanded`, which is `true`
-  only while the menu is open from this button, so of several buttons sharing one menu only the one
-  that opened it reads expanded. A chevron follows the label and any `slot="end"` children and
-  turns while the menu is open. A button naming no menu on the page stays an ordinary button.
+- **`menu`**, the id of a `<neuwo-menu>`: the button opens that menu. Without `split`, the native
+  button is always a `<button type="button">`, whatever `href` and `type` say. It carries
+  `popovertarget` and `aria-controls` naming the panel, `aria-haspopup="menu"`, and
+  `aria-expanded`, which is `true` only while the menu is open from this button, so of several
+  buttons sharing one menu only the one that opened it reads expanded. A chevron follows the label
+  and any `slot="end"` children and turns while the menu is open. A button naming no menu on the
+  page stays an ordinary button.
+- **`split`**, with `menu`: two halves in one pill. The main half is the button as it is without
+  `menu`, so `href` makes it a link and `type`, `form`, `name` and `value` act on its form. The
+  toggle half is always a `<button type="button">`; it opens the menu and carries the chevron,
+  `popovertarget` and the menu's `aria-*` attributes. A click on the toggle half stops propagating at
+  the `<neuwo-button>`, so only the main half's clicks reach its `click` listeners and bubble on to
+  the page, and a click handler on the host runs the default action alone. `disabled` and `loading`
+  disable both halves, with the spinner on the main half. The halves do not lift on hover, so they
+  stay level. The menu lines up with the toggle half, so give it `align="end"` to line it up with
+  the pill's end. Without `menu`, `split` changes nothing.
+- **`menu-label`**: the accessible name of a `split` button's toggle half, More Options by
+  default.
 - **`icon-only`**: a round button whose content is its icon, padded by its font size, so `size`
-  scales it. With `menu` and no content it shows three dots, and it never shows the chevron. Name it
-  with `aria-label`, which the button forwards. It works without `menu` too, for a close or a copy
-  button.
+  scales it. With `menu` and no content it shows three dots, and it never shows the chevron. While it
+  loads, the spinner takes the icon's place, so it stays round. Name it with `aria-label`, which the
+  button forwards. It works without `menu` too, for a close or a copy button.
 
-`variant`, `size`, `hover`, `disabled` and `loading` combine with both as they do on any button. The
-menu reports the `<neuwo-button>` as its `trigger`, not the native button inside it, so the page's
-own attributes on the host can be read in `open` and `select`. A table writes its row menu once and
-gives every row a button:
+`variant`, `size`, `hover`, `disabled` and `loading` combine with all of them as they do on any
+button; on a `split` button, `variant`, `size`, `hover`, `disabled` and `loading` reach both halves,
+and the rest only the main half. The menu reports the `<neuwo-button>` as its `trigger`, not the native button inside
+it, so the page's own attributes on the host can be read in `open` and `select`. A table writes its
+row menu once and gives every row a button:
 
 ```html
 <table>

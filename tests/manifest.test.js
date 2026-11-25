@@ -133,14 +133,17 @@ describe("custom-elements.json", () => {
 
   it("documents the button's own attributes", () => {
     const attrs = attributesFor(manifest, "neuwo-button");
-    for (const a of ["variant", "size", "hover", "wide", "xwide", "block", "href", "disabled", "loading", "type", "menu", "icon-only"])
+    for (const a of ["variant", "size", "hover", "wide", "xwide", "block", "href", "disabled", "loading", "type", "menu", "icon-only", "split", "menu-label"])
       expect(attrs).toContain(a);
     const button = declByTag(manifest, "neuwo-button");
     expect(button.attributes.find((attribute) => attribute.name === "icon-only").type.text).toBe("boolean");
+    expect(button.attributes.find((attribute) => attribute.name === "split").type.text).toBe("boolean");
+    expect(button.attributes.find((attribute) => attribute.name === "menu-label").description).toMatch(/More Options/);
     expect(button.attributes.find((attribute) => attribute.name === "menu").description).toMatch(/<neuwo-menu>/);
     expect(button.summary).toMatch(/--icon-only/);
     expect(button.summary).toMatch(/\.neuwo-btn__chevron/);
     expect(button.summary).toMatch(/\.neuwo-btn__dots/);
+    for (const name of [".neuwo-btn-split", ".neuwo-btn-split__main", ".neuwo-btn-split__toggle"]) expect(button.summary).toContain(`\`${name}\``);
   });
 
   it("documents the input's type and constraint attributes and its change event", () => {

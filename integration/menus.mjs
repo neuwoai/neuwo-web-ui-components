@@ -104,15 +104,17 @@ function readRows(id) {
   };
 }
 
-async function untilRows(page, step, accept) {
+async function untilRead(page, read, arg, step, accept) {
   const deadline = Date.now() + STEP_TIMEOUT;
   for (;;) {
-    const state = await page.evaluate(readRows, ROWS);
+    const state = await page.evaluate(read, arg);
     if (accept(state)) return state;
     if (Date.now() > deadline) throw new Error(`${step}: ${JSON.stringify(state)}`);
     await new Promise((resolve) => setTimeout(resolve, 50));
   }
 }
+
+const untilRows = (page, step, accept) => untilRead(page, readRows, ROWS, step, accept);
 
 const onlyRow = (row) => (state) => state.open && state.row === row && state.expanded.every((value, index) => value === String(index + 1 === row));
 
@@ -129,6 +131,39 @@ async function menuShared(page) {
   const second = await untilRows(page, "clicking row 1 while the menu is open from row 2", onlyRow(1));
   if (second.publish !== false) return { status: "fail", detail: "Publish shows on row 1, a Live row" };
   return { status: "pass", detail: `opened from row 2, then a click on row 1: open with row ${second.row} as the trigger, aria-expanded ${second.expanded.join(", ")}, Publish hidden on the Live row` };
+}
+
+const SPLIT = "demo-split";
+const SAVE = "demo-save-panel";
+
+function readSplit({ host: hostId, panel: panelId }) {
+  const host = document.getElementById(hostId);
+  const panel = document.getElementById(panelId);
+  return {
+    open: Boolean(panel?.matches(":popover-open")),
+    trigger: panel?.closest("neuwo-menu")?.trigger === host,
+    expanded: host?.querySelector(".neuwo-btn-split__toggle")?.getAttribute("aria-expanded") ?? null,
+    clicks: window.__splitClicks ?? null,
+    submits: window.__splitSubmits?.length ?? null,
+  };
+}
+
+const untilSplit = (page, step, accept) => untilRead(page, readSplit, { host: SPLIT, panel: SAVE }, step, accept);
+
+async function splitIsolation(page) {
+  await page.evaluate(hideMenu, SAVE);
+  const before = await untilSplit(page, "closing the save menu", (state) => !state.open);
+  await page.click(`#${SPLIT} .neuwo-btn-split__toggle`);
+  const opened = await untilSplit(page, "clicking the toggle half", (state) => state.open && state.trigger && state.expanded === "true");
+  if (opened.clicks !== before.clicks || opened.submits !== before.submits) {
+    return { status: "fail", detail: `the toggle half's click reached the host ${opened.clicks - before.clicks} times and submitted the form ${opened.submits - before.submits} times` };
+  }
+  await page.evaluate(hideMenu, SAVE);
+  await untilSplit(page, "closing the save menu", (state) => !state.open && state.expanded === "false");
+  await page.click(`#${SPLIT} .neuwo-btn-split__main`);
+  const main = await untilSplit(page, "clicking the main half", (state) => state.clicks === before.clicks + 1 && state.submits === before.submits + 1);
+  if (main.open) return { status: "fail", detail: "the main half's click opened the menu" };
+  return { status: "pass", detail: "the toggle half opened the menu with the host as its trigger and reached no host listener; the main half's click reached it once and submitted the form" };
 }
 
 async function run(check, steps) {
@@ -169,7 +204,8 @@ async function menuTree(page) {
 
 /**
  * Drives the demo's every-kind menu, `#demo-kinds`, from its plain trigger, then the flyout and auto submenu menus,
- * the auto one at 360px, after which the viewport is restored, then the shared row menu from two rows' buttons.
+ * the auto one at 360px, after which the viewport is restored, then the shared row menu from two rows' buttons, then the
+ * split button's two halves.
  * @param {import("puppeteer-core").Page} page
  * @returns {Promise<import("./checks.mjs").CheckResult[]>}
  */
@@ -226,5 +262,11 @@ export async function checkMenus(page) {
     results.push({ check: "menuShared", status: "fail", detail: error.message });
   }
   await page.evaluate(hideMenu, ROWS);
+  try {
+    results.push({ check: "splitIsolation", ...(await splitIsolation(page)) });
+  } catch (error) {
+    results.push({ check: "splitIsolation", status: "fail", detail: error.message });
+  }
+  await page.evaluate(hideMenu, SAVE);
   return results;
 }

@@ -49,6 +49,7 @@ export function Usage() {
       <neuwo-menu onselect={(e) => e.detail.checked === e.detail.item.checked && e.detail.trigger?.dataset.row} onopen={(e) => e.preventDefault()} />
       <neuwo-button menu="m" variant="outline">Export</neuwo-button>
       <neuwo-button icon-only menu="m" size="sm" data-row="7" aria-label="Actions for Sports Fans" />
+      <neuwo-button split menu="m" menu-label="More Save Options" type="submit">Save</neuwo-button>
       <neuwo-cta heading-level={3} />
       <neuwo-cta heading-level="3" />
       <neuwo-textarea rows={4} className="notes" />
@@ -118,6 +119,8 @@ export function Usage() {
       <neuwo-badge glow="yes" />
       {/* @ts-expect-error icon-only is a boolean */}
       <neuwo-button icon-only="yes" />
+      {/* @ts-expect-error split is a boolean */}
+      <neuwo-button split="yes" />
       {/* @ts-expect-error React only binds the exact event name */}
       <neuwo-copy onCopied={() => {}} />
       {/* @ts-expect-error a pick reports a string value */}
