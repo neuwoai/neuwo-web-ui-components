@@ -753,6 +753,7 @@
       <code>menu</code> and no content it shows three dots, and with an icon of the page's own it shows that; it never
       shows the chevron. While it loads, the spinner takes the icon's place, so it stays round. Its
       <code>aria-label</code> names it. The Close button has no menu, since <code>icon-only</code> suits any action.
+      The disabled and the loading button do not open the menu.
     </p>
     <div class="row">
       <neuwo-button icon-only variant="solid" menu="demo-more" aria-label="More Actions"></neuwo-button>
@@ -771,6 +772,7 @@
       <neuwo-button id="demo-close" icon-only variant="glass" aria-label="Close">
         <svg width="1.125em" height="1.125em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
       </neuwo-button>
+      <neuwo-button icon-only variant="outline" menu="demo-more" disabled aria-label="More Actions"></neuwo-button>
       <neuwo-button icon-only variant="outline" menu="demo-more" loading aria-label="More Actions"></neuwo-button>
       <output id="demo-more-pick">No pick yet</output>
     </div>
