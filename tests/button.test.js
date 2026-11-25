@@ -533,6 +533,29 @@ describe("<neuwo-button> opening a menu", () => {
     expect(menu.isOpen).toBe(false);
   });
 
+  it("keeps a click on the gap between the halves from the host's listeners, the page and the form", async () => {
+    const form = attach(document.createElement("form"));
+    form.innerHTML = `<neuwo-button split type="submit" menu="rows">Save</neuwo-button>`;
+    const { menu } = page(ROWS);
+    const button = form.querySelector("neuwo-button");
+    const wrapper = button.querySelector(".neuwo-btn-split");
+    const main = wrapper.querySelector(".neuwo-btn-split__main");
+    const submits = submitsOf(form);
+    const clicks = [];
+    button.addEventListener("click", (event) => clicks.push(["host", event.target]));
+    form.addEventListener("click", (event) => clicks.push(["form", event.target]));
+
+    wrapper.click();
+    await tick();
+    expect([clicks, submits.length, menu.isOpen]).toEqual([[], 0, false]);
+
+    button.click();
+    expect(clicks).toEqual([["host", button], ["form", button]]);
+    main.click();
+    expect(clicks.slice(2)).toEqual([["host", main], ["form", main]]);
+    expect(submits).toHaveLength(1);
+  });
+
   it("reports the host as the trigger when the toggle half opens the menu", async () => {
     const { buttons, menu } = page(`<neuwo-button split menu="rows" data-row="3">Save</neuwo-button>${ROWS}`);
     const [button] = buttons;

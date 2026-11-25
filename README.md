@@ -1580,12 +1580,13 @@ so a `select` handler that moves focus, to a rename field for example, keeps it 
 - **`split`**, with `menu`: two halves in one pill. The main half is the button as it is without
   `menu`, so `href` makes it a link and `type`, `form`, `name` and `value` act on its form. The
   toggle half is always a `<button type="button">`; it opens the menu and carries the chevron,
-  `popovertarget` and the menu's `aria-*` attributes. A click on the toggle half stops propagating at
-  the `<neuwo-button>`, so only the main half's clicks reach its `click` listeners and bubble on to
-  the page, and a click handler on the host runs the default action alone. `disabled` and `loading`
-  disable both halves, with the spinner on the main half. The halves do not lift on hover, so they
-  stay level. The menu lines up with the toggle half, so give it `align="end"` to line it up with
-  the pill's end. Without `menu`, `split` changes nothing.
+  `popovertarget` and the menu's `aria-*` attributes. A click on the toggle half, or on the 1px gap
+  between solid halves, stops propagating at the `<neuwo-button>`, so only the main half's clicks
+  reach its `click` listeners and bubble on to the page, and a click handler on the host runs the
+  default action alone. `disabled` and `loading` disable both halves, with the spinner on the main
+  half. The halves do not lift on hover, so they stay level. The menu lines up with the toggle half,
+  so give it `align="end"` to line it up with the pill's end. Without `menu`, `split` changes
+  nothing.
 - **`menu-label`**: the accessible name of a `split` button's toggle half, More Options by
   default.
 - **`icon-only`**: a round button whose content is its icon, padded by its font size, so `size`

@@ -74,7 +74,9 @@ export class NeuwoButton extends NeuwoElement {
 
   /** @param {Event} event */
   #onClick = (event) => {
-    if (event.target instanceof Element && event.target.closest(".neuwo-btn-split__toggle")) event.stopPropagation();
+    const target = /** @type {Node | null} */ (event.target);
+    const split = this.querySelector(":scope > .neuwo-btn-split");
+    if (split?.contains(target) && !split.querySelector(":scope > .neuwo-btn-split__main")?.contains(target)) event.stopPropagation();
   };
 
   /** @param {Event} event */
