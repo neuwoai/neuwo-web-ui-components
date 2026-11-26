@@ -19,7 +19,9 @@ neuwo-nav-item:not([hidden]) {
   list-style: none;
 }
 
-.neuwo-sidebar__toggle::-webkit-details-marker {
+.neuwo-sidebar__toggle::-webkit-details-marker,
+.neuwo-nav-section__row::-webkit-details-marker,
+.neuwo-nav-section__toggle::-webkit-details-marker {
   display: none;
 }
 
@@ -37,10 +39,84 @@ neuwo-nav-item:not([hidden]) {
   -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round'%3E%3Cpath d='M6 6l12 12M18 6L6 18'/%3E%3C/svg%3E");
 }
 
-.neuwo-sidebar__list {
+.neuwo-sidebar__list,
+.neuwo-nav-section__list {
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.neuwo-nav-section__list {
+  padding-inline-start: var(--neuwo-space-4);
+}
+
+.neuwo-nav-section__row {
+  display: flex;
+  align-items: center;
+  gap: var(--neuwo-space-1);
+  border-radius: var(--neuwo-radius-md);
+  cursor: pointer;
+  list-style: none;
+}
+
+.neuwo-nav-section--link {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--neuwo-space-1);
+}
+
+.neuwo-nav-section--link > .neuwo-nav-section__name {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+/* Lets the summary sit in the link's row and the nested list span the row below. */
+.neuwo-nav-section--link > .neuwo-nav-section__details {
+  display: contents;
+}
+
+.neuwo-nav-section--link > .neuwo-nav-section__details::details-content {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+
+/* Out by its own padding, so its chevron lines up with the chevrons of the rows that only fold. */
+.neuwo-nav-section__toggle {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  padding: var(--neuwo-space-1);
+  margin-inline-end: calc(-1 * var(--neuwo-space-1));
+  border-radius: var(--neuwo-radius-md);
+  cursor: pointer;
+  list-style: none;
+}
+
+/* Drawn at the menu icon's 1.5 stroke, finer than --neuwo-icon-chevron. */
+.neuwo-nav-section__chevron {
+  flex: none;
+  display: block;
+  inline-size: 1rem;
+  block-size: 1rem;
+  margin-inline-start: auto;
+  background-color: var(--neuwo-color-text-muted);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat;
+  transition: transform var(--neuwo-transition-fast), background-color var(--neuwo-transition-fast);
+}
+
+.neuwo-nav-section__row:hover > .neuwo-nav-section__chevron,
+.neuwo-nav-section__toggle:hover > .neuwo-nav-section__chevron {
+  background-color: var(--neuwo-color-text);
+}
+
+.neuwo-nav-section__details:not([open]) > summary > .neuwo-nav-section__chevron {
+  transform: rotate(-90deg);
+}
+
+.neuwo-nav-section__details:not([open]) > summary > .neuwo-nav-section__chevron:dir(rtl) {
+  transform: rotate(90deg);
 }
 
 .neuwo-sidebar .neuwo-nav-link {
@@ -160,8 +236,20 @@ neuwo-nav-item:not([hidden]) {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .neuwo-nav-section__chevron {
+    transition: none;
+  }
+}
+
 @media (forced-colors: active) {
   .neuwo-sidebar__toggle-icon {
     background: CanvasText;
+  }
+
+  .neuwo-nav-section__chevron,
+  .neuwo-nav-section__row:hover > .neuwo-nav-section__chevron,
+  .neuwo-nav-section__toggle:hover > .neuwo-nav-section__chevron {
+    background-color: CanvasText;
   }
 }

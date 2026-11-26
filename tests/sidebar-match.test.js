@@ -35,6 +35,19 @@ describe("normalizePath()", () => {
     },
   );
 
+  it.each([
+    ["/caf%C3%A9/", "/café"],
+    ["/caf%c3%a9/index.html", "/café"],
+    ["/café/", "/café"],
+    ["https://neuwo.ai/caf%C3%A9/", "https://neuwo.ai/café"],
+    ["/a%20b/?q=%C3%A9", "/a b"],
+    ["/a%2Fb/", "/a%2Fb"],
+    ["/caf%E9/", "/caf%E9"],
+    ["/100%/", "/100%"],
+  ])("decodes the percent-encoding of %j, as location.pathname gives it, to %j, keeping what it cannot decode", (value, expected) => {
+    expect(normalizePath(value)).toBe(expected);
+  });
+
   it("ignores a missing value", () => {
     expect(normalizePath(null)).toBeNull();
     expect(normalizePath(undefined)).toBeNull();
@@ -54,6 +67,8 @@ describe("isPage()", () => {
     ["api/", "api/", false],
     ["#top", "#top", false],
     ["/api/", "", false],
+    ["/café/", "/caf%C3%A9/", true],
+    ["/caf%C3%A9/", "/café", true],
   ])("isPage(%j, %j) is %j", (href, current, expected) => {
     expect(isPage(href, current)).toBe(expected);
   });

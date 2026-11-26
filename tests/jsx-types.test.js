@@ -204,11 +204,13 @@ describe("JSX types", () => {
     expect(menu).toContain("onselect?: (event: CustomEvent<{ value: string; item: NeuwoMenuItem; trigger: HTMLElement | null; checked?: boolean }>) => void;");
   });
 
-  it("binds the sidebar's navigate event with its href, and takes remember as a flag or a storage key", () => {
+  it("binds the sidebar's navigate event with its href, takes remember as a flag or a storage key, and a section's open as a flag", () => {
     const sidebar = block("neuwo-sidebar");
     expect(sidebar).toContain("onnavigate?: (event: CustomEvent<{ href: string }>) => void;");
     expect(sidebar).toContain("remember?: boolean | string;");
     expect(block("neuwo-nav-item")).toContain("href?: string;");
+    const section = block("neuwo-nav-section");
+    for (const prop of ["label?: string;", "href?: string;", "open?: boolean;", "id?: string;"]) expect(section).toContain(prop);
   });
 
   it("leaves an element with a value but no change event to React's own props", () => {

@@ -192,6 +192,27 @@ describe("<neuwo-sidebar> and <neuwo-nav-item>", () => {
     expect(host.menuOpen).toBe(false);
   });
 
+  it("leaves the phone menu as it is on a modified or middle click, which opens the link elsewhere, and closes it on a plain one", () => {
+    followed();
+    const { host, link } = sidebar();
+    host.menuOpen = true;
+    for (const init of [{ ctrlKey: true }, { metaKey: true }, { shiftKey: true }, { altKey: true }, { button: 1 }]) {
+      click(link("/a/"), init);
+      expect(host.menuOpen, JSON.stringify(init)).toBe(true);
+    }
+    click(link("/a/"));
+    expect(host.menuOpen).toBe(false);
+  });
+
+  it("closes the phone menu on a modified click whose default a handler already prevented, as a client router's", () => {
+    followed();
+    const { host, link } = sidebar();
+    link("/a/").addEventListener("click", (event) => event.preventDefault());
+    host.menuOpen = true;
+    click(link("/a/"), { ctrlKey: true });
+    expect(host.menuOpen).toBe(false);
+  });
+
   it("fires a cancelable navigate with the href on a plain click of an entry, and cancelling it prevents the link's default", () => {
     const prevented = followed();
     const { host, link } = sidebar();

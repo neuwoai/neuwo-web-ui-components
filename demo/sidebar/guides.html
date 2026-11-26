@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Neuwo Web UI Library: Sidebar, Introduction</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/dist/neuwo.css" />
+    <link rel="stylesheet" href="shell.css" />
+    <script type="module" src="/dist/neuwo.js"></script>
+  </head>
+  <body class="neuwo-body">
+    <div class="background">
+      <div class="neuwo-background__gradient"></div>
+    </div>
+    <div class="shell">
+      <neuwo-sidebar label="Sidebar Demo">
+        <a slot="brand" href="/demo/sidebar/"><neuwo-logo variant="bg-dark" label="Neuwo Web UI Library"></neuwo-logo></a>
+        <neuwo-button slot="actions" variant="glass" size="sm" href="/demo/">All Components</neuwo-button>
+        <neuwo-nav-item href="/demo/sidebar/">Getting Started</neuwo-nav-item>
+        <neuwo-nav-section label="Guides" open>
+          <neuwo-nav-item href="/demo/sidebar/guides.html">Introduction</neuwo-nav-item>
+          <neuwo-nav-item href="/demo/sidebar/installation.html">Installation</neuwo-nav-item>
+          <neuwo-nav-section label="In Depth">
+            <neuwo-nav-item href="/demo/sidebar/theming.html">Theming</neuwo-nav-item>
+            <neuwo-nav-item href="/demo/sidebar/accessibility.html">Accessibility</neuwo-nav-item>
+          </neuwo-nav-section>
+        </neuwo-nav-section>
+        <neuwo-nav-section label="Reference" href="/demo/sidebar/reference.html">
+          <neuwo-nav-item href="/demo/sidebar/sections.html">Sections <neuwo-badge size="s">New</neuwo-badge></neuwo-nav-item>
+        </neuwo-nav-section>
+        <p slot="after-nav" class="hint">Each page marks its own entry, and the sections above it, from its address.</p>
+        <a slot="footer" href="https://neuwo.ai/">Back to neuwo.ai</a>
+      </neuwo-sidebar>
+      <main class="content">
+        <h1>Guides</h1>
+        <p>
+          Guides is a section that only folds. Its name fills the row, and a click anywhere on the row, or Enter or
+          Space on it, folds or unfolds it. Its own page, this one, is the Introduction entry, first inside it.
+        </p>
+        <p>
+          That is the form to prefer. A name that both links and folds is two targets in one row, and on a phone a tap
+          meant to look inside the section takes the reader away instead. Reference, further down the nav, shows the
+          other form.
+        </p>
+        <p>
+          Guides carries <code>open</code>, so it starts open on every page. In Depth does not: it opens on Theming and
+          Accessibility, the pages it holds, and takes the underline there along with Guides.
+        </p>
+      </main>
+    </div>
+  </body>
+</html>

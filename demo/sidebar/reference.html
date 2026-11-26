@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Neuwo Web UI Library: Sidebar, Reference</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/dist/neuwo.css" />
+    <link rel="stylesheet" href="shell.css" />
+    <script type="module" src="/dist/neuwo.js"></script>
+  </head>
+  <body class="neuwo-body">
+    <div class="background">
+      <div class="neuwo-background__gradient"></div>
+    </div>
+    <div class="shell">
+      <neuwo-sidebar label="Sidebar Demo">
+        <a slot="brand" href="/demo/sidebar/"><neuwo-logo variant="bg-dark" label="Neuwo Web UI Library"></neuwo-logo></a>
+        <neuwo-button slot="actions" variant="glass" size="sm" href="/demo/">All Components</neuwo-button>
+        <neuwo-nav-item href="/demo/sidebar/">Getting Started</neuwo-nav-item>
+        <neuwo-nav-section label="Guides" open>
+          <neuwo-nav-item href="/demo/sidebar/guides.html">Introduction</neuwo-nav-item>
+          <neuwo-nav-item href="/demo/sidebar/installation.html">Installation</neuwo-nav-item>
+          <neuwo-nav-section label="In Depth">
+            <neuwo-nav-item href="/demo/sidebar/theming.html">Theming</neuwo-nav-item>
+            <neuwo-nav-item href="/demo/sidebar/accessibility.html">Accessibility</neuwo-nav-item>
+          </neuwo-nav-section>
+        </neuwo-nav-section>
+        <neuwo-nav-section label="Reference" href="/demo/sidebar/reference.html">
+          <neuwo-nav-item href="/demo/sidebar/sections.html">Sections <neuwo-badge size="s">New</neuwo-badge></neuwo-nav-item>
+        </neuwo-nav-section>
+        <p slot="after-nav" class="hint">Each page marks its own entry, and the sections above it, from its address.</p>
+        <a slot="footer" href="https://neuwo.ai/">Back to neuwo.ai</a>
+      </neuwo-sidebar>
+      <main class="content">
+        <h1>Reference</h1>
+        <p>
+          Reference is a section with an <code>href</code>. Its name is a link to this page, marked as the current page
+          here, and the chevron beside it is a separate toggle named Show Reference pages, with its own expanded state.
+          The two are side by side, never a link inside a toggle.
+        </p>
+        <p>
+          It works, but prefer the form Guides uses: a section that only folds, with its own page as an Introduction
+          entry first inside it.
+        </p>
+      </main>
+    </div>
+  </body>
+</html>

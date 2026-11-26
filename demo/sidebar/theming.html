@@ -18,10 +18,18 @@
         <a slot="brand" href="/demo/sidebar/"><neuwo-logo variant="bg-dark" label="Neuwo Web UI Library"></neuwo-logo></a>
         <neuwo-button slot="actions" variant="glass" size="sm" href="/demo/">All Components</neuwo-button>
         <neuwo-nav-item href="/demo/sidebar/">Getting Started</neuwo-nav-item>
-        <neuwo-nav-item href="/demo/sidebar/installation.html">Installation</neuwo-nav-item>
-        <neuwo-nav-item href="/demo/sidebar/theming.html">Theming</neuwo-nav-item>
-        <neuwo-nav-item href="/demo/sidebar/accessibility.html">Accessibility</neuwo-nav-item>
-        <p slot="after-nav" class="hint">Each page marks its own entry from its address.</p>
+        <neuwo-nav-section label="Guides" open>
+          <neuwo-nav-item href="/demo/sidebar/guides.html">Introduction</neuwo-nav-item>
+          <neuwo-nav-item href="/demo/sidebar/installation.html">Installation</neuwo-nav-item>
+          <neuwo-nav-section label="In Depth">
+            <neuwo-nav-item href="/demo/sidebar/theming.html">Theming</neuwo-nav-item>
+            <neuwo-nav-item href="/demo/sidebar/accessibility.html">Accessibility</neuwo-nav-item>
+          </neuwo-nav-section>
+        </neuwo-nav-section>
+        <neuwo-nav-section label="Reference" href="/demo/sidebar/reference.html">
+          <neuwo-nav-item href="/demo/sidebar/sections.html">Sections <neuwo-badge size="s">New</neuwo-badge></neuwo-nav-item>
+        </neuwo-nav-section>
+        <p slot="after-nav" class="hint">Each page marks its own entry, and the sections above it, from its address.</p>
         <a slot="footer" href="https://neuwo.ai/">Back to neuwo.ai</a>
       </neuwo-sidebar>
       <main class="content">
@@ -38,7 +46,12 @@
         <p>
           Every other part is a prefixed class, <code>.neuwo-sidebar</code> and its elements, which a page restyles
           with a class rule. The entries are <code>.neuwo-nav-link</code> with a tighter gutter, so they move with any
-          change to the navigation look.
+          change to the navigation look, and so are the sections' names, a size smaller once they are nested.
+        </p>
+        <p>
+          A section's chevron is drawn in <code>--neuwo-color-text-muted</code>, lifts to
+          <code>--neuwo-color-text</code> while its row is hovered, and turns over <code>--neuwo-transition-fast</code>,
+          without moving at all when the reader asks for reduced motion.
         </p>
       </main>
     </div>

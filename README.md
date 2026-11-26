@@ -350,7 +350,8 @@ ordinary sized element, for a single washed panel rather than a whole page.
 ### Navigation links
 
 `neuwo-components.css` carries the nav-link classes. `foundation/navigation.css` is still published
-for sites that link it alone. The classes carry the brand's nav-link treatment, the centre-out
+for sites that link it alone; with `components/reset.css`, link it after the reset, which names
+`.neuwo-nav-link` at the same weight, so whichever sheet comes later wins. The classes carry the brand's nav-link treatment, the centre-out
 underline that grows from the middle of the text on hover and focus. Two classes:
 
 - **`.neuwo-nav-link`** is a top-level entry: base type, a 44px tap target, and the underline lifted
@@ -392,7 +393,10 @@ and the current page look alike, and it composes with `aria-current` rather than
 ```
 
 `<neuwo-sidebar>` builds a whole sidebar from these links and marks the current page for you; see
-[Sidebar](#sidebar).
+[Sidebar](#sidebar). Inside it, a name or link in a section's nested list takes the `--sm` look
+without the class, and a section's focused row lifts its name's ink and bar as a focused link does.
+Under forced colours the bar is drawn in the system's text colour, since forced colours repaint
+backgrounds.
 
 The sheet styles links and nothing else. Placement, the list reset and any panel surface are
 the consumer's, so navigation stays ordinary markup: a real `<ul>` keeps its list semantics,
@@ -614,7 +618,7 @@ light DOM elements (`<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuw
 `<neuwo-logo>`, `<neuwo-copy>`, `<neuwo-notice>`, `<neuwo-cta>`, `<neuwo-input>`, `<neuwo-textarea>`,
 `<neuwo-range>`, `<neuwo-combobox>`, `<neuwo-checkbox>`, `<neuwo-toggle>`, `<neuwo-radio>`,
 `<neuwo-radio-group>`, `<neuwo-segmented>`, `<neuwo-menu>`, `<neuwo-menu-group>`,
-`<neuwo-menu-item>`, `<neuwo-sidebar>` and `<neuwo-nav-item>`) into their markup; MDX reads its own
+`<neuwo-menu-item>`, `<neuwo-sidebar>`, `<neuwo-nav-section>` and `<neuwo-nav-item>`) into their markup; MDX reads its own
 `jsxImportSource` option, not tsconfig's, so set it there too (in
 `@mdx-js/*` or Next's MDX config). Elements recognise markup React rendered, from Client or Server
 Components, and leave it to React, so without the setting a light DOM tag React renders stays bare.
@@ -622,7 +626,7 @@ The same setting adds every element to JSX with each attribute's allowed values 
 event's `detail`, so a misspelt variant fails the type check. React stays an optional peer
 dependency. A working project with controlled and uncontrolled forms is in [demo/react-vite](https://github.com/neuwoai/neuwo-web-ui-components/tree/v0.5.0/demo/react-vite).
 
-React renders the markup of all twenty-two elements itself, so they show from the first paint.
+React renders the markup of all twenty-three elements itself, so they show from the first paint.
 
 React 19 sets a property where the element has one and binds events, so the elements behave like
 native controls:
@@ -869,7 +873,7 @@ React's own controlled inputs do.
 | Notice card | `<neuwo-notice>` | Stable |
 | Logo | `<neuwo-logo>` | Stable |
 | Menu | `<neuwo-menu>` / `<neuwo-menu-group>` / `<neuwo-menu-item>` | Stable |
-| Sidebar | `<neuwo-sidebar>` / `<neuwo-nav-item>` | Stable |
+| Sidebar | `<neuwo-sidebar>` / `<neuwo-nav-section>` / `<neuwo-nav-item>` | Stable |
 | Modal | `<neuwo-modal>` | Planned |
 | Card | `<neuwo-card>` | Planned |
 
@@ -881,7 +885,7 @@ Published styling files, for direct linking or non-web use:
 | Tokens | `@neuwo/web-ui-library--demo/foundation/tokens.css` |
 | Typography | `@neuwo/web-ui-library--demo/foundation/typography.css` |
 | Page surface | `@neuwo/web-ui-library--demo/foundation/background.css` |
-| Navigation links (also inside `neuwo-components.css`) | `@neuwo/web-ui-library--demo/foundation/navigation.css` |
+| Navigation links (also inside `neuwo-components.css`; after the reset when linked alone) | `@neuwo/web-ui-library--demo/foundation/navigation.css` |
 | Markdown surface | `@neuwo/web-ui-library--demo/foundation/markdown.css` |
 | Font faces, tokens, reset and light DOM component recipes (one file) | `@neuwo/web-ui-library--demo/neuwo-components.css` |
 | `neuwo-components.css` plus typography, page surface and Markdown surface (one file) | `@neuwo/web-ui-library--demo/neuwo.css` |
@@ -889,7 +893,7 @@ Published styling files, for direct linking or non-web use:
 | Popup panel and row (combobox, menu) | `@neuwo/web-ui-library--demo/components/popup.css` |
 | Button recipe | `@neuwo/web-ui-library--demo/components/button/button.css` |
 | Menu recipe (menu, menu group, menu item) | `@neuwo/web-ui-library--demo/components/menu/menu.css` |
-| Sidebar recipe (sidebar, nav entry) | `@neuwo/web-ui-library--demo/components/sidebar/sidebar.css` |
+| Sidebar recipe (sidebar, nav section, nav entry) | `@neuwo/web-ui-library--demo/components/sidebar/sidebar.css` |
 | Field chrome | `@neuwo/web-ui-library--demo/components/fields/field.css` |
 | Selection shell (checkbox, toggle, radio group, segmented control) | `@neuwo/web-ui-library--demo/components/selection/controls.css` |
 | Checkbox and radio recipe | `@neuwo/web-ui-library--demo/components/selection/form-check.css` |
@@ -1050,6 +1054,14 @@ through the two tokens.
 | `.neuwo-sidebar__after-nav`, `.neuwo-sidebar__footer` | the wrappers around the `slot="after-nav"` and `slot="footer"` children, taken out of the flow while empty; the footer is ruled off above |
 | `.neuwo-nav-item` | an entry's `<li>` |
 | `.neuwo-nav-item__link` | the entry's `<a>`, alongside `.neuwo-nav-link`, with `.neuwo-nav-link--active` and `aria-current="page"` on the current page's entry |
+| `.neuwo-nav-section` | a section's `<li>` |
+| `.neuwo-nav-section--link`, `.neuwo-nav-section--active` | the section, by `href`, and while it holds the current page |
+| `.neuwo-nav-section__details` | the `<details>` around the section's summary and list, carrying `data-key`; with `href` it draws no box, so its summary sits in the link's row |
+| `.neuwo-nav-section__row` | the `<summary>` that is the whole row of a section without `href`, around the name and the chevron |
+| `.neuwo-nav-section__name` | the name, alongside `.neuwo-nav-link`, with `.neuwo-nav-link--active` while the section is marked: a `<span>` in the row, or with `href` the `<a>` |
+| `.neuwo-nav-section__toggle` | with `href`, the `<summary>` beside the link, named from the label (Show Guides pages), around the chevron |
+| `.neuwo-nav-section__chevron` | the chevron, turned towards the inline end while the section is closed |
+| `.neuwo-nav-section__list` | the nested `<ul>` around the section's entries, indented by `--neuwo-space-4` |
 
 The badge and deal-id render their text as authored. For capitals on a badge, add `uppercase`,
 which sets them with `text-transform` and leaves the text as written:
@@ -1694,10 +1706,10 @@ above.
 ## Sidebar
 
 `<neuwo-sidebar>` is a site's navigation down the side of the page: the brand at the top, a nav of
-`<neuwo-nav-item>` entries with the [navigation link](#navigation-links) look, and a footer. From
-48rem it is a column, sticky at the top and the full viewport tall, whose nav takes the slack and
-scrolls on its own. Below 48rem it is a glass bar pinned to the top, with a menu button that shows
-and hides the nav under it.
+`<neuwo-nav-item>` entries and folding `<neuwo-nav-section>` sections with the
+[navigation link](#navigation-links) look, and a footer. From 48rem it is a column, sticky at the
+top and the full viewport tall, whose nav takes the slack and scrolls on its own. Below 48rem it is
+a glass bar pinned to the top, with a menu button that shows and hides the nav under it.
 
 ```html
 <div class="shell">
@@ -1705,8 +1717,13 @@ and hides the nav under it.
     <a slot="brand" href="/"><neuwo-logo variant="bg-dark" label="Neuwo Docs"></neuwo-logo></a>
     <button slot="actions" type="button" aria-label="Setup">...</button>
     <neuwo-nav-item href="/">Getting Started</neuwo-nav-item>
-    <neuwo-nav-item href="/guides/">Guides</neuwo-nav-item>
-    <neuwo-nav-item href="/guides/setup/">Setup</neuwo-nav-item>
+    <neuwo-nav-section label="Guides">
+      <neuwo-nav-item href="/guides/">Introduction</neuwo-nav-item>
+      <neuwo-nav-item href="/guides/setup/">Setup</neuwo-nav-item>
+      <neuwo-nav-section label="Advanced">
+        <neuwo-nav-item href="/guides/advanced/caching/">Caching</neuwo-nav-item>
+      </neuwo-nav-section>
+    </neuwo-nav-section>
     <a slot="footer" href="https://neuwo.ai/">Back to neuwo.ai</a>
   </neuwo-sidebar>
   <main class="content">...</main>
@@ -1743,10 +1760,12 @@ of pushing the page sideways.
 `<neuwo-sidebar>`:
 
 - **`current`** is the current page. The entry whose `href` names it carries
-  `aria-current="page"` and the active underline; a page below an entry does not mark it. Both
-  compare without the query, the hash, a trailing slash or a trailing `/index.html`, so `/guides`,
-  `/guides/` and `/guides/index.html` are one page. A path from the site's root compares with a
-  path, and a full URL with a full URL; a relative `href` never matches. Without `current`, the
+  `aria-current="page"` and the active underline, and the sections holding it are marked and open
+  (see [Sections](#sections)); a page below an entry does not mark the entry. Both compare without
+  the query, the hash, a trailing slash or a trailing `/index.html`, and with percent-encoding
+  decoded, so `/guides`, `/guides/` and `/guides/index.html` are one page, and so are `/café/` and
+  `/caf%C3%A9/`. A path from the site's root compares with a path, and a full URL with a full URL;
+  a relative `href` never matches. Without `current`, the
   element takes `location.pathname` when its script runs, so served markup marks nothing until then,
   and a sidebar React rendered never takes it. Set it wherever the page is known, as a server
   always can, so the first paint is marked.
@@ -1759,7 +1778,7 @@ The places, as slots:
 | --- | --- | --- |
 | `brand` | the top of the column, centred; a `<neuwo-logo>` in it is 10rem wide | the start of the bar; a logo is 7rem wide |
 | `actions` | not shown | in the bar, before the menu button |
-| (default) | the `<neuwo-nav-item>` entries, in the nav | in the menu |
+| (default) | the `<neuwo-nav-item>` entries and `<neuwo-nav-section>` sections, in the nav | in the menu |
 | `after-nav` | between the nav and the footer, outside the nav's scroll | in the menu, under the nav |
 | `footer` | the bottom of the column, ruled off above | in the menu, under the rest |
 
@@ -1769,22 +1788,25 @@ markup such as a `<neuwo-badge>`.
 The menu button is the `<summary>` of a `<details>` around the nav, the after-nav place and the
 footer, so the browser holds its state and announces it, and on a server-rendered page it works
 before the library's script runs, or without it. The menu starts closed on every page, and following
-any link in the nav closes it. From 48rem the nav shows whatever the menu's state, so widening the
+a link in the nav closes it, unless a modifier key or the middle button opens the link elsewhere. From 48rem the nav shows whatever the menu's state, so widening the
 window with the menu open shows the column as it should be. A script reads or sets the menu's state
 through the **`menuOpen`** property, for instance to close it when a panel of its own opens; it is
 not reflected to an attribute.
 
-A plain click on an entry fires **`navigate`** on the sidebar, a cancelable, bubbling
-`CustomEvent` whose `detail.href` is the entry's `href`, before the browser follows the link. A site
-with a client-side router cancels it and routes instead, so the page around the sidebar, and the
-sidebar's own state, stay in place. A click with a modifier key, or one whose default a handler has
-already prevented, fires nothing, and neither do the links in the other places, which are the
-site's own markup: give those the router's own link. In React, `onnavigate` binds it.
+A plain click on an entry, or on a section's own link, fires **`navigate`** on the sidebar, a
+cancelable, bubbling `CustomEvent` whose `detail.href` is the link's `href`, before the browser
+follows it. A site with a client-side router cancels it and routes instead, so the page around the
+sidebar, and the sidebar's own state, stay in place. Then it sets `current` to the new page, so the
+mark and the sections follow; a React app passes the router's path as the `current` prop instead. A
+click with a modifier key, or one whose default a handler has already prevented, fires nothing, and
+neither do the links in the other places, which are the site's own markup: give those the router's
+own link. In React, `onnavigate` binds it.
 
 ```js
 document.querySelector("neuwo-sidebar").addEventListener("navigate", (event) => {
   event.preventDefault();
   router.push(event.detail.href);
+  event.currentTarget.current = event.detail.href;
 });
 ```
 
@@ -1792,6 +1814,49 @@ The column is 17rem wide unless **`--neuwo-sidebar-width`** says otherwise. The 
 never declares it, so set it on the element or an ancestor. The 48rem breakpoint is fixed, since a
 custom property cannot drive a media query. The entries are `.neuwo-nav-link` with
 `--neuwo-nav-link-gutter` at `--neuwo-space-2`; the classes are listed under restyling above.
+
+### Sections
+
+`<neuwo-nav-section>` folds a group of entries under a name. It holds `<neuwo-nav-item>` entries and
+further sections, in any order and to any depth, and a click anywhere on its row, or Enter or Space
+on it, folds or unfolds it. The chevron at the row's inline end points down while the section is
+open and towards the inline end while it is closed, mirrored right to left, and turns over
+`--neuwo-transition-fast`, without moving under reduced motion.
+
+- **`label`** is the section's name. A section nested in another takes the small nav-link size for
+  it, as nested entries do.
+- **`open`** starts the section open. It is the starting state only: removing it later leaves the
+  section open.
+- **`href`** makes the name a link to the section's own page, which carries `aria-current="page"`
+  there, and turns the chevron into a separate toggle beside it, named from the label: Show Guides
+  pages. Two targets side by side, never a link inside a toggle.
+- **`id`** names the section for remembering its state; its `<details>` carries it as `data-key`.
+  Without one, the label does.
+
+Let a section only fold, and give its own page as the first entry inside it, an Introduction entry,
+rather than setting `href`. A name that both links and folds is two targets in one row, and on a
+phone a tap meant to look inside the section takes the reader away instead.
+
+A section is marked, with the active underline on its name, and opens when it holds the current
+page at any depth, or when the current page lies below the page of one of its entries, or below its
+own `href`, as a page the nav does not list would. An entry is marked only on its own page, so such
+an unlisted page lights the sections above it and no entry. Each element works its mark out from
+`current` and its own contents, so no site marks anything by hand.
+
+Only the reader closes a section. When `current` moves, as a client-side router moves it, the new
+page's sections open and take the mark, and every section already open stays open, the one around
+the page the reader left included. A section the reader closed stays closed through any re-render
+until they open it, or until the current page moves into it. The section's `<details>` holds its
+open state, so the app holds none.
+
+Each section is a `<details>` whose `<summary>` is the row, or with `href` the toggle, so the browser
+announces it as expanded or collapsed, and a served section folds before the library's script runs,
+and without it.
+
+In React, write the entries and sections as JSX directly inside `<neuwo-sidebar>`; an inline
+`.map()` is fine. The JSX runtime hands them the sidebar's `current` through elements, fragments
+and other Neuwo elements, but it cannot see into a component of your own, so the entries such a
+component renders mark nothing, and the sections around them cannot tell that they hold the page.
 
 ## Logo
 

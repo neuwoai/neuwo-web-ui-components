@@ -58,7 +58,7 @@ const EXPECTED_TAGS = [
   "neuwo-radio-group", "neuwo-segmented", "neuwo-badge", "neuwo-deal-id",
   "neuwo-status-dot", "neuwo-cta", "neuwo-notice", "neuwo-logo", "neuwo-copy",
   "neuwo-menu", "neuwo-menu-group", "neuwo-menu-item",
-  "neuwo-nav-item", "neuwo-sidebar",
+  "neuwo-nav-item", "neuwo-nav-section", "neuwo-sidebar",
 ];
 
 // Removed on purpose: the combobox replaces `neuwo-select`, and `foundation/navigation.css` `neuwo-dropdown`.
@@ -357,6 +357,20 @@ describe("custom-elements.json", () => {
     expect(menuOpen.description).toMatch(/not reflected/);
     expect(cssPropertiesFor(manifest, "neuwo-sidebar")).toEqual(new Set(["--neuwo-sidebar-width"]));
     expect(declByTag(manifest, "neuwo-nav-item").attributes.map((attribute) => attribute.name)).toEqual(["href"]);
+  });
+
+  it("documents the section's attributes, open as the starting state only, and its slot", () => {
+    const section = declByTag(manifest, "neuwo-nav-section");
+    expect(section.attributes.map((attribute) => [attribute.name, attribute.type?.text ?? null])).toEqual([
+      ["label", null],
+      ["href", null],
+      ["open", "boolean"],
+      ["id", null],
+    ]);
+    expect(section.attributes.find((attribute) => attribute.name === "open").description).toMatch(/starting state/);
+    expect(section.attributes.find((attribute) => attribute.name === "href").description).toMatch(/Show <label> pages/);
+    expect(section.slots.map((slot) => slot.name)).toEqual([""]);
+    expect(section.events ?? []).toEqual([]);
   });
 
   it("documents the copy wrapper's three labels", () => {

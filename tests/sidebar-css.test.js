@@ -92,7 +92,9 @@ describe("sidebar.css recipe", () => {
     expect(desktop(".neuwo-sidebar__toggle").display).toBe("none");
     expect(desktop(".neuwo-sidebar__actions").display).toBe("none");
     for (const each of inside(DESKTOP)) for (const selector of each.selectors) expect(selector).not.toMatch(/\[open\]/);
-    expect(code.match(/display:\s*contents/g)).toHaveLength(1);
+    const contents = base.filter((each) => each.declarations.get("display") === "contents").flatMap((each) => each.selectors);
+    expect(contents).toEqual(["neuwo-sidebar:not([hidden])", "neuwo-nav-section:not([hidden])", "neuwo-nav-item:not([hidden])", ".neuwo-nav-section--link > .neuwo-nav-section__details"]);
+    expect(code.match(/display:\s*contents/g)).toHaveLength(2);
   });
 
   it("centres the brand and sizes its logo 10rem wide from 48rem, 7rem wide and at the start below", () => {
@@ -168,8 +170,77 @@ describe("sidebar.css recipe", () => {
     expect(rule(".neuwo-sidebar__footer:empty")).toEqual({ display: "none" });
   });
 
-  it("strips the list's markers and indents", () => {
+  it("strips the lists' markers and indents, all but a nested list's --neuwo-space-4 at the inline start", () => {
     expect(rule(".neuwo-sidebar__list")).toEqual({ margin: "0", padding: "0", "list-style": "none" });
+    expect(rule(".neuwo-nav-section__list")).toEqual({ margin: "0", padding: "0", "list-style": "none", "padding-inline-start": "var(--neuwo-space-4)" });
+  });
+
+  it("lays a section's row out as a flex row, centred, with a --neuwo-space-1 gap, the whole row its pointer target", () => {
+    expect(rule(".neuwo-nav-section__row")).toEqual({
+      display: "flex",
+      "align-items": "center",
+      gap: "var(--neuwo-space-1)",
+      "border-radius": "var(--neuwo-radius-md)",
+      cursor: "pointer",
+      "list-style": "none",
+    });
+  });
+
+  it("drops every summary's marker", () => {
+    for (const summary of [".neuwo-sidebar__toggle", ".neuwo-nav-section__row", ".neuwo-nav-section__toggle"]) {
+      expect(rule(summary)["list-style"], summary).toBe("none");
+      expect(rule(`${summary}::-webkit-details-marker`), summary).toEqual({ display: "none" });
+    }
+  });
+
+  it("draws the chevron 16px at the row's inline end in --neuwo-color-text-muted, and --neuwo-color-text while the row is hovered", () => {
+    const chevron = rule(".neuwo-nav-section__chevron");
+    expect(chevron).toMatchObject({
+      flex: "none",
+      display: "block",
+      "inline-size": "1rem",
+      "block-size": "1rem",
+      "margin-inline-start": "auto",
+      "background-color": "var(--neuwo-color-text-muted)",
+    });
+    for (const property of ["mask", "-webkit-mask"]) {
+      expect(chevron[property]).toContain("M6 9l6 6 6-6");
+      expect(chevron[property]).toMatch(/center \/ contain no-repeat$/);
+    }
+    for (const hovered of [".neuwo-nav-section__row:hover > .neuwo-nav-section__chevron", ".neuwo-nav-section__toggle:hover > .neuwo-nav-section__chevron"]) {
+      expect(rule(hovered), hovered).toEqual({ "background-color": "var(--neuwo-color-text)" });
+    }
+  });
+
+  it("turns the chevron towards the inline end while the section is closed, mirrored right to left, over --neuwo-transition-fast", () => {
+    const closed = ".neuwo-nav-section__details:not([open]) > summary > .neuwo-nav-section__chevron";
+    expect(rule(closed)).toEqual({ transform: "rotate(-90deg)" });
+    expect(rule(`${closed}:dir(rtl)`)).toEqual({ transform: "rotate(90deg)" });
+    expect(rule(".neuwo-nav-section__chevron").transition).toBe("transform var(--neuwo-transition-fast), background-color var(--neuwo-transition-fast)");
+    const sections = base.flatMap((each) => each.selectors).filter((selector) => selector.includes("neuwo-nav-section__details:not([open])"));
+    for (const selector of sections) expect(selector, "only a section's own summary, never a nested one's").toContain("> summary >");
+  });
+
+  it("puts a linked section's toggle at the inline end of its link's row, and the nested list under both", () => {
+    expect(rule(".neuwo-nav-section--link")).toEqual({
+      display: "grid",
+      "grid-template-columns": "minmax(0, 1fr) auto",
+      "align-items": "center",
+      "column-gap": "var(--neuwo-space-1)",
+    });
+    expect(rule(".neuwo-nav-section--link > .neuwo-nav-section__name")).toEqual({ "grid-column": "1", "grid-row": "1" });
+    expect(rule(".neuwo-nav-section--link > .neuwo-nav-section__details")).toEqual({ display: "contents" });
+    expect(rule(".neuwo-nav-section--link > .neuwo-nav-section__details::details-content")).toEqual({ "grid-column": "1 / -1", "grid-row": "2" });
+    expect(rule(".neuwo-nav-section__toggle")).toEqual({
+      "grid-column": "2",
+      "grid-row": "1",
+      display: "flex",
+      padding: "var(--neuwo-space-1)",
+      "margin-inline-end": "calc(-1 * var(--neuwo-space-1))",
+      "border-radius": "var(--neuwo-radius-md)",
+      cursor: "pointer",
+      "list-style": "none",
+    });
   });
 
   it("sets the nav-link gutter to --neuwo-space-2 inside the sidebar, outranking the recipe's own", () => {
@@ -192,19 +263,36 @@ describe("sidebar.css recipe", () => {
     expect(rule(".neuwo-sidebar__toggle::-webkit-details-marker")).toEqual({ display: "none" });
   });
 
-  it("keeps the menu icon visible in forced colours, in the system's text colour", () => {
+  it("keeps the menu icon and the chevron, hovered or not, visible in forced colours, in the system's text colour", () => {
     const forced = inside("(forced-colors: active)");
     expect(of(forced, ".neuwo-sidebar__toggle-icon")).toEqual({ background: "CanvasText" });
+    for (const chevron of [
+      ".neuwo-nav-section__chevron",
+      ".neuwo-nav-section__row:hover > .neuwo-nav-section__chevron",
+      ".neuwo-nav-section__toggle:hover > .neuwo-nav-section__chevron",
+    ]) {
+      expect(of(forced, chevron), chevron).toEqual({ "background-color": "CanvasText" });
+    }
   });
 
-  it("stills under reduced motion every transition and animation it declares", () => {
+  it("stills under reduced motion every transition and animation it declares, shorthand or longhand", () => {
     const still = inside("(prefers-reduced-motion: reduce)");
+    const stilled = (declarations, family) =>
+      family === "transition"
+        ? declarations.transition === "none" || declarations["transition-property"] === "none" || /^0m?s$/.test(declarations["transition-duration"] ?? "")
+        : declarations.animation === "none" || declarations["animation-name"] === "none";
+    const FAMILIES = { transition: ["transition", "transition-property", "transition-duration"], animation: ["animation", "animation-name"] };
+    let moving = 0;
     for (const each of [...base, ...inside(PHONE), ...inside(DESKTOP)]) {
-      for (const property of ["transition", "animation"]) {
-        if (!each.declarations.has(property)) continue;
-        for (const selector of each.selectors) expect(of(still, selector)[property], `${selector} ${property}`).toBe("none");
+      for (const [family, properties] of Object.entries(FAMILIES)) {
+        if (!properties.some((property) => each.declarations.has(property))) continue;
+        for (const selector of each.selectors) {
+          moving++;
+          expect(stilled(of(still, selector), family), `${selector} ${family}`).toBe(true);
+        }
       }
     }
+    expect(moving).toBeGreaterThan(0);
   });
 
   it("uses tokens only, and only tokens that tokens.css defines", () => {

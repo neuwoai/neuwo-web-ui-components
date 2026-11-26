@@ -11,6 +11,7 @@ import { menuGroupTemplate } from "./components/menu/menu-group.template.js";
 import { menuItemTemplate } from "./components/menu/menu-item.template.js";
 import { menuTemplate } from "./components/menu/menu.template.js";
 import { navItemTemplate } from "./components/sidebar/nav-item.template.js";
+import { navSectionTemplate } from "./components/sidebar/nav-section.template.js";
 import { noticeTemplate } from "./components/notice/notice.template.js";
 import { radioGroupTemplate } from "./components/selection/radio/radio-group.template.js";
 import { radioTemplate } from "./components/selection/radio/radio.template.js";
@@ -36,6 +37,7 @@ export const templates = {
   "neuwo-menu-group": menuGroupTemplate,
   "neuwo-menu-item": menuItemTemplate,
   "neuwo-nav-item": navItemTemplate,
+  "neuwo-nav-section": navSectionTemplate,
   "neuwo-notice": noticeTemplate,
   "neuwo-radio": radioTemplate,
   "neuwo-radio-group": radioGroupTemplate,

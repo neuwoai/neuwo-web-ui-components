@@ -19,6 +19,7 @@ import "./components/menu/neuwo-menu.js"; // self-registers <neuwo-menu>
 import "./components/menu/neuwo-menu-group.js"; // self-registers <neuwo-menu-group>
 import "./components/menu/neuwo-menu-item.js"; // self-registers <neuwo-menu-item>
 import "./components/sidebar/neuwo-nav-item.js"; // self-registers <neuwo-nav-item>
+import "./components/sidebar/neuwo-nav-section.js"; // self-registers <neuwo-nav-section>
 import "./components/sidebar/neuwo-sidebar.js"; // self-registers <neuwo-sidebar>
 
 export { NeuwoButton } from "./components/button/neuwo-button.js";
@@ -42,4 +43,5 @@ export { NeuwoMenu } from "./components/menu/neuwo-menu.js";
 export { NeuwoMenuGroup } from "./components/menu/neuwo-menu-group.js";
 export { NeuwoMenuItem } from "./components/menu/neuwo-menu-item.js";
 export { NeuwoNavItem } from "./components/sidebar/neuwo-nav-item.js";
+export { NeuwoNavSection } from "./components/sidebar/neuwo-nav-section.js";
 export { NeuwoSidebar } from "./components/sidebar/neuwo-sidebar.js";

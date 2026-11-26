@@ -22,6 +22,7 @@ import type { NeuwoMenu } from "../components/menu/neuwo-menu.js";
 import type { NeuwoMenuGroup } from "../components/menu/neuwo-menu-group.js";
 import type { NeuwoMenuItem } from "../components/menu/neuwo-menu-item.js";
 import type { NeuwoNavItem } from "../components/sidebar/neuwo-nav-item.js";
+import type { NeuwoNavSection } from "../components/sidebar/neuwo-nav-section.js";
 import type { NeuwoSidebar } from "../components/sidebar/neuwo-sidebar.js";
 
 declare global {
@@ -47,6 +48,7 @@ declare global {
     "neuwo-menu-group": NeuwoMenuGroup;
     "neuwo-menu-item": NeuwoMenuItem;
     "neuwo-nav-item": NeuwoNavItem;
+    "neuwo-nav-section": NeuwoNavSection;
     "neuwo-sidebar": NeuwoSidebar;
   }
 }

@@ -51,6 +51,20 @@ const icon = { tag: "svg", attrs: { slot: "start" }, children: [{ tag: "path", a
  */
 const entry = (label, href) => ({ tag: "neuwo-nav-item", attrs: { href }, text: label });
 
+/**
+ * @param {Record<string, string>} attrs
+ * @param {Child[]} children
+ * @returns {ChildElement}
+ */
+const section = (attrs, children) => ({ tag: "neuwo-nav-section", attrs, children });
+
+/** @type {Child[]} */
+const tree = [
+  entry("Getting Started", "/"),
+  section({ label: "Guides" }, [entry("Introduction", "/guides/"), section({ label: "Setup", id: "setup" }, [entry("Keys", "/guides/setup/keys/")])]),
+  section({ label: "Reference", href: "/reference/" }, [entry("API", "/reference/api/")]),
+];
+
 /** @type {Record<string, TemplateCase[]>} */
 export const cases = {
   "neuwo-button": [
@@ -458,6 +472,16 @@ export const cases = {
     { name: "plain", attrs: { href: "/guides/" }, children: ["Guides"] },
     { name: "label with a badge", attrs: { href: "https://neuwo.ai/api/" }, children: ["API ", { tag: "neuwo-badge", attrs: { size: "s" }, text: "New" }] },
   ],
+  "neuwo-nav-section": [
+    { name: "fold only", attrs: { label: "Guides" }, children: [entry("Introduction", "/guides/"), entry("Setup", "/guides/setup/")] },
+    { name: "open", attrs: { label: "Guides", open: "" }, children: [entry("Introduction", "/guides/")] },
+    { name: "href and id", attrs: { label: "Reference", href: "/reference/", id: "reference" }, children: [entry("API", "/reference/api/")] },
+    {
+      name: "nested section",
+      attrs: { label: "Guides" },
+      children: ["\n  ", entry("Introduction", "/guides/"), "\n  ", section({ label: "Setup" }, [entry("Keys", "/guides/setup/keys/")]), "\n"],
+    },
+  ],
   "neuwo-sidebar": [
     { name: "empty", attrs: { current: "/" }, children: [] },
     {
@@ -477,6 +501,8 @@ export const cases = {
       attrs: { current: "/guides/setup/" },
       children: ["\n  ", entry("Getting Started", "/"), "\n  ", entry("Guides", "/guides/"), "\n  ", entry("Setup", "/guides/setup/"), "\n  ", entry("API", "https://neuwo.ai/api/"), "\n"],
     },
+    { name: "sections marked at depth", attrs: { current: "/guides/setup/keys/" }, children: tree },
+    { name: "a section with href marked on its page", attrs: { current: "/reference/index.html" }, children: tree },
   ],
 };
 

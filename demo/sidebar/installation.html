@@ -18,10 +18,18 @@
         <a slot="brand" href="/demo/sidebar/"><neuwo-logo variant="bg-dark" label="Neuwo Web UI Library"></neuwo-logo></a>
         <neuwo-button slot="actions" variant="glass" size="sm" href="/demo/">All Components</neuwo-button>
         <neuwo-nav-item href="/demo/sidebar/">Getting Started</neuwo-nav-item>
-        <neuwo-nav-item href="/demo/sidebar/installation.html">Installation</neuwo-nav-item>
-        <neuwo-nav-item href="/demo/sidebar/theming.html">Theming</neuwo-nav-item>
-        <neuwo-nav-item href="/demo/sidebar/accessibility.html">Accessibility</neuwo-nav-item>
-        <p slot="after-nav" class="hint">Each page marks its own entry from its address.</p>
+        <neuwo-nav-section label="Guides" open>
+          <neuwo-nav-item href="/demo/sidebar/guides.html">Introduction</neuwo-nav-item>
+          <neuwo-nav-item href="/demo/sidebar/installation.html">Installation</neuwo-nav-item>
+          <neuwo-nav-section label="In Depth">
+            <neuwo-nav-item href="/demo/sidebar/theming.html">Theming</neuwo-nav-item>
+            <neuwo-nav-item href="/demo/sidebar/accessibility.html">Accessibility</neuwo-nav-item>
+          </neuwo-nav-section>
+        </neuwo-nav-section>
+        <neuwo-nav-section label="Reference" href="/demo/sidebar/reference.html">
+          <neuwo-nav-item href="/demo/sidebar/sections.html">Sections <neuwo-badge size="s">New</neuwo-badge></neuwo-nav-item>
+        </neuwo-nav-section>
+        <p slot="after-nav" class="hint">Each page marks its own entry, and the sections above it, from its address.</p>
         <a slot="footer" href="https://neuwo.ai/">Back to neuwo.ai</a>
       </neuwo-sidebar>
       <main class="content">
@@ -36,13 +44,17 @@
         <p>
           Then put the sidebar first in a flex row beside the page's content. Each entry is a
           <code>&lt;neuwo-nav-item&gt;</code> with the page in <code>href</code>, written as a path from the site's
-          root or as a full URL.
+          root or as a full URL, and a section that folds is a <code>&lt;neuwo-nav-section&gt;</code> holding its
+          entries, its own page first.
         </p>
         <pre><code>&lt;div class="shell"&gt;
-  &lt;neuwo-sidebar label="Documentation" current="/installation/"&gt;
+  &lt;neuwo-sidebar label="Documentation" current="/guides/installation/"&gt;
     &lt;a slot="brand" href="/"&gt;&lt;neuwo-logo variant="bg-dark"&gt;&lt;/neuwo-logo&gt;&lt;/a&gt;
     &lt;neuwo-nav-item href="/"&gt;Getting Started&lt;/neuwo-nav-item&gt;
-    &lt;neuwo-nav-item href="/installation/"&gt;Installation&lt;/neuwo-nav-item&gt;
+    &lt;neuwo-nav-section label="Guides"&gt;
+      &lt;neuwo-nav-item href="/guides/"&gt;Introduction&lt;/neuwo-nav-item&gt;
+      &lt;neuwo-nav-item href="/guides/installation/"&gt;Installation&lt;/neuwo-nav-item&gt;
+    &lt;/neuwo-nav-section&gt;
     &lt;a slot="footer" href="https://neuwo.ai/"&gt;Back to neuwo.ai&lt;/a&gt;
   &lt;/neuwo-sidebar&gt;
   &lt;main class="content"&gt;...&lt;/main&gt;

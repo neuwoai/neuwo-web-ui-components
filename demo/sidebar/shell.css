@@ -19,13 +19,19 @@ body {
   align-items: flex-start;
 }
 
-/* Without a zero minimum the column refuses to shrink below its widest child and pushes the page sideways. */
+/* Without a zero minimum the content refuses to shrink below its widest child and pushes the page sideways. */
 .content {
   flex: 1 1 auto;
   min-inline-size: 0;
   max-inline-size: 48rem;
   margin-inline: auto;
   padding: var(--neuwo-space-8) var(--neuwo-space-8) var(--neuwo-space-16);
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--neuwo-space-3);
 }
 
 .hint {

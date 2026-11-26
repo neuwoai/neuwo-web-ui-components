@@ -56,6 +56,10 @@ export function Usage() {
           <neuwo-logo variant="bg-dark" label="Neuwo Docs" />
         </a>
         <neuwo-nav-item href="/guides/">Guides</neuwo-nav-item>
+        <neuwo-nav-section label="Reference" href="/reference/" id="reference" open>
+          <neuwo-nav-item href="/reference/api/">API</neuwo-nav-item>
+          <neuwo-nav-section label="Errors" open={false} />
+        </neuwo-nav-section>
       </neuwo-sidebar>
       <neuwo-sidebar remember="docs" />
       <neuwo-button onClick={() => sidebar.current && (sidebar.current.menuOpen = !sidebar.current.menuOpen)}>Menu</neuwo-button>
@@ -134,6 +138,8 @@ export function Usage() {
       <neuwo-copy onCopied={() => {}} />
       {/* @ts-expect-error a pick reports a string value */}
       <neuwo-menu onselect={(e) => e.detail.value.toFixed()} />
+      {/* @ts-expect-error a section starts open from a flag, not a string */}
+      <neuwo-nav-section open="open" />
       {/* @ts-expect-error a navigate reports a string href */}
       <neuwo-sidebar onnavigate={(e) => e.detail.href.toFixed()} />
       {/* @ts-expect-error not an element the library defines */}

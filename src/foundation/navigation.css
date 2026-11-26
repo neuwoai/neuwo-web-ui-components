@@ -16,7 +16,8 @@
   transition: color var(--neuwo-transition-fast);
 }
 
-.neuwo-nav-link--sm {
+.neuwo-nav-link--sm,
+.neuwo-nav-section__list .neuwo-nav-link {
   min-height: auto;
   line-height: var(--neuwo-line-height-body);
   padding: var(--neuwo-space-2) var(--neuwo-nav-link-gutter);
@@ -39,13 +40,15 @@
 }
 
 /* The compact entry has no lifted baseline to clear. */
-.neuwo-nav-link--sm::after {
+.neuwo-nav-link--sm::after,
+.neuwo-nav-section__list .neuwo-nav-link::after {
   bottom: 0;
 }
 
 /* The class outranks typography.css's `a` and `a:hover`, so these need no !important. */
 .neuwo-nav-link:hover,
 .neuwo-nav-link:focus-visible,
+.neuwo-nav-section__row:focus-visible > .neuwo-nav-link,
 .neuwo-nav-link[aria-current],
 .neuwo-nav-link--active {
   color: var(--neuwo-color-heading);
@@ -54,6 +57,7 @@
 /* aria-current takes no underline in a horizontal bar; --active holds the bar open in a vertical nav. */
 .neuwo-nav-link:hover::after,
 .neuwo-nav-link:focus-visible::after,
+.neuwo-nav-section__row:focus-visible > .neuwo-nav-link::after,
 .neuwo-nav-link--active::after {
   transform: scaleX(1);
 }
@@ -62,5 +66,12 @@
   .neuwo-nav-link,
   .neuwo-nav-link::after {
     transition: none;
+  }
+}
+
+/* Forced colours repaint the bar's background in the canvas colour, which would hide it. */
+@media (forced-colors: active) {
+  .neuwo-nav-link::after {
+    background: CanvasText;
   }
 }

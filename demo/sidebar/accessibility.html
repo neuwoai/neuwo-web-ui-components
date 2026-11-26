@@ -18,10 +18,18 @@
         <a slot="brand" href="/demo/sidebar/"><neuwo-logo variant="bg-dark" label="Neuwo Web UI Library"></neuwo-logo></a>
         <neuwo-button slot="actions" variant="glass" size="sm" href="/demo/">All Components</neuwo-button>
         <neuwo-nav-item href="/demo/sidebar/">Getting Started</neuwo-nav-item>
-        <neuwo-nav-item href="/demo/sidebar/installation.html">Installation</neuwo-nav-item>
-        <neuwo-nav-item href="/demo/sidebar/theming.html">Theming</neuwo-nav-item>
-        <neuwo-nav-item href="/demo/sidebar/accessibility.html">Accessibility</neuwo-nav-item>
-        <p slot="after-nav" class="hint">Each page marks its own entry from its address.</p>
+        <neuwo-nav-section label="Guides" open>
+          <neuwo-nav-item href="/demo/sidebar/guides.html">Introduction</neuwo-nav-item>
+          <neuwo-nav-item href="/demo/sidebar/installation.html">Installation</neuwo-nav-item>
+          <neuwo-nav-section label="In Depth">
+            <neuwo-nav-item href="/demo/sidebar/theming.html">Theming</neuwo-nav-item>
+            <neuwo-nav-item href="/demo/sidebar/accessibility.html">Accessibility</neuwo-nav-item>
+          </neuwo-nav-section>
+        </neuwo-nav-section>
+        <neuwo-nav-section label="Reference" href="/demo/sidebar/reference.html">
+          <neuwo-nav-item href="/demo/sidebar/sections.html">Sections <neuwo-badge size="s">New</neuwo-badge></neuwo-nav-item>
+        </neuwo-nav-section>
+        <p slot="after-nav" class="hint">Each page marks its own entry, and the sections above it, from its address.</p>
         <a slot="footer" href="https://neuwo.ai/">Back to neuwo.ai</a>
       </neuwo-sidebar>
       <main class="content">
@@ -34,7 +42,13 @@
         <p>
           The entries are links in a list, announced with its count, and the current page's link carries
           <code>aria-current="page"</code>. There is no tree widget and no roving focus: Tab moves through the links
-          as on any page.
+          as on any page, with each section's row between its neighbours.
+        </p>
+        <p>
+          A section is a <code>&lt;details&gt;</code> whose <code>&lt;summary&gt;</code> is its row, so the browser
+          announces it as expanded or collapsed, and Enter and Space fold it. A section with an <code>href</code> has
+          its link first, then a separate toggle named from its label, such as Show Reference pages. Only the reader
+          closes a section: when the current page moves, the open sections stay open.
         </p>
         <p>
           The menu button below 48rem is the <code>&lt;summary&gt;</code> of a <code>&lt;details&gt;</code>, named

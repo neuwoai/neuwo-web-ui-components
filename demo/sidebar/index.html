@@ -18,27 +18,55 @@
         <a slot="brand" href="/demo/sidebar/"><neuwo-logo variant="bg-dark" label="Neuwo Web UI Library"></neuwo-logo></a>
         <neuwo-button slot="actions" variant="glass" size="sm" href="/demo/">All Components</neuwo-button>
         <neuwo-nav-item href="/demo/sidebar/">Getting Started</neuwo-nav-item>
-        <neuwo-nav-item href="/demo/sidebar/installation.html">Installation</neuwo-nav-item>
-        <neuwo-nav-item href="/demo/sidebar/theming.html">Theming</neuwo-nav-item>
-        <neuwo-nav-item href="/demo/sidebar/accessibility.html">Accessibility</neuwo-nav-item>
-        <p slot="after-nav" class="hint">Each page marks its own entry from its address.</p>
+        <neuwo-nav-section label="Guides" open>
+          <neuwo-nav-item href="/demo/sidebar/guides.html">Introduction</neuwo-nav-item>
+          <neuwo-nav-item href="/demo/sidebar/installation.html">Installation</neuwo-nav-item>
+          <neuwo-nav-section label="In Depth">
+            <neuwo-nav-item href="/demo/sidebar/theming.html">Theming</neuwo-nav-item>
+            <neuwo-nav-item href="/demo/sidebar/accessibility.html">Accessibility</neuwo-nav-item>
+          </neuwo-nav-section>
+        </neuwo-nav-section>
+        <neuwo-nav-section label="Reference" href="/demo/sidebar/reference.html">
+          <neuwo-nav-item href="/demo/sidebar/sections.html">Sections <neuwo-badge size="s">New</neuwo-badge></neuwo-nav-item>
+        </neuwo-nav-section>
+        <p slot="after-nav" class="hint">Each page marks its own entry, and the sections above it, from its address.</p>
         <a slot="footer" href="https://neuwo.ai/">Back to neuwo.ai</a>
       </neuwo-sidebar>
       <main class="content">
         <h1>Getting Started</h1>
         <p>
-          This page and the three beside it share one hand-written <code>&lt;neuwo-sidebar&gt;</code>. None of them
-          sets <code>current</code>, so the element takes the page's path from the address bar and marks the entry
-          that names it: the underline and <code>aria-current="page"</code> follow you from page to page.
+          This page and the six in its nav share one hand-written <code>&lt;neuwo-sidebar&gt;</code>. None of them
+          sets <code>current</code>, so the element takes the page's path from the address bar, marks the entry that
+          names it and opens the sections above it: the underline and <code>aria-current="page"</code> follow you from
+          page to page.
         </p>
         <h2>Things to Try</h2>
         <ul>
-          <li>Follow the entries. Each page marks its own entry, and the column stays where it is as the page scrolls.</li>
+          <li>Follow the entries. Each page marks its own entry and the sections above it, and the column stays where it is as the page scrolls.</li>
+          <li>Fold Guides from anywhere on its row, with a click, or with Enter or Space. Reference folds from the chevron beside its link.</li>
           <li>Narrow the window below 48rem. The column becomes a glass bar pinned to the top, with the menu button at its end.</li>
           <li>Open the menu and follow an entry. The menu closes, and every page starts with it closed.</li>
           <li>Open the menu, then widen the window again. The column shows the nav whatever the menu was left as.</li>
-          <li>Press Tab. The brand, the entries and the footer link are ordinary links in reading order.</li>
+          <li>Press Tab. The brand, the entries, the sections' rows and the footer link come in reading order.</li>
         </ul>
+        <h2>Move the Mark</h2>
+        <p>
+          A site with a client-side router sets <code>current</code> as the reader moves between pages, and the
+          sidebar stays in place. These buttons set it the same way without leaving this page. Open Reference, then
+          mark Theming: In Depth opens and takes the underline, and Reference stays open, since only the reader closes
+          a section.
+        </p>
+        <div class="buttons">
+          <neuwo-button variant="outline" size="sm" data-current="/demo/sidebar/theming.html">Mark Theming</neuwo-button>
+          <neuwo-button variant="outline" size="sm" data-current="/demo/sidebar/sections.html">Mark Sections</neuwo-button>
+          <neuwo-button variant="outline" size="sm" data-current="/demo/sidebar/">Mark This Page</neuwo-button>
+        </div>
+        <script type="module">
+          const sidebar = document.querySelector("neuwo-sidebar");
+          for (const button of document.querySelectorAll("[data-current]")) {
+            button.addEventListener("click", () => (sidebar.current = button.dataset.current));
+          }
+        </script>
         <h2>The Places</h2>
         <p>
           The wordmark is in the <code>brand</code> slot, centred at the top of the column and at the start of the

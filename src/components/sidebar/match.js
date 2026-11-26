@@ -5,7 +5,21 @@ const ORIGIN = /^https?:\/\/[^/]+$/;
 const ENTRIES = new Set(["neuwo-nav-item", "neuwo-nav-section"]);
 
 /**
- * The form in which a page's address compares: the path without its query, hash, trailing slash or trailing
+ * The path with its percent-encoding decoded, as `location.pathname` gives it, or as it is when that is malformed.
+ * Reserved characters such as an encoded `/` stay encoded, so they never split a segment.
+ * @param {string} path
+ * @returns {string}
+ */
+function decoded(path) {
+  try {
+    return decodeURI(path);
+  } catch {
+    return path;
+  }
+}
+
+/**
+ * The form in which a page's address compares: the path decoded, without its query, hash, trailing slash or trailing
  * `/index.html`, with `https://host` kept in front for a full URL. A root-relative root stays `/`, and a full URL's
  * root is its `https://host`.
  * @param {string | null | undefined} value - an `href` or a `current` path.
@@ -16,7 +30,7 @@ export function normalizePath(value) {
   const address = value.trim().replace(/[?#].*$/s, "");
   const full = FULL.exec(address);
   if (!full && !(address.startsWith("/") && !address.startsWith("//"))) return null;
-  const path = (full ? full[2] : address).replace(/\/index\.html$/, "/").replace(/\/+$/, "");
+  const path = decoded(full ? full[2] : address).replace(/\/index\.html$/, "/").replace(/\/+$/, "");
   return full ? full[1].toLowerCase() + path : path || "/";
 }
 
