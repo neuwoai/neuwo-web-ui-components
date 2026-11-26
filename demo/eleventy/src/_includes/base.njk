@@ -10,15 +10,27 @@
     <link rel="stylesheet" href="/neuwo/neuwo.css">
     <link rel="stylesheet" href="/page.css">
     <script type="module" src="/neuwo/neuwo.js"></script>
-    <script type="module" src="/sign-up.js"></script>
   </head>
   <body class="neuwo-body">
     <div class="background">
       <div class="neuwo-background__gradient"></div>
     </div>
-    <main class="page">
-      <neuwo-logo variant="bg-dark"></neuwo-logo>
-      {{ content | safe }}
-    </main>
+    <div class="shell">
+      <neuwo-sidebar current="{{ page.url }}" remember>
+        <a slot="brand" href="/"><neuwo-logo variant="bg-dark"></neuwo-logo></a>
+        <neuwo-nav-item href="/">Sign Up</neuwo-nav-item>
+        <neuwo-nav-section label="Layout">
+          <neuwo-nav-item href="/second/">Second Page</neuwo-nav-item>
+        </neuwo-nav-section>
+        <neuwo-nav-section label="Resources">
+          <neuwo-nav-item href="https://github.com/neuwoai/neuwo-web-ui-components">Source Code</neuwo-nav-item>
+          <neuwo-nav-item href="https://www.npmjs.com/package/@neuwo/web-ui-library--demo">Package on npm</neuwo-nav-item>
+        </neuwo-nav-section>
+        <a slot="footer" href="https://neuwo.ai/">Back to neuwo.ai</a>
+      </neuwo-sidebar>
+      <main class="page">
+        {{ content | safe }}
+      </main>
+    </div>
   </body>
 </html>

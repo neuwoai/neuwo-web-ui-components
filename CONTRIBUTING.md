@@ -130,6 +130,15 @@ unless `--keep` is given, and exits 130.
   showing loading or its confirmation, then, with an email typed and the updates checkbox ticked,
   shows loading and ends with its `neuwo-notice` visible and loading cleared. One line per form, and
   the check fails if the page has a different number of forms than the target expects.
+- `sidebarSteady`, `sidebarNoScript` and `sidebarClientNav`: on `example-eleventy` and `example-next`, each in a new
+  tab, which remembers nothing. `sidebarSteady` opens the first closed section at 1280px, and again at 390px with the
+  menu open, reloads, and requires the remembered sections open, the menu closed and no layout shift on the reloaded
+  page; Firefox reports no layout shifts, so it is `n/a` there. `sidebarNoScript` turns JavaScript off at 390px and
+  requires the menu button to show the nav, and every link in it to be a page on the site that answers 200 or an https
+  page elsewhere; it is `n/a` in Firefox, like `noScript`. `sidebarClientNav`, on `example-next` only, opens a section
+  the second page is not in and the sections around its entry, follows the entry and then the first page's entry back,
+  and requires each time that a marker set on `window` survives, every open section stays open, the one the mark left
+  included, and `aria-current` moves.
 - `interactConsole`: on a target that interacts with its page (`demo`, `next-dev`, `next-prod`,
   `vite`, `example-eleventy`, `example-next`, `example-vite` and `example-vite-dev`), the `console` check again, over the whole
   interaction from its own page load to its last step, so an error raised while the forms are
@@ -139,8 +148,8 @@ The harness also builds every example under `demo/` that has a `package.json`, f
 library dependency pointed at the tarball. The `example-vite` target builds `demo/react-vite` with
 `npm run build` and serves `dist/`, and `example-vite-dev` runs it under `vite`; both run `console`
 and `singleCopy`, then `signUp`. The `example-next` target builds `demo/nextjs` and serves it with `next start`, behind the
-same network block as `next-prod`, and runs all five checks, then `signUp`. The `example-eleventy` target builds
-`demo/eleventy` with `npm run build`, serves `_site/`, and runs all five checks, then `signUp` on its one form. That check reads the examples' form contract: the `name` attributes
+same network block as `next-prod`, and runs all five checks, then `signUp` and the sidebar checks. The `example-eleventy` target builds
+`demo/eleventy` with `npm run build`, serves `_site/`, and runs all five checks, then `signUp` on its one form and the sidebar checks. That check reads the examples' form contract: the `name` attributes
 `email` and `updates`, the `type="submit"` `neuwo-button`, and a `neuwo-notice` inside the form, so
 changing any of those means changing `integration/sign-up.mjs`. Each example keeps the
 `package-lock.json` a real project would, with the published library in it; the runner points the

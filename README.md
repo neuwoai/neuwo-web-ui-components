@@ -842,7 +842,7 @@ export function Neuwo() {
 }
 ```
 
-Render `<Neuwo />` once in the root layout. Because the JSX runtime expands all twenty-two elements,
+Render `<Neuwo />` once in the root layout. Because the JSX runtime expands all twenty-three elements,
 the server-rendered HTML carries their full markup and they are on-brand from the first paint,
 before the bundle has run. Import `neuwo.css` instead of `neuwo-components.css` to add the
 typography and page surface. A working project is in [demo/nextjs](https://github.com/neuwoai/neuwo-web-ui-components/tree/v0.5.0/demo/nextjs).
@@ -1736,6 +1736,10 @@ The layout around the sidebar is the page's. The element draws no box of its own
 `<aside>` is the first item of the page's flex row, and below 48rem the row stacks:
 
 ```css
+body {
+  margin: 0;
+}
+
 .shell {
   display: flex;
   align-items: flex-start;
@@ -1757,7 +1761,8 @@ The layout around the sidebar is the page's. The element draws no box of its own
 ```
 
 `min-inline-size: 0` lets the content narrow below its widest child, such as a code panel, instead
-of pushing the page sideways.
+of pushing the page sideways, and without the body's default margin the column and the phone bar
+reach the edges of the window.
 
 `<neuwo-sidebar>`:
 
@@ -1909,6 +1914,76 @@ leaves `remember` off and keeps its sidebar mounted in a layout that stays betwe
 sections' own `<details>` hold what is open and the nav keeps its scroll, with no state in the app.
 A Next.js app does the same between client navigations, and may set `remember` as well, since its
 server render carries the script and the parser runs it on a hard reload.
+
+### Eleventy and Next.js
+
+In Eleventy, write the sidebar into the layout and pass the page's URL as `current`. The plugin
+writes it out on every page, the `remember` script included, so each page paints with its entry
+marked and the reader's sections open. [demo/eleventy](https://github.com/neuwoai/neuwo-web-ui-components/tree/v0.5.0/demo/eleventy) has it in `src/_includes/base.njk`:
+
+```njk
+<div class="shell">
+  <neuwo-sidebar current="{{ page.url }}" remember>
+    <a slot="brand" href="/"><neuwo-logo variant="bg-dark"></neuwo-logo></a>
+    <neuwo-nav-item href="/">Sign Up</neuwo-nav-item>
+    <neuwo-nav-section label="Layout">
+      <neuwo-nav-item href="/second/">Second Page</neuwo-nav-item>
+    </neuwo-nav-section>
+  </neuwo-sidebar>
+  <main class="content">{{ content | safe }}</main>
+</div>
+```
+
+In Next.js, render the sidebar from a client component and place it beside `{children}` in the root
+layout, so it stays mounted from page to page. The component passes `usePathname()` as `current`,
+cancels `navigate` and hands the `href` to the router, and links the brand with `next/link`, since
+the sidebar renders only the entries' links. The entries stay JSX directly inside the sidebar:
+
+```tsx
+// app/site-sidebar.tsx
+"use client";
+
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+
+export function SiteSidebar() {
+  const router = useRouter();
+  return (
+    <neuwo-sidebar
+      current={usePathname()}
+      remember
+      onnavigate={(event) => {
+        event.preventDefault();
+        router.push(event.detail.href);
+      }}
+    >
+      <Link slot="brand" href="/">
+        <neuwo-logo variant="bg-dark" />
+      </Link>
+      <neuwo-nav-item href="/">Sign Up</neuwo-nav-item>
+      <neuwo-nav-section label="Layout">
+        <neuwo-nav-item href="/second">Second Page</neuwo-nav-item>
+      </neuwo-nav-section>
+    </neuwo-sidebar>
+  );
+}
+```
+
+```tsx
+// app/layout.tsx
+<body className="neuwo-body">
+  <Neuwo />
+  <div className="shell">
+    <SiteSidebar />
+    <main className="content">{children}</main>
+  </div>
+</body>
+```
+
+A client navigation then swaps the page and leaves the sidebar as the reader had it, its open
+sections and its scroll included, while the new `current` moves the mark and opens the new page's
+sections. A hard reload opens the remembered sections through `remember`, whose script the server
+render carries. [demo/nextjs](https://github.com/neuwoai/neuwo-web-ui-components/tree/v0.5.0/demo/nextjs) is the working app.
 
 ## Logo
 

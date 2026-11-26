@@ -24,3 +24,5 @@ A sign-up form built from the library's elements, written in Markdown and drawn 
 <span class="entries"></span>
 </neuwo-notice>
 </form>
+
+<script type="module" src="/sign-up.js"></script>

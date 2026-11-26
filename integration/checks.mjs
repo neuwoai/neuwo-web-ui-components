@@ -55,7 +55,7 @@ function watchWrites() {
   Object.defineProperty(window, "__neuwoWrites", { value: writes });
 }
 
-async function settle(timeout) {
+export async function settle(timeout) {
   const tags = [...new Set([...document.querySelectorAll("*")].map((element) => element.localName))].filter((tag) => tag.startsWith("neuwo-"));
   const expired = new Promise((resolve) => setTimeout(resolve, timeout, "expired"));
   if ((await Promise.race([Promise.all(tags.map((tag) => customElements.whenDefined(tag))), expired])) === "expired") {
@@ -83,7 +83,7 @@ function buttonBackground() {
   return backgrounds;
 }
 
-function layoutShift() {
+export function layoutShift() {
   if (!PerformanceObserver.supportedEntryTypes.includes("layout-shift")) return null;
   const observer = new PerformanceObserver(() => {});
   observer.observe({ type: "layout-shift", buffered: true });

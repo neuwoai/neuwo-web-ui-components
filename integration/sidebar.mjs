@@ -1,10 +1,11 @@
 import { UnsupportedOperation } from "puppeteer-core";
-import { VIEWPORT, judgeConsole, recordErrors } from "./checks.mjs";
+import { VIEWPORT, judgeConsole, layoutShift, recordErrors, settle } from "./checks.mjs";
 
 /** @typedef {import("./checks.mjs").CheckResult} CheckResult */
 
 const STEP_TIMEOUT = 5_000;
 const NAVIGATION_TIMEOUT = 60_000;
+const READY_TIMEOUT = 30_000;
 const PHONE = { width: 390, height: 800 };
 const SHORT = { width: VIEWPORT.width, height: 400 };
 
@@ -358,4 +359,229 @@ export async function checkSidebar(page) {
     await run(page, "sidebarFold", () => fold(page)),
     ...(await remember(page)),
   ];
+}
+
+const SECOND_PAGE = "/second";
+const SUMMARY = (label) => `neuwo-nav-section[label="${label}"] > .neuwo-nav-section > .neuwo-nav-section__details > summary`;
+const ENTRY = (href) => `.neuwo-nav-item__link[href="${href}"]`;
+
+/**
+ * Reads the sections and the page's mark, and what shows whether the document is still the one the check started on.
+ * @param {string | null} href an entry whose enclosing sections to name, outermost first
+ */
+function readNav(href) {
+  const sections = Array.from(document.querySelectorAll("neuwo-nav-section"));
+  const details = (section) => section.querySelector(":scope > .neuwo-nav-section > .neuwo-nav-section__details");
+  const label = (section) => section.getAttribute("label");
+  const reachable = (section) => !section.parentElement?.closest(".neuwo-nav-section__details:not([open])");
+  const around = [];
+  for (let at = href ? document.querySelector(`.neuwo-nav-item__link[href="${href}"]`)?.closest("neuwo-nav-section") : null; at; at = at.parentElement?.closest("neuwo-nav-section")) {
+    around.unshift(label(at));
+  }
+  return {
+    path: location.pathname,
+    stay: window.__neuwoStay === true,
+    navigations: performance.getEntriesByType("navigation").length,
+    menu: Boolean(document.querySelector(".neuwo-sidebar__menu")?.open),
+    open: sections.filter((section) => details(section)?.open).map(label),
+    closed: sections.filter((section) => !details(section)?.open && reachable(section)).map(label),
+    marked: sections.filter((section) => section.querySelector(":scope > .neuwo-nav-section")?.classList.contains("neuwo-nav-section--active")).map(label),
+    current: Array.from(document.querySelectorAll('neuwo-sidebar [aria-current="page"]'), (link) => link.getAttribute("href")),
+    around,
+  };
+}
+
+/** @param {ReturnType<typeof readNav>} state */
+const describeNav = (state) =>
+  `at ${state.path}, open: ${state.open.join(", ") || "none"}; marked: ${state.marked.join(", ") || "none"}; aria-current on ${state.current.join(", ") || "nothing"}`;
+
+/**
+ * @param {import("puppeteer-core").Page} tab
+ * @param {string} step
+ * @param {(state: ReturnType<typeof readNav>) => boolean} accept
+ * @param {string | null} [href]
+ */
+async function untilNav(tab, step, accept, href = null) {
+  const deadline = Date.now() + STEP_TIMEOUT;
+  for (;;) {
+    const state = await tab.evaluate(readNav, href);
+    if (accept(state)) return state;
+    if (Date.now() > deadline) throw new Error(`${step}: ${describeNav(state)}`);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+}
+
+/**
+ * Waits until every element is defined and painted, and on a React page until React has hydrated the sidebar, so a
+ * click reaches the app's `navigate` handler.
+ * @param {import("puppeteer-core").Page} tab
+ * @param {boolean} react
+ */
+async function ready(tab, react) {
+  const problem = await tab.evaluate(settle, READY_TIMEOUT);
+  if (problem) throw new Error(problem);
+  if (!react) return;
+  await tab.waitForFunction(
+    () => {
+      const host = document.querySelector("neuwo-sidebar");
+      return Boolean(host) && Object.keys(host).some((key) => key.startsWith("__reactProps$"));
+    },
+    { timeout: READY_TIMEOUT },
+  );
+  await tab.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+}
+
+/**
+ * Runs `steps` in a new tab of the page's context, which remembers nothing, and fails the check on anything the tab
+ * logs. A step the browser cannot take makes the check n/a.
+ * @param {import("puppeteer-core").Page} page
+ * @param {string} check
+ * @param {(tab: import("puppeteer-core").Page) => Promise<string | Omit<CheckResult, "check">>} steps
+ * @returns {Promise<CheckResult>}
+ */
+async function inTab(page, check, steps) {
+  const tab = await page.browserContext().newPage();
+  const messages = recordErrors(tab);
+  try {
+    const outcome = await steps(tab);
+    if (messages.length) return { check, ...judgeConsole({ messages: [...messages] }) };
+    return { check, ...(typeof outcome === "string" ? { status: "pass", detail: outcome } : outcome) };
+  } catch (error) {
+    if (error instanceof UnsupportedOperation) return { check, status: "n/a", detail: error.message };
+    return { check, status: "fail", detail: error.message };
+  } finally {
+    await tab.close().catch(() => {});
+  }
+}
+
+/**
+ * At each width, opens the first section the page leaves closed, with the phone menu opened first, reloads, and
+ * reads the reloaded page's buffered layout shifts: none, with the section open from the first paint.
+ * @param {import("puppeteer-core").Page} page
+ * @param {string} url
+ * @param {boolean} react
+ */
+function steady(page, url, react) {
+  return inTab(page, "sidebarSteady", async (tab) => {
+    const read = [];
+    await tab.setViewport(VIEWPORT);
+    await tab.goto(url, { waitUntil: "load", timeout: NAVIGATION_TIMEOUT });
+    for (const viewport of [VIEWPORT, PHONE]) {
+      await tab.setViewport(viewport);
+      await ready(tab, react);
+      if (viewport === PHONE) {
+        await tab.click(".neuwo-sidebar__toggle");
+        await untilNav(tab, `opening the menu at ${PHONE.width}px`, (state) => state.menu);
+      }
+      const [label] = (await tab.evaluate(readNav, null)).closed;
+      if (!label) throw new Error(`at ${viewport.width}px no section is left closed to open`);
+      await tab.click(SUMMARY(label));
+      const opened = await untilNav(tab, `a click on ${label} at ${viewport.width}px`, (state) => state.open.includes(label));
+      await tab.reload({ waitUntil: "load", timeout: NAVIGATION_TIMEOUT });
+      await ready(tab, react);
+      const shift = await tab.evaluate(layoutShift);
+      const after = await tab.evaluate(readNav, null);
+      const lost = opened.open.filter((name) => !after.open.includes(name));
+      if (lost.length) throw new Error(`after the reload at ${viewport.width}px, ${lost.join(", ")} closed; ${describeNav(after)}`);
+      if (after.menu) throw new Error(`after the reload at ${viewport.width}px the menu is open`);
+      if (shift && shift.total !== 0) throw new Error(`the reload at ${viewport.width}px shifted ${Number(shift.total.toPrecision(3))} from ${shift.sources.join(", ")}`);
+      read.push({ width: viewport.width, label, shift, open: after.open });
+    }
+    const said = read.map(({ width, label, shift, open }) => `at ${width}px ${label} opened, and after the reload ${open.join(", ")} open${shift ? " with no layout shift" : ""}`).join("; ");
+    if (read.some(({ shift }) => !shift)) return { status: "n/a", detail: `no layout-shift entries to read; ${said}` };
+    return said;
+  });
+}
+
+/**
+ * With JavaScript off at phone width, the menu button shows the nav, and every link in it points at a page: one on
+ * the site that answers, or an https page elsewhere.
+ * @param {import("puppeteer-core").Page} page
+ * @param {string} url
+ */
+function withoutScript(page, url) {
+  return inTab(page, "sidebarNoScript", async (tab) => {
+    await tab.setJavaScriptEnabled(false);
+    await tab.setViewport(PHONE);
+    const response = await tab.goto(url, { waitUntil: "load", timeout: NAVIGATION_TIMEOUT });
+    if (!response?.ok() && response?.status() !== 304) throw new Error(`HTTP ${response?.status() ?? "no response"} for ${url}`);
+    const closed = await tab.evaluate(readSidebar);
+    if (!closed.toggle || closed.nav) throw new Error(`at ${PHONE.width}px without JavaScript, before a click: ${describe(closed)}`);
+    await tab.click(".neuwo-sidebar__toggle");
+    const opened = await until(tab, `a click on the menu button at ${PHONE.width}px without JavaScript`, (state) => state.nav);
+    const links = await tab.$$eval(".neuwo-sidebar__nav a[href]", (anchors) => anchors.map((anchor) => anchor.href));
+    const origin = new URL(url).origin;
+    const here = links.filter((link) => new URL(link).origin === origin);
+    const elsewhere = links.filter((link) => !here.includes(link));
+    const answers = await Promise.all(here.map(async (link) => ({ path: new URL(link).pathname, status: (await fetch(link)).status })));
+    const broken = answers.filter((answer) => answer.status !== 200);
+    if (!here.length || broken.length) throw new Error(`of ${here.length} links on the site, ${broken.map(({ path, status }) => `${path} answers ${status}`).join(", ") || "none answer"}`);
+    const unsafe = elsewhere.filter((link) => new URL(link).protocol !== "https:");
+    if (unsafe.length) throw new Error(`links to ${unsafe.join(", ")}`);
+    return (
+      `at ${PHONE.width}px without JavaScript, a click on the menu button showed the nav (${opened.shown} of ${opened.entries} top-level entries); ` +
+      `its ${links.length} links point at ${answers.map(({ path }) => path).join(", ")}, each answering 200, and ${elsewhere.length} https pages elsewhere`
+    );
+  });
+}
+
+/**
+ * On a React app with a client-side router: opens a section the second page is not in, and the sections around the
+ * second page's entry, follows the entry and comes back. Each time the document stays, every open section stays
+ * open, the one the mark left included, and the mark moves.
+ * @param {import("puppeteer-core").Page} page
+ * @param {string} url
+ */
+function clientNavigation(page, url) {
+  return inTab(page, "sidebarClientNav", async (tab) => {
+    await tab.setViewport(VIEWPORT);
+    await tab.goto(url, { waitUntil: "load", timeout: NAVIGATION_TIMEOUT });
+    await ready(tab, true);
+    const start = await tab.evaluate(readNav, SECOND_PAGE);
+    if (start.current.length !== 1) throw new Error(`at the start ${describeNav(start)}`);
+    const [home] = start.current;
+    await tab.evaluate(() => (window.__neuwoStay = true));
+    const [other] = start.closed.filter((label) => !start.around.includes(label));
+    if (!other) throw new Error(`no closed section outside ${start.around.join(", ") || "the top level"} to open`);
+    for (const label of [other, ...start.around.filter((name) => start.closed.includes(name))]) {
+      await tab.click(SUMMARY(label));
+      await untilNav(tab, `a click on ${label}`, (state) => state.open.includes(label));
+    }
+    /**
+     * @param {ReturnType<typeof readNav>} before
+     * @param {string} href
+     */
+    const follow = async (before, href) => {
+      await tab.click(ENTRY(href));
+      const after = await untilNav(tab, `following ${href}`, (state) => state.path === href && state.current.join() === href, SECOND_PAGE);
+      if (!after.stay || after.navigations !== 1) throw new Error(`following ${href} loaded a new document`);
+      const closed = before.open.filter((label) => !after.open.includes(label));
+      if (closed.length) throw new Error(`following ${href} closed ${closed.join(", ")}; ${describeNav(after)}`);
+      return after;
+    };
+    const opened = await tab.evaluate(readNav, SECOND_PAGE);
+    const there = await follow(opened, SECOND_PAGE);
+    const unmarked = there.around.filter((label) => !there.marked.includes(label));
+    if (unmarked.length) throw new Error(`at ${SECOND_PAGE}, ${unmarked.join(", ")} not marked; ${describeNav(there)}`);
+    const back = await follow(there, home);
+    return (
+      `with no new document, ${other} opened and following ${SECOND_PAGE} moved aria-current there and left ${there.open.join(", ")} open; ` +
+      `following ${home} back moved it again and left ${back.open.join(", ")} open`
+    );
+  });
+}
+
+/**
+ * The checks for a server-rendered example: a reload after opening a section shifts nothing at either width, the
+ * phone menu works and leads to real pages without JavaScript, and on a React app with a client-side router a client
+ * navigation keeps the document, the open sections and moves the mark.
+ * @param {import("puppeteer-core").Page} page
+ * @param {string} url
+ * @param {{ next: boolean }} options
+ * @returns {Promise<CheckResult[]>}
+ */
+export async function checkSidebarSteady(page, url, { next }) {
+  const results = [await steady(page, url, next), await withoutScript(page, url)];
+  if (next) results.push(await clientNavigation(page, url));
+  return results;
 }

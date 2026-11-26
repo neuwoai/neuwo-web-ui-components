@@ -1,9 +1,10 @@
 # Neuwo with Eleventy
 
-An Eleventy 3 site that uses the Neuwo Web UI Library. The page is written in Markdown and holds one sign-up form with
-a name, email, role, weekly digest and consent field (`<neuwo-input>`, `<neuwo-combobox>`, `<neuwo-toggle>`,
-`<neuwo-checkbox>`, `<neuwo-button>`, `<neuwo-notice>`), plus a `<neuwo-logo>`, the library's typography and the
-full-viewport background wash. The library's plugin writes every component out as full markup at build time.
+An Eleventy 3 site that uses the Neuwo Web UI Library. The home page is written in Markdown and holds one sign-up form
+with a name, email, role, weekly digest and consent field (`<neuwo-input>`, `<neuwo-combobox>`, `<neuwo-toggle>`,
+`<neuwo-checkbox>`, `<neuwo-button>`, `<neuwo-notice>`). The layout adds a `<neuwo-sidebar>` beside the pages, with a
+`<neuwo-logo>` in it, the library's typography and the full-viewport background wash; a second page gives the sidebar
+somewhere to go. The library's plugin writes every component out as full markup at build time.
 
 ## Run it
 
@@ -77,6 +78,14 @@ These files carry the library's setup.
   <body class="neuwo-body">
   ```
 
+- The same layout holds the `<neuwo-sidebar>`, beside the page in a `.shell`. Its `current` is the page's URL, so the
+  build writes each page with its own entry marked and its section open, and `remember` keeps the sections the reader
+  opens from page to page:
+
+  ```njk
+  <neuwo-sidebar current="{{ page.url }}" remember>
+  ```
+
 ## What to look at
 
 - View the page source: every component is already drawn in the HTML, before any script runs. The build writes the
@@ -84,10 +93,13 @@ These files carry the library's setup.
 - [src/index.md](src/index.md) is plain Markdown. The fields stay unwrapped only because `<form class="sign-up">` opens an
   HTML block that runs to the first blank line, so a blank line inside the form would wrap every field after it in a
   `<p>`. For components written anywhere else, see the Markdown paragraph in the library's root README.
-- [src/sign-up.js](src/sign-up.js) is plain JavaScript. It sets `loading` on the button from the start of the submit
-  handler until the submission ends, so a submission the browser's validation blocks never shows it, then reveals the
-  confirmation with every `FormData` entry. It stands in for a backend.
-- [src/page.css](src/page.css) lays the form out using the library's spacing tokens.
+- [src/sign-up.js](src/sign-up.js) is plain JavaScript, loaded by the home page only. It sets `loading` on the button
+  from the start of the submit handler until the submission ends, so a submission the browser's validation blocks
+  never shows it, then reveals the confirmation with every `FormData` entry. It stands in for a backend.
+- [src/second.md](src/second.md) is the second page. Open a section and follow an entry: each page is a new
+  document, and `remember` has the section open there from the first paint.
+- [src/page.css](src/page.css) lays the form out, and puts the sidebar beside the page from 48rem and above it below,
+  using the library's spacing tokens.
 
 ## Copying it
 

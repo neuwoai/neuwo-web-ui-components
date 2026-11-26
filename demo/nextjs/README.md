@@ -1,10 +1,11 @@
 # Neuwo with React and Next.js
 
-A Next.js 16 App Router app (React 19, TypeScript) that uses the Neuwo Web UI Library. The page is a Server
+A Next.js 16 App Router app (React 19, TypeScript) that uses the Neuwo Web UI Library. The home page is a Server
 Component holding two sign-up forms made from the library's elements, one controlled by React state and one
 uncontrolled, each with a name, email, role, weekly digest and consent field (`<neuwo-input>`, `<neuwo-combobox>`,
-`<neuwo-toggle>`, `<neuwo-checkbox>`, `<neuwo-button>`, `<neuwo-notice>`), plus a `<neuwo-logo>`, the library's
-typography and the full-viewport background wash.
+`<neuwo-toggle>`, `<neuwo-checkbox>`, `<neuwo-button>`, `<neuwo-notice>`). The layout keeps a `<neuwo-sidebar>`
+beside the pages, with a `<neuwo-logo>` in it, and adds the library's typography and the full-viewport background
+wash; a second route gives the sidebar somewhere to go.
 
 ## Run it
 
@@ -61,7 +62,7 @@ These files carry the library's setup.
 
   <body className="neuwo-body">
     <Neuwo />
-    {children}
+    ...
   </body>
   ```
 
@@ -78,28 +79,33 @@ These files carry the library's setup.
   ```
 
 - [app/fonts.d.ts](app/fonts.d.ts) types a `.woff2` import as its URL, which TypeScript needs for the preload.
-- [app/page.tsx](app/page.tsx) and [app/app.css](app/app.css) add the wash: a fixed frame at `--neuwo-z-background`
-  holding a `.neuwo-background__gradient`, written with logical properties. The library supplies the gradient; the page
-  supplies the frame.
+- [app/layout.tsx](app/layout.tsx) and [app/app.css](app/app.css) add the wash: a fixed frame at
+  `--neuwo-z-background` holding a `.neuwo-background__gradient`, written with logical properties. The library supplies
+  the gradient; the page supplies the frame.
+- [app/site-sidebar.tsx](app/site-sidebar.tsx) is a client component that renders the `<neuwo-sidebar>`, and
+  [app/layout.tsx](app/layout.tsx) places it beside the page in a `.shell`, so it stays mounted from page to page. It
+  passes `usePathname()` as `current`, cancels `navigate` and hands the `href` to `router.push`, and links the brand
+  with `next/link`. `router.push` follows the Resources entries, full URLs to other sites, with an ordinary navigation.
 
 ## What to look at
 
 - View the page source: every component is already drawn in the HTML, before any script runs. The server renders the
   elements' markup through the JSX runtime, so the page paints on-brand from the first frame.
-- [app/page.tsx](app/page.tsx) is a Server Component with no `"use client"`; it renders the `<neuwo-logo>` and the
-  two forms.
+- [app/page.tsx](app/page.tsx) is a Server Component with no `"use client"`; it renders the two forms.
+- Open Resources, follow Second Page and come back: the page changes without a reload, the sections stay as you left
+  them and the mark moves. Reload, and the sections you left open are open from the first paint.
 - [app/controlled-sign-up.tsx](app/controlled-sign-up.tsx): `value` and `checked` held in state for every field. The
   input handlers are typed `NeuwoChangeEvent<NeuwoInput, HTMLInputElement>` and the combobox's
   `NeuwoChangeEvent<NeuwoCombobox>`, since the combobox dispatches from the element itself. The `<output>` echoes all
   the live values.
 - [app/uncontrolled-sign-up.tsx](app/uncontrolled-sign-up.tsx): `defaultValue` and `defaultChecked`, read back with
   `new FormData(event.currentTarget)` on submit; the confirmation lists every entry.
-- [app/app.css](app/app.css) lays the two forms side by side when they fit and stacks them when they do not, using
-  the library's spacing tokens.
+- [app/app.css](app/app.css) lays the two forms side by side when they fit and stacks them when they do not, and puts
+  the sidebar beside the page from 48rem and above it below, using the library's spacing tokens.
 - Both forms set `loading` on the button from the start of the submit handler until the submission ends, so a submission
   the browser's validation blocks never shows it. [app/sign-up.ts](app/sign-up.ts) stands in for a backend.
-- Misspell an attribute value, such as `variant="bg-darkk"` on the logo in [app/page.tsx](app/page.tsx), and
-  `npm run build` fails with a type error that names the allowed values.
+- Misspell an attribute value, such as `variant="bg-darkk"` on the logo in [app/site-sidebar.tsx](app/site-sidebar.tsx),
+  and `npm run build` fails with a type error that names the allowed values.
 
 ## Copying it
 
