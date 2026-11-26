@@ -186,6 +186,33 @@ describe("<neuwo-nav-section>", () => {
     summary("Alpha").removeEventListener("click", cancel);
   });
 
+  it("knows the reader closed a section when a page listener stops the click on its row", async () => {
+    const { details, name } = tree("/a/one/");
+    const stop = (event) => event.stopPropagation();
+    name("Alpha").addEventListener("click", stop);
+    name("Alpha").click();
+    // happy-dom toggles a details only when the click reaches it; a browser toggles it from the summary however the click was stopped.
+    details("Alpha").open = false;
+    await settle();
+    expect(details("Alpha").open).toBe(false);
+    name("Alpha").removeEventListener("click", stop);
+  });
+
+  it("keeps a branch open when current moves while the sidebar is out of the page, or as it moves", async () => {
+    const { holder, host, open } = tree("/a/one/");
+    holder.remove();
+    host.current = "/b/two/";
+    await settle();
+    document.body.append(holder);
+    await settle();
+    expect(open()).toEqual(["Alpha", "Alpha Deep", "Beta"]);
+    host.current = "/g/three/";
+    holder.remove();
+    document.body.append(holder);
+    await settle();
+    expect(open()).toEqual(["Alpha", "Alpha Deep", "Beta", "Gamma"]);
+  });
+
   it("starts open with open, which is no more than the starting state", async () => {
     const holder = make(`<neuwo-sidebar current="/"><neuwo-nav-section label="Beta" open><neuwo-nav-item href="/b/">Beta</neuwo-nav-item></neuwo-nav-section></neuwo-sidebar>`);
     const section = holder.querySelector("neuwo-nav-section");

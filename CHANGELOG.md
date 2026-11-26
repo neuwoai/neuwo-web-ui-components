@@ -61,7 +61,7 @@
   A section folds from anywhere on its row, by a click, Enter or Space, nests to any depth, and opens
   and takes the active underline when it holds the current page or the page lies below one of its
   entries. Its chevron turns towards the inline end while it is closed. `open` starts it open, `id`
-  keys it for remembering, and `href` makes its name a link beside a separate Show <label> pages
+  keys it for remembering, and `href` makes its name a link beside a separate `Show <label> pages`
   toggle, though a section that only folds, with an Introduction entry first, is the recommended
   form. Only the reader closes a section: when `current` moves, the sections already open stay
   open, under React as on a plain page, with no state in the app.

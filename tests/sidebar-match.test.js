@@ -44,7 +44,7 @@ describe("normalizePath()", () => {
     ["/a%2Fb/", "/a%2Fb"],
     ["/caf%E9/", "/caf%E9"],
     ["/100%/", "/100%"],
-  ])("decodes the percent-encoding of %j, as location.pathname gives it, to %j, keeping what it cannot decode", (value, expected) => {
+  ])("decodes the percent-encoding of %j to %j, so the encoded and plain forms compare equal, keeping what it cannot decode", (value, expected) => {
     expect(normalizePath(value)).toBe(expected);
   });
 

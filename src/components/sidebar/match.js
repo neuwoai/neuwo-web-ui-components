@@ -5,7 +5,8 @@ const ORIGIN = /^https?:\/\/[^/]+$/;
 const ENTRIES = new Set(["neuwo-nav-item", "neuwo-nav-section"]);
 
 /**
- * The path with its percent-encoding decoded, as `location.pathname` gives it, or as it is when that is malformed.
+ * The path with its percent-encoding decoded, so its encoded and plain forms compare equal, or as it is when that is
+ * malformed.
  * Reserved characters such as an encoded `/` stay encoded, so they never split a segment.
  * @param {string} path
  * @returns {string}

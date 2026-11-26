@@ -351,8 +351,9 @@ ordinary sized element, for a single washed panel rather than a whole page.
 
 `neuwo-components.css` carries the nav-link classes. `foundation/navigation.css` is still published
 for sites that link it alone; with `components/reset.css`, link it after the reset, which names
-`.neuwo-nav-link` at the same weight, so whichever sheet comes later wins. The classes carry the brand's nav-link treatment, the centre-out
-underline that grows from the middle of the text on hover and focus. Two classes:
+`.neuwo-nav-link` at the same weight, so whichever sheet comes later wins. The classes carry the
+brand's nav-link treatment, the centre-out underline that grows from the middle of the text on
+hover and focus. Two classes:
 
 - **`.neuwo-nav-link`** is a top-level entry: base type, a 44px tap target, and the underline lifted
   off the baseline.
@@ -1788,10 +1789,11 @@ markup such as a `<neuwo-badge>`.
 The menu button is the `<summary>` of a `<details>` around the nav, the after-nav place and the
 footer, so the browser holds its state and announces it, and on a server-rendered page it works
 before the library's script runs, or without it. The menu starts closed on every page, and following
-a link in the nav closes it, unless a modifier key or the middle button opens the link elsewhere. From 48rem the nav shows whatever the menu's state, so widening the
-window with the menu open shows the column as it should be. A script reads or sets the menu's state
-through the **`menuOpen`** property, for instance to close it when a panel of its own opens; it is
-not reflected to an attribute.
+a link in the nav closes it, unless a modifier key or the middle button opens the link elsewhere.
+From 48rem the nav shows whatever the menu's state, so widening the window with the menu open shows
+the column as it should be. A script reads or sets the menu's state through the **`menuOpen`**
+property, for instance to close it when a panel of its own opens; it is not reflected to an
+attribute.
 
 A plain click on an entry, or on a section's own link, fires **`navigate`** on the sidebar, a
 cancelable, bubbling `CustomEvent` whose `detail.href` is the link's `href`, before the browser
