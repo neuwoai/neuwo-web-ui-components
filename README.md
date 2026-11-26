@@ -1937,7 +1937,9 @@ marked and the reader's sections open. [demo/eleventy](https://github.com/neuwoa
 In Next.js, render the sidebar from a client component and place it beside `{children}` in the root
 layout, so it stays mounted from page to page. The component passes `usePathname()` as `current`,
 cancels `navigate` and hands the `href` to the router, and links the brand with `next/link`, since
-the sidebar renders only the entries' links. The entries stay JSX directly inside the sidebar:
+the sidebar renders only the entries' links. Next's `router.push` turns an external `href` into a
+full navigation, so the handler passes every entry on; another router may need the handler to
+leave external entries to the browser. The entries stay JSX directly inside the sidebar:
 
 ```tsx
 // app/site-sidebar.tsx

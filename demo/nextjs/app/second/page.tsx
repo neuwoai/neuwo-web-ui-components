@@ -1,3 +1,5 @@
+export const metadata = { title: "Second Page" };
+
 export default function SecondPage() {
   return (
     <>
