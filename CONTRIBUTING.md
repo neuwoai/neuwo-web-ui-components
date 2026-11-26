@@ -194,7 +194,8 @@ closed, and a check that sets a viewport the browser cannot set is `n/a`.
   menu button does not, and Tab from the brand's link focuses the first entry. After the menu is
   opened at 390px and the window widened again, every entry still shows and the button does not.
 - `sidebarPhone`: at 390px the menu button shows and the nav does not; a click on the button shows
-  the nav and a second hides it.
+  the nav and a second hides it. At 320px, where the All Components action no longer fits beside the
+  brand, no box in the `actions` place overlaps the menu button's.
 - `sidebarTree`: Chromium's accessibility tree holds a navigation named by the sidebar's `label`,
   whose lists hold only list items. The disclosures report Guides expanded, and In Depth and Show
   Reference pages collapsed, and exactly one link carries `aria-current="page"`, read from its DOM

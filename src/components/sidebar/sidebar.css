@@ -10,6 +10,11 @@ neuwo-nav-item:not([hidden]) {
   box-sizing: border-box;
 }
 
+/* A flex box, so no line box stands the slotted link taller than its logo. */
+.neuwo-sidebar__brand > * {
+  display: flex;
+}
+
 .neuwo-sidebar__toggle {
   padding: var(--neuwo-space-3);
   border-radius: var(--neuwo-radius-md);
@@ -57,6 +62,15 @@ neuwo-nav-item:not([hidden]) {
   border-radius: var(--neuwo-radius-md);
   cursor: pointer;
   list-style: none;
+}
+
+/* Rings the name, not the whole row; the name's auto outline keeps a system ring in forced colours. */
+.neuwo-nav-section__row:focus-visible {
+  outline: none;
+}
+
+.neuwo-nav-section__row:focus-visible > .neuwo-nav-section__name {
+  outline: auto;
 }
 
 .neuwo-nav-section--link {
@@ -200,8 +214,10 @@ neuwo-nav-item:not([hidden]) {
   /* Clear of the menu button, which sits over the bar's inline-end corner from inside the menu. */
   .neuwo-sidebar__bar {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
+    row-gap: var(--neuwo-space-2);
     min-block-size: calc(2 * var(--neuwo-space-2) + 2 * var(--neuwo-space-3) + var(--neuwo-space-6));
     padding-block: var(--neuwo-space-2);
     padding-inline: var(--neuwo-space-4) calc(var(--neuwo-space-4) + 2 * var(--neuwo-space-3) + var(--neuwo-space-6));
@@ -212,6 +228,10 @@ neuwo-nav-item:not([hidden]) {
     display: flex;
     align-items: center;
     justify-content: start;
+  }
+
+  .neuwo-sidebar__actions {
+    margin-inline-start: auto;
   }
 
   .neuwo-sidebar__toggle {

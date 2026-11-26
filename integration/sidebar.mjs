@@ -7,6 +7,7 @@ const STEP_TIMEOUT = 5_000;
 const NAVIGATION_TIMEOUT = 60_000;
 const READY_TIMEOUT = 30_000;
 const PHONE = { width: 390, height: 800 };
+const NARROW = { width: 320, height: 800 };
 const SHORT = { width: VIEWPORT.width, height: 400 };
 
 function readSidebar() {
@@ -86,6 +87,30 @@ async function run(page, check, steps) {
 }
 
 const allShown = (state) => state.entries > 0 && state.shown === state.entries;
+
+function readBar() {
+  const host = document.querySelector("neuwo-sidebar");
+  const edges = (element) => {
+    const { left, right, top, bottom } = element.getBoundingClientRect();
+    return { left, right, top, bottom };
+  };
+  const actions = host?.querySelector(".neuwo-sidebar__actions");
+  const toggle = host?.querySelector(".neuwo-sidebar__toggle");
+  const boxes = actions ? [actions, ...actions.querySelectorAll("*")].map(edges).filter((box) => box.right > box.left && box.bottom > box.top) : [];
+  const button = toggle ? edges(toggle) : null;
+  const into = (box) => Math.min(box.right, button.right) - Math.max(box.left, button.left) > 0.5 && Math.min(box.bottom, button.bottom) - Math.max(box.top, button.top) > 0.5;
+  const round = (box) => box && Object.fromEntries(Object.entries(box).map(([edge, value]) => [edge, Math.round(value * 10) / 10]));
+  return { actions: round(boxes[0] ?? null), toggle: round(button), hit: Boolean(button && boxes.some(into)) };
+}
+
+/** @param {ReturnType<typeof readBar>} state */
+const describeBar = (state) => {
+  const span = (box) => (box ? `x ${box.left} to ${box.right}, y ${box.top} to ${box.bottom}` : "none");
+  return `the actions at ${span(state.actions)}, the menu button at ${span(state.toggle)}${state.hit ? ", overlapping" : ""}`;
+};
+
+/** @type {Reading<ReturnType<typeof readBar>>} */
+const BAR = { read: readBar, describe: describeBar };
 
 function readFocus() {
   const host = document.querySelector("neuwo-sidebar");
@@ -346,7 +371,12 @@ export async function checkSidebar(page) {
       const opened = await poll(page, "the first click on the menu button", SIDEBAR, (state) => state.nav && state.open);
       await page.click(".neuwo-sidebar__toggle");
       await poll(page, "the second click on the menu button", SIDEBAR, (state) => !state.nav && !state.open);
-      return `at ${PHONE.width}px ${describe(closed)}; a click showed the nav (${opened.shown} of ${opened.entries} entries), a second hid it`;
+      await page.setViewport(NARROW);
+      const bar = await poll(page, `the bar at ${NARROW.width}px`, BAR, (state) => Boolean(state.actions && state.toggle) && !state.hit);
+      return (
+        `at ${PHONE.width}px ${describe(closed)}; a click showed the nav (${opened.shown} of ${opened.entries} entries), a second hid it; ` +
+        `at ${NARROW.width}px ${describeBar(bar)}`
+      );
     }),
     await treeCheck(page),
     await run(page, "sidebarFold", () => fold(page)),

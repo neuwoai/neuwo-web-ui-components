@@ -136,6 +136,24 @@ describe("sidebar.css recipe", () => {
     expect(phone(".neuwo-sidebar__bar")).toMatchObject({ display: "flex", "align-items": "center", "justify-content": "space-between", "padding-block": "var(--neuwo-space-2)" });
   });
 
+  it("wraps actions too wide for the bar's row onto a row of their own below 48rem, kept at the bar's inline end", () => {
+    expect(phone(".neuwo-sidebar__bar")).toMatchObject({ "flex-wrap": "wrap", "row-gap": "var(--neuwo-space-2)" });
+    expect(phone(".neuwo-sidebar__actions")).toEqual({ "margin-inline-start": "auto" });
+  });
+
+  it("lays the brand's slotted link out as a flex box at one-class weight, so no line box stands the logo taller", () => {
+    expect(rule(".neuwo-sidebar__brand > *")).toEqual({ display: "flex" });
+    expect(base.flatMap((each) => each.selectors).filter((selector) => selector.startsWith(".neuwo-sidebar__brand >"))).toEqual([".neuwo-sidebar__brand > *"]);
+  });
+
+  it("rings only a folding section's name on keyboard focus, with the system's own ring, and leaves the linked section's toggle its ring", () => {
+    expect(rule(".neuwo-nav-section__row:focus-visible")).toEqual({ outline: "none" });
+    expect(rule(".neuwo-nav-section__row:focus-visible > .neuwo-nav-section__name")).toEqual({ outline: "auto" });
+    const all = [...base, ...inside(PHONE), ...inside(DESKTOP), ...inside("(forced-colors: active)")];
+    const outlines = all.filter((each) => [...each.declarations.keys()].some((property) => property.startsWith("outline")));
+    expect(outlines.flatMap((each) => each.selectors).sort()).toEqual([".neuwo-nav-section__row:focus-visible", ".neuwo-nav-section__row:focus-visible > .neuwo-nav-section__name"]);
+  });
+
   it("puts the menu button in the bar's inline-end corner below 48rem, the sticky aside its containing block, and keeps the bar clear of it", () => {
     const toggle = "2 * var(--neuwo-space-3) + var(--neuwo-space-6)";
     expect(phone(".neuwo-sidebar__toggle")).toEqual({

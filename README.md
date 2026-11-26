@@ -1786,7 +1786,7 @@ The places, as slots:
 | Slot | From 48rem | Below 48rem |
 | --- | --- | --- |
 | `brand` | the top of the column, centred; a `<neuwo-logo>` in it is 10rem wide | the start of the bar; a logo is 7rem wide |
-| `actions` | not shown | in the bar, before the menu button |
+| `actions` | not shown | in the bar, before the menu button; on a row of their own at the bar's end when they do not fit beside the brand |
 | (default) | the `<neuwo-nav-item>` entries and `<neuwo-nav-section>` sections, in the nav | in the menu |
 | `after-nav` | between the nav and the footer, outside the nav's scroll | in the menu, under the nav |
 | `footer` | the bottom of the column, ruled off above | in the menu, under the rest |

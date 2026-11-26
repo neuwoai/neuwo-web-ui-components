@@ -45,7 +45,6 @@ describe("forced colours", () => {
     let rings = 0;
     for (const file of LIGHT_COMPONENT_CSS) {
       const css = strip(read(file));
-      expect(css, file).not.toMatch(/outline:\s*(none|0)\s*;/);
       const rules = flatRules(outsideForced(css));
       const ringedBox = (selector) => rules.some((rule) => rule.selectors.includes(`${selector}::after`) && rule.declarations.has("box-shadow"));
       for (const rule of rules) {
@@ -57,6 +56,23 @@ describe("forced colours", () => {
       }
     }
     expect(rings).toBe(8);
+  });
+
+  it("removes an outline only from a focused element whose part inside takes the system's own ring, which forced colours paint", () => {
+    let handed = 0;
+    for (const file of LIGHT_COMPONENT_CSS) {
+      const rules = flatRules(strip(read(file)));
+      const outline = (rule) => rule.declarations.get("outline") ?? rule.declarations.get("outline-style");
+      for (const rule of rules.filter((each) => /^(none|0)$/.test(outline(each) ?? ""))) {
+        for (const selector of rule.selectors) {
+          const inner = rules.filter((each) => outline(each) === "auto" && each.selectors.some((one) => one.startsWith(`${selector} > `)));
+          expect(selector, `${file} ${selector}`).toMatch(/:focus-visible$/);
+          expect(inner.length, `${file} ${selector}`).toBeGreaterThan(0);
+          handed++;
+        }
+      }
+    }
+    expect(handed).toBe(1);
   });
 
   it("reads every forced colours block of a sheet", () => {
