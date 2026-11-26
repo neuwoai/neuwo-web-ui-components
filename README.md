@@ -1766,16 +1766,17 @@ reach the edges of the window.
 
 `<neuwo-sidebar>`:
 
-- **`current`** is the current page. The entry whose `href` names it carries
-  `aria-current="page"` and the active underline, and the sections holding it are marked and open
-  (see [Sections](#sections)); a page below an entry does not mark the entry. Both compare without
-  the query, the hash, a trailing slash or a trailing `/index.html`, and with percent-encoding
-  decoded, so `/guides`, `/guides/` and `/guides/index.html` are one page, and so are `/café/` and
-  `/caf%C3%A9/`. A path from the site's root compares with a path, and a full URL with a full URL;
-  a relative `href` never matches. Without `current`, the
-  element takes `location.pathname` when its script runs, so served markup marks nothing until then,
-  and a sidebar React rendered never takes it. Set it wherever the page is known, as a server
-  always can, so the first paint is marked.
+- **`current`** is the current page. The entry whose `href` names it carries `aria-current="page"`
+  and the active underline, and the sections holding it are marked and open (see
+  [Sections](#sections)); a page below an entry does not mark the entry. Both compare without the
+  query, the hash, a trailing slash or a trailing `/index.html`, and with percent-encoding decoded,
+  so `/guides`, `/guides/` and `/guides/index.html` are one page, and so are `/café/` and
+  `/caf%C3%A9/`. A path from the site's root compares with a path, and a full URL with a full URL; a
+  relative `href` never matches. Without `current`, the element takes `location.pathname` when its
+  script runs, so served markup marks nothing until then. A React or Next.js app must pass
+  `current`: before React hydrates a server-rendered sidebar, the element cannot tell that React
+  rendered it, so it would write the location into markup React owns. Set it wherever the page is
+  known, as a server always can, so the first paint is marked.
 - **`label`** names the nav (default Main).
 - **`menu-label`** names the menu button (default Menu).
 - **`remember`** keeps the reader's place in the nav for the tab, the sections they leave open and
@@ -1853,11 +1854,15 @@ Let a section only fold, and give its own page as the first entry inside it, an 
 rather than setting `href`. A name that both links and folds is two targets in one row, and on a
 phone a tap meant to look inside the section takes the reader away instead.
 
-A section is marked, with the active underline on its name, and opens when it holds the current
-page at any depth, or when the current page lies below the page of one of its entries, or below its
-own `href`, as a page the nav does not list would. An entry is marked only on its own page, so such
-an unlisted page lights the sections above it and no entry. Each element works its mark out from
-`current` and its own contents, so no site marks anything by hand.
+A section is marked, with the active underline on its name, and opens when it holds the current page
+at any depth, or when the current page lies below the page of one of its entries, or below its own
+`href`, as a page the nav does not list would. An entry is marked only on its own page, so such an
+unlisted page lights the sections above it and no entry. Each element works its mark out from
+`current` and its own contents, so no site marks anything by hand. A section works its mark out
+again when its own attributes or `current` change, or when an entry or a section is added to it or
+taken out of it; a change a script makes further in, such as a new `href` on an entry or an entry
+added to a nested section, does not re-mark the sections around it until they render again, as they
+do when `current` changes.
 
 Only the reader closes a section. When `current` moves, as a client-side router moves it, the new
 page's sections open and take the mark, and every section already open stays open, the one around

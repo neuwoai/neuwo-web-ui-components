@@ -54,13 +54,14 @@
   or Firefox 143, keeps the menu button in the column too, so the nav stays reachable there.
   `current` marks the entry naming the page with `aria-current="page"` and the active underline,
   comparing paths without the query, the hash, a trailing slash or `/index.html`, with
-  percent-encoding decoded; without it the element takes `location.pathname`, unless React rendered
-  it. `label` and `menu-label` name the nav and the button, and the `menuOpen` property reads and
-  sets the menu. A plain click on an entry or on a section's own link to another page of the same
-  origin fires a cancelable `navigate` with its `href`, so a client-side router can take over; a
-  link to another origin or within the current page follows natively. In React, `onnavigate` binds
-  it. The recipe is the new published `components/sidebar/sidebar.css`, and the entries and the
-  sections' names take the `.neuwo-nav-link` look.
+  percent-encoding decoded; without it the element takes `location.pathname`, so a React or Next.js
+  app, whose server-rendered sidebar the element cannot tell from a plain page's before hydration,
+  must pass it. `label` and `menu-label` name the nav and the button, and the `menuOpen` property
+  reads and sets the menu. A plain click on an entry or on a section's own link to another page of
+  the same origin fires a cancelable `navigate` with its `href`, so a client-side router can take
+  over; a link to another origin or within the current page follows natively. In React, `onnavigate`
+  binds it. The recipe is the new published `components/sidebar/sidebar.css`, and the entries and
+  the sections' names take the `.neuwo-nav-link` look.
   A section folds from anywhere on its row, by a click, Enter or Space, nests to any depth, and opens
   and takes the active underline when it holds the current page or the page lies below one of its
   entries. Its chevron turns towards the inline end while it is closed. `open` starts it open, `id`
@@ -78,7 +79,12 @@
 ### Changed
 
 - `neuwo-components.css` now carries `.neuwo-nav-link`, so navigation styling no longer needs
-  `neuwo.css`; `neuwo.css` carries it once, as before.
+  `neuwo.css`; `neuwo.css` carries it once, as before. Three things follow. The reset now reverts
+  the page's element rules on a `.neuwo-nav-link` inside any `<neuwo-*>` element, as it does for
+  every component class. With `neuwo-standalone.js`, the adopted sheet carries `.neuwo-nav-link`
+  after the page's linked sheets, so a one-class override of it there loses unless it is more
+  specific. A site that links `neuwo-components.css` and `foundation/navigation.css` both can drop
+  the second.
 - The combobox's popup and option look moved to the new published `components/popup.css`, and the
   popup's entrance keyframes are now named `neuwo-popup-in` (they were `neuwo-combobox-in`). A site
   that links `components/fields/combobox/combobox.css` on its own must link `components/popup.css`
