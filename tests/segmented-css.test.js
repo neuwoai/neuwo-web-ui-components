@@ -134,7 +134,7 @@ describe("segmented.css recipe", () => {
 
   it("joins the light stylesheets and the reset's tag and block lists", () => {
     expect(LIGHT_COMPONENT_CSS).toContain("src/components/selection/segmented/segmented.css");
-    expect(reset).toContain("neuwo-range, neuwo-segmented, neuwo-status-dot");
+    expect(reset).toContain("neuwo-range, neuwo-segmented, ");
     expect(reset).toContain('.neuwo-segmented, [class*="neuwo-segmented__"], [class*="neuwo-segmented--"]');
   });
 });

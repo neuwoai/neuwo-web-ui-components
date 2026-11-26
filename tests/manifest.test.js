@@ -58,6 +58,7 @@ const EXPECTED_TAGS = [
   "neuwo-radio-group", "neuwo-segmented", "neuwo-badge", "neuwo-deal-id",
   "neuwo-status-dot", "neuwo-cta", "neuwo-notice", "neuwo-logo", "neuwo-copy",
   "neuwo-menu", "neuwo-menu-group", "neuwo-menu-item",
+  "neuwo-nav-item", "neuwo-sidebar",
 ];
 
 // Removed on purpose: the combobox replaces `neuwo-select`, and `foundation/navigation.css` `neuwo-dropdown`.
@@ -343,6 +344,19 @@ describe("custom-elements.json", () => {
     const panel = declByTag(manifest, "neuwo-menu").members.find((member) => member.name === "panel");
     expect(panel.description).toMatch(/popover panel/);
     expect(panel.readonly).toBe(true);
+  });
+
+  it("documents the sidebar's attributes, slots, navigate event, menu property and width, and the entry's href", () => {
+    const sidebar = declByTag(manifest, "neuwo-sidebar");
+    expect(sidebar.attributes.map((attribute) => attribute.name)).toEqual(["label", "current", "remember", "menu-label"]);
+    expect(sidebar.attributes.find((attribute) => attribute.name === "remember").type.text).toBe("boolean|string");
+    expect(sidebar.slots.map((slot) => slot.name).sort()).toEqual(["", "actions", "after-nav", "brand", "footer"]);
+    expect(sidebar.events.map((event) => [event.name, event.type.text])).toEqual([["navigate", "CustomEvent<{ href: string }>"]]);
+    const menuOpen = sidebar.members.find((member) => member.name === "menuOpen");
+    expect(menuOpen.return.type.text).toBe("boolean");
+    expect(menuOpen.description).toMatch(/not reflected/);
+    expect(cssPropertiesFor(manifest, "neuwo-sidebar")).toEqual(new Set(["--neuwo-sidebar-width"]));
+    expect(declByTag(manifest, "neuwo-nav-item").attributes.map((attribute) => attribute.name)).toEqual(["href"]);
   });
 
   it("documents the copy wrapper's three labels", () => {

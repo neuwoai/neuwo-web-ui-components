@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Neuwo Web UI Library: Sidebar, Installation</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/dist/neuwo.css" />
+    <link rel="stylesheet" href="shell.css" />
+    <script type="module" src="/dist/neuwo.js"></script>
+  </head>
+  <body class="neuwo-body">
+    <div class="background">
+      <div class="neuwo-background__gradient"></div>
+    </div>
+    <div class="shell">
+      <neuwo-sidebar label="Sidebar Demo">
+        <a slot="brand" href="/demo/sidebar/"><neuwo-logo variant="bg-dark" label="Neuwo Web UI Library"></neuwo-logo></a>
+        <neuwo-button slot="actions" variant="glass" size="sm" href="/demo/">All Components</neuwo-button>
+        <neuwo-nav-item href="/demo/sidebar/">Getting Started</neuwo-nav-item>
+        <neuwo-nav-item href="/demo/sidebar/installation.html">Installation</neuwo-nav-item>
+        <neuwo-nav-item href="/demo/sidebar/theming.html">Theming</neuwo-nav-item>
+        <neuwo-nav-item href="/demo/sidebar/accessibility.html">Accessibility</neuwo-nav-item>
+        <p slot="after-nav" class="hint">Each page marks its own entry from its address.</p>
+        <a slot="footer" href="https://neuwo.ai/">Back to neuwo.ai</a>
+      </neuwo-sidebar>
+      <main class="content">
+        <h1>Installation</h1>
+        <p>
+          Link the components stylesheet and load the library script, as for every other element. The sidebar's
+          recipe is part of <code>neuwo-components.css</code>, and its entries take the <code>.neuwo-nav-link</code>
+          look that ships in the same file.
+        </p>
+        <pre><code>&lt;link rel="stylesheet" href="/dist/neuwo-components.css" /&gt;
+&lt;script type="module" src="/dist/neuwo.js"&gt;&lt;/script&gt;</code></pre>
+        <p>
+          Then put the sidebar first in a flex row beside the page's content. Each entry is a
+          <code>&lt;neuwo-nav-item&gt;</code> with the page in <code>href</code>, written as a path from the site's
+          root or as a full URL.
+        </p>
+        <pre><code>&lt;div class="shell"&gt;
+  &lt;neuwo-sidebar label="Documentation" current="/installation/"&gt;
+    &lt;a slot="brand" href="/"&gt;&lt;neuwo-logo variant="bg-dark"&gt;&lt;/neuwo-logo&gt;&lt;/a&gt;
+    &lt;neuwo-nav-item href="/"&gt;Getting Started&lt;/neuwo-nav-item&gt;
+    &lt;neuwo-nav-item href="/installation/"&gt;Installation&lt;/neuwo-nav-item&gt;
+    &lt;a slot="footer" href="https://neuwo.ai/"&gt;Back to neuwo.ai&lt;/a&gt;
+  &lt;/neuwo-sidebar&gt;
+  &lt;main class="content"&gt;...&lt;/main&gt;
+&lt;/div&gt;</code></pre>
+      </main>
+    </div>
+  </body>
+</html>

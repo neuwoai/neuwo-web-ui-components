@@ -69,6 +69,7 @@ describe("JSX runtime in React Server Components", () => {
       "input.neuwo-combobox__trigger",
       "input.neuwo-range",
       "button.neuwo-segmented__option",
+      "details.neuwo-sidebar__menu",
     ].sort();
     expect(found.live).toEqual({ jsx: expected, jsxDEV: expected });
   });

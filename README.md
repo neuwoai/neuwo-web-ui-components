@@ -349,8 +349,9 @@ ordinary sized element, for a single washed panel rather than a whole page.
 
 ### Navigation links
 
-`neuwo-components.css` carries the nav-link classes, and `foundation/navigation.css` is still published for sites that link it alone. It carries the brand's nav-link treatment, the centre-out underline
-that grows from the middle of the text on hover and focus. Two classes:
+`neuwo-components.css` carries the nav-link classes. `foundation/navigation.css` is still published
+for sites that link it alone. The classes carry the brand's nav-link treatment, the centre-out
+underline that grows from the middle of the text on hover and focus. Two classes:
 
 - **`.neuwo-nav-link`** is a top-level entry: base type, a 44px tap target, and the underline lifted
   off the baseline.
@@ -390,11 +391,14 @@ and the current page look alike, and it composes with `aria-current` rather than
 </li>
 ```
 
+`<neuwo-sidebar>` builds a whole sidebar from these links and marks the current page for you; see
+[Sidebar](#sidebar).
+
 The sheet styles links and nothing else. Placement, the list reset and any panel surface are
 the consumer's, so navigation stays ordinary markup: a real `<ul>` keeps its list semantics,
 nesting works to any depth, and a section that should collapse uses native
-`<details>`/`<summary>`, which brings its own keyboard and ARIA behaviour. No script ships for
-navigation.
+`<details>`/`<summary>`, which brings its own keyboard and ARIA behaviour. No script ships with
+the classes.
 
 A section heading takes `.neuwo-nav-link` like any other entry, whether it is a link to the section's
 own page or a `<summary>` that only toggles. There is no separate heading recipe, and no
@@ -609,8 +613,8 @@ createRoot(document.getElementById("root")!).render(<App />);
 light DOM elements (`<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuwo-status-dot>`,
 `<neuwo-logo>`, `<neuwo-copy>`, `<neuwo-notice>`, `<neuwo-cta>`, `<neuwo-input>`, `<neuwo-textarea>`,
 `<neuwo-range>`, `<neuwo-combobox>`, `<neuwo-checkbox>`, `<neuwo-toggle>`, `<neuwo-radio>`,
-`<neuwo-radio-group>`, `<neuwo-segmented>`, `<neuwo-menu>`, `<neuwo-menu-group>` and
-`<neuwo-menu-item>`) into their markup; MDX reads its own
+`<neuwo-radio-group>`, `<neuwo-segmented>`, `<neuwo-menu>`, `<neuwo-menu-group>`,
+`<neuwo-menu-item>`, `<neuwo-sidebar>` and `<neuwo-nav-item>`) into their markup; MDX reads its own
 `jsxImportSource` option, not tsconfig's, so set it there too (in
 `@mdx-js/*` or Next's MDX config). Elements recognise markup React rendered, from Client or Server
 Components, and leave it to React, so without the setting a light DOM tag React renders stays bare.
@@ -618,7 +622,7 @@ The same setting adds every element to JSX with each attribute's allowed values 
 event's `detail`, so a misspelt variant fails the type check. React stays an optional peer
 dependency. A working project with controlled and uncontrolled forms is in [demo/react-vite](https://github.com/neuwoai/neuwo-web-ui-components/tree/v0.5.0/demo/react-vite).
 
-React renders the markup of all twenty elements itself, so they show from the first paint.
+React renders the markup of all twenty-two elements itself, so they show from the first paint.
 
 React 19 sets a property where the element has one and binds events, so the elements behave like
 native controls:
@@ -833,7 +837,7 @@ export function Neuwo() {
 }
 ```
 
-Render `<Neuwo />` once in the root layout. Because the JSX runtime expands all twenty elements,
+Render `<Neuwo />` once in the root layout. Because the JSX runtime expands all twenty-two elements,
 the server-rendered HTML carries their full markup and they are on-brand from the first paint,
 before the bundle has run. Import `neuwo.css` instead of `neuwo-components.css` to add the
 typography and page surface. A working project is in [demo/nextjs](https://github.com/neuwoai/neuwo-web-ui-components/tree/v0.5.0/demo/nextjs).
@@ -865,6 +869,7 @@ React's own controlled inputs do.
 | Notice card | `<neuwo-notice>` | Stable |
 | Logo | `<neuwo-logo>` | Stable |
 | Menu | `<neuwo-menu>` / `<neuwo-menu-group>` / `<neuwo-menu-item>` | Stable |
+| Sidebar | `<neuwo-sidebar>` / `<neuwo-nav-item>` | Stable |
 | Modal | `<neuwo-modal>` | Planned |
 | Card | `<neuwo-card>` | Planned |
 
@@ -879,11 +884,12 @@ Published styling files, for direct linking or non-web use:
 | Navigation links (also inside `neuwo-components.css`) | `@neuwo/web-ui-library--demo/foundation/navigation.css` |
 | Markdown surface | `@neuwo/web-ui-library--demo/foundation/markdown.css` |
 | Font faces, tokens, reset and light DOM component recipes (one file) | `@neuwo/web-ui-library--demo/neuwo-components.css` |
-| `neuwo-components.css` plus typography, page surface, navigation links and Markdown surface (one file) | `@neuwo/web-ui-library--demo/neuwo.css` |
+| `neuwo-components.css` plus typography, page surface and Markdown surface (one file) | `@neuwo/web-ui-library--demo/neuwo.css` |
 | Component reset (before any recipe) | `@neuwo/web-ui-library--demo/components/reset.css` |
 | Popup panel and row (combobox, menu) | `@neuwo/web-ui-library--demo/components/popup.css` |
 | Button recipe | `@neuwo/web-ui-library--demo/components/button/button.css` |
 | Menu recipe (menu, menu group, menu item) | `@neuwo/web-ui-library--demo/components/menu/menu.css` |
+| Sidebar recipe (sidebar, nav entry) | `@neuwo/web-ui-library--demo/components/sidebar/sidebar.css` |
 | Field chrome | `@neuwo/web-ui-library--demo/components/fields/field.css` |
 | Selection shell (checkbox, toggle, radio group, segmented control) | `@neuwo/web-ui-library--demo/components/selection/controls.css` |
 | Checkbox and radio recipe | `@neuwo/web-ui-library--demo/components/selection/form-check.css` |
@@ -1034,6 +1040,16 @@ through the two tokens.
 | `.neuwo-menu-item__external`, `.neuwo-menu-item__new-tab` | a `target="_blank"` link's mark and its visually hidden "(opens in a new tab)" |
 | `.neuwo-menu-item__chevron` | the chevron of an item with a submenu, pointing to the inline end |
 | `.neuwo-menu-item__submenu` | the wrapper around the `slot="submenu"` menu |
+| `.neuwo-sidebar` | the sidebar's `<aside>`: the column from 48rem, the glass bar below |
+| `.neuwo-sidebar__bar` | the row around the brand and actions wrappers; below 48rem it keeps the menu button's corner clear |
+| `.neuwo-sidebar__brand`, `.neuwo-sidebar__actions` | the wrappers around the `slot="brand"` and `slot="actions"` children; the actions show only below 48rem |
+| `.neuwo-sidebar__menu` | the `<details>` around the menu button and everything the menu shows and hides, its content always shown from 48rem |
+| `.neuwo-sidebar__toggle`, `.neuwo-sidebar__toggle-icon` | the menu button, the details' `<summary>`, shown only below 48rem, and its three-line icon, a cross while the menu is open |
+| `.neuwo-sidebar__nav` | the `<nav>`, named by `label`, which scrolls on its own |
+| `.neuwo-sidebar__list` | the `<ul>` around the entries |
+| `.neuwo-sidebar__after-nav`, `.neuwo-sidebar__footer` | the wrappers around the `slot="after-nav"` and `slot="footer"` children, taken out of the flow while empty; the footer is ruled off above |
+| `.neuwo-nav-item` | an entry's `<li>` |
+| `.neuwo-nav-item__link` | the entry's `<a>`, alongside `.neuwo-nav-link`, with `.neuwo-nav-link--active` and `aria-current="page"` on the current page's entry |
 
 The badge and deal-id render their text as authored. For capitals on a badge, add `uppercase`,
 which sets them with `text-transform` and leaves the text as written:
@@ -1674,6 +1690,108 @@ item placed directly in a submenu, with no group of its own there, is an action 
 The elements render into their own light DOM, so `expand()` renders a whole menu on the server and
 the panel is styled from the first paint once it opens; the classes are listed under restyling
 above.
+
+## Sidebar
+
+`<neuwo-sidebar>` is a site's navigation down the side of the page: the brand at the top, a nav of
+`<neuwo-nav-item>` entries with the [navigation link](#navigation-links) look, and a footer. From
+48rem it is a column, sticky at the top and the full viewport tall, whose nav takes the slack and
+scrolls on its own. Below 48rem it is a glass bar pinned to the top, with a menu button that shows
+and hides the nav under it.
+
+```html
+<div class="shell">
+  <neuwo-sidebar label="Documentation" current="/guides/setup/">
+    <a slot="brand" href="/"><neuwo-logo variant="bg-dark" label="Neuwo Docs"></neuwo-logo></a>
+    <button slot="actions" type="button" aria-label="Setup">...</button>
+    <neuwo-nav-item href="/">Getting Started</neuwo-nav-item>
+    <neuwo-nav-item href="/guides/">Guides</neuwo-nav-item>
+    <neuwo-nav-item href="/guides/setup/">Setup</neuwo-nav-item>
+    <a slot="footer" href="https://neuwo.ai/">Back to neuwo.ai</a>
+  </neuwo-sidebar>
+  <main class="content">...</main>
+</div>
+```
+
+The layout around the sidebar is the page's. The element draws no box of its own, so its
+`<aside>` is the first item of the page's flex row, and below 48rem the row stacks:
+
+```css
+.shell {
+  display: flex;
+  align-items: flex-start;
+}
+
+.content {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  max-inline-size: 48rem;
+  margin-inline: auto;
+  padding: var(--neuwo-space-8);
+}
+
+@media (width < 48rem) {
+  .shell {
+    display: block;
+  }
+}
+```
+
+`min-inline-size: 0` lets the content narrow below its widest child, such as a code panel, instead
+of pushing the page sideways.
+
+`<neuwo-sidebar>`:
+
+- **`current`** is the current page. The entry whose `href` names it carries
+  `aria-current="page"` and the active underline; a page below an entry does not mark it. Both
+  compare without the query, the hash, a trailing slash or a trailing `/index.html`, so `/guides`,
+  `/guides/` and `/guides/index.html` are one page. A path from the site's root compares with a
+  path, and a full URL with a full URL; a relative `href` never matches. Without `current`, the
+  element takes `location.pathname` when its script runs, so served markup marks nothing until then,
+  and a sidebar React rendered never takes it. Set it wherever the page is known, as a server
+  always can, so the first paint is marked.
+- **`label`** names the nav (default Main).
+- **`menu-label`** names the menu button (default Menu).
+
+The places, as slots:
+
+| Slot | From 48rem | Below 48rem |
+| --- | --- | --- |
+| `brand` | the top of the column, centred; a `<neuwo-logo>` in it is 10rem wide | the start of the bar; a logo is 7rem wide |
+| `actions` | not shown | in the bar, before the menu button |
+| (default) | the `<neuwo-nav-item>` entries, in the nav | in the menu |
+| `after-nav` | between the nav and the footer, outside the nav's scroll | in the menu, under the nav |
+| `footer` | the bottom of the column, ruled off above | in the menu, under the rest |
+
+`<neuwo-nav-item>` takes the page in **`href`**, and its label as its content, text or inline
+markup such as a `<neuwo-badge>`.
+
+The menu button is the `<summary>` of a `<details>` around the nav, the after-nav place and the
+footer, so the browser holds its state and announces it, and on a server-rendered page it works
+before the library's script runs, or without it. The menu starts closed on every page, and following
+any link in the nav closes it. From 48rem the nav shows whatever the menu's state, so widening the
+window with the menu open shows the column as it should be. A script reads or sets the menu's state
+through the **`menuOpen`** property, for instance to close it when a panel of its own opens; it is
+not reflected to an attribute.
+
+A plain click on an entry fires **`navigate`** on the sidebar, a cancelable, bubbling
+`CustomEvent` whose `detail.href` is the entry's `href`, before the browser follows the link. A site
+with a client-side router cancels it and routes instead, so the page around the sidebar, and the
+sidebar's own state, stay in place. A click with a modifier key, or one whose default a handler has
+already prevented, fires nothing, and neither do the links in the other places, which are the
+site's own markup: give those the router's own link. In React, `onnavigate` binds it.
+
+```js
+document.querySelector("neuwo-sidebar").addEventListener("navigate", (event) => {
+  event.preventDefault();
+  router.push(event.detail.href);
+});
+```
+
+The column is 17rem wide unless **`--neuwo-sidebar-width`** says otherwise. The library reads it and
+never declares it, so set it on the element or an ancestor. The 48rem breakpoint is fixed, since a
+custom property cannot drive a media query. The entries are `.neuwo-nav-link` with
+`--neuwo-nav-link-gutter` at `--neuwo-space-2`; the classes are listed under restyling above.
 
 ## Logo
 

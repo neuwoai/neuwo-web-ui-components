@@ -44,6 +44,13 @@ const group = (attrs, children) => ({ tag: "neuwo-menu-group", attrs, children }
 /** @type {ChildElement} */
 const icon = { tag: "svg", attrs: { slot: "start" }, children: [{ tag: "path", attrs: { d: "M0 0" } }] };
 
+/**
+ * @param {string} label
+ * @param {string} href
+ * @returns {ChildElement}
+ */
+const entry = (label, href) => ({ tag: "neuwo-nav-item", attrs: { href }, text: label });
+
 /** @type {Record<string, TemplateCase[]>} */
 export const cases = {
   "neuwo-button": [
@@ -445,6 +452,30 @@ export const cases = {
       name: "with submenu",
       attrs: { href: "https://example.com/move" },
       children: ["Move To", { tag: "neuwo-menu", attrs: { slot: "submenu" }, children: [] }],
+    },
+  ],
+  "neuwo-nav-item": [
+    { name: "plain", attrs: { href: "/guides/" }, children: ["Guides"] },
+    { name: "label with a badge", attrs: { href: "https://neuwo.ai/api/" }, children: ["API ", { tag: "neuwo-badge", attrs: { size: "s" }, text: "New" }] },
+  ],
+  "neuwo-sidebar": [
+    { name: "empty", attrs: { current: "/" }, children: [] },
+    {
+      name: "every place filled",
+      attrs: { current: "/" },
+      children: [
+        { tag: "a", attrs: { slot: "brand", href: "/" }, children: [{ tag: "neuwo-logo", attrs: { variant: "bg-dark", label: "Neuwo Docs" } }] },
+        { tag: "button", attrs: { slot: "actions", type: "button", "aria-label": "Setup" }, text: "S" },
+        entry("Getting Started", "/"),
+        { tag: "button", attrs: { slot: "after-nav", type: "button" }, text: "API Credentials" },
+        { tag: "a", attrs: { slot: "footer", href: "https://neuwo.ai/" }, text: "Back to neuwo.ai" },
+      ],
+    },
+    { name: "label and menu-label", attrs: { current: "/", label: "Documentation", "menu-label": "Open Navigation" }, children: [entry("Getting Started", "/")] },
+    {
+      name: "entries with current",
+      attrs: { current: "/guides/setup/" },
+      children: ["\n  ", entry("Getting Started", "/"), "\n  ", entry("Guides", "/guides/"), "\n  ", entry("Setup", "/guides/setup/"), "\n  ", entry("API", "https://neuwo.ai/api/"), "\n"],
     },
   ],
 };

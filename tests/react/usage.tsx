@@ -1,4 +1,4 @@
-import type { NeuwoButton, NeuwoInput } from "@neuwo/web-ui-library--demo";
+import type { NeuwoButton, NeuwoInput, NeuwoSidebar } from "@neuwo/web-ui-library--demo";
 import type { NeuwoChangeEvent } from "@neuwo/web-ui-library--demo/jsx-runtime";
 import { useRef, useState } from "react";
 
@@ -24,6 +24,7 @@ const onInputChange = (e: NeuwoChangeEvent<NeuwoInput, HTMLInputElement>) => e.t
 export function Usage() {
   const button = useRef<NeuwoButton>(null);
   const input = useRef<NeuwoInput>(null);
+  const sidebar = useRef<NeuwoSidebar>(null);
   const [s, setS] = useState("");
   const [agreed, setAgreed] = useState(false);
   return (
@@ -50,6 +51,14 @@ export function Usage() {
       <neuwo-button menu="m" variant="outline">Export</neuwo-button>
       <neuwo-button icon-only menu="m" size="sm" data-row="7" aria-label="Actions for Sports Fans" />
       <neuwo-button split menu="m" menu-label="More Save Options" type="submit">Save</neuwo-button>
+      <neuwo-sidebar ref={sidebar} label="Documentation" current="/guides/" remember menu-label="Open Navigation" onnavigate={(e) => e.detail.href.startsWith("/") && e.preventDefault()}>
+        <a slot="brand" href="/">
+          <neuwo-logo variant="bg-dark" label="Neuwo Docs" />
+        </a>
+        <neuwo-nav-item href="/guides/">Guides</neuwo-nav-item>
+      </neuwo-sidebar>
+      <neuwo-sidebar remember="docs" />
+      <neuwo-button onClick={() => sidebar.current && (sidebar.current.menuOpen = !sidebar.current.menuOpen)}>Menu</neuwo-button>
       <neuwo-cta heading-level={3} />
       <neuwo-cta heading-level="3" />
       <neuwo-textarea rows={4} className="notes" />
@@ -125,6 +134,8 @@ export function Usage() {
       <neuwo-copy onCopied={() => {}} />
       {/* @ts-expect-error a pick reports a string value */}
       <neuwo-menu onselect={(e) => e.detail.value.toFixed()} />
+      {/* @ts-expect-error a navigate reports a string href */}
+      <neuwo-sidebar onnavigate={(e) => e.detail.href.toFixed()} />
       {/* @ts-expect-error not an element the library defines */}
       <neuwo-nope />
     </>

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Neuwo Web UI Library: Sidebar, Getting Started</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/dist/neuwo.css" />
+    <link rel="stylesheet" href="shell.css" />
+    <script type="module" src="/dist/neuwo.js"></script>
+  </head>
+  <body class="neuwo-body">
+    <div class="background">
+      <div class="neuwo-background__gradient"></div>
+    </div>
+    <div class="shell">
+      <neuwo-sidebar label="Sidebar Demo">
+        <a slot="brand" href="/demo/sidebar/"><neuwo-logo variant="bg-dark" label="Neuwo Web UI Library"></neuwo-logo></a>
+        <neuwo-button slot="actions" variant="glass" size="sm" href="/demo/">All Components</neuwo-button>
+        <neuwo-nav-item href="/demo/sidebar/">Getting Started</neuwo-nav-item>
+        <neuwo-nav-item href="/demo/sidebar/installation.html">Installation</neuwo-nav-item>
+        <neuwo-nav-item href="/demo/sidebar/theming.html">Theming</neuwo-nav-item>
+        <neuwo-nav-item href="/demo/sidebar/accessibility.html">Accessibility</neuwo-nav-item>
+        <p slot="after-nav" class="hint">Each page marks its own entry from its address.</p>
+        <a slot="footer" href="https://neuwo.ai/">Back to neuwo.ai</a>
+      </neuwo-sidebar>
+      <main class="content">
+        <h1>Getting Started</h1>
+        <p>
+          This page and the three beside it share one hand-written <code>&lt;neuwo-sidebar&gt;</code>. None of them
+          sets <code>current</code>, so the element takes the page's path from the address bar and marks the entry
+          that names it: the underline and <code>aria-current="page"</code> follow you from page to page.
+        </p>
+        <h2>Things to Try</h2>
+        <ul>
+          <li>Follow the entries. Each page marks its own entry, and the column stays where it is as the page scrolls.</li>
+          <li>Narrow the window below 48rem. The column becomes a glass bar pinned to the top, with the menu button at its end.</li>
+          <li>Open the menu and follow an entry. The menu closes, and every page starts with it closed.</li>
+          <li>Open the menu, then widen the window again. The column shows the nav whatever the menu was left as.</li>
+          <li>Press Tab. The brand, the entries and the footer link are ordinary links in reading order.</li>
+        </ul>
+        <h2>The Places</h2>
+        <p>
+          The wordmark is in the <code>brand</code> slot, centred at the top of the column and at the start of the
+          bar. The All Components button is in the <code>actions</code> slot, which only the bar shows. The hint
+          under the nav is in the <code>after-nav</code> slot, and Back to neuwo.ai is in the <code>footer</code>
+          slot, ruled off at the bottom of the column.
+        </p>
+        <p>
+          The column is 17rem wide, sticky at the top and the full viewport tall, so a long nav scrolls inside it
+          while the footer stays in view. The page around it is the site's own: a flex row, the content capped at
+          48rem and centred in the space that is left.
+        </p>
+      </main>
+    </div>
+  </body>
+</html>

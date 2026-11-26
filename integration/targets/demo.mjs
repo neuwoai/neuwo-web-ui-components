@@ -2,6 +2,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { checkMenus } from "../menus.mjs";
 import { serveStatic } from "../serve.mjs";
+import { checkSidebar } from "../sidebar.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const HOTPINK = "rgb(255, 105, 180)";
@@ -9,12 +10,13 @@ const PAGE_GREEN = "rgb(0, 128, 0)";
 const HOLD_MS = 500;
 const BUNDLE = "/dist/neuwo.js";
 const NAVIGATION_TIMEOUT = 60_000;
+const SIDEBAR_PAGE = "/demo/sidebar/index.html";
 
 export const checks = ["console", "singleCopy"];
 
 export async function start() {
   const server = await serveStatic(ROOT, { delay: { [BUNDLE]: HOLD_MS } });
-  return { pages: [`${server.url}/demo/index.html`], stop: server.stop };
+  return { pages: [`${server.url}/demo/index.html`, `${server.url}${SIDEBAR_PAGE}`], stop: server.stop };
 }
 
 function readPageRules() {
@@ -71,6 +73,10 @@ function judgeReadout(name, { defined, readout }, expectDefined) {
 }
 
 export async function interact(page, url) {
+  if (new URL(url).pathname === SIDEBAR_PAGE) {
+    await page.goto(url, { waitUntil: "load", timeout: NAVIGATION_TIMEOUT });
+    return checkSidebar(page);
+  }
   const results = [];
   await page.evaluateOnNewDocument(recordBeforeDefinition);
   await page.goto(url, { waitUntil: "load", timeout: NAVIGATION_TIMEOUT });

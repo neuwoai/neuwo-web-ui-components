@@ -21,6 +21,8 @@ import type { NeuwoCopy } from "../components/copy/neuwo-copy.js";
 import type { NeuwoMenu } from "../components/menu/neuwo-menu.js";
 import type { NeuwoMenuGroup } from "../components/menu/neuwo-menu-group.js";
 import type { NeuwoMenuItem } from "../components/menu/neuwo-menu-item.js";
+import type { NeuwoNavItem } from "../components/sidebar/neuwo-nav-item.js";
+import type { NeuwoSidebar } from "../components/sidebar/neuwo-sidebar.js";
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -44,5 +46,7 @@ declare global {
     "neuwo-menu": NeuwoMenu;
     "neuwo-menu-group": NeuwoMenuGroup;
     "neuwo-menu-item": NeuwoMenuItem;
+    "neuwo-nav-item": NeuwoNavItem;
+    "neuwo-sidebar": NeuwoSidebar;
   }
 }

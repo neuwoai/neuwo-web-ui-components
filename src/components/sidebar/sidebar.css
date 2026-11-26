@@ -1,0 +1,167 @@
+neuwo-sidebar:not([hidden]),
+neuwo-nav-section:not([hidden]),
+neuwo-nav-item:not([hidden]) {
+  display: contents;
+}
+
+.neuwo-sidebar {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.neuwo-sidebar__toggle {
+  padding: var(--neuwo-space-3);
+  border-radius: var(--neuwo-radius-md);
+  background: none;
+  color: var(--neuwo-color-heading);
+  cursor: pointer;
+  list-style: none;
+}
+
+.neuwo-sidebar__toggle::-webkit-details-marker {
+  display: none;
+}
+
+.neuwo-sidebar__toggle-icon {
+  display: block;
+  inline-size: var(--neuwo-space-6);
+  block-size: var(--neuwo-space-6);
+  background: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round'%3E%3Cpath d='M4 7h16M4 12h16M4 17h16'/%3E%3C/svg%3E") center / contain no-repeat;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round'%3E%3Cpath d='M4 7h16M4 12h16M4 17h16'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.neuwo-sidebar__menu[open] .neuwo-sidebar__toggle-icon {
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round'%3E%3Cpath d='M6 6l12 12M18 6L6 18'/%3E%3C/svg%3E");
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round'%3E%3Cpath d='M6 6l12 12M18 6L6 18'/%3E%3C/svg%3E");
+}
+
+.neuwo-sidebar__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.neuwo-sidebar .neuwo-nav-link {
+  --neuwo-nav-link-gutter: var(--neuwo-space-2);
+}
+
+.neuwo-sidebar__footer {
+  padding-block-start: var(--neuwo-space-4);
+  border-block-start: 1px solid var(--neuwo-glass-border);
+}
+
+.neuwo-sidebar__after-nav:empty,
+.neuwo-sidebar__footer:empty {
+  display: none;
+}
+
+@media (width >= 48rem) {
+  .neuwo-sidebar {
+    flex: 0 0 var(--neuwo-sidebar-width, 17rem);
+    inline-size: var(--neuwo-sidebar-width, 17rem);
+    gap: var(--neuwo-space-6);
+    padding-block: var(--neuwo-space-8) var(--neuwo-space-6);
+    padding-inline: var(--neuwo-space-6);
+    border-inline-end: 1px solid var(--neuwo-glass-border);
+    position: sticky;
+    inset-block-start: 0;
+    block-size: 100vh;
+  }
+
+  /* The logo sizes by its height, so this is the width over its 32:5 viewBox. */
+  .neuwo-sidebar__brand {
+    --neuwo-logo-height: calc(10rem / 6.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .neuwo-sidebar__actions,
+  .neuwo-sidebar__toggle {
+    display: none;
+  }
+
+  .neuwo-sidebar__menu {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-block-size: 0;
+  }
+
+  .neuwo-sidebar__menu::details-content {
+    content-visibility: visible;
+    display: flex;
+    flex-direction: column;
+    gap: var(--neuwo-space-6);
+    flex: 1 1 auto;
+    min-block-size: 0;
+  }
+
+  /* Out to the column's border and back in, so the scrollbar runs along it. */
+  .neuwo-sidebar__nav {
+    flex: 1 1 auto;
+    min-block-size: 0;
+    overflow-y: auto;
+    margin-inline-end: calc(-1 * var(--neuwo-space-6));
+    padding-inline-end: var(--neuwo-space-6);
+    scrollbar-width: thin;
+  }
+}
+
+@media (width < 48rem) {
+  .neuwo-sidebar {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: var(--neuwo-z-header);
+    border-block-end: 1px solid var(--neuwo-glass-border);
+    background: var(--neuwo-glass-bg);
+    -webkit-backdrop-filter: blur(var(--neuwo-glass-blur));
+    backdrop-filter: blur(var(--neuwo-glass-blur));
+  }
+
+  /* Clear of the menu button, which sits over the bar's inline-end corner from inside the menu. */
+  .neuwo-sidebar__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-block-size: calc(2 * var(--neuwo-space-2) + 2 * var(--neuwo-space-3) + var(--neuwo-space-6));
+    padding-block: var(--neuwo-space-2);
+    padding-inline: var(--neuwo-space-4) calc(var(--neuwo-space-4) + 2 * var(--neuwo-space-3) + var(--neuwo-space-6));
+  }
+
+  .neuwo-sidebar__brand {
+    --neuwo-logo-height: calc(7rem / 6.4);
+    display: flex;
+    align-items: center;
+    justify-content: start;
+  }
+
+  .neuwo-sidebar__toggle {
+    position: absolute;
+    inset-block-start: var(--neuwo-space-2);
+    inset-inline-end: var(--neuwo-space-4);
+    display: block;
+  }
+
+  .neuwo-sidebar__nav {
+    max-block-size: calc(100vh - 8rem);
+    overflow-y: auto;
+    padding-inline: var(--neuwo-space-4);
+  }
+
+  .neuwo-sidebar__after-nav {
+    margin-inline: var(--neuwo-space-4);
+  }
+
+  .neuwo-sidebar__footer {
+    margin: var(--neuwo-space-4);
+  }
+}
+
+@media (forced-colors: active) {
+  .neuwo-sidebar__toggle-icon {
+    background: CanvasText;
+  }
+}

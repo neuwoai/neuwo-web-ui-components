@@ -117,10 +117,16 @@ describe("navigation stylesheet", () => {
 
 describe("navigation stylesheet delivery", () => {
   const dist = (file) => join(__dirname, "../dist", file);
-  const count = (text) => text.split(".neuwo-nav-link {").length - 1;
+  const count = (text) => text.match(/(^|\n)\.neuwo-nav-link \{/g)?.length ?? 0;
 
   it("ships in the components stylesheet, after the reset and before the recipes", () => {
     expect(LIGHT_COMPONENT_CSS.indexOf("src/foundation/navigation.css")).toBe(2);
+    const built = readFileSync(dist("neuwo-components.css"), "utf8");
+    const reset = built.indexOf(":where(neuwo-");
+    const at = built.indexOf(".neuwo-nav-link {");
+    expect(reset).toBeGreaterThan(-1);
+    expect(at).toBeGreaterThan(reset);
+    expect(at).toBeLessThan(built.indexOf(".neuwo-badge {"));
   });
 
   it("appears once in neuwo.css and once in neuwo-components.css", () => {

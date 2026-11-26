@@ -10,11 +10,13 @@ import { logoTemplate } from "./components/logo/logo.template.js";
 import { menuGroupTemplate } from "./components/menu/menu-group.template.js";
 import { menuItemTemplate } from "./components/menu/menu-item.template.js";
 import { menuTemplate } from "./components/menu/menu.template.js";
+import { navItemTemplate } from "./components/sidebar/nav-item.template.js";
 import { noticeTemplate } from "./components/notice/notice.template.js";
 import { radioGroupTemplate } from "./components/selection/radio/radio-group.template.js";
 import { radioTemplate } from "./components/selection/radio/radio.template.js";
 import { rangeTemplate } from "./components/fields/range/range.template.js";
 import { segmentedTemplate } from "./components/selection/segmented/segmented.template.js";
+import { sidebarTemplate } from "./components/sidebar/sidebar.template.js";
 import { statusDotTemplate } from "./components/status-dot/status-dot.template.js";
 import { textareaTemplate } from "./components/fields/textarea/textarea.template.js";
 import { toggleTemplate } from "./components/selection/toggle/toggle.template.js";
@@ -33,11 +35,13 @@ export const templates = {
   "neuwo-menu": menuTemplate,
   "neuwo-menu-group": menuGroupTemplate,
   "neuwo-menu-item": menuItemTemplate,
+  "neuwo-nav-item": navItemTemplate,
   "neuwo-notice": noticeTemplate,
   "neuwo-radio": radioTemplate,
   "neuwo-radio-group": radioGroupTemplate,
   "neuwo-range": rangeTemplate,
   "neuwo-segmented": segmentedTemplate,
+  "neuwo-sidebar": sidebarTemplate,
   "neuwo-status-dot": statusDotTemplate,
   "neuwo-textarea": textareaTemplate,
   "neuwo-toggle": toggleTemplate,

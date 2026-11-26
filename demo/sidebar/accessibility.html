@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Neuwo Web UI Library: Sidebar, Accessibility</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/dist/neuwo.css" />
+    <link rel="stylesheet" href="shell.css" />
+    <script type="module" src="/dist/neuwo.js"></script>
+  </head>
+  <body class="neuwo-body">
+    <div class="background">
+      <div class="neuwo-background__gradient"></div>
+    </div>
+    <div class="shell">
+      <neuwo-sidebar label="Sidebar Demo">
+        <a slot="brand" href="/demo/sidebar/"><neuwo-logo variant="bg-dark" label="Neuwo Web UI Library"></neuwo-logo></a>
+        <neuwo-button slot="actions" variant="glass" size="sm" href="/demo/">All Components</neuwo-button>
+        <neuwo-nav-item href="/demo/sidebar/">Getting Started</neuwo-nav-item>
+        <neuwo-nav-item href="/demo/sidebar/installation.html">Installation</neuwo-nav-item>
+        <neuwo-nav-item href="/demo/sidebar/theming.html">Theming</neuwo-nav-item>
+        <neuwo-nav-item href="/demo/sidebar/accessibility.html">Accessibility</neuwo-nav-item>
+        <p slot="after-nav" class="hint">Each page marks its own entry from its address.</p>
+        <a slot="footer" href="https://neuwo.ai/">Back to neuwo.ai</a>
+      </neuwo-sidebar>
+      <main class="content">
+        <h1>Accessibility</h1>
+        <p>
+          The sidebar is an <code>&lt;aside&gt;</code>, a complementary landmark, holding a <code>&lt;nav&gt;</code>
+          named by <code>label</code>. The brand and the footer sit outside the nav, so they are not announced as part
+          of it.
+        </p>
+        <p>
+          The entries are links in a list, announced with its count, and the current page's link carries
+          <code>aria-current="page"</code>. There is no tree widget and no roving focus: Tab moves through the links
+          as on any page.
+        </p>
+        <p>
+          The menu button below 48rem is the <code>&lt;summary&gt;</code> of a <code>&lt;details&gt;</code>, named
+          by <code>menu-label</code>. The browser announces its expanded state, and on a server-rendered page it
+          opens and closes the menu before the library's script has run, and without it.
+        </p>
+      </main>
+    </div>
+  </body>
+</html>

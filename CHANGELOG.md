@@ -42,6 +42,19 @@
   disables the toggle half, and the main half too unless it is a link, which stays a link marked
   busy, as a loading link does without `split`. Solid halves stand 1px apart, outline and glass
   halves share one border line, and neither lifts on hover. Without `menu`, `split` changes nothing.
+- Sidebar: `<neuwo-sidebar>` and its `<neuwo-nav-item>` entries, a site's navigation down the side
+  of the page. From 48rem it is a column, sticky and the full viewport tall, 17rem wide unless
+  `--neuwo-sidebar-width` says otherwise, with the `brand` at the top, the nav of entries scrolling
+  on its own, an `after-nav` place and a `footer`. Below 48rem it is a glass bar pinned to the top,
+  with the `brand`, the `actions` and a menu button that shows and hides the rest; the button is a
+  `<summary>`, so it works before the script runs on a served page, the menu starts closed, and
+  following a link in the nav closes it. `current` marks the entry naming the page with
+  `aria-current="page"` and the active underline, comparing paths without the query, the hash, a
+  trailing slash or `/index.html`; without it the element takes `location.pathname`, unless React
+  rendered it. `label` and `menu-label` name the nav and the button, and the `menuOpen` property
+  reads and sets the menu. A plain click on an entry fires a cancelable `navigate` with its `href`,
+  so a client-side router can take over; in React, `onnavigate` binds it. The recipe is the new
+  published `components/sidebar/sidebar.css`, and the entries take the `.neuwo-nav-link` look.
 
 ### Changed
 

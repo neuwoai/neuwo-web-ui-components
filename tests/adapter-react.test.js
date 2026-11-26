@@ -383,6 +383,7 @@ describe("JSX runtime: the nodes an element writes live state into", () => {
     "input.neuwo-range",
     "button.neuwo-segmented__option",
     "button.neuwo-btn--solid",
+    "details.neuwo-sidebar__menu",
   ].sort();
 
   /** @param {(type: string, props: Record<string, unknown>, key?: string) => unknown} create */
