@@ -200,6 +200,28 @@ neuwo-nav-item:not([hidden]) {
   }
 }
 
+/* Without ::details-content a closed menu's content cannot show in the column, so its button stays there. */
+@supports not selector(::details-content) {
+  @media (width >= 48rem) {
+    /* The column, not the menu, so the scroll box clips neither the button's ring nor the nav's scrollbar margin. */
+    .neuwo-sidebar {
+      overflow-y: auto;
+    }
+
+    /* Lines the icon up with the entries' text, inside their --neuwo-space-2 gutter. */
+    .neuwo-sidebar__toggle {
+      display: block;
+      align-self: flex-start;
+      margin-inline-start: calc(var(--neuwo-space-2) - var(--neuwo-space-3));
+    }
+
+    .neuwo-sidebar__after-nav,
+    .neuwo-sidebar__footer {
+      margin-block-start: var(--neuwo-space-6);
+    }
+  }
+}
+
 @media (width < 48rem) {
   .neuwo-sidebar {
     position: sticky;

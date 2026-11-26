@@ -39,6 +39,20 @@ function inside(query) {
  */
 const of = (rules, selector) => Object.fromEntries(rules.filter((each) => each.selectors.includes(selector)).flatMap((each) => [...each.declarations]));
 
+const FALLBACK = "@supports not selector(::details-content) {";
+
+/** The rules of the desktop block inside the fallback for a browser without `::details-content`. */
+function fallback() {
+  const at = code.indexOf(FALLBACK);
+  if (at < 0) return [];
+  const open = code.indexOf("{", at);
+  const block = code.slice(open + 1, closing(code, open, "{", "}"));
+  const media = block.indexOf(`@media ${DESKTOP} {`);
+  if (media < 0) return [];
+  const start = block.indexOf("{", media);
+  return flatRules(block.slice(start + 1, closing(block, start, "{", "}")));
+}
+
 const base = flatRules(outsideMedia(code));
 const rule = (selector) => of(base, selector);
 const phone = (selector) => of(inside(PHONE), selector);
@@ -63,7 +77,22 @@ describe("sidebar.css recipe", () => {
   });
 
   it("turns from a bar into the column at 48rem, and at no other width", () => {
-    expect(code.match(/@media \([^)]*width[^)]*\)/g).sort()).toEqual([`@media ${DESKTOP}`, `@media ${PHONE}`].sort());
+    expect([...new Set(code.match(/@media \([^)]*width[^)]*\)/g))].sort()).toEqual([`@media ${DESKTOP}`, `@media ${PHONE}`].sort());
+  });
+
+  it("keeps the menu button in the column from 48rem where ::details-content is missing, so the nav stays reachable", () => {
+    expect(code.match(/@supports[^{]*\{/g)).toEqual([FALLBACK]);
+    expect(code.indexOf(FALLBACK)).toBeGreaterThan(code.indexOf(`@media ${DESKTOP} {`));
+    const rules = fallback();
+    expect(of(rules, ".neuwo-sidebar__toggle")).toEqual({
+      display: "block",
+      "align-self": "flex-start",
+      "margin-inline-start": "calc(var(--neuwo-space-2) - var(--neuwo-space-3))",
+    });
+    expect(of(rules, ".neuwo-sidebar")).toEqual({ "overflow-y": "auto" });
+    expect(of(rules, ".neuwo-sidebar__after-nav")).toEqual({ "margin-block-start": "var(--neuwo-space-6)" });
+    expect(of(rules, ".neuwo-sidebar__footer")).toEqual({ "margin-block-start": "var(--neuwo-space-6)" });
+    expect(rules.flatMap((each) => each.selectors).sort()).toEqual([".neuwo-sidebar", ".neuwo-sidebar__after-nav", ".neuwo-sidebar__footer", ".neuwo-sidebar__toggle"]);
   });
 
   it("stands the column sticky at the top, the full viewport tall, from 48rem", () => {

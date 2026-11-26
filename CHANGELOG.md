@@ -49,7 +49,9 @@
   glass bar pinned to the top, with the `brand`, the `actions` and a menu button that shows and
   hides the rest; the button is a `<summary>`, so it works before the script runs on a served page,
   the menu starts closed, and following a link in the nav closes it, unless a modifier key or the
-  middle button opens the link elsewhere. `current` marks the entry naming the page with
+  middle button opens the link elsewhere. A browser without `::details-content`, before Chromium
+  131, Safari 18.4 or Firefox 143, keeps the menu button in the column too, so the nav stays
+  reachable there. `current` marks the entry naming the page with
   `aria-current="page"` and the active underline, comparing paths without the query, the hash, a
   trailing slash or `/index.html`, with percent-encoding decoded; without it the element takes
   `location.pathname`, unless React rendered it. `label` and `menu-label` name the nav and the

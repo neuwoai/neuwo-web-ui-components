@@ -1799,9 +1799,11 @@ footer, so the browser holds its state and announces it, and on a server-rendere
 before the library's script runs, or without it. The menu starts closed on every page, and following
 a link in the nav closes it, unless a modifier key or the middle button opens the link elsewhere.
 From 48rem the nav shows whatever the menu's state, so widening the window with the menu open shows
-the column as it should be. A script reads or sets the menu's state through the **`menuOpen`**
-property, for instance to close it when a panel of its own opens; it is not reflected to an
-attribute.
+the column as it should be. That takes `::details-content`, which arrived in Chromium 131, Safari
+18.4 and Firefox 143; an older browser keeps the menu button in the column too, at its start under
+the brand, and shows the nav once the reader opens it, with or without the library's script. A
+script reads or sets the menu's state through the **`menuOpen`** property, for instance to close it
+when a panel of its own opens; it is not reflected to an attribute.
 
 A plain click on an entry, or on a section's own link, fires **`navigate`** on the sidebar, a
 cancelable, bubbling `CustomEvent` whose `detail.href` is the link's `href`, before the browser
