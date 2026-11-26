@@ -133,12 +133,16 @@ unless `--keep` is given, and exits 130.
 - `sidebarSteady`, `sidebarNoScript` and `sidebarClientNav`: on `example-eleventy` and `example-next`, each in a new
   tab, which remembers nothing. `sidebarSteady` opens the first closed section at 1280px, and again at 390px with the
   menu open, reloads, and requires the remembered sections open, the menu closed and no layout shift on the reloaded
-  page; Firefox reports no layout shifts, so it is `n/a` there. `sidebarNoScript` turns JavaScript off at 390px and
-  requires the menu button to show the nav, and every link in it to be a page on the site that answers 200 or an https
-  page elsewhere; it is `n/a` in Firefox, like `noScript`. `sidebarClientNav`, on `example-next` only, opens a section
-  the second page is not in and the sections around its entry, follows the entry and then the first page's entry back,
-  and requires each time that a marker set on `window` survives, every open section stays open, the one the mark left
-  included, and `aria-current` moves.
+  page; Firefox reports no layout shifts, so it is `n/a` there. The 390px leg cannot see a section the script opens
+  late, since the menu starts closed and the nav takes no room until it opens.
+  `sidebarNoScript` turns JavaScript off at 390px and requires the menu button to show the nav, and every link in it
+  to be a page on the site that answers 200 itself, not through a redirect, or an https page elsewhere; it is `n/a`
+  in Firefox, like `noScript`. `sidebarClientNav`, on `example-next` only, opens a section the second page is not in,
+  follows the second page's entry with a script `click()` while the section around it is still closed, then follows
+  the first page's entry back. Each time a marker set on `window` must survive, every open section must stay open and
+  `aria-current` must move. On arrival the sections around the entry must be open and marked, which only the new
+  `current` does, and on the way back they must stay open, which the sections' keep-open guard does. A check that
+  fails after the tab logged an error names the messages beside the failed step.
 - `interactConsole`: on a target that interacts with its page (`demo`, `next-dev`, `next-prod`,
   `vite`, `example-eleventy`, `example-next`, `example-vite` and `example-vite-dev`), the `console` check again, over the whole
   interaction from its own page load to its last step, so an error raised while the forms are
@@ -181,6 +185,31 @@ toggle half of the split button `#demo-split`: the menu must open with the host 
 the click must reach neither the host's `click` listener, which the demo counts in
 `window.__splitClicks`, nor the form. A click on the main half must then reach that listener once
 and submit the form, which the demo records in `window.__splitSubmits`.
+
+The `demo` target also loads `demo/sidebar/index.html`, runs `console` and `singleCopy` there, and
+then the checks in `integration/sidebar.mjs`. Each leaves the viewport at 1280 by 800 and the menu
+closed, and a check that sets a viewport the browser cannot set is `n/a`.
+
+- `sidebarDesktop`: at 1280px with the menu closed, every top-level entry shows, uncovered, and the
+  menu button does not, and Tab from the brand's link focuses the first entry. After the menu is
+  opened at 390px and the window widened again, every entry still shows and the button does not.
+- `sidebarPhone`: at 390px the menu button shows and the nav does not; a click on the button shows
+  the nav and a second hides it.
+- `sidebarTree`: Chromium's accessibility tree holds a navigation named by the sidebar's `label`,
+  whose lists hold only list items. The disclosures report Guides expanded, and In Depth and Show
+  Reference pages collapsed, and exactly one link carries `aria-current="page"`, read from its DOM
+  node, since the tree does not report it. It is `n/a` in Firefox, like `menuTree`.
+- `sidebarFold`: Guides, which starts open, closes and opens from clicks on its row, then from Enter
+  and Space; a click on the toggle beside Reference's link opens Reference. Then the check sets
+  `current` as a router would: a page in In Depth must open and mark In Depth at the next frame, and
+  moving on to a page in Reference must leave In Depth open and unmarked at the next frame.
+- `sidebarRemember`: in a new tab at 1280 by 400, so the nav scrolls, In Depth starts closed, opens
+  from its row, and the nav is scrolled. After following Installation, which does not hold In Depth,
+  In Depth must be open and the nav scrolled as it was left.
+- `sidebarRememberEarly`: that tab then writes the page into its document again, so the parser builds
+  it with the library already defined, and In Depth must open from storage again. It fails unless
+  `sidebarRemember` passed.
+- `sidebarRememberConsole`: the `console` check over that tab, from its first load to its last step.
 
 The `next-dev` and `next-prod` targets run the app in `integration/apps/next` under `next dev`, and
 under `next build` then `next start`. Besides the five checks they run `forms` on the `Forms`

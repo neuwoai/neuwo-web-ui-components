@@ -38,19 +38,32 @@ function closeMenu() {
 const describe = (state) => `${state.shown} of ${state.entries} entries shown, the nav ${state.nav ? "shown" : "hidden"}, the toggle ${state.toggle ? "shown" : "hidden"}, the menu ${state.open ? "open" : "closed"}`;
 
 /**
+ * What a step reads off the page, with its arguments, and how a failed step words the last reading.
+ * @template T
+ * @typedef {{ read: (...args: never[]) => T, args?: unknown[], describe: (state: T) => string }} Reading
+ */
+
+/**
+ * Reads the page until `accept` takes the reading, and fails the step with the last one after `STEP_TIMEOUT`.
+ * @template T
  * @param {import("puppeteer-core").Page} page
  * @param {string} step
- * @param {(state: ReturnType<typeof readSidebar>) => boolean} accept
+ * @param {Reading<T>} reading
+ * @param {(state: T) => boolean} accept
+ * @returns {Promise<T>}
  */
-async function until(page, step, accept) {
+async function poll(page, step, { read, args = [], describe }, accept) {
   const deadline = Date.now() + STEP_TIMEOUT;
   for (;;) {
-    const state = await page.evaluate(readSidebar);
+    const state = await page.evaluate(read, ...args);
     if (accept(state)) return state;
     if (Date.now() > deadline) throw new Error(`${step}: ${describe(state)}`);
     await new Promise((resolve) => setTimeout(resolve, 50));
   }
 }
+
+/** @type {Reading<ReturnType<typeof readSidebar>>} */
+const SIDEBAR = { read: readSidebar, describe };
 
 /**
  * Runs `steps` at the viewports they set, n/a where the browser cannot set one, and leaves the default viewport and a
@@ -115,20 +128,8 @@ function moveMark(path) {
 /** @param {{ open: string[], marked: string[] }} state */
 const describeFold = (state) => `open: ${state.open.join(", ") || "none"}; marked: ${state.marked.join(", ") || "none"}`;
 
-/**
- * @param {import("puppeteer-core").Page} page
- * @param {string} step
- * @param {(state: ReturnType<typeof readFold>) => boolean} accept
- */
-async function untilFold(page, step, accept) {
-  const deadline = Date.now() + STEP_TIMEOUT;
-  for (;;) {
-    const state = await page.evaluate(readFold);
-    if (accept(state)) return state;
-    if (Date.now() > deadline) throw new Error(`${step}: ${describeFold(state)}`);
-    await new Promise((resolve) => setTimeout(resolve, 50));
-  }
-}
+/** @type {Reading<ReturnType<typeof readFold>>} */
+const FOLD = { read: readFold, describe: describeFold };
 
 const ROW = 'neuwo-nav-section[label="Guides"] > .neuwo-nav-section > .neuwo-nav-section__details > .neuwo-nav-section__row';
 const TOGGLE = 'neuwo-nav-section[label="Reference"] > .neuwo-nav-section > .neuwo-nav-section__details > .neuwo-nav-section__toggle';
@@ -140,18 +141,18 @@ const TOGGLE = 'neuwo-nav-section[label="Reference"] > .neuwo-nav-section > .neu
  */
 async function fold(page) {
   await page.setViewport(VIEWPORT);
-  await untilFold(page, "Guides open at the start", (state) => state.open.includes("Guides"));
+  await poll(page, "Guides open at the start", FOLD, (state) => state.open.includes("Guides"));
   await page.click(ROW);
-  await untilFold(page, "the first click on Guides' row", (state) => !state.open.includes("Guides"));
+  await poll(page, "the first click on Guides' row", FOLD, (state) => !state.open.includes("Guides"));
   await page.click(ROW);
-  await untilFold(page, "the second click on Guides' row", (state) => state.open.includes("Guides"));
+  await poll(page, "the second click on Guides' row", FOLD, (state) => state.open.includes("Guides"));
   await page.focus(ROW);
   await page.keyboard.press("Enter");
-  await untilFold(page, "Enter on Guides' row", (state) => !state.open.includes("Guides"));
+  await poll(page, "Enter on Guides' row", FOLD, (state) => !state.open.includes("Guides"));
   await page.keyboard.press(" ");
-  await untilFold(page, "Space on Guides' row", (state) => state.open.includes("Guides"));
+  await poll(page, "Space on Guides' row", FOLD, (state) => state.open.includes("Guides"));
   await page.click(TOGGLE);
-  await untilFold(page, "a click on Reference's toggle", (state) => state.open.includes("Reference"));
+  await poll(page, "a click on Reference's toggle", FOLD, (state) => state.open.includes("Reference"));
   const into = await page.evaluate(moveMark, "/demo/sidebar/theming.html");
   if (!into.open.includes("In Depth") || !into.marked.includes("In Depth")) throw new Error(`marking Theming: ${describeFold(into)}`);
   const away = await page.evaluate(moveMark, "/demo/sidebar/sections.html");
@@ -190,20 +191,12 @@ async function rewrite() {
   document.close();
 }
 
-/**
- * @param {import("puppeteer-core").Page} tab
- * @param {string} step
- * @param {(state: ReturnType<typeof readPlace>) => boolean} accept
- */
-async function untilPlace(tab, step, accept) {
-  const deadline = Date.now() + STEP_TIMEOUT;
-  for (;;) {
-    const state = await tab.evaluate(readPlace, IN_DEPTH);
-    if (accept(state)) return state;
-    if (Date.now() > deadline) throw new Error(`${step}: In Depth ${state.rendered ? (state.open ? "open" : "closed") : "not rendered"}, the nav scrolled ${state.scroll}px`);
-    await new Promise((resolve) => setTimeout(resolve, 50));
-  }
-}
+/** @type {Reading<ReturnType<typeof readPlace>>} */
+const PLACE = {
+  read: readPlace,
+  args: [IN_DEPTH],
+  describe: (state) => `In Depth ${state.rendered ? (state.open ? "open" : "closed") : "not rendered"}, the nav scrolled ${state.scroll}px`,
+};
 
 /**
  * In a new tab, which remembers nothing: opens In Depth, which Getting Started leaves closed, scrolls the nav at a
@@ -220,15 +213,15 @@ async function remember(page) {
     await tab.setViewport(SHORT);
     await tab.goto(page.url(), { waitUntil: "load", timeout: NAVIGATION_TIMEOUT });
     await tab.evaluate(() => customElements.whenDefined("neuwo-sidebar"));
-    await untilPlace(tab, "In Depth in a new tab", (state) => state.rendered && !state.open);
+    await poll(tab, "In Depth in a new tab", PLACE, (state) => state.rendered && !state.open);
     await tab.click(`${IN_DEPTH} > .neuwo-nav-section__row`);
-    await untilPlace(tab, "a click on In Depth's row", (state) => state.open);
+    await poll(tab, "a click on In Depth's row", PLACE, (state) => state.open);
     const scrolled = await tab.evaluate(scrollNav, 48);
     if (scrolled.range <= 0 || scrolled.scroll <= 0) throw new Error(`the nav does not scroll at ${SHORT.height}px: range ${scrolled.range}px`);
     await Promise.all([tab.waitForNavigation({ waitUntil: "load", timeout: NAVIGATION_TIMEOUT }), tab.click(INSTALLATION)]);
     await tab.evaluate(() => customElements.whenDefined("neuwo-sidebar"));
     const left = Number(await tab.evaluate(() => sessionStorage.getItem("integration.left")));
-    const arrived = await untilPlace(tab, "arriving on Installation", (state) => state.rendered);
+    const arrived = await poll(tab, "arriving on Installation", PLACE, (state) => state.rendered);
     if (!arrived.open || Math.abs(arrived.scroll - left) > 1) {
       throw new Error(`arriving on Installation: In Depth ${arrived.open ? "open" : "closed"}, the nav scrolled ${arrived.scroll}px of the ${left}px it left at`);
     }
@@ -243,7 +236,7 @@ async function remember(page) {
   try {
     if (results[0].status !== "pass") throw new Error("needs sidebarRemember to pass first");
     await tab.evaluate(rewrite);
-    const again = await untilPlace(tab, "the page built again with the library defined", (state) => state.rendered);
+    const again = await poll(tab, "the page built again with the library defined", PLACE, (state) => state.rendered);
     if (!again.open) throw new Error("the page built again with the library defined: In Depth closed");
     results.push({ check: "sidebarRememberEarly", status: "pass", detail: "built again by the parser with the library already defined, Installation opens In Depth from storage" });
   } catch (error) {
@@ -333,26 +326,26 @@ export async function checkSidebar(page) {
   return [
     await run(page, "sidebarDesktop", async () => {
       await page.setViewport(VIEWPORT);
-      const closed = await until(page, `at ${VIEWPORT.width}px with the menu closed`, (state) => allShown(state) && !state.toggle && !state.open);
+      const closed = await poll(page, `at ${VIEWPORT.width}px with the menu closed`, SIDEBAR, (state) => allShown(state) && !state.toggle && !state.open);
       await page.focus(".neuwo-sidebar__brand a");
       await page.keyboard.press("Tab");
       const tab = await page.evaluate(readFocus);
       if (tab.focused !== "the first entry") throw new Error(`Tab from the brand at ${VIEWPORT.width}px focused ${tab.focused}, not ${tab.first}`);
       await page.setViewport(PHONE);
-      await until(page, `at ${PHONE.width}px`, (state) => state.toggle);
+      await poll(page, `at ${PHONE.width}px`, SIDEBAR, (state) => state.toggle);
       await page.click(".neuwo-sidebar__toggle");
-      await until(page, `opening the menu at ${PHONE.width}px`, (state) => state.open && state.nav);
+      await poll(page, `opening the menu at ${PHONE.width}px`, SIDEBAR, (state) => state.open && state.nav);
       await page.setViewport(VIEWPORT);
-      const opened = await until(page, `back at ${VIEWPORT.width}px with the menu open`, (state) => allShown(state) && !state.toggle && state.open);
+      const opened = await poll(page, `back at ${VIEWPORT.width}px with the menu open`, SIDEBAR, (state) => allShown(state) && !state.toggle && state.open);
       return `at ${VIEWPORT.width}px ${describe(closed)}, and Tab from the brand focused ${tab.first}; after opening the menu at ${PHONE.width}px and widening again, ${describe(opened)}`;
     }),
     await run(page, "sidebarPhone", async () => {
       await page.setViewport(PHONE);
-      const closed = await until(page, `at ${PHONE.width}px`, (state) => state.toggle && !state.nav && !state.open);
+      const closed = await poll(page, `at ${PHONE.width}px`, SIDEBAR, (state) => state.toggle && !state.nav && !state.open);
       await page.click(".neuwo-sidebar__toggle");
-      const opened = await until(page, "the first click on the menu button", (state) => state.nav && state.open);
+      const opened = await poll(page, "the first click on the menu button", SIDEBAR, (state) => state.nav && state.open);
       await page.click(".neuwo-sidebar__toggle");
-      await until(page, "the second click on the menu button", (state) => !state.nav && !state.open);
+      await poll(page, "the second click on the menu button", SIDEBAR, (state) => !state.nav && !state.open);
       return `at ${PHONE.width}px ${describe(closed)}; a click showed the nav (${opened.shown} of ${opened.entries} entries), a second hid it`;
     }),
     await treeCheck(page),
@@ -381,7 +374,6 @@ function readNav(href) {
   return {
     path: location.pathname,
     stay: window.__neuwoStay === true,
-    navigations: performance.getEntriesByType("navigation").length,
     menu: Boolean(document.querySelector(".neuwo-sidebar__menu")?.open),
     open: sections.filter((section) => details(section)?.open).map(label),
     closed: sections.filter((section) => !details(section)?.open && reachable(section)).map(label),
@@ -396,20 +388,10 @@ const describeNav = (state) =>
   `at ${state.path}, open: ${state.open.join(", ") || "none"}; marked: ${state.marked.join(", ") || "none"}; aria-current on ${state.current.join(", ") || "nothing"}`;
 
 /**
- * @param {import("puppeteer-core").Page} tab
- * @param {string} step
- * @param {(state: ReturnType<typeof readNav>) => boolean} accept
  * @param {string | null} [href]
+ * @returns {Reading<ReturnType<typeof readNav>>}
  */
-async function untilNav(tab, step, accept, href = null) {
-  const deadline = Date.now() + STEP_TIMEOUT;
-  for (;;) {
-    const state = await tab.evaluate(readNav, href);
-    if (accept(state)) return state;
-    if (Date.now() > deadline) throw new Error(`${step}: ${describeNav(state)}`);
-    await new Promise((resolve) => setTimeout(resolve, 50));
-  }
-}
+const navState = (href = null) => ({ read: readNav, args: [href], describe: describeNav });
 
 /**
  * Waits until every element is defined and painted, and on a React page until React has hydrated the sidebar, so a
@@ -433,7 +415,8 @@ async function ready(tab, react) {
 
 /**
  * Runs `steps` in a new tab of the page's context, which remembers nothing, and fails the check on anything the tab
- * logs. A step the browser cannot take makes the check n/a.
+ * logs, naming what it logged beside a step that threw. A step the browser cannot take makes the check n/a, unless
+ * the tab logged something first.
  * @param {import("puppeteer-core").Page} page
  * @param {string} check
  * @param {(tab: import("puppeteer-core").Page) => Promise<string | Omit<CheckResult, "check">>} steps
@@ -447,8 +430,9 @@ async function inTab(page, check, steps) {
     if (messages.length) return { check, ...judgeConsole({ messages: [...messages] }) };
     return { check, ...(typeof outcome === "string" ? { status: "pass", detail: outcome } : outcome) };
   } catch (error) {
-    if (error instanceof UnsupportedOperation) return { check, status: "n/a", detail: error.message };
-    return { check, status: "fail", detail: error.message };
+    const logged = messages.length ? `; the tab logged ${judgeConsole({ messages: [...messages] }).detail}` : "";
+    if (error instanceof UnsupportedOperation && !logged) return { check, status: "n/a", detail: error.message };
+    return { check, status: "fail", detail: `${error.message}${logged}` };
   } finally {
     await tab.close().catch(() => {});
   }
@@ -471,12 +455,12 @@ function steady(page, url, react) {
       await ready(tab, react);
       if (viewport === PHONE) {
         await tab.click(".neuwo-sidebar__toggle");
-        await untilNav(tab, `opening the menu at ${PHONE.width}px`, (state) => state.menu);
+        await poll(tab, `opening the menu at ${PHONE.width}px`, navState(), (state) => state.menu);
       }
       const [label] = (await tab.evaluate(readNav, null)).closed;
       if (!label) throw new Error(`at ${viewport.width}px no section is left closed to open`);
       await tab.click(SUMMARY(label));
-      const opened = await untilNav(tab, `a click on ${label} at ${viewport.width}px`, (state) => state.open.includes(label));
+      const opened = await poll(tab, `a click on ${label} at ${viewport.width}px`, navState(), (state) => state.open.includes(label));
       await tab.reload({ waitUntil: "load", timeout: NAVIGATION_TIMEOUT });
       await ready(tab, react);
       const shift = await tab.evaluate(layoutShift);
@@ -508,12 +492,12 @@ function withoutScript(page, url) {
     const closed = await tab.evaluate(readSidebar);
     if (!closed.toggle || closed.nav) throw new Error(`at ${PHONE.width}px without JavaScript, before a click: ${describe(closed)}`);
     await tab.click(".neuwo-sidebar__toggle");
-    const opened = await until(tab, `a click on the menu button at ${PHONE.width}px without JavaScript`, (state) => state.nav);
+    const opened = await poll(tab, `a click on the menu button at ${PHONE.width}px without JavaScript`, SIDEBAR, (state) => state.nav);
     const links = await tab.$$eval(".neuwo-sidebar__nav a[href]", (anchors) => anchors.map((anchor) => anchor.href));
     const origin = new URL(url).origin;
     const here = links.filter((link) => new URL(link).origin === origin);
     const elsewhere = links.filter((link) => !here.includes(link));
-    const answers = await Promise.all(here.map(async (link) => ({ path: new URL(link).pathname, status: (await fetch(link)).status })));
+    const answers = await Promise.all(here.map(async (link) => ({ path: new URL(link).pathname, status: (await fetch(link, { redirect: "manual" })).status })));
     const broken = answers.filter((answer) => answer.status !== 200);
     if (!here.length || broken.length) throw new Error(`of ${here.length} links on the site, ${broken.map(({ path, status }) => `${path} answers ${status}`).join(", ") || "none answer"}`);
     const unsafe = elsewhere.filter((link) => new URL(link).protocol !== "https:");
@@ -526,9 +510,9 @@ function withoutScript(page, url) {
 }
 
 /**
- * On a React app with a client-side router: opens a section the second page is not in, and the sections around the
- * second page's entry, follows the entry and comes back. Each time the document stays, every open section stays
- * open, the one the mark left included, and the mark moves.
+ * On a React app with a client-side router: opens a section the second page is not in, follows the second page's
+ * entry while the sections around it are closed, and comes back. Each time the document stays, every open section
+ * stays open and the mark moves; arriving opens and marks the sections around the entry, and leaving keeps them open.
  * @param {import("puppeteer-core").Page} page
  * @param {string} url
  */
@@ -539,34 +523,36 @@ function clientNavigation(page, url) {
     await ready(tab, true);
     const start = await tab.evaluate(readNav, SECOND_PAGE);
     if (start.current.length !== 1) throw new Error(`at the start ${describeNav(start)}`);
+    if (!start.around.length || start.around.every((label) => start.open.includes(label))) {
+      throw new Error(`no closed section around ${SECOND_PAGE} at the start; ${describeNav(start)}`);
+    }
     const [home] = start.current;
     await tab.evaluate(() => (window.__neuwoStay = true));
     const [other] = start.closed.filter((label) => !start.around.includes(label));
-    if (!other) throw new Error(`no closed section outside ${start.around.join(", ") || "the top level"} to open`);
-    for (const label of [other, ...start.around.filter((name) => start.closed.includes(name))]) {
-      await tab.click(SUMMARY(label));
-      await untilNav(tab, `a click on ${label}`, (state) => state.open.includes(label));
-    }
+    if (!other) throw new Error(`no closed section outside ${start.around.join(", ")} to open`);
+    await tab.click(SUMMARY(other));
+    const opened = await poll(tab, `a click on ${other}`, navState(SECOND_PAGE), (state) => state.open.includes(other));
     /**
      * @param {ReturnType<typeof readNav>} before
      * @param {string} href
+     * @param {() => Promise<unknown>} click
      */
-    const follow = async (before, href) => {
-      await tab.click(ENTRY(href));
-      const after = await untilNav(tab, `following ${href}`, (state) => state.path === href && state.current.join() === href, SECOND_PAGE);
-      if (!after.stay || after.navigations !== 1) throw new Error(`following ${href} loaded a new document`);
+    const follow = async (before, href, click) => {
+      await click();
+      const after = await poll(tab, `following ${href}`, navState(SECOND_PAGE), (state) => state.path === href && state.current.join() === href);
+      if (!after.stay) throw new Error(`following ${href} loaded a new document`);
       const closed = before.open.filter((label) => !after.open.includes(label));
       if (closed.length) throw new Error(`following ${href} closed ${closed.join(", ")}; ${describeNav(after)}`);
       return after;
     };
-    const opened = await tab.evaluate(readNav, SECOND_PAGE);
-    const there = await follow(opened, SECOND_PAGE);
-    const unmarked = there.around.filter((label) => !there.marked.includes(label));
-    if (unmarked.length) throw new Error(`at ${SECOND_PAGE}, ${unmarked.join(", ")} not marked; ${describeNav(there)}`);
-    const back = await follow(there, home);
+    const there = await follow(opened, SECOND_PAGE, () => tab.$eval(ENTRY(SECOND_PAGE), (link) => link.click()));
+    const unmarked = there.around.filter((label) => !there.open.includes(label) || !there.marked.includes(label));
+    if (unmarked.length) throw new Error(`at ${SECOND_PAGE}, ${unmarked.join(", ")} not open and marked; ${describeNav(there)}`);
+    const back = await follow(there, home, () => tab.click(ENTRY(home)));
     return (
-      `with no new document, ${other} opened and following ${SECOND_PAGE} moved aria-current there and left ${there.open.join(", ")} open; ` +
-      `following ${home} back moved it again and left ${back.open.join(", ")} open`
+      `with no new document, ${other} opened, and a script click on the hidden ${SECOND_PAGE} entry moved aria-current there ` +
+      `and opened ${there.around.join(", ")} by itself, leaving ${there.open.join(", ")} open; following ${home} back moved it again ` +
+      `and left ${back.open.join(", ")} open`
     );
   });
 }
@@ -574,7 +560,7 @@ function clientNavigation(page, url) {
 /**
  * The checks for a server-rendered example: a reload after opening a section shifts nothing at either width, the
  * phone menu works and leads to real pages without JavaScript, and on a React app with a client-side router a client
- * navigation keeps the document, the open sections and moves the mark.
+ * navigation keeps the document and the open sections, opens the branch it arrives in and moves the mark.
  * @param {import("puppeteer-core").Page} page
  * @param {string} url
  * @param {{ next: boolean }} options
