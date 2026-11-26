@@ -2,7 +2,8 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { act } from "react";
-import { createRoot } from "react-dom/client";
+import { createRoot, hydrateRoot } from "react-dom/client";
+import { renderToString } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import "../src/index.js";
 import { sidebarTemplate } from "../src/components/sidebar/sidebar.template.js";
@@ -59,12 +60,11 @@ function attach(html) {
 }
 
 /**
- * Puts served markup in the page, then runs each remember script where it stands, as the parser does once it has
- * parsed the nav. A script parsed by innerHTML never runs, in happy-dom as in a browser, so each is put back fresh.
- * @param {string} html
+ * Runs each remember script in `holder` where it stands, as the parser does once it has parsed the nav. A script
+ * parsed by innerHTML never runs, in happy-dom as in a browser, so each is put back fresh.
+ * @param {Element} holder
  */
-async function serve(html) {
-  const holder = attach(expand(html));
+async function runScripts(holder) {
   for (const parsed of Array.from(holder.querySelectorAll("script.neuwo-sidebar__remember"))) {
     const script = document.createElement("script");
     script.className = parsed.className;
@@ -72,6 +72,15 @@ async function serve(html) {
     parsed.replaceWith(script);
   }
   await Promise.resolve();
+}
+
+/**
+ * Puts served markup in the page, then runs each remember script.
+ * @param {string} html
+ */
+async function serve(html) {
+  const holder = attach(expand(html));
+  await runScripts(holder);
   return Array.from(holder.querySelectorAll("neuwo-sidebar"), sidebar);
 }
 
@@ -224,6 +233,29 @@ describe("<neuwo-sidebar remember>", () => {
     expect(host.querySelector("script.neuwo-sidebar__remember")).not.toBeNull();
     expect(open()).toEqual([]);
     expect(errors.mock.calls.map(([message]) => String(message))).toEqual([expect.stringMatching(/script tag/i)]);
+  });
+
+  it("hydrates a server-rendered sidebar whose script opened a remembered section, under React's development build, without a word", async () => {
+    expect(process.env.NODE_ENV).not.toBe("production");
+    sessionStorage.setItem("hydrate", JSON.stringify({ open: ["Beta"], scroll: 0 }));
+    const errors = vi.spyOn(console, "error");
+    const section = (label, href) => jsx("neuwo-nav-section", { label, children: jsx("neuwo-nav-item", { href, children: label }) }, label);
+    const app = () => jsx("neuwo-sidebar", { current: "/a/", remember: "hydrate", children: [section("Alpha", "/a/"), section("Beta", "/b/")] });
+    const container = attach(renderToString(app()));
+    await runScripts(container);
+    const { host, open, details } = sidebar(container.querySelector("neuwo-sidebar"));
+    expect(open()).toEqual(["Alpha", "Beta"]);
+    const beta = details("Beta");
+    let root;
+    act(() => {
+      root = hydrateRoot(container, app());
+    });
+    cleanup.push(() => act(() => root.unmount()));
+    await Promise.resolve();
+    expect(container.querySelector("neuwo-sidebar")).toBe(host);
+    expect(details("Beta")).toBe(beta);
+    expect(open()).toEqual(["Alpha", "Beta"]);
+    expect(errors).not.toHaveBeenCalled();
   });
 
   it("README carries the script's CSP hash", () => {

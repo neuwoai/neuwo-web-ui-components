@@ -415,7 +415,8 @@ function readNav(href) {
 
 /** @param {ReturnType<typeof readNav>} state */
 const describeNav = (state) =>
-  `at ${state.path}, open: ${state.open.join(", ") || "none"}; marked: ${state.marked.join(", ") || "none"}; aria-current on ${state.current.join(", ") || "nothing"}`;
+  `at ${state.path}, open: ${state.open.join(", ") || "none"}; marked: ${state.marked.join(", ") || "none"}; aria-current on ${state.current.join(", ") || "nothing"}` +
+  (state.around.length ? `; around the entry: ${state.around.join(", ")}` : "");
 
 /**
  * @param {string | null} [href]
@@ -569,15 +570,14 @@ function clientNavigation(page, url) {
      */
     const follow = async (before, href, click) => {
       await click();
-      const after = await poll(tab, `following ${href}`, navState(SECOND_PAGE), (state) => state.path === href && state.current.join() === href);
+      const arrived = (state) => state.path === href && state.current.join() === href && state.around.every((label) => state.open.includes(label) && state.marked.includes(label));
+      const after = await poll(tab, `following ${href} until the sections around it are open and marked`, navState(href), arrived);
       if (!after.stay) throw new Error(`following ${href} loaded a new document`);
       const closed = before.open.filter((label) => !after.open.includes(label));
       if (closed.length) throw new Error(`following ${href} closed ${closed.join(", ")}; ${describeNav(after)}`);
       return after;
     };
     const there = await follow(opened, SECOND_PAGE, () => tab.$eval(ENTRY(SECOND_PAGE), (link) => link.click()));
-    const unmarked = there.around.filter((label) => !there.open.includes(label) || !there.marked.includes(label));
-    if (unmarked.length) throw new Error(`at ${SECOND_PAGE}, ${unmarked.join(", ")} not open and marked; ${describeNav(there)}`);
     const back = await follow(there, home, () => tab.click(ENTRY(home)));
     return (
       `with no new document, ${other} opened, and a script click on the hidden ${SECOND_PAGE} entry moved aria-current there ` +

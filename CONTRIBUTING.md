@@ -141,7 +141,8 @@ unless `--keep` is given, and exits 130.
   follows the second page's entry with a script `click()` while the section around it is still closed, then follows
   the first page's entry back. Each time a marker set on `window` must survive, every open section must stay open and
   `aria-current` must move. On arrival the sections around the entry must be open and marked, which only the new
-  `current` does, and on the way back they must stay open, which the sections' keep-open guard does. A check that
+  `current` does; the check reads the page until they are, so the failure names the last state it read. On the way
+  back they must stay open, which the sections' keep-open guard does. A check that
   fails after the tab logged an error names the messages beside the failed step.
 - `interactConsole`: on a target that interacts with its page (`demo`, `next-dev`, `next-prod`,
   `vite`, `example-eleventy`, `example-next`, `example-vite` and `example-vite-dev`), the `console` check again, over the whole
