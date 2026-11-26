@@ -15,7 +15,6 @@
       sessionStorage.setItem(key, JSON.stringify({ open, scroll: nav.scrollTop }));
     } catch {}
   };
-  // Sections render after this runs when the library is defined before the parser reaches the sidebar.
   queueMicrotask(() => {
     let saved = null;
     try {

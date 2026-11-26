@@ -29,7 +29,6 @@ export class NeuwoNavSection extends NeuwoElement {
   // Kept through a disconnect, so a close made while the section is out of the page is still put back.
   #observer = new MutationObserver(() => this.#keepOpen());
 
-  // Heard in the capture phase, so a page listener that stops the click on the row cannot hide the reader's toggle.
   /** @param {Event} event */
   #onClick = (event) => {
     const summary = this.#watched?.querySelector(":scope > summary");
@@ -60,6 +59,7 @@ export class NeuwoNavSection extends NeuwoElement {
     this.#wasOpen = details?.open ?? false;
     if (!details) return;
     // On the details, not the host: Chromium puts a host with a click listener in the accessibility tree, between the list and its item.
+    // In the capture phase, so a page listener that stops the click on the row cannot hide the reader's toggle.
     details.addEventListener("click", this.#onClick, true);
     this.#observer.observe(details, { attributes: true, attributeFilter: ["open"] });
   }

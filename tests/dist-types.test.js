@@ -38,6 +38,11 @@ describe("published declarations", () => {
     }
   });
 
+  it("leave out the sidebar's remember script, which declares nothing", () => {
+    distFile("index.d.ts");
+    expect(existsSync(join(dist, "components/sidebar/remember.snippet.d.ts"))).toBe(false);
+  });
+
   it("the server entry publishes only its two functions", () => {
     const code = readFileSync(distFile("server/index.d.ts"), "utf8");
     const names = [...code.matchAll(/export\s+(?:declare\s+)?(?:function|const|type|interface|class)\s+(\w+)/g)].map((match) => match[1]);

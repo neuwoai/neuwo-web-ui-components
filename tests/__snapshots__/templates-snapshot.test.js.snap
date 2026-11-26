@@ -385,7 +385,6 @@ exports[`template markup snapshots > neuwo-sidebar > remember 1`] = `
       sessionStorage.setItem(key, JSON.stringify({ open, scroll: nav.scrollTop }));
     } catch {}
   };
-  // Sections render after this runs when the library is defined before the parser reaches the sidebar.
   queueMicrotask(() => {
     let saved = null;
     try {
@@ -419,7 +418,6 @@ exports[`template markup snapshots > neuwo-sidebar > remember with a key 1`] = `
       sessionStorage.setItem(key, JSON.stringify({ open, scroll: nav.scrollTop }));
     } catch {}
   };
-  // Sections render after this runs when the library is defined before the parser reaches the sidebar.
   queueMicrotask(() => {
     let saved = null;
     try {

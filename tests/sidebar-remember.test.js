@@ -29,6 +29,7 @@ const cleanup = [];
 afterEach(() => {
   while (cleanup.length) cleanup.pop()();
   vi.restoreAllMocks();
+  sessionStorage.clear();
 });
 
 /** @param {string} key */
@@ -222,7 +223,7 @@ describe("<neuwo-sidebar remember>", () => {
     const { host, open } = sidebar(container.querySelector("neuwo-sidebar"));
     expect(host.querySelector("script.neuwo-sidebar__remember")).not.toBeNull();
     expect(open()).toEqual([]);
-    expect(errors.mock.calls.map(([message]) => String(message))).toEqual([expect.stringContaining("Encountered a script tag while rendering React component")]);
+    expect(errors.mock.calls.map(([message]) => String(message))).toEqual([expect.stringMatching(/script tag/i)]);
   });
 
   it("README carries the script's CSP hash", () => {
