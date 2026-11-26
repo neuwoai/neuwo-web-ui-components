@@ -69,7 +69,21 @@ describe("notice.css recipe", () => {
   it("gives a filled close button a subtle white background, stronger on hover and keyboard focus", () => {
     expect(ruleFor(".neuwo-notice__dismiss--filled")).toMatch(/background-color: color-mix\(in srgb, var\(--neuwo-color-white\) 15%, transparent\);/);
     expect(ruleFor(".neuwo-notice__dismiss--filled:hover,\n.neuwo-notice__dismiss--filled:focus-visible")).toMatch(/background-color: color-mix\(in srgb, var\(--neuwo-color-white\) 25%, transparent\);/);
-    expect(ruleFor(".neuwo-notice__dismiss")).toMatch(/transition: color var\(--neuwo-transition-fast\), background-color var\(--neuwo-transition-fast\);/);
+    expect(ruleFor(".neuwo-notice__dismiss")).toMatch(/transition: opacity var\(--neuwo-transition-fast\), color var\(--neuwo-transition-fast\), background-color var\(--neuwo-transition-fast\);/);
+  });
+
+  it("rests the close button dimmed and brings it to full strength, behind a soft square, on hover and keyboard focus", () => {
+    expect(ruleFor(".neuwo-notice__dismiss")).toMatch(/opacity: 0\.6;/);
+    const active = ruleFor(".neuwo-notice__dismiss:hover,\n.neuwo-notice__dismiss:focus-visible");
+    expect(active).toMatch(/opacity: 1;/);
+    expect(active).toMatch(/color: var\(--neuwo-color-heading\);/);
+    expect(active).toMatch(/background-color: color-mix\(in srgb, var\(--neuwo-color-white\) 10%, transparent\);/);
+    expect(declarations.indexOf(".neuwo-notice__dismiss--filled:hover")).toBeGreaterThan(declarations.indexOf(".neuwo-notice__dismiss:hover"));
+  });
+
+  it("keeps the close button at full strength in forced colours, where the dimming would cost contrast", () => {
+    const forced = css.match(/@media \(forced-colors: active\) \{[\s\S]*?\n\}/)[0];
+    expect(forced).toMatch(/\.neuwo-notice__dismiss\s*\{\s*opacity: 1;/);
   });
 
   it("stacks by default and turns to a row only when there is room", () => {

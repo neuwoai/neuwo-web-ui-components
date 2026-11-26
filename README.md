@@ -1384,8 +1384,10 @@ consent banner, a language hint, a toast. What differs between those is separate
 axes rather than one bundled variant, so they mix freely: `position` (which
 viewport corner, or `static` to flow with the page), `layout` (actions under the
 text or beside it), and `dismissible` (a consent banner deliberately is not).
-`dismiss-filled` gives the close button a subtle background, stronger on hover
-and keyboard focus, for a card where the cross alone would not stand out. A
+The close button rests at 60% opacity and comes to full strength on hover and
+keyboard focus, when a soft square appears behind the cross. `dismiss-filled`
+gives it a subtle background at rest, stronger on hover and keyboard focus, for a
+card where the cross alone would not stand out. A
 dismissible card reserves the button's corner plus a `--neuwo-space-2` gap, so its
 text and actions stop 8px short of the button, even in a card that shrinks to a
 short title.

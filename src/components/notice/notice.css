@@ -125,7 +125,8 @@ neuwo-notice {
   border: 0;
   border-radius: var(--neuwo-radius-sm);
   cursor: pointer;
-  transition: color var(--neuwo-transition-fast), background-color var(--neuwo-transition-fast);
+  opacity: 0.6;
+  transition: opacity var(--neuwo-transition-fast), color var(--neuwo-transition-fast), background-color var(--neuwo-transition-fast);
 }
 
 /* A mask over currentColor, so the cross follows the hover and a consumer's colour. */
@@ -140,7 +141,9 @@ neuwo-notice {
 
 .neuwo-notice__dismiss:hover,
 .neuwo-notice__dismiss:focus-visible {
+  opacity: 1;
   color: var(--neuwo-color-heading);
+  background-color: color-mix(in srgb, var(--neuwo-color-white) 10%, transparent);
 }
 
 .neuwo-notice__dismiss--filled {
@@ -176,6 +179,11 @@ neuwo-notice {
 @media (forced-colors: active) {
   .neuwo-notice__dismiss::before {
     background: ButtonText;
+  }
+
+  /* The dimming would cost the contrast the user's theme chose. */
+  .neuwo-notice__dismiss {
+    opacity: 1;
   }
 }
 

@@ -59,6 +59,10 @@
   new files: `outfit-ext-variable.woff2`, `noto-sans-ext-variable.woff2`,
   `noto-sans-italic-ext-variable.woff2` and `jetbrains-mono-ext-variable.woff2`. A site that
   declares its own `@font-face` rules needs one per file, with the library face's `unicode-range`.
+- The notice's close button rests at 60% opacity and comes to full strength on hover and keyboard
+  focus, as the copy button does, and the plain cross gains a soft square behind it there, so a
+  hover shows on every close button, not only the filled one. Forced colours keep it at full
+  strength.
 
 ### Fixed
 
