@@ -158,15 +158,20 @@ const FOLD = { read: readFold, describe: describeFold };
 
 const ROW = 'neuwo-nav-section[label="Guides"] > .neuwo-nav-section > .neuwo-nav-section__details > .neuwo-nav-section__row';
 const TOGGLE = 'neuwo-nav-section[label="Reference"] > .neuwo-nav-section > .neuwo-nav-section__details > .neuwo-nav-section__toggle';
+const IN_DEPTH = 'neuwo-nav-section[label="In Depth"] > .neuwo-nav-section > .neuwo-nav-section__details';
+const REFERENCE = 'neuwo-nav-section[label="Reference"] > .neuwo-nav-section > .neuwo-nav-section__details';
+const THEMING = "/docs/guides/in-depth/theming/";
+const SECTIONS = "/docs/reference/sections/";
 
 /**
- * Folds Guides, which starts open, from its row with the pointer and the keyboard, opens Reference from the toggle
- * beside its link, then moves the mark into In Depth and away again, as a router would, reading each next frame.
+ * Folds Guides, which starts open, from its row with the pointer and the keyboard, and opens Reference from the toggle
+ * beside its link. Then, as a router would, moves the mark from Theming, where the page starts, to Sections, and after
+ * the reader closes In Depth from its row, back to Theming, reading each next frame.
  * @param {import("puppeteer-core").Page} page
  */
 async function fold(page) {
   await page.setViewport(VIEWPORT);
-  await poll(page, "Guides open at the start", FOLD, (state) => state.open.includes("Guides"));
+  await poll(page, "Guides and In Depth open at the start", FOLD, (state) => state.open.includes("Guides") && state.open.includes("In Depth"));
   await page.click(ROW);
   await poll(page, "the first click on Guides' row", FOLD, (state) => !state.open.includes("Guides"));
   await page.click(ROW);
@@ -178,21 +183,21 @@ async function fold(page) {
   await poll(page, "Space on Guides' row", FOLD, (state) => state.open.includes("Guides"));
   await page.click(TOGGLE);
   await poll(page, "a click on Reference's toggle", FOLD, (state) => state.open.includes("Reference"));
-  const into = await page.evaluate(moveMark, "/demo/sidebar/theming.html");
-  if (!into.open.includes("In Depth") || !into.marked.includes("In Depth")) throw new Error(`marking Theming: ${describeFold(into)}`);
-  const away = await page.evaluate(moveMark, "/demo/sidebar/sections.html");
-  await page.evaluate(moveMark, into.was);
+  const away = await page.evaluate(moveMark, SECTIONS);
   if (!away.open.includes("In Depth") || away.marked.includes("In Depth") || !away.marked.includes("Reference")) {
-    throw new Error(`marking Sections after Theming, at the next frame: ${describeFold(away)}`);
+    await page.evaluate(moveMark, away.was);
+    throw new Error(`marking Sections after ${away.was}, at the next frame: ${describeFold(away)}`);
   }
+  await page.click(`${IN_DEPTH} > .neuwo-nav-section__row`);
+  await poll(page, "a click on In Depth's row", FOLD, (state) => !state.open.includes("In Depth"));
+  const into = await page.evaluate(moveMark, THEMING);
+  if (!into.open.includes("In Depth") || !into.marked.includes("In Depth")) throw new Error(`marking Theming after In Depth was closed, at the next frame: ${describeFold(into)}`);
   return (
     "a click on Guides' row closed it and a second opened it, Enter closed it and Space opened it, a click on " +
-    `Reference's toggle opened it; marking Theming opened In Depth, and marking Sections then left, at the next frame, ${describeFold(away)}`
+    `Reference's toggle opened it; marking Sections then left, at the next frame, ${describeFold(away)}; ` +
+    `after a click on In Depth's row closed it, marking Theming again left ${describeFold(into)}`
   );
 }
-
-const IN_DEPTH = 'neuwo-nav-section[label="In Depth"] > .neuwo-nav-section > .neuwo-nav-section__details';
-const INSTALLATION = '.neuwo-nav-item__link[href="/demo/sidebar/installation.html"]';
 
 /** @param {string} selector */
 function readPlace(selector) {
@@ -219,14 +224,14 @@ async function rewrite() {
 /** @type {Reading<ReturnType<typeof readPlace>>} */
 const PLACE = {
   read: readPlace,
-  args: [IN_DEPTH],
-  describe: (state) => `In Depth ${state.rendered ? (state.open ? "open" : "closed") : "not rendered"}, the nav scrolled ${state.scroll}px`,
+  args: [REFERENCE],
+  describe: (state) => `Reference ${state.rendered ? (state.open ? "open" : "closed") : "not rendered"}, the nav scrolled ${state.scroll}px`,
 };
 
 /**
- * In a new tab, which remembers nothing: opens In Depth, which Getting Started leaves closed, scrolls the nav at a
- * short viewport and follows Installation, where only the remembered state opens In Depth. Then the parser builds that
- * page again with the library already defined, and In Depth opens again.
+ * In a new tab, which remembers nothing: opens Reference, which the page leaves closed, from the toggle beside its
+ * link, scrolls the nav at a short viewport and loads the same page again, where only the remembered state opens
+ * Reference. Then the parser builds the page again with the library already defined, and Reference opens again.
  * @param {import("puppeteer-core").Page} page
  * @returns {Promise<CheckResult[]>}
  */
@@ -238,22 +243,23 @@ async function remember(page) {
     await tab.setViewport(SHORT);
     await tab.goto(page.url(), { waitUntil: "load", timeout: NAVIGATION_TIMEOUT });
     await tab.evaluate(() => customElements.whenDefined("neuwo-sidebar"));
-    await poll(tab, "In Depth in a new tab", PLACE, (state) => state.rendered && !state.open);
-    await tab.click(`${IN_DEPTH} > .neuwo-nav-section__row`);
-    await poll(tab, "a click on In Depth's row", PLACE, (state) => state.open);
+    await poll(tab, "Reference in a new tab", PLACE, (state) => state.rendered && !state.open);
+    await tab.click(TOGGLE);
+    await poll(tab, "a click on Reference's toggle", PLACE, (state) => state.open);
     const scrolled = await tab.evaluate(scrollNav, 48);
     if (scrolled.range <= 0 || scrolled.scroll <= 0) throw new Error(`the nav does not scroll at ${SHORT.height}px: range ${scrolled.range}px`);
-    await Promise.all([tab.waitForNavigation({ waitUntil: "load", timeout: NAVIGATION_TIMEOUT }), tab.click(INSTALLATION)]);
+    // Not a reload, which Firefox answers by scrolling the nav back itself.
+    await tab.goto(tab.url(), { waitUntil: "load", timeout: NAVIGATION_TIMEOUT });
     await tab.evaluate(() => customElements.whenDefined("neuwo-sidebar"));
     const left = Number(await tab.evaluate(() => sessionStorage.getItem("integration.left")));
-    const arrived = await poll(tab, "arriving on Installation", PLACE, (state) => state.rendered);
-    if (!arrived.open || Math.abs(arrived.scroll - left) > 1) {
-      throw new Error(`arriving on Installation: In Depth ${arrived.open ? "open" : "closed"}, the nav scrolled ${arrived.scroll}px of the ${left}px it left at`);
+    const arrived = await poll(tab, "loading the page again", PLACE, (state) => state.rendered);
+    if (!arrived.open || left <= 0 || Math.abs(arrived.scroll - left) > 1) {
+      throw new Error(`loading the page again: Reference ${arrived.open ? "open" : "closed"}, the nav scrolled ${arrived.scroll}px of the ${left}px it left at`);
     }
     results.push({
       check: "sidebarRemember",
       status: "pass",
-      detail: `In Depth, closed in a new tab, opened from its row; after following Installation it is open and the nav is scrolled ${arrived.scroll}px, as it was left`,
+      detail: `Reference, closed in a new tab, opened from its toggle; after loading the page again it is open and the nav is scrolled ${arrived.scroll}px, as it was left`,
     });
   } catch (error) {
     results.push({ check: "sidebarRemember", status: "fail", detail: error.message });
@@ -262,8 +268,8 @@ async function remember(page) {
     if (results[0].status !== "pass") throw new Error("needs sidebarRemember to pass first");
     await tab.evaluate(rewrite);
     const again = await poll(tab, "the page built again with the library defined", PLACE, (state) => state.rendered);
-    if (!again.open) throw new Error("the page built again with the library defined: In Depth closed");
-    results.push({ check: "sidebarRememberEarly", status: "pass", detail: "built again by the parser with the library already defined, Installation opens In Depth from storage" });
+    if (!again.open) throw new Error("the page built again with the library defined: Reference closed");
+    results.push({ check: "sidebarRememberEarly", status: "pass", detail: "built again by the parser with the library already defined, the page opens Reference from storage" });
   } catch (error) {
     results.push({ check: "sidebarRememberEarly", status: "fail", detail: error.message });
   } finally {
@@ -277,7 +283,8 @@ const nodesIn = (node) => [node, ...(/** @type {Record<string, unknown>[]} */ (n
 
 /**
  * Reads the nav from Chromium's accessibility tree: the lists hold only list items, the sections are disclosures
- * with their expanded state, and the page's link is the node carrying `aria-current`, which the tree does not report.
+ * with their expanded state, Guides and In Depth open around Theming and Reference closed, and the page's link is the
+ * node carrying `aria-current`, which the tree does not report.
  * @param {import("puppeteer-core").Page} page
  * @returns {Promise<Omit<CheckResult, "check">>}
  */
@@ -304,7 +311,7 @@ async function tree(page) {
       return node ? String(node.properties?.find((property) => property.name === "expanded")?.value?.value ?? "missing") : "absent";
     };
     const states = { Guides: expanded("Guides"), "In Depth": expanded("In Depth"), "Show Reference pages": expanded("Show Reference pages") };
-    if (states.Guides !== "true" || states["In Depth"] !== "false" || states["Show Reference pages"] !== "false") {
+    if (states.Guides !== "true" || states["In Depth"] !== "true" || states["Show Reference pages"] !== "false") {
       return { status: "fail", detail: `the sections' disclosures report expanded ${JSON.stringify(states)}` };
     }
     const links = nodes.filter((each) => each.role?.value === "link" && each.backendDOMNodeId);
@@ -317,7 +324,7 @@ async function tree(page) {
     if (current.length !== 1) return { status: "fail", detail: `${current.length} links in the tree carry aria-current="page": ${current.join(", ")}` };
     return {
       status: "pass",
-      detail: `a navigation named ${label} with ${lists.length} lists holding only list items; disclosures Guides expanded, In Depth and Show Reference pages collapsed; the link ${current[0]} carries aria-current="page"`,
+      detail: `a navigation named ${label} with ${lists.length} lists holding only list items; disclosures Guides and In Depth expanded, Show Reference pages collapsed; the link ${current[0]} carries aria-current="page"`,
     };
   } finally {
     await cdp.detach();
@@ -339,10 +346,11 @@ async function treeCheck(page) {
 }
 
 /**
- * The sidebar checks for `demo/sidebar/`: the column shows every top-level entry whatever the phone menu was left as,
- * and Tab reaches the first from the brand; below 48rem the menu button shows and hides the nav; Chromium's
- * accessibility tree holds the nav's lists and sections; a section folds from its row or toggle and stays open as
- * the mark moves away; and with `remember` the open sections and the nav's scroll follow the reader to the next page.
+ * The sidebar checks for `demo/iframes/sidebar.html`: the column shows every top-level entry whatever the phone menu
+ * was left as, and Tab reaches the first from the brand; below 48rem the menu button shows and hides the nav;
+ * Chromium's accessibility tree holds the nav's lists and sections; a section folds from its row or toggle, stays open
+ * as the mark moves away and opens again as it moves back; and with `remember` the open sections and the nav's scroll
+ * come back when the page loads again.
  * @param {import("puppeteer-core").Page} page
  * @returns {Promise<CheckResult[]>}
  */

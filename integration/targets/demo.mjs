@@ -10,7 +10,7 @@ const PAGE_GREEN = "rgb(0, 128, 0)";
 const HOLD_MS = 500;
 const BUNDLE = "/dist/neuwo.js";
 const NAVIGATION_TIMEOUT = 60_000;
-const SIDEBAR_PAGE = "/demo/sidebar/index.html";
+const SIDEBAR_PAGE = "/demo/iframes/sidebar.html";
 
 export const checks = ["console", "singleCopy"];
 

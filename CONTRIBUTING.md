@@ -74,7 +74,8 @@ adapters turn into the same markup. Follow `<neuwo-button>`.
    parity, snapshot and contract tests read. Add `tests/<name>-template.test.js`,
    `tests/<name>.test.js` (behaviour, adopting server markup without a mutation, and React) and
    `tests/<name>-css.test.js`, and the tag to `EXPECTED_TAGS` in `tests/manifest.test.js`.
-8. Add a demo section in `demo/index.html`.
+8. Add a demo section in `demo/index.html`. A specimen that needs a viewport of its own, such as a
+   phone-width layout, is a page under `demo/iframes/` that the section embeds in an `<iframe>`.
 9. `npm run build` and confirm `dist/components/<name>/<name>.css` is emitted; `npm test` green.
 10. Add the component to the catalogue and restyling tables in `README.md`.
 11. Hand off: cut a version (below). The design system adopts it by bumping the library version
@@ -187,9 +188,10 @@ the click must reach neither the host's `click` listener, which the demo counts 
 `window.__splitClicks`, nor the form. A click on the main half must then reach that listener once
 and submit the form, which the demo records in `window.__splitSubmits`.
 
-The `demo` target also loads `demo/sidebar/index.html`, runs `console` and `singleCopy` there, and
-then the checks in `integration/sidebar.mjs`. Each leaves the viewport at 1280 by 800 and the menu
-closed, and a check that sets a viewport the browser cannot set is `n/a`.
+The `demo` target also loads `demo/iframes/sidebar.html`, runs `console` and `singleCopy` there, and
+then the checks in `integration/sidebar.mjs`. The page sets `current` to Theming, inside In Depth
+inside Guides. Each check leaves the viewport at 1280 by 800 and the menu closed, and a check that
+sets a viewport the browser cannot set is `n/a`.
 
 - `sidebarDesktop`: at 1280px with the menu closed, every top-level entry shows, uncovered, and the
   menu button does not, and Tab from the brand's link focuses the first entry. After the menu is
@@ -198,18 +200,20 @@ closed, and a check that sets a viewport the browser cannot set is `n/a`.
   the nav and a second hides it. At 320px, where the All Components action no longer fits beside the
   brand, no box in the `actions` place overlaps the menu button's.
 - `sidebarTree`: Chromium's accessibility tree holds a navigation named by the sidebar's `label`,
-  whose lists hold only list items. The disclosures report Guides expanded, and In Depth and Show
+  whose lists hold only list items. The disclosures report Guides and In Depth expanded, and Show
   Reference pages collapsed, and exactly one link carries `aria-current="page"`, read from its DOM
   node, since the tree does not report it. It is `n/a` in Firefox, like `menuTree`.
 - `sidebarFold`: Guides, which starts open, closes and opens from clicks on its row, then from Enter
   and Space; a click on the toggle beside Reference's link opens Reference. Then the check sets
-  `current` as a router would: a page in In Depth must open and mark In Depth at the next frame, and
-  moving on to a page in Reference must leave In Depth open and unmarked at the next frame.
-- `sidebarRemember`: in a new tab at 1280 by 400, so the nav scrolls, In Depth starts closed, opens
-  from its row, and the nav is scrolled. After following Installation, which does not hold In Depth,
-  In Depth must be open and the nav scrolled as it was left.
+  `current` as a router would: moving from Theming to a page in Reference must leave In Depth open
+  and unmarked at the next frame, and once a click on In Depth's row has closed it, moving back to
+  Theming must open and mark In Depth at the next frame.
+- `sidebarRemember`: in a new tab at 1280 by 400, so the nav scrolls, Reference starts closed, opens
+  from the toggle beside its link, and the nav is scrolled. After the tab loads the same address
+  again, Reference, which does not hold Theming, must be open and the nav scrolled as it was left.
+  The check navigates rather than reloads, since Firefox scrolls the nav back by itself on a reload.
 - `sidebarRememberEarly`: that tab then writes the page into its document again, so the parser builds
-  it with the library already defined, and In Depth must open from storage again. It fails unless
+  it with the library already defined, and Reference must open from storage again. It fails unless
   `sidebarRemember` passed.
 - `sidebarRememberConsole`: the `console` check over that tab, from its first load to its last step.
 

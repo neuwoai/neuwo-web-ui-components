@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Neuwo Web UI Library: Sidebar</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/dist/neuwo.css" />
+    <style>
+      body {
+        margin: 0;
+      }
+
+      .background {
+        position: fixed;
+        inset: 0;
+        z-index: var(--neuwo-z-background);
+        overflow: hidden;
+      }
+
+      .neuwo-background__gradient {
+        inline-size: 100%;
+        block-size: 100%;
+      }
+
+      .shell {
+        display: flex;
+        align-items: flex-start;
+      }
+
+      /* Without a zero minimum the content refuses to shrink below its widest child and pushes the page sideways. */
+      .content {
+        flex: 1 1 auto;
+        min-inline-size: 0;
+        max-inline-size: 48rem;
+        margin-inline: auto;
+        padding: var(--neuwo-space-8) var(--neuwo-space-8) var(--neuwo-space-16);
+      }
+
+      .hint {
+        margin: 0;
+        color: var(--neuwo-color-text-muted);
+        font-size: var(--neuwo-font-size-sm);
+      }
+
+      @media (width < 48rem) {
+        .shell {
+          display: block;
+        }
+
+        .content {
+          padding: var(--neuwo-space-6) var(--neuwo-space-4) var(--neuwo-space-16);
+        }
+      }
+    </style>
+    <script type="module" src="/dist/neuwo.js"></script>
+  </head>
+  <body class="neuwo-body">
+    <div class="background">
+      <div class="neuwo-background__gradient"></div>
+    </div>
+    <div class="shell">
+      <neuwo-sidebar label="Documentation" current="/docs/guides/in-depth/theming/" remember>
+        <a slot="brand" href="/demo/" target="_top"><neuwo-logo variant="bg-dark" label="Neuwo Web UI Library"></neuwo-logo></a>
+        <neuwo-button slot="actions" variant="glass" size="sm" href="/demo/" target="_top">All Components</neuwo-button>
+        <neuwo-nav-item href="/docs/">Getting Started</neuwo-nav-item>
+        <neuwo-nav-section label="Guides" open>
+          <neuwo-nav-item href="/docs/guides/">Introduction</neuwo-nav-item>
+          <neuwo-nav-item href="/docs/guides/installation/">Installation</neuwo-nav-item>
+          <neuwo-nav-section label="In Depth">
+            <neuwo-nav-item href="/docs/guides/in-depth/theming/">Theming</neuwo-nav-item>
+            <neuwo-nav-item href="/docs/guides/in-depth/accessibility/">Accessibility</neuwo-nav-item>
+          </neuwo-nav-section>
+        </neuwo-nav-section>
+        <neuwo-nav-section label="Reference" href="/docs/reference/">
+          <neuwo-nav-item href="/docs/reference/sections/">Sections <neuwo-badge size="s">New</neuwo-badge></neuwo-nav-item>
+        </neuwo-nav-section>
+        <p slot="after-nav" class="hint">A click on an entry moves the mark and stays on this page.</p>
+        <a slot="footer" href="https://neuwo.ai/" target="_top">Back to neuwo.ai</a>
+      </neuwo-sidebar>
+      <main class="content">
+        <h1>Sidebar</h1>
+        <p>
+          The page starts on Theming, three levels down, so Guides and In Depth are open and marked from the first
+          paint. A click on an entry, or on Reference's own link, cancels <code>navigate</code> and sets
+          <code>current</code>, as a client-side router would: the mark moves and its branch opens without leaving
+          this page.
+        </p>
+        <p>
+          The wordmark is in the <code>brand</code> place, the hint under the nav in <code>after-nav</code> and Back
+          to neuwo.ai in <code>footer</code>. Below 48rem the column becomes a glass bar, with All Components in
+          <code>actions</code> beside the menu button.
+        </p>
+      </main>
+    </div>
+    <script>
+      document.querySelector("neuwo-sidebar").addEventListener("navigate", (event) => {
+        event.preventDefault();
+        event.currentTarget.current = event.detail.href;
+      });
+    </script>
+  </body>
+</html>

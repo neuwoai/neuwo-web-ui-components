@@ -812,7 +812,7 @@
         });
       }
     </script>
-    <iframe src="menu-narrow.html" title="Menus at 360px" width="360" height="560" style="border: 1px dashed var(--neuwo-glass-border); border-radius: 0.5rem"></iframe>
+    <iframe src="iframes/menu-narrow.html" title="Menus at 360px" width="360" height="560" style="border: 1px dashed var(--neuwo-glass-border); border-radius: 0.5rem"></iframe>
 
     <h2>Shared row menu (one menu, a button per row)</h2>
     <p>
@@ -967,17 +967,17 @@
     <h2>Sidebar</h2>
     <p>
       <code>&lt;neuwo-sidebar&gt;</code>, its <code>&lt;neuwo-nav-item&gt;</code> entries and its folding
-      <code>&lt;neuwo-nav-section&gt;</code> sections, in a demo of seven pages that share one sidebar three levels
-      deep, shown at a desktop width and at 360px, where the column becomes a glass bar with a menu button. No page
-      sets <code>current</code>, so each marks its own entry and opens and marks the sections above it from the
-      address bar. The wide one shows Theming, under Guides and In Depth; Guides starts open with <code>open</code>,
-      Reference is a section with its own page, and the Sections entry carries a badge. Every page sets
-      <code>remember</code>, so the sections you leave open, and the nav's scroll, follow you to the next page.
-      <a href="sidebar/">Open the sidebar demo</a> to follow the entries, fold the sections and resize the window.
+      <code>&lt;neuwo-nav-section&gt;</code> sections three levels deep, in one page shown at a desktop width and at
+      360px, where the column becomes a glass bar with a menu button. The page sets <code>current</code> to Theming,
+      under Guides and In Depth, so both start open and marked; Guides also starts open with <code>open</code>,
+      Reference is a section with its own page, and the Sections entry carries a badge. A click on an entry cancels
+      <code>navigate</code> and sets <code>current</code>, as a client-side router would, so the mark moves and its
+      branch opens without leaving the frame. The Next.js and Eleventy examples under <code>demo/</code> show the
+      sidebar working across real pages, both with <code>remember</code>.
     </p>
     <div class="row">
-      <iframe src="sidebar/theming.html" title="Sidebar at a desktop width" width="960" height="560" style="max-inline-size: 100%; border: 1px dashed var(--neuwo-glass-border); border-radius: 0.5rem"></iframe>
-      <iframe src="sidebar/index.html" title="Sidebar at 360px" width="360" height="560" style="border: 1px dashed var(--neuwo-glass-border); border-radius: 0.5rem"></iframe>
+      <iframe src="iframes/sidebar.html" title="Sidebar at a desktop width" width="960" height="560" style="max-inline-size: 100%; border: 1px dashed var(--neuwo-glass-border); border-radius: 0.5rem"></iframe>
+      <iframe src="iframes/sidebar.html" title="Sidebar at 360px" width="360" height="560" style="border: 1px dashed var(--neuwo-glass-border); border-radius: 0.5rem"></iframe>
     </div>
 
     <h2>Markdown surface</h2>
