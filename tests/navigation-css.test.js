@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { LIGHT_COMPONENT_CSS } from "../scripts/light-css.js";
 
 // Off disk, since Vitest resolves a CSS `?raw` import to an empty string.
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -111,5 +112,24 @@ describe("navigation stylesheet", () => {
       expect(css).toContain(`var(${token})`);
       expect(tokensCss).toContain(`${token}:`);
     }
+  });
+});
+
+describe("navigation stylesheet delivery", () => {
+  const dist = (file) => join(__dirname, "../dist", file);
+  const count = (text) => text.split(".neuwo-nav-link {").length - 1;
+
+  it("ships in the components stylesheet, after the reset and before the recipes", () => {
+    expect(LIGHT_COMPONENT_CSS.indexOf("src/foundation/navigation.css")).toBe(2);
+  });
+
+  it("appears once in neuwo.css and once in neuwo-components.css", () => {
+    expect(count(readFileSync(dist("neuwo.css"), "utf8"))).toBe(1);
+    expect(count(readFileSync(dist("neuwo-components.css"), "utf8"))).toBe(1);
+  });
+
+  it("is still published on its own", () => {
+    expect(existsSync(dist("foundation/navigation.css"))).toBe(true);
+    expect(readFileSync(dist("foundation/navigation.css"), "utf8")).toBe(css);
   });
 });

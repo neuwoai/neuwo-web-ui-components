@@ -156,8 +156,8 @@ setting them after the stylesheet:
 ```
 
 For Neuwo typography on native headings and text as well, link `neuwo.css` instead. It is
-`neuwo-components.css` plus typography, the page surface, navigation links and the Markdown
-surface.
+`neuwo-components.css` plus typography, the page surface and the Markdown surface
+(`neuwo-components.css` already carries the navigation link classes).
 
 ```html
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.5/dist/neuwo.css" />
@@ -349,7 +349,7 @@ ordinary sized element, for a single washed panel rather than a whole page.
 
 ### Navigation links
 
-`foundation/navigation.css` carries the brand's nav-link treatment, the centre-out underline
+`neuwo-components.css` carries the nav-link classes, and `foundation/navigation.css` is still published for sites that link it alone. It carries the brand's nav-link treatment, the centre-out underline
 that grows from the middle of the text on hover and focus. Two classes:
 
 - **`.neuwo-nav-link`** is a top-level entry: base type, a 44px tap target, and the underline lifted
@@ -876,7 +876,7 @@ Published styling files, for direct linking or non-web use:
 | Tokens | `@neuwo/web-ui-library--demo/foundation/tokens.css` |
 | Typography | `@neuwo/web-ui-library--demo/foundation/typography.css` |
 | Page surface | `@neuwo/web-ui-library--demo/foundation/background.css` |
-| Navigation links | `@neuwo/web-ui-library--demo/foundation/navigation.css` |
+| Navigation links (also inside `neuwo-components.css`) | `@neuwo/web-ui-library--demo/foundation/navigation.css` |
 | Markdown surface | `@neuwo/web-ui-library--demo/foundation/markdown.css` |
 | Font faces, tokens, reset and light DOM component recipes (one file) | `@neuwo/web-ui-library--demo/neuwo-components.css` |
 | `neuwo-components.css` plus typography, page surface, navigation links and Markdown surface (one file) | `@neuwo/web-ui-library--demo/neuwo.css` |

@@ -45,6 +45,8 @@
 
 ### Changed
 
+- `neuwo-components.css` now carries `.neuwo-nav-link`, so navigation styling no longer needs
+  `neuwo.css`; `neuwo.css` carries it once, as before.
 - The combobox's popup and option look moved to the new published `components/popup.css`, and the
   popup's entrance keyframes are now named `neuwo-popup-in` (they were `neuwo-combobox-in`). A site
   that links `components/fields/combobox/combobox.css` on its own must link `components/popup.css`

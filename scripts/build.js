@@ -30,8 +30,8 @@ await cp("src/foundation/logos", "dist/logos", { recursive: true });
 
 const read = (file) => readFile(file, "utf8");
 
-const FOUNDATION_CSS = ["typography", "background", "navigation", "markdown"].map((name) => `src/foundation/${name}.css`);
-const PUBLISHED_FOUNDATION_CSS = ["src/foundation/tokens.css", ...FOUNDATION_CSS];
+const FOUNDATION_CSS = ["typography", "background", "markdown"].map((name) => `src/foundation/${name}.css`);
+const PUBLISHED_FOUNDATION_CSS = ["src/foundation/tokens.css", "src/foundation/navigation.css", ...FOUNDATION_CSS];
 
 const COMPONENTS_CSS_SOURCES = ["src/foundation/fonts.css", "src/foundation/tokens.css", ...LIGHT_COMPONENT_CSS];
 
