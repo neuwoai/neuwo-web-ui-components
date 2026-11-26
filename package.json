@@ -48,7 +48,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "integration": "node integration/run.mjs",
-    "types": "tsc -p tsconfig.json && node -e \"fs.rmSync('dist/components/sidebar/remember.snippet.d.ts')\"",
+    "types": "tsc -p tsconfig.json && node -e \"fs.rmSync('dist/components/sidebar/remember.snippet.d.ts', { force: true })\"",
     "types:jsx": "node scripts/jsx-types.js && tsc -p tests/react/tsconfig.json",
     "fonts:subset": "python3 scripts/subset-fonts.py",
     "fonts:fallback": "node scripts/fallback-metrics.js",
