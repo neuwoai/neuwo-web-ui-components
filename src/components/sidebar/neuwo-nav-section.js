@@ -12,7 +12,7 @@ import { navSectionTemplate } from "./nav-section.template.js";
  * @attr label - the section's name.
  * @attr href - the section's own page, a path from the site's root or a full URL; the name becomes a link to it, carrying `aria-current="page"` there, and the chevron a separate toggle named `Show <label> pages`. Unset, the name only folds, which is the recommended form.
  * @attr {boolean} open - starts the section open. It is the starting state only: removing it later leaves the section open, since only the reader closes a section.
- * @attr id - the key the section's disclosure carries as `data-key`, for remembering its state; without it the label is the key.
+ * @attr id - the key the section's disclosure carries as `data-key`, which the sidebar's `remember` joins with the keys of the sections above it; without it the label is the key.
  * @slot - the section's `<neuwo-nav-item>` entries and nested `<neuwo-nav-section>` elements.
  */
 export class NeuwoNavSection extends NeuwoElement {

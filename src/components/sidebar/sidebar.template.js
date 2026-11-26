@@ -1,19 +1,23 @@
-import { h, live, region } from "../../core/template.js";
+import { has, h, live, raw, region } from "../../core/template.js";
+import rememberScript from "./remember.snippet.js?raw";
 
 export const NAV_LABEL = "Main";
 export const MENU_LABEL = "Menu";
+const REMEMBER_KEY = "neuwo.sidebar";
 
 /**
  * The sidebar's frame: an `<aside>` holding the bar with the brand and actions, then a `<details>` whose summary is
  * the phone menu button and whose content is the nav of entries, the after-nav place and the footer. The browser holds
- * the details' open state, which the element also writes, so it is live.
+ * the details' open state, which the element also writes, so it is live. With `remember`, the aside carries the storage
+ * key and ends with the script that restores and saves the reader's place in the nav.
  * @param {Record<string, string>} attrs
  * @returns {import("../../core/template.js").TemplateNode}
  */
 export function sidebarTemplate(attrs) {
+  const key = has(attrs, "remember") ? attrs.remember || REMEMBER_KEY : null;
   return h(
     "aside",
-    { class: "neuwo-sidebar" },
+    { class: "neuwo-sidebar", "data-remember": key },
     h(
       "div",
       { class: "neuwo-sidebar__bar" },
@@ -38,5 +42,6 @@ export function sidebarTemplate(attrs) {
         h("div", { class: "neuwo-sidebar__footer" }, region("footer")),
       ),
     ),
+    key === null ? null : h("script", { class: "neuwo-sidebar__remember" }, raw(rememberScript)),
   );
 }

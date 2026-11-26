@@ -10,7 +10,7 @@ const serve = process.argv.includes("--serve");
 const rawText = {
   name: "raw-text",
   setup(build) {
-    build.onResolve({ filter: /\.(css|svg)\?raw$/ }, (args) => ({
+    build.onResolve({ filter: /\.(css|svg|js)\?raw$/ }, (args) => ({
       path: path.resolve(args.resolveDir, args.path.replace(/\?raw$/, "")),
       namespace: "raw-text",
     }));

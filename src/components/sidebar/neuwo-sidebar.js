@@ -19,13 +19,14 @@ const plain = (event) => event.button === 0 && !event.ctrlKey && !event.metaKey 
  * The entry whose `href` names the `current` page carries `aria-current="page"` and the active underline, and the
  * sections holding it are marked and open. On a plain click of an entry's or a section's own link the sidebar fires
  * `navigate`, so a site with a client-side router can cancel it and route instead; the links in the other places are
- * the site's own.
+ * the site's own. With `remember`, the sections the reader leaves open and the nav's scroll follow them from page to
+ * page for the tab.
  *
- * @summary Neuwo sidebar. Public classes: `.neuwo-sidebar` on the `<aside>`, which holds `.neuwo-sidebar__bar` around the wrappers `.neuwo-sidebar__brand` and `.neuwo-sidebar__actions`, then `.neuwo-sidebar__menu`, the `<details>` holding the menu button `.neuwo-sidebar__toggle` with its `.neuwo-sidebar__toggle-icon`, the `<nav>` `.neuwo-sidebar__nav` around the entries' list `.neuwo-sidebar__list`, and the wrappers `.neuwo-sidebar__after-nav` and `.neuwo-sidebar__footer`.
+ * @summary Neuwo sidebar. Public classes: `.neuwo-sidebar` on the `<aside>`, which holds `.neuwo-sidebar__bar` around the wrappers `.neuwo-sidebar__brand` and `.neuwo-sidebar__actions`, then `.neuwo-sidebar__menu`, the `<details>` holding the menu button `.neuwo-sidebar__toggle` with its `.neuwo-sidebar__toggle-icon`, the `<nav>` `.neuwo-sidebar__nav` around the entries' list `.neuwo-sidebar__list`, and the wrappers `.neuwo-sidebar__after-nav` and `.neuwo-sidebar__footer`; with `remember`, the `<aside>` carries `data-remember` and ends with the script `.neuwo-sidebar__remember`.
  * @customElement neuwo-sidebar
  * @attr label - the nav's accessible name (default Main).
  * @attr current - the current page, a path from the site's root or a full URL, which marks the entry naming it; without it the element takes `location.pathname` once it runs, unless React rendered it.
- * @attr {boolean|string} remember - keeps the reader's place in the nav for the tab, under the storage key it names (default neuwo.sidebar); not yet in effect.
+ * @attr {boolean|string} remember - keeps the sections the reader leaves open and the nav's scroll for the tab, in `sessionStorage` under the key it names (default neuwo.sidebar), through an inline script after the nav that the parser runs on a served page and the element runs as it renders; a sidebar React renders on the client does not run it.
  * @attr menu-label - the menu button's accessible name (default Menu).
  * @fires {CustomEvent<{ href: string }>} navigate - a plain click on an entry's or a section's own link, before the browser follows it; cancelable, and cancelling keeps the page, so a client-side router can take the `href` instead. It bubbles.
  * @slot - the `<neuwo-nav-item>` entries and `<neuwo-nav-section>` sections.

@@ -9,6 +9,11 @@ declare module "*.svg?raw" {
   export default svg;
 }
 
+declare module "*.js?raw" {
+  const source: string;
+  export default source;
+}
+
 declare module "neuwo:components-css" {
   const css: string;
   export default css;

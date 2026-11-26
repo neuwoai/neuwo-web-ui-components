@@ -65,6 +65,12 @@
   toggle, though a section that only folds, with an Introduction entry first, is the recommended
   form. Only the reader closes a section: when `current` moves, the sections already open stay
   open, under React as on a plain page, with no state in the app.
+  `remember` keeps the sections the reader leaves open, and the nav's scroll, for the tab in
+  `sessionStorage`, under `neuwo.sidebar` or the key it names. It renders an inline script,
+  `.neuwo-sidebar__remember`, after the nav, which the parser runs on a served page, so remembered
+  sections are open at the first paint, and the element runs on a hand-written one; the README gives
+  its Content-Security-Policy hash. A client-only React render does not run it, so such an app keeps
+  its sidebar mounted instead.
 
 ### Changed
 

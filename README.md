@@ -1053,6 +1053,7 @@ through the two tokens.
 | `.neuwo-sidebar__nav` | the `<nav>`, named by `label`, which scrolls on its own |
 | `.neuwo-sidebar__list` | the `<ul>` around the entries |
 | `.neuwo-sidebar__after-nav`, `.neuwo-sidebar__footer` | the wrappers around the `slot="after-nav"` and `slot="footer"` children, taken out of the flow while empty; the footer is ruled off above |
+| `.neuwo-sidebar__remember` | with `remember`, the `<script>` at the end of the `<aside>`, which draws nothing |
 | `.neuwo-nav-item` | an entry's `<li>` |
 | `.neuwo-nav-item__link` | the entry's `<a>`, alongside `.neuwo-nav-link`, with `.neuwo-nav-link--active` and `aria-current="page"` on the current page's entry |
 | `.neuwo-nav-section` | a section's `<li>` |
@@ -1772,6 +1773,8 @@ of pushing the page sideways.
   always can, so the first paint is marked.
 - **`label`** names the nav (default Main).
 - **`menu-label`** names the menu button (default Menu).
+- **`remember`** keeps the reader's place in the nav for the tab, the sections they leave open and
+  how far the nav is scrolled (see [Remembered sections](#remembered-sections)).
 
 The places, as slots:
 
@@ -1859,6 +1862,45 @@ In React, write the entries and sections as JSX directly inside `<neuwo-sidebar>
 `.map()` is fine. The JSX runtime hands them the sidebar's `current` through elements, fragments
 and other Neuwo elements, but it cannot see into a component of your own, so the entries such a
 component renders mark nothing, and the sections around them cannot tell that they hold the page.
+
+### Remembered sections
+
+`remember` keeps the reader's place in the nav as they move between the pages of a site that is not
+a single-page app: the sections they leave open, and how far the nav is scrolled. With it, the
+sidebar ends with a small inline script, `.neuwo-sidebar__remember`, after the nav. On each page the
+script opens the sections the reader left open and scrolls the nav back, then saves both whenever a
+section folds or unfolds and when the reader leaves the page. It only ever opens a section, so the
+current page's sections and those with `open` stay open, and a remembered section the nav no longer
+holds is skipped.
+
+```html
+<neuwo-sidebar label="Documentation" current="/guides/setup/" remember>...</neuwo-sidebar>
+```
+
+The place lasts for the tab, in `sessionStorage`: a new tab, or the same site opened again later,
+starts with only the current page's sections open. It is stored under `neuwo.sidebar`; give
+`remember` a value, such as `remember="docs"`, to store it under another key, so two sidebars on one
+origin keep their places apart. A section is known by its `id`, or by its label without one, joined
+with the sections above it, as in `Guides/Advanced`, so renaming a section or giving it an `id`
+forgets whether it was open. Where the browser refuses storage, the sidebar works as it does without
+`remember`.
+
+On a served page, from `expand()`, the Eleventy plugin or a Next.js server render, the parser runs
+the script as it reaches it, so the remembered sections are open at the first paint, a hard reload
+included. On a hand-written page the element runs it as it renders. The script is the same on every
+page and for every key, so a Content-Security-Policy that blocks inline scripts allows it by one
+hash, which changes only when a release changes the script:
+
+```text
+Content-Security-Policy: script-src 'self' 'sha256-w5rMmrgM6of52uaHXYgxCXKynz38dDuh9z78cKdNHxg='
+```
+
+React does not run a script it renders on the client, and its development build warns about one
+("Encountered a script tag while rendering React component"). A client-only React app therefore
+leaves `remember` off and keeps its sidebar mounted in a layout that stays between pages instead: the
+sections' own `<details>` hold what is open and the nav keeps its scroll, with no state in the app.
+A Next.js app does the same between client navigations, and may set `remember` as well, since its
+server render carries the script and the parser runs it on a hard reload.
 
 ## Logo
 

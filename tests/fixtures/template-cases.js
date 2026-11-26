@@ -503,6 +503,8 @@ export const cases = {
     },
     { name: "sections marked at depth", attrs: { current: "/guides/setup/keys/" }, children: tree },
     { name: "a section with href marked on its page", attrs: { current: "/reference/index.html" }, children: tree },
+    { name: "remember", attrs: { current: "/guides/", remember: "" }, children: tree },
+    { name: "remember with a key", attrs: { current: "/", remember: "docs", label: "Documentation" }, children: [entry("Getting Started", "/")] },
   ],
 };
 

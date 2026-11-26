@@ -1,10 +1,12 @@
 import { UnsupportedOperation } from "puppeteer-core";
-import { VIEWPORT } from "./checks.mjs";
+import { VIEWPORT, judgeConsole, recordErrors } from "./checks.mjs";
 
 /** @typedef {import("./checks.mjs").CheckResult} CheckResult */
 
 const STEP_TIMEOUT = 5_000;
+const NAVIGATION_TIMEOUT = 60_000;
 const PHONE = { width: 390, height: 800 };
+const SHORT = { width: VIEWPORT.width, height: 400 };
 
 function readSidebar() {
   const host = document.querySelector("neuwo-sidebar");
@@ -162,6 +164,95 @@ async function fold(page) {
   );
 }
 
+const IN_DEPTH = 'neuwo-nav-section[label="In Depth"] > .neuwo-nav-section > .neuwo-nav-section__details';
+const INSTALLATION = '.neuwo-nav-item__link[href="/demo/sidebar/installation.html"]';
+
+/** @param {string} selector */
+function readPlace(selector) {
+  const nav = document.querySelector(".neuwo-sidebar__nav");
+  const inDepth = document.querySelector(selector);
+  return { rendered: Boolean(inDepth), open: Boolean(inDepth?.open), scroll: nav?.scrollTop ?? 0 };
+}
+
+/** @param {number} top */
+function scrollNav(top) {
+  const nav = document.querySelector(".neuwo-sidebar__nav");
+  nav.scrollTop = top;
+  addEventListener("pagehide", () => sessionStorage.setItem("integration.left", String(nav.scrollTop)));
+  return { range: nav.scrollHeight - nav.clientHeight, scroll: nav.scrollTop };
+}
+
+async function rewrite() {
+  const source = await (await fetch(location.href)).text();
+  document.open();
+  document.write(source);
+  document.close();
+}
+
+/**
+ * @param {import("puppeteer-core").Page} tab
+ * @param {string} step
+ * @param {(state: ReturnType<typeof readPlace>) => boolean} accept
+ */
+async function untilPlace(tab, step, accept) {
+  const deadline = Date.now() + STEP_TIMEOUT;
+  for (;;) {
+    const state = await tab.evaluate(readPlace, IN_DEPTH);
+    if (accept(state)) return state;
+    if (Date.now() > deadline) throw new Error(`${step}: In Depth ${state.rendered ? (state.open ? "open" : "closed") : "not rendered"}, the nav scrolled ${state.scroll}px`);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+}
+
+/**
+ * In a new tab, which remembers nothing: opens In Depth, which Getting Started leaves closed, scrolls the nav at a
+ * short viewport and follows Installation, where only the remembered state opens In Depth. Then the parser builds that
+ * page again with the library already defined, and In Depth opens again.
+ * @param {import("puppeteer-core").Page} page
+ * @returns {Promise<CheckResult[]>}
+ */
+async function remember(page) {
+  const tab = await page.browserContext().newPage();
+  const messages = recordErrors(tab);
+  const results = [];
+  try {
+    await tab.setViewport(SHORT);
+    await tab.goto(page.url(), { waitUntil: "load", timeout: NAVIGATION_TIMEOUT });
+    await tab.evaluate(() => customElements.whenDefined("neuwo-sidebar"));
+    await untilPlace(tab, "In Depth in a new tab", (state) => state.rendered && !state.open);
+    await tab.click(`${IN_DEPTH} > .neuwo-nav-section__row`);
+    await untilPlace(tab, "a click on In Depth's row", (state) => state.open);
+    const scrolled = await tab.evaluate(scrollNav, 48);
+    if (scrolled.range <= 0 || scrolled.scroll <= 0) throw new Error(`the nav does not scroll at ${SHORT.height}px: range ${scrolled.range}px`);
+    await Promise.all([tab.waitForNavigation({ waitUntil: "load", timeout: NAVIGATION_TIMEOUT }), tab.click(INSTALLATION)]);
+    await tab.evaluate(() => customElements.whenDefined("neuwo-sidebar"));
+    const left = Number(await tab.evaluate(() => sessionStorage.getItem("integration.left")));
+    const arrived = await untilPlace(tab, "arriving on Installation", (state) => state.rendered);
+    if (!arrived.open || Math.abs(arrived.scroll - left) > 1) {
+      throw new Error(`arriving on Installation: In Depth ${arrived.open ? "open" : "closed"}, the nav scrolled ${arrived.scroll}px of the ${left}px it left at`);
+    }
+    results.push({
+      check: "sidebarRemember",
+      status: "pass",
+      detail: `In Depth, closed in a new tab, opened from its row; after following Installation it is open and the nav is scrolled ${arrived.scroll}px, as it was left`,
+    });
+  } catch (error) {
+    results.push({ check: "sidebarRemember", status: "fail", detail: error.message });
+  }
+  try {
+    if (results[0].status !== "pass") throw new Error("needs sidebarRemember to pass first");
+    await tab.evaluate(rewrite);
+    const again = await untilPlace(tab, "the page built again with the library defined", (state) => state.rendered);
+    if (!again.open) throw new Error("the page built again with the library defined: In Depth closed");
+    results.push({ check: "sidebarRememberEarly", status: "pass", detail: "built again by the parser with the library already defined, Installation opens In Depth from storage" });
+  } catch (error) {
+    results.push({ check: "sidebarRememberEarly", status: "fail", detail: error.message });
+  } finally {
+    await tab.close().catch(() => {});
+  }
+  return [...results, { check: "sidebarRememberConsole", ...judgeConsole({ messages: [...messages] }) }];
+}
+
 /** @param {Record<string, unknown>} node */
 const nodesIn = (node) => [node, ...(/** @type {Record<string, unknown>[]} */ (node.children ?? [])).flatMap(nodesIn)];
 
@@ -231,8 +322,8 @@ async function treeCheck(page) {
 /**
  * The sidebar checks for `demo/sidebar/`: the column shows every top-level entry whatever the phone menu was left as,
  * and Tab reaches the first from the brand; below 48rem the menu button shows and hides the nav; Chromium's
- * accessibility tree holds the nav's lists and sections; and a section folds from its row or toggle and stays open as
- * the mark moves away.
+ * accessibility tree holds the nav's lists and sections; a section folds from its row or toggle and stays open as
+ * the mark moves away; and with `remember` the open sections and the nav's scroll follow the reader to the next page.
  * @param {import("puppeteer-core").Page} page
  * @returns {Promise<CheckResult[]>}
  */
@@ -265,5 +356,6 @@ export async function checkSidebar(page) {
     }),
     await treeCheck(page),
     await run(page, "sidebarFold", () => fold(page)),
+    ...(await remember(page)),
   ];
 }

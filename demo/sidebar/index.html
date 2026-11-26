@@ -14,7 +14,7 @@
       <div class="neuwo-background__gradient"></div>
     </div>
     <div class="shell">
-      <neuwo-sidebar label="Sidebar Demo">
+      <neuwo-sidebar label="Sidebar Demo" remember>
         <a slot="brand" href="/demo/sidebar/"><neuwo-logo variant="bg-dark" label="Neuwo Web UI Library"></neuwo-logo></a>
         <neuwo-button slot="actions" variant="glass" size="sm" href="/demo/">All Components</neuwo-button>
         <neuwo-nav-item href="/demo/sidebar/">Getting Started</neuwo-nav-item>
@@ -38,7 +38,7 @@
           This page and the six in its nav share one hand-written <code>&lt;neuwo-sidebar&gt;</code>. None of them
           sets <code>current</code>, so the element takes the page's path from the address bar, marks the entry that
           names it and opens the sections above it: the underline and <code>aria-current="page"</code> follow you from
-          page to page.
+          page to page. Each sets <code>remember</code>, so the sections you leave open follow you too.
         </p>
         <h2>Things to Try</h2>
         <ul>
@@ -49,6 +49,14 @@
           <li>Open the menu, then widen the window again. The column shows the nav whatever the menu was left as.</li>
           <li>Press Tab. The brand, the entries, the sections' rows and the footer link come in reading order.</li>
         </ul>
+        <h2>Remembered Sections</h2>
+        <p>
+          With <code>remember</code>, the sidebar keeps your place in the nav for this tab. Open In Depth, then follow
+          Installation: In Depth is still open there, though Installation does not hold it. Make the window short
+          enough that the nav scrolls, scroll it and follow an entry, and the next page's nav starts where you left
+          it. Close Guides and it opens again on the next page, since <code>open</code> starts it open there:
+          remembering only ever opens a section. A new tab starts with only the current page's sections open.
+        </p>
         <h2>Move the Mark</h2>
         <p>
           A site with a client-side router sets <code>current</code> as the reader moves between pages, and the
