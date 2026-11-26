@@ -48,18 +48,19 @@
   the top, the nav scrolling on its own, an `after-nav` place and a `footer`. Below 48rem it is a
   glass bar pinned to the top, with the `brand`, the `actions` and a menu button that shows and
   hides the rest; the button is a `<summary>`, so it works before the script runs on a served page,
-  the menu starts closed, and following a link in the nav closes it, unless a modifier key or the
-  middle button opens the link elsewhere. A browser without `::details-content`, before Chromium
-  131, Safari 18.4 or Firefox 143, keeps the menu button in the column too, so the nav stays
-  reachable there. `current` marks the entry naming the page with
-  `aria-current="page"` and the active underline, comparing paths without the query, the hash, a
-  trailing slash or `/index.html`, with percent-encoding decoded; without it the element takes
-  `location.pathname`, unless React rendered it. `label` and `menu-label` name the nav and the
-  button, and the `menuOpen` property reads and sets the menu. A plain click on an entry or on a
-  section's own link fires a cancelable `navigate` with its `href`, so a client-side router can take
-  over; in React, `onnavigate` binds it. The recipe is the new published
-  `components/sidebar/sidebar.css`, and the entries and the sections' names take the
-  `.neuwo-nav-link` look.
+  the menu starts closed, and following any link in the sidebar closes it, unless a modifier key or
+  the middle button opens the link elsewhere; when a client-side router keeps the page, focus goes
+  back to the menu button. A browser without `::details-content`, before Chromium 131, Safari 18.4
+  or Firefox 143, keeps the menu button in the column too, so the nav stays reachable there.
+  `current` marks the entry naming the page with `aria-current="page"` and the active underline,
+  comparing paths without the query, the hash, a trailing slash or `/index.html`, with
+  percent-encoding decoded; without it the element takes `location.pathname`, unless React rendered
+  it. `label` and `menu-label` name the nav and the button, and the `menuOpen` property reads and
+  sets the menu. A plain click on an entry or on a section's own link to another page of the same
+  origin fires a cancelable `navigate` with its `href`, so a client-side router can take over; a
+  link to another origin or within the current page follows natively. In React, `onnavigate` binds
+  it. The recipe is the new published `components/sidebar/sidebar.css`, and the entries and the
+  sections' names take the `.neuwo-nav-link` look.
   A section folds from anywhere on its row, by a click, Enter or Space, nests to any depth, and opens
   and takes the active underline when it holds the current page or the page lies below one of its
   entries. Its chevron turns towards the inline end while it is closed. `open` starts it open, `id`

@@ -1797,22 +1797,26 @@ markup such as a `<neuwo-badge>`.
 The menu button is the `<summary>` of a `<details>` around the nav, the after-nav place and the
 footer, so the browser holds its state and announces it, and on a server-rendered page it works
 before the library's script runs, or without it. The menu starts closed on every page, and following
-a link in the nav closes it, unless a modifier key or the middle button opens the link elsewhere.
-From 48rem the nav shows whatever the menu's state, so widening the window with the menu open shows
-the column as it should be. That takes `::details-content`, which arrived in Chromium 131, Safari
-18.4 and Firefox 143; an older browser keeps the menu button in the column too, at its start under
-the brand, and shows the nav once the reader opens it, with or without the library's script. A
-script reads or sets the menu's state through the **`menuOpen`** property, for instance to close it
-when a panel of its own opens; it is not reflected to an attribute.
+any link in the sidebar closes it, unless a modifier key or the middle button opens the link
+elsewhere. When the page stays, as a client-side router keeps it, focus goes back to the menu button
+rather than staying on a link the closed menu hides. From 48rem the nav shows whatever the menu's
+state, so widening the window with the menu open shows the column as it should be. That takes
+`::details-content`, which arrived in Chromium 131, Safari 18.4 and Firefox 143; an older browser
+keeps the menu button in the column too, at its start under the brand, and shows the nav once the
+reader opens it, with or without the library's script. A script reads or sets the menu's state
+through the **`menuOpen`** property, for instance to close it when a panel of its own opens; it is
+not reflected to an attribute.
 
-A plain click on an entry, or on a section's own link, fires **`navigate`** on the sidebar, a
-cancelable, bubbling `CustomEvent` whose `detail.href` is the link's `href`, before the browser
-follows it. A site with a client-side router cancels it and routes instead, so the page around the
-sidebar, and the sidebar's own state, stay in place. Then it sets `current` to the new page, so the
-mark and the sections follow; a React app passes the router's path as the `current` prop instead. A
-click with a modifier key, or one whose default a handler has already prevented, fires nothing, and
-neither do the links in the other places, which are the site's own markup: give those the router's
-own link. In React, `onnavigate` binds it.
+A plain click on an entry, or on a section's own link, that leads to another page of the same origin
+fires **`navigate`** on the sidebar, a cancelable, bubbling `CustomEvent` whose `detail.href` is the
+link's `href`, before the browser follows it. A site with a client-side router cancels it and routes
+instead, so the page around the sidebar, and the sidebar's own state, stay in place. Then it sets
+`current` to the new page, so the mark and the sections follow; a React app passes the router's path
+as the `current` prop instead. An entry on another origin, or one to a place in the current page
+such as `#heading`, fires nothing: the browser follows it, and the menu still closes. Neither does a
+click with a modifier key, or one whose default a handler has already prevented, nor the links in
+the other places, which are the site's own markup: give those the router's own link. In React,
+`onnavigate` binds it.
 
 ```js
 document.querySelector("neuwo-sidebar").addEventListener("navigate", (event) => {
@@ -1939,9 +1943,9 @@ marked and the reader's sections open. [demo/eleventy](https://github.com/neuwoa
 In Next.js, render the sidebar from a client component and place it beside `{children}` in the root
 layout, so it stays mounted from page to page. The component passes `usePathname()` as `current`,
 cancels `navigate` and hands the `href` to the router, and links the brand with `next/link`, since
-the sidebar renders only the entries' links. Next's `router.push` turns an external `href` into a
-full navigation, so the handler passes every entry on; another router may need the handler to
-leave external entries to the browser. The entries stay JSX directly inside the sidebar:
+the sidebar renders only the entries' links. External and in-page entries never reach the router,
+since `navigate` fires only for another page of the same origin, so the handler routes every `href`
+it is handed. The entries stay JSX directly inside the sidebar:
 
 ```tsx
 // app/site-sidebar.tsx

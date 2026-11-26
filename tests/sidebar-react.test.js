@@ -138,4 +138,25 @@ describe("<neuwo-sidebar> under React", () => {
     expect(seen).toEqual(["/b/"]);
     expect(prevented).toEqual([true]);
   });
+
+  it("never hands onnavigate an entry on another origin, which the browser follows, as the Next.js example's Resources entries", () => {
+    const prevented = followed();
+    const seen = [];
+    const { link } = render(
+      jsxs("neuwo-sidebar", {
+        current: "/a/",
+        onnavigate: (event) => {
+          seen.push(event.detail.href);
+          event.preventDefault();
+        },
+        children: [
+          jsx("neuwo-nav-item", { href: "/a/", children: "Alpha" }, "a"),
+          jsx("neuwo-nav-section", { label: "Resources", children: jsx("neuwo-nav-item", { href: "https://github.com/neuwoai/neuwo-web-ui-components", children: "Source Code" }) }, "resources"),
+        ],
+      }),
+    );
+    act(() => link("https://github.com/neuwoai/neuwo-web-ui-components").click());
+    expect(seen).toEqual([]);
+    expect(prevented).toEqual([false]);
+  });
 });

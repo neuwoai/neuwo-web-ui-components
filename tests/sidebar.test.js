@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import "../src/index.js";
 import { NeuwoNavItem } from "../src/components/sidebar/neuwo-nav-item.js";
 import { NeuwoSidebar } from "../src/components/sidebar/neuwo-sidebar.js";
@@ -44,6 +44,21 @@ function followed() {
   cleanup.push(() => document.removeEventListener("click", stop));
   return seen;
 }
+
+/** Stops happy-dom following links without preventing a click's default, which the sidebar reads after the click. */
+function stay() {
+  const navigation = happyDOM.settings.navigation;
+  const was = { main: navigation.disableMainFrameNavigation, fallback: navigation.disableFallbackToSetURL };
+  navigation.disableMainFrameNavigation = true;
+  navigation.disableFallbackToSetURL = true;
+  cleanup.push(() => {
+    navigation.disableMainFrameNavigation = was.main;
+    navigation.disableFallbackToSetURL = was.fallback;
+  });
+}
+
+/** Waits for the task after the click, when the whole dispatch is over. */
+const later = () => new Promise((resolve) => setTimeout(resolve));
 
 function at(path) {
   history.replaceState(null, "", path);
@@ -181,13 +196,19 @@ describe("<neuwo-sidebar> and <neuwo-nav-item>", () => {
     expect(menu.open).toBe(true);
   });
 
-  it("closes the phone menu when a link inside the nav is followed", () => {
+  it("closes the phone menu when any link in the sidebar is followed, and not on a click that hits no link", () => {
     followed();
     const { host, link } = sidebar();
     host.menuOpen = true;
-    host.querySelector(".neuwo-sidebar__brand a").click();
     host.querySelector(".neuwo-sidebar__list").click();
+    host.querySelector(".neuwo-sidebar__brand").click();
     expect(host.menuOpen).toBe(true);
+    for (const selector of [".neuwo-sidebar__brand a", ".neuwo-sidebar__actions a", ".neuwo-sidebar__after-nav a", ".neuwo-sidebar__footer a"]) {
+      host.menuOpen = true;
+      host.querySelector(selector).click();
+      expect(host.menuOpen, selector).toBe(false);
+    }
+    host.menuOpen = true;
     link("/b/").querySelector(".tag").click();
     expect(host.menuOpen).toBe(false);
   });
@@ -196,12 +217,86 @@ describe("<neuwo-sidebar> and <neuwo-nav-item>", () => {
     followed();
     const { host, link } = sidebar();
     host.menuOpen = true;
-    for (const init of [{ ctrlKey: true }, { metaKey: true }, { shiftKey: true }, { altKey: true }, { button: 1 }]) {
-      click(link("/a/"), init);
-      expect(host.menuOpen, JSON.stringify(init)).toBe(true);
+    for (const target of [link("/a/"), host.querySelector(".neuwo-sidebar__brand a"), host.querySelector(".neuwo-sidebar__footer a")]) {
+      for (const init of [{ ctrlKey: true }, { metaKey: true }, { shiftKey: true }, { altKey: true }, { button: 1 }]) {
+        click(target, init);
+        expect(host.menuOpen, `${target.textContent} ${JSON.stringify(init)}`).toBe(true);
+      }
     }
     click(link("/a/"));
     expect(host.menuOpen).toBe(false);
+  });
+
+  it("closes the phone menu on a click of the brand's link whose default a client router prevents, before the sidebar or after it, and leaves focus there", async () => {
+    stay();
+    const { host } = sidebar();
+    const brand = host.querySelector(".neuwo-sidebar__brand a");
+    const route = (event) => event.preventDefault();
+    brand.addEventListener("click", route);
+    host.menuOpen = true;
+    brand.focus();
+    expect(click(brand)).toBe(false);
+    expect(host.menuOpen).toBe(false);
+    brand.removeEventListener("click", route);
+    document.addEventListener("click", route);
+    cleanup.push(() => document.removeEventListener("click", route));
+    host.menuOpen = true;
+    expect(click(brand)).toBe(false);
+    expect(host.menuOpen).toBe(false);
+    await later();
+    expect(document.activeElement).toBe(brand);
+  });
+
+  it("returns focus to the menu button, without scrolling, when a click in the open menu closes it and a client router keeps the page", async () => {
+    stay();
+    const { host, link } = sidebar();
+    const toggle = host.querySelector(".neuwo-sidebar__toggle");
+    const focus = vi.spyOn(toggle, "focus");
+    host.addEventListener("navigate", (event) => event.preventDefault());
+    host.menuOpen = true;
+    link("/b/").focus();
+    expect(click(link("/b/"))).toBe(false);
+    expect(host.menuOpen).toBe(false);
+    await later();
+    expect(document.activeElement).toBe(toggle);
+    expect(focus).toHaveBeenCalledWith({ preventScroll: true });
+
+    const footer = host.querySelector(".neuwo-sidebar__footer a");
+    const route = (event) => event.preventDefault();
+    document.addEventListener("click", route);
+    cleanup.push(() => document.removeEventListener("click", route));
+    host.menuOpen = true;
+    footer.focus();
+    expect(click(footer)).toBe(false);
+    expect(host.menuOpen).toBe(false);
+    await later();
+    expect(document.activeElement).toBe(toggle);
+    expect(focus).toHaveBeenCalledTimes(2);
+  });
+
+  it("leaves focus where it is when the browser follows the link, to another page or within this one, or when no menu was open to close", async () => {
+    at("/a/");
+    stay();
+    const holder = make(`<neuwo-sidebar current="/a/"><neuwo-nav-item href="/b/">Beta</neuwo-nav-item><neuwo-nav-item href="#heading">Heading</neuwo-nav-item></neuwo-sidebar>`);
+    const host = holder.querySelector("neuwo-sidebar");
+    const toggle = host.querySelector(".neuwo-sidebar__toggle");
+    const focus = vi.spyOn(toggle, "focus");
+    for (const href of ["/b/", "#heading"]) {
+      const entry = host.querySelector(`.neuwo-nav-item__link[href="${href}"]`);
+      host.menuOpen = true;
+      entry.focus();
+      expect(click(entry), href).toBe(true);
+      expect(host.menuOpen, href).toBe(false);
+      await later();
+      expect(document.activeElement, href).toBe(entry);
+    }
+    host.addEventListener("navigate", (event) => event.preventDefault());
+    const entry = host.querySelector('.neuwo-nav-item__link[href="/b/"]');
+    entry.focus();
+    expect(click(entry)).toBe(false);
+    await later();
+    expect(document.activeElement).toBe(entry);
+    expect(focus).not.toHaveBeenCalled();
   });
 
   it("closes the phone menu on a modified click whose default a handler already prevented, as a client router's", () => {
@@ -244,6 +339,31 @@ describe("<neuwo-sidebar> and <neuwo-nav-item>", () => {
     expect(seen).toEqual([]);
     link("/a/").click();
     expect(seen).toEqual(["/a/"]);
+  });
+
+  it("fires navigate only for a page of the same origin that leaves the document, letting the browser follow the rest and still closing the menu", () => {
+    at("/a/");
+    stay();
+    const here = location.origin;
+    const entries = ["https://example.com/guide/", "#heading", "/a/#part", "/b/", `${here}/c/`, "/a/?page=2", "/b/#part"];
+    const holder = make(
+      `<neuwo-sidebar current="/a/">${entries.map((href) => `<neuwo-nav-item href="${href}">${href}</neuwo-nav-item>`).join("")}` +
+        `<neuwo-nav-section label="Partner" href="https://example.com/"><neuwo-nav-item href="https://example.com/one/">One</neuwo-nav-item></neuwo-nav-section></neuwo-sidebar>`,
+    );
+    const host = holder.querySelector("neuwo-sidebar");
+    const seen = [];
+    host.addEventListener("navigate", (event) => {
+      seen.push(event.detail.href);
+      event.preventDefault();
+    });
+    const kept = [];
+    for (const href of [...entries, "https://example.com/"]) {
+      host.menuOpen = true;
+      if (click(host.querySelector(`.neuwo-sidebar__nav a[href="${href}"]`))) kept.push(href);
+      expect(host.menuOpen, href).toBe(false);
+    }
+    expect(seen).toEqual(["/b/", `${here}/c/`, "/a/?page=2", "/b/#part"]);
+    expect(kept).toEqual(["https://example.com/guide/", "#heading", "/a/#part", "https://example.com/"]);
   });
 
   it("fires no navigate for a click whose default a handler already prevented", () => {
