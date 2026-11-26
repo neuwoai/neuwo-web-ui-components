@@ -11,7 +11,7 @@ neuwo-nav-item:not([hidden]) {
 }
 
 /* A flex box, so no line box stands the slotted link taller than its logo. */
-.neuwo-sidebar__brand > * {
+.neuwo-sidebar__brand > :where(:not([hidden])) {
   display: flex;
 }
 

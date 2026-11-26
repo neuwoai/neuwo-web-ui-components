@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { LIGHT_COMPONENT_CSS } from "../scripts/light-css.js";
 import { flatRules } from "./fixtures/css-rules.js";
-import { closing } from "./fixtures/specificity.js";
+import { closing, weight } from "./fixtures/specificity.js";
 
 // Off disk, since Vitest resolves a CSS `?raw` import to an empty string.
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -170,9 +170,11 @@ describe("sidebar.css recipe", () => {
     expect(phone(".neuwo-sidebar__actions")).toEqual({ "margin-inline-start": "auto" });
   });
 
-  it("lays the brand's slotted link out as a flex box at one-class weight, so no line box stands the logo taller", () => {
-    expect(rule(".neuwo-sidebar__brand > *")).toEqual({ display: "flex" });
-    expect(base.flatMap((each) => each.selectors).filter((selector) => selector.startsWith(".neuwo-sidebar__brand >"))).toEqual([".neuwo-sidebar__brand > *"]);
+  it("lays the brand's slotted link out as a flex box at one-class weight, so no line box stands the logo taller, and leaves a hidden one hidden", () => {
+    const brand = ".neuwo-sidebar__brand > :where(:not([hidden]))";
+    expect(rule(brand)).toEqual({ display: "flex" });
+    expect(weight(brand)).toEqual([0, 1, 0]);
+    expect(base.flatMap((each) => each.selectors).filter((selector) => selector.startsWith(".neuwo-sidebar__brand >"))).toEqual([brand]);
   });
 
   it("rings only a folding section's name on keyboard focus, with the system's own ring, and leaves the linked section's toggle its ring", () => {
