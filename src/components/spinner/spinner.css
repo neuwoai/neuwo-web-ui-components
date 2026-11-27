@@ -9,7 +9,9 @@ neuwo-spinner {
   inline-size: 1em;
   block-size: 1em;
   vertical-align: -0.125em;
-  border: max(2px, 0.08em) solid color-mix(in srgb, currentColor 35%, transparent);
+  border: max(2px, 0.08em) solid transparent;
+  /* Apart from the shorthand, so a browser without color-mix() drops only the track and still draws the arc. */
+  border-color: color-mix(in srgb, currentColor 35%, transparent);
   border-block-start-color: currentColor;
   border-radius: var(--neuwo-radius-full);
   animation: neuwo-spinner-spin 0.6s linear infinite;

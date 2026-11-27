@@ -29,10 +29,14 @@ describe("spinner.css recipe", () => {
     expect(ring).toContain("box-sizing: border-box;");
   });
 
-  it("strokes the ring from currentColor at max(2px, 0.08em), with the track at 35%", () => {
+  it("strokes the ring from currentColor at max(2px, 0.08em), with the track at 35% in a line of its own", () => {
     const ring = rule(".neuwo-spinner");
-    expect(ring).toContain("border: max(2px, 0.08em) solid color-mix(in srgb, currentColor 35%, transparent);");
-    expect(ring).toContain("border-block-start-color: currentColor;");
+    const stroke = ring.indexOf("border: max(2px, 0.08em) solid transparent;");
+    const track = ring.indexOf("border-color: color-mix(in srgb, currentColor 35%, transparent);");
+    const arc = ring.indexOf("border-block-start-color: currentColor;");
+    expect(stroke).toBeGreaterThan(-1);
+    expect(track).toBeGreaterThan(stroke);
+    expect(arc).toBeGreaterThan(track);
     expect(ring).toContain("border-radius: var(--neuwo-radius-full);");
   });
 

@@ -19,8 +19,9 @@
   from `components/button/button.css` to `components/spinner/spinner.css`, and its keyframes are
   renamed from `neuwo-button-spin` to `neuwo-spinner-spin`. Under reduced motion it now fades
   instead of standing still, and in forced colours it keeps its gap, where before it turned as one
-  solid circle. A site that links the recipes one by one must link `components/spinner/spinner.css`
-  with the button's.
+  solid circle. In a browser without `color-mix()` it draws its arc on a clear track, where before
+  it drew nothing. A site that links the recipes one by one must link
+  `components/spinner/spinner.css` with the button's.
 
 ## 0.6.0
 
