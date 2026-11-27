@@ -213,8 +213,8 @@
     <div class="row">
       <button id="control-plain" type="button">Plain button</button>
       <button id="control-class" class="btn" type="button">Button with .btn</button>
-      <neuwo-button class="square" variant="solid">Restyled from the host</neuwo-button>
-      <neuwo-button variant="solid">Left alone</neuwo-button>
+      <neuwo-button class="square" variant="solid">Restyled from the Host</neuwo-button>
+      <neuwo-button variant="solid">Left Alone</neuwo-button>
     </div>
 
     <h2>Variants</h2>
@@ -247,8 +247,8 @@
     <h2>Modifiers &amp; states</h2>
     <div class="row">
       <neuwo-button wide>Wide</neuwo-button>
-      <neuwo-button xwide>Extra wide</neuwo-button>
-      <neuwo-button href="https://neuwo.ai">Link button</neuwo-button>
+      <neuwo-button xwide>Extra Wide</neuwo-button>
+      <neuwo-button href="https://neuwo.ai">Link Button</neuwo-button>
     </div>
 
     <h2>Disabled (dimmed, not-allowed cursor, no hover lift)</h2>
@@ -264,13 +264,13 @@
       <neuwo-button hover="m">Base (m)</neuwo-button>
       <neuwo-button hover="l">Strong (l)</neuwo-button>
       <neuwo-button loading>Loading</neuwo-button>
-      <neuwo-button><span slot="start">*</span>With icon</neuwo-button>
+      <neuwo-button><span slot="start">*</span>With Icon</neuwo-button>
       <neuwo-button block>Block</neuwo-button>
     </div>
 
     <h2>Block (stretches to its container)</h2>
     <div>
-      <neuwo-button block variant="solid">Full-width button</neuwo-button>
+      <neuwo-button block variant="solid">Full-Width Button</neuwo-button>
     </div>
 
     <h2>Forms (the native button submits and resets)</h2>
@@ -510,7 +510,7 @@
         <option value="publisher">Publisher</option>
         <option value="advertiser">Advertiser</option>
       </neuwo-combobox>
-      <neuwo-button size="sm" variant="solid">Get started</neuwo-button>
+      <neuwo-button size="sm" variant="solid">Get Started</neuwo-button>
     </div>
 
     <h2>Monospace fields (mono: the text a step smaller than prose, same padding; a textarea's lines spaced for code)</h2>
@@ -1238,7 +1238,7 @@
       Each control below starts in the error state (red accent / box-shadow + red message).
       Interact with it and <code>error-muted</code> drops the border and box-shadow ring, while
       the red message and the invalid state stay. (A real app then removes <code>error</code> on
-      its next successful validate. The "Re-arm errors" button restores the box-shadow so each
+      its next successful validate. The "Re-arm Errors" button restores the box-shadow so each
       behaviour can be checked again.)
     </p>
     <div class="row">
@@ -1260,7 +1260,7 @@
       </neuwo-segmented>
     </div>
     <div class="row">
-      <neuwo-button id="soften-rearm" variant="outline">Re-arm errors</neuwo-button>
+      <neuwo-button id="soften-rearm" variant="outline">Re-arm Errors</neuwo-button>
     </div>
     <script>
       const softenControls = [...document.querySelectorAll(".soften")];
@@ -1285,7 +1285,7 @@
     <div class="row" style="align-items: flex-end">
       <neuwo-input id="flash-url" label="Article URL" placeholder="https://example.com/article" mono></neuwo-input>
       <neuwo-textarea id="flash-body" label="Request body" rows="3" mono></neuwo-textarea>
-      <neuwo-button id="flash-run" variant="solid">Run analysis</neuwo-button>
+      <neuwo-button id="flash-run" variant="solid">Run Analysis</neuwo-button>
     </div>
     <script>
       document.getElementById("flash-run").addEventListener("click", () => {
@@ -1425,8 +1425,8 @@
       <neuwo-cta variant="spotlight" pulse>
         Ready to <span data-accent>earn more</span> from your content?
         <span slot="sub">Talk to our team about monetisation.</span>
-        <neuwo-button slot="actions" variant="solid" size="lg">Contact us</neuwo-button>
-        <neuwo-button slot="actions" variant="outline" size="lg">See pricing</neuwo-button>
+        <neuwo-button slot="actions" variant="solid" size="lg">Contact Us</neuwo-button>
+        <neuwo-button slot="actions" variant="outline" size="lg">See Pricing</neuwo-button>
       </neuwo-cta>
     </div>
 
@@ -1438,8 +1438,8 @@
     <neuwo-cta pulse>
       Prefer a <span data-accent>quieter</span> primary?
       <span slot="sub">Same synchronised ring, outline button.</span>
-      <neuwo-button slot="actions" variant="outline">Book a demo</neuwo-button>
-      <neuwo-button slot="actions" variant="glass">Read the docs</neuwo-button>
+      <neuwo-button slot="actions" variant="outline">Book a Demo</neuwo-button>
+      <neuwo-button slot="actions" variant="glass">Read the Docs</neuwo-button>
     </neuwo-cta>
 
     <h2>neuwo-cta pulse intensity (amplitude of the ring, default m)</h2>
@@ -1476,8 +1476,8 @@
           autocomplete="email"
           required
         ></neuwo-input>
-        <neuwo-button slot="actions" type="submit" variant="solid">Get started</neuwo-button>
-        <neuwo-button slot="actions" variant="outline">Contact us</neuwo-button>
+        <neuwo-button slot="actions" type="submit" variant="solid">Get Started</neuwo-button>
+        <neuwo-button slot="actions" variant="outline">Contact Us</neuwo-button>
       </neuwo-cta>
     </form>
     <script>
@@ -1543,8 +1543,8 @@
 
     <h2>neuwo-notice placement (fixed to the viewport)</h2>
     <div class="row">
-      <neuwo-button id="notice-corner" variant="outline" size="sm">Corner hint</neuwo-button>
-      <neuwo-button id="notice-toast" variant="outline" size="sm">Top-centre toast</neuwo-button>
+      <neuwo-button id="notice-corner" variant="outline" size="sm">Corner Hint</neuwo-button>
+      <neuwo-button id="notice-toast" variant="outline" size="sm">Top-Centre Toast</neuwo-button>
     </div>
 
     <neuwo-notice id="demo-corner" dismissible hidden>

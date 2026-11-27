@@ -42,7 +42,7 @@ export default function UncontrolledSignUp() {
         Send me product updates
       </neuwo-checkbox>
       <neuwo-button type="submit" loading={pending}>
-        Sign up
+        Sign Up
       </neuwo-button>
       <neuwo-notice position="static" hidden={message === null}>
         <span slot="title">Thanks for signing up</span>

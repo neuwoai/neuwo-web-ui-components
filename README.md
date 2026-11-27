@@ -131,7 +131,7 @@ self-register.
 ```html
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.5/dist/neuwo-components.css" />
 <script type="module" src="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.5/dist/neuwo.js"></script>
-<neuwo-button variant="solid">Get started</neuwo-button>
+<neuwo-button variant="solid">Get Started</neuwo-button>
 ```
 
 In a bundler, import the stylesheet where you import the library:
@@ -196,7 +196,7 @@ Where you cannot link a stylesheet, load the standalone build on its own:
 
 ```html
 <script type="module" src="https://cdn.jsdelivr.net/npm/@neuwo/web-ui-library--demo@0.5/dist/neuwo-standalone.js"></script>
-<neuwo-button variant="solid">Get started</neuwo-button>
+<neuwo-button variant="solid">Get Started</neuwo-button>
 ```
 
 It embeds `neuwo-components.css`, applies it only if the page has not already linked it, and
@@ -212,7 +212,7 @@ runs and still works with the script blocked.
 ```js
 import { expand } from "@neuwo/web-ui-library--demo/server";
 
-const output = expand('<neuwo-button variant="solid">Get started</neuwo-button>');
+const output = expand('<neuwo-button variant="solid">Get Started</neuwo-button>');
 ```
 
 For Eleventy, add the plugin; it runs `expand` on every `.html` output:
@@ -1375,8 +1375,8 @@ control in the field and the submit button drive it.
     <neuwo-input slot="field" type="email" name="email" size="sm" required
                  autocomplete="email" label="Work email"
                  placeholder="you@company.com"></neuwo-input>
-    <neuwo-button slot="actions" type="submit" variant="solid">Get started</neuwo-button>
-    <neuwo-button slot="actions" variant="outline" href="/contact/">Contact us</neuwo-button>
+    <neuwo-button slot="actions" type="submit" variant="solid">Get Started</neuwo-button>
+    <neuwo-button slot="actions" variant="outline" href="/contact/">Contact Us</neuwo-button>
   </neuwo-cta>
 </form>
 ```

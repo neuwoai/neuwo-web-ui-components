@@ -46,7 +46,7 @@ export default function ControlledSignUp() {
       </neuwo-checkbox>
       <output>{JSON.stringify({ name, email, role, digest, updates })}</output>
       <neuwo-button type="submit" loading={pending}>
-        Sign up
+        Sign Up
       </neuwo-button>
       <neuwo-notice position="static" hidden={!done}>
         <span slot="title">Thanks for signing up</span>
