@@ -85,7 +85,8 @@ These files carry the library's setup.
 - [app/site-sidebar.tsx](app/site-sidebar.tsx) is a client component that renders the `<neuwo-sidebar>`, and
   [app/layout.tsx](app/layout.tsx) places it beside the page in a `.shell`, so it stays mounted from page to page. It
   passes `usePathname()` as `current`, cancels `navigate` and hands the `href` to `router.push`, and links the brand
-  with `next/link`. `router.push` follows the Resources entries, full URLs to other sites, with an ordinary navigation.
+  with `next/link`. The Resources entries are full URLs to other sites, so they fire no `navigate`, and the browser
+  follows them itself.
 
 ## What to look at
 

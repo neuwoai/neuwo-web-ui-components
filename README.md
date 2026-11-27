@@ -1792,6 +1792,13 @@ The places, as slots:
 | `after-nav` | between the nav and the footer, outside the nav's scroll | in the menu, under the nav |
 | `footer` | the bottom of the column, ruled off above | in the menu, under the rest |
 
+The child in `brand` is made a flex box, so no line box stands a link taller than its logo. That
+rule weighs one class, the same as a page rule such as `.site-brand { display: inline-block }`, so
+the page's rule wins only when it comes later. It does not when the page's stylesheet is linked
+before the library's, or under `neuwo-standalone.js`, whose adopted sheet comes after every linked
+one. To set the child's `display` whatever the order, put the wrapper's class in front:
+`.neuwo-sidebar__brand > .site-brand`.
+
 `<neuwo-nav-item>` takes the page in **`href`**, and its label as its content, text or inline
 markup such as a `<neuwo-badge>`.
 

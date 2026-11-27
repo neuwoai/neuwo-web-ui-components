@@ -31,6 +31,10 @@ const leaves = (link) => link.origin === location.origin && !(link.href.includes
  * are the site's own. With `remember`, the sections the reader leaves open and the nav's scroll follow them from page
  * to page for the tab.
  *
+ * In React, write the entries and sections as JSX directly inside the sidebar; an inline `.map()` is fine. The JSX
+ * runtime cannot see into a component of your own, so the entries such a component renders mark nothing, and the
+ * sections around them cannot tell that they hold the page.
+ *
  * @summary Neuwo sidebar. Public classes: `.neuwo-sidebar` on the `<aside>`, which holds `.neuwo-sidebar__bar` around the wrappers `.neuwo-sidebar__brand` and `.neuwo-sidebar__actions`, then `.neuwo-sidebar__menu`, the `<details>` holding the menu button `.neuwo-sidebar__toggle` with its `.neuwo-sidebar__toggle-icon`, the `<nav>` `.neuwo-sidebar__nav` around the entries' list `.neuwo-sidebar__list`, and the wrappers `.neuwo-sidebar__after-nav` and `.neuwo-sidebar__footer`; with `remember`, the `<aside>` carries `data-remember` and ends with the script `.neuwo-sidebar__remember`.
  * @customElement neuwo-sidebar
  * @attr label - the nav's accessible name (default Main).
