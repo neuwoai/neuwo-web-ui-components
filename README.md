@@ -531,22 +531,20 @@ make you link two files and get their order right.
   leading title and a trailing paragraph both sit inside it.
 - **`.neuwo-callout__title`** is the optional label line. A `<span>`, not a heading, so a callout never
   enters the document outline; it is an aside, not a section.
-- **`.neuwo-callout--info`**, **`.neuwo-callout--tip`** and **`.neuwo-callout--danger`** set the intent.
+- **`.neuwo-callout--info`**, **`.neuwo-callout--tip`**, **`.neuwo-callout--warning`** and
+  **`.neuwo-callout--danger`** set the intent. Warning draws `--neuwo-color-warning-800` from the
+  [status colours](#status-colours).
 
 Intent is one property. Each modifier declares `--neuwo-callout-accent` and nothing else, and the block
-reads that knob for both its edge and its tint. So a fourth intent needs no library change:
+reads that knob for both its edge and its tint. So a fifth intent needs no library change:
 
 ```css
-.app-callout--warning {
-  --neuwo-callout-accent: #d99a2b;
+.app-callout--preview {
+  --neuwo-callout-accent: var(--neuwo-color-info-800);
 }
 ```
 
-`.app-callout--warning` is your own class, not one the library ships, used beside `.neuwo-callout`.
-That example is also the honest gap. **There is no `warning` intent**, because the brand has no
-amber: `--neuwo-color-blue`, `--neuwo-color-green` and `--neuwo-color-red` are the only semantic
-hues in the system, and adding a fourth is a brand decision rather than a recipe one. Until one
-exists, the knob above is the supported workaround.
+`.app-callout--preview` is your own class, not one the library ships, used beside `.neuwo-callout`.
 
 This is deliberately not `<neuwo-notice>`, and deliberately not an element at all. `notice` is a
 docked glass card with an entrance animation, for a message the visitor did not ask for; a callout

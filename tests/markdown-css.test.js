@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { resolve, tokensOf } from "../scripts/colour-fallback.js";
+import { contrast, over } from "./fixtures/contrast.js";
 
 // Off disk, since Vitest resolves a CSS `?raw` import to an empty string.
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -185,21 +187,37 @@ describe("callout recipe", () => {
     expect(rule).toMatch(/font-weight:\s*var\(--neuwo-font-weight-semibold\)/);
   });
 
-  it("drives all three intents through the one knob", () => {
+  it("drives all four intents through the one knob", () => {
     expect(css).toMatch(/\.neuwo-callout--info \{\s*--neuwo-callout-accent:\s*var\(--neuwo-color-blue\);/);
     expect(css).toMatch(/\.neuwo-callout--tip \{\s*--neuwo-callout-accent:\s*var\(--neuwo-color-green\);/);
+    expect(css).toMatch(/\.neuwo-callout--warning \{\s*--neuwo-callout-accent:\s*var\(--neuwo-color-warning-800\);/);
     expect(css).toMatch(/\.neuwo-callout--danger \{\s*--neuwo-callout-accent:\s*var\(--neuwo-color-red\);/);
     // Each modifier sets the knob and nothing else, so intent stays one axis.
-    for (const intent of ["info", "tip", "danger"]) {
+    for (const intent of ["info", "tip", "warning", "danger"]) {
       const body = css.match(new RegExp(`\\.neuwo-callout--${intent} \\{([^}]*)\\}`))[1];
       const declared = body.split(";").filter((line) => line.trim());
       expect(declared).toHaveLength(1);
     }
   });
 
-  // The brand has no amber, so a consumer sets --neuwo-callout-accent on its own class instead.
-  it("ships no warning intent, because no warning colour exists", () => {
-    expect(declarations).not.toContain(".neuwo-callout--warning");
-    expect(tokensCss).not.toMatch(/--neuwo-color-(amber|orange|yellow|warning)\s*:/);
+  it("keeps every callout accent the README shows readable on its own tint over the page", () => {
+    const readme = readFileSync(join(__dirname, "../README.md"), "utf8");
+    const tokens = tokensOf(tokensCss);
+    const share = Number(css.match(/background: color-mix\(in srgb, var\(--neuwo-callout-accent, var\(--neuwo-color-blue\)\) (\d+)%, transparent\);/)[1]) / 100;
+    const page = resolve(tokens.get("--neuwo-color-body-bg"), tokens);
+    const accents = [...readme.matchAll(/--neuwo-callout-accent: (var\(--neuwo-[\w-]+\));/g)].map(([, value]) => value);
+    expect(accents.length).toBeGreaterThan(0);
+    for (const value of accents) {
+      const accent = resolve(value, tokens);
+      expect(contrast(accent, over(accent, share, page)), value).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it("reads the warning title at 4.5 : 1 or more on its own tint over the page", () => {
+    const tokens = tokensOf(tokensCss);
+    const share = Number(css.match(/background: color-mix\(in srgb, var\(--neuwo-callout-accent, var\(--neuwo-color-blue\)\) (\d+)%, transparent\);/)[1]) / 100;
+    const accent = resolve("var(--neuwo-color-warning-800)", tokens);
+    const page = resolve(tokens.get("--neuwo-color-body-bg"), tokens);
+    expect(contrast(accent, over(accent, share, page))).toBeGreaterThanOrEqual(4.5);
   });
 });

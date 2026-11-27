@@ -77,9 +77,6 @@
         padding-right: 2rem;
         --neuwo-copy-inset: 0.125rem;
       }
-      .callout--warning-demo {
-        --neuwo-callout-accent: #d99a2b;
-      }
 
       .nav-demo ul {
         list-style: none;
@@ -1101,6 +1098,10 @@
         <span class="neuwo-callout__title">Tip</span>
         <p>A callout needs no title; this one has one to show the label line.</p>
       </div>
+      <div class="neuwo-callout neuwo-callout--warning">
+        <span class="neuwo-callout__title">Warning</span>
+        <p>Drawn from <code>--neuwo-color-warning-800</code>, the warning scale's text step.</p>
+      </div>
       <div class="neuwo-callout neuwo-callout--danger">
         <p>
           No title, and a list as the last child, to prove the block keeps its own bottom
@@ -1109,14 +1110,6 @@
         <ul>
           <li>The list's margin would otherwise double the padding.</li>
         </ul>
-      </div>
-      <div class="neuwo-callout callout--warning-demo">
-        <span class="neuwo-callout__title">Warning</span>
-        <p>
-          There is no <code>warning</code> intent: the brand has no amber, and inventing
-          one is a brand decision. Until it exists a consumer sets
-          <code>--neuwo-callout-accent</code> on its own class, which is what this block does.
-        </p>
       </div>
     </div>
 

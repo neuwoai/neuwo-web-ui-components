@@ -133,14 +133,16 @@
   font-weight: var(--neuwo-font-weight-semibold);
 }
 
-/* No warning intent: the tokens have no amber, so a consumer sets --neuwo-callout-accent on its own class. */
-
 .neuwo-callout--info {
   --neuwo-callout-accent: var(--neuwo-color-blue);
 }
 
 .neuwo-callout--tip {
   --neuwo-callout-accent: var(--neuwo-color-green);
+}
+
+.neuwo-callout--warning {
+  --neuwo-callout-accent: var(--neuwo-color-warning-800);
 }
 
 .neuwo-callout--danger {
