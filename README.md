@@ -627,7 +627,7 @@ The same setting adds every element to JSX with each attribute's allowed values 
 event's `detail`, so a misspelt variant fails the type check. React stays an optional peer
 dependency. A working project with controlled and uncontrolled forms is in [demo/react-vite](https://github.com/neuwoai/neuwo-web-ui-components/tree/v0.6.0/demo/react-vite).
 
-React renders the markup of all twenty-three elements itself, so they show from the first paint.
+React renders the markup of all twenty-four elements itself, so they show from the first paint.
 
 React 19 sets a property where the element has one and binds events, so the elements behave like
 native controls:
@@ -842,7 +842,7 @@ export function Neuwo() {
 }
 ```
 
-Render `<Neuwo />` once in the root layout. Because the JSX runtime expands all twenty-three elements,
+Render `<Neuwo />` once in the root layout. Because the JSX runtime expands all twenty-four elements,
 the server-rendered HTML carries their full markup and they are on-brand from the first paint,
 before the bundle has run. Import `neuwo.css` instead of `neuwo-components.css` to add the
 typography and page surface. A working project is in [demo/nextjs](https://github.com/neuwoai/neuwo-web-ui-components/tree/v0.6.0/demo/nextjs).

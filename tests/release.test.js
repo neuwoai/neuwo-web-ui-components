@@ -3,6 +3,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { distFile } from "./setup/dist.js";
+import { templates } from "../src/templates.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (file) => readFileSync(join(root, file), "utf8");
@@ -10,6 +11,9 @@ const { name, version, files, repository } = JSON.parse(read("package.json"));
 const [major, minor] = version.split(".");
 const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const CDN = "https://cdn.jsdelivr.net/npm/";
+const NUMBER_WORDS = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, twenty: 20, thirty: 30 };
+/** @param {string} words */
+const numberOf = (words) => words.split("-").reduce((sum, word) => sum + NUMBER_WORDS[word], 0);
 
 /**
  * @param {string} text
@@ -36,6 +40,12 @@ function checkCdnUrls(text) {
 }
 
 describe("release", () => {
+  it("every count of the elements in the README is the number the library registers", () => {
+    const counts = [...read("README.md").matchAll(/\ball ([a-z]+(?:-[a-z]+)?) elements\b/g)].map(([, words]) => numberOf(words));
+    expect(counts.length).toBeGreaterThan(0);
+    for (const count of counts) expect(count).toBe(Object.keys(templates).length);
+  });
+
   it("the first versioned CHANGELOG heading is the package version", () => {
     const heading = read("CHANGELOG.md").match(/^## \d+\.\d+\.\d+.*$/m);
     expect(heading?.[0]).toBe(`## ${version}`);

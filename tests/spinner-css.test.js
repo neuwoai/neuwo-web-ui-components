@@ -17,6 +17,10 @@ describe("spinner.css recipe", () => {
     expect(rule("neuwo-spinner").trim()).toBe("display: contents;");
   });
 
+  it("hides a hand-written ring on the hidden attribute, which its own display would otherwise outrank", () => {
+    expect(rule(".neuwo-spinner[hidden]").trim()).toBe("display: none;");
+  });
+
   it("draws the ring on the class alone, so hand-written markup needs no element", () => {
     const ring = rule(".neuwo-spinner");
     expect(ring).toContain("display: inline-block;");
