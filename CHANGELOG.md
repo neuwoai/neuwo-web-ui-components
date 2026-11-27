@@ -16,7 +16,7 @@
   (`--neuwo-space-4` unless it is set). The sidebar reads it and never declares it.
 - Status colours: four five-step scales, `--neuwo-color-success-400`, `-550`, `-700`, `-800` and
   `-900`, and the same for `info`, `warning` and `error`. Each step is named for its OKLCH lightness
-  (`400` is 40 %), darkest to brightest, and has that lightness in every scale, so it reads at the
+  (`400` is 40%), darkest to brightest, and has that lightness in every scale, so it reads at the
   same contrast on the page. No existing colour changed, and the components still use the brand
   colours and `--neuwo-color-red`.
 - `.neuwo-callout--warning`, a fourth callout intent, drawn in `--neuwo-color-warning-800`.

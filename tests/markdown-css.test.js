@@ -138,6 +138,7 @@ describe("markdown stylesheet", () => {
       "--neuwo-color-blue",
       "--neuwo-color-green",
       "--neuwo-color-red",
+      "--neuwo-color-warning-800",
       "--neuwo-color-grey-100",
       "--neuwo-glass-bg",
       "--neuwo-glass-border",
@@ -156,6 +157,15 @@ describe("markdown stylesheet", () => {
 
 // Same sheet, since nothing about the callout is a component that would justify a second file to link.
 describe("callout recipe", () => {
+  const tokens = tokensOf(tokensCss);
+  const share = Number(css.match(/background: color-mix\(in srgb, var\(--neuwo-callout-accent, var\(--neuwo-color-blue\)\) (\d+)%, transparent\);/)[1]) / 100;
+  const page = resolve(tokens.get("--neuwo-color-body-bg"), tokens);
+  /** @param {string} value */
+  const onTint = (value) => {
+    const accent = resolve(value, tokens);
+    return contrast(accent, over(accent, share, page));
+  };
+
   it("contains its children's margins so the padding holds", () => {
     const rule = css.match(/(?:^|\n)\.neuwo-callout \{[^}]*\}/)[0];
     expect(rule).toMatch(/display:\s*flow-root/);
@@ -202,22 +212,15 @@ describe("callout recipe", () => {
 
   it("keeps every callout accent the README shows readable on its own tint over the page", () => {
     const readme = readFileSync(join(__dirname, "../README.md"), "utf8");
-    const tokens = tokensOf(tokensCss);
-    const share = Number(css.match(/background: color-mix\(in srgb, var\(--neuwo-callout-accent, var\(--neuwo-color-blue\)\) (\d+)%, transparent\);/)[1]) / 100;
-    const page = resolve(tokens.get("--neuwo-color-body-bg"), tokens);
     const accents = [...readme.matchAll(/--neuwo-callout-accent: (var\(--neuwo-[\w-]+\));/g)].map(([, value]) => value);
     expect(accents.length).toBeGreaterThan(0);
-    for (const value of accents) {
-      const accent = resolve(value, tokens);
-      expect(contrast(accent, over(accent, share, page)), value).toBeGreaterThanOrEqual(4.5);
-    }
+    for (const value of accents) expect(onTint(value), value).toBeGreaterThanOrEqual(4.5);
   });
 
-  it("reads the warning title at 4.5 : 1 or more on its own tint over the page", () => {
-    const tokens = tokensOf(tokensCss);
-    const share = Number(css.match(/background: color-mix\(in srgb, var\(--neuwo-callout-accent, var\(--neuwo-color-blue\)\) (\d+)%, transparent\);/)[1]) / 100;
-    const accent = resolve("var(--neuwo-color-warning-800)", tokens);
-    const page = resolve(tokens.get("--neuwo-color-body-bg"), tokens);
-    expect(contrast(accent, over(accent, share, page))).toBeGreaterThanOrEqual(4.5);
+  it("reads every intent's title at 4.5 : 1 or more on its own tint over the page", () => {
+    for (const intent of ["info", "tip", "warning", "danger"]) {
+      const value = css.match(new RegExp(`\\.neuwo-callout--${intent} \\{\\s*--neuwo-callout-accent:\\s*(var\\([^)]+\\));`))[1];
+      expect(onTint(value), intent).toBeGreaterThanOrEqual(4.5);
+    }
   });
 });
