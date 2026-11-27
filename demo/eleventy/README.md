@@ -24,7 +24,7 @@ then install the tarball in the example:
 npm install
 npm pack
 cd demo/eleventy
-npm install --no-save ../../neuwo-web-ui-library--demo-0.5.0.tgz
+npm install --no-save ../../neuwo-web-ui-library--demo-0.6.0.tgz
 ```
 
 `--no-save` leaves `package.json` and `package-lock.json` untouched, so the example keeps the published release;
@@ -38,7 +38,7 @@ These files carry the library's setup.
   library the site ships:
 
   ```json
-  "@neuwo/web-ui-library--demo": "^0.5.0"
+  "@neuwo/web-ui-library--demo": "^0.6.0"
   ```
 
 - [eleventy.config.js](eleventy.config.js) adds the plugin, which runs `expand` on every `.html` output:

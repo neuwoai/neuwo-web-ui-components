@@ -25,7 +25,7 @@ then install the tarball in the example:
 npm install
 npm pack
 cd demo/nextjs
-npm install --no-save ../../neuwo-web-ui-library--demo-0.5.0.tgz
+npm install --no-save ../../neuwo-web-ui-library--demo-0.6.0.tgz
 ```
 
 `--no-save` leaves `package.json` and `package-lock.json` untouched, so the example keeps the published release;
@@ -38,7 +38,7 @@ These files carry the library's setup.
 - [package.json](package.json) lists the library under `dependencies` at the released minor version:
 
   ```json
-  "@neuwo/web-ui-library--demo": "^0.5.0"
+  "@neuwo/web-ui-library--demo": "^0.6.0"
   ```
 
 - [tsconfig.json](tsconfig.json) points JSX at the library's runtime, which renders each `<neuwo-*>` element's markup as

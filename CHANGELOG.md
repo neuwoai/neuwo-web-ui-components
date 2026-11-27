@@ -1,6 +1,12 @@
 # Changelog
 
-## Unreleased
+## 0.6.0
+
+Menus, menu buttons and a sidebar for a site's own navigation. Each font is now split in two, so an
+English or Finnish page downloads half as much, and the notice's close button rests quieter. It adds
+elements, attributes and classes, and renames the combobox's entrance keyframes to `neuwo-popup-in`,
+so it is a minor release. A site that copies the fonts must copy the four new files, and one that
+links the combobox's recipe on its own must link `components/popup.css` before it.
 
 ### Added
 
