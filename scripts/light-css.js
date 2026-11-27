@@ -2,6 +2,7 @@ export const LIGHT_COMPONENT_CSS = [
   "src/components/reset.css",
   "src/components/popup.css",
   "src/foundation/navigation.css",
+  "src/components/spinner/spinner.css",
   "src/components/badge/badge.css",
   "src/components/button/button.css",
   "src/components/copy/copy.css",

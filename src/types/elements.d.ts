@@ -24,6 +24,7 @@ import type { NeuwoMenuItem } from "../components/menu/neuwo-menu-item.js";
 import type { NeuwoNavItem } from "../components/sidebar/neuwo-nav-item.js";
 import type { NeuwoNavSection } from "../components/sidebar/neuwo-nav-section.js";
 import type { NeuwoSidebar } from "../components/sidebar/neuwo-sidebar.js";
+import type { NeuwoSpinner } from "../components/spinner/neuwo-spinner.js";
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -50,5 +51,6 @@ declare global {
     "neuwo-nav-item": NeuwoNavItem;
     "neuwo-nav-section": NeuwoNavSection;
     "neuwo-sidebar": NeuwoSidebar;
+    "neuwo-spinner": NeuwoSpinner;
   }
 }

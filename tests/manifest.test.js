@@ -58,7 +58,7 @@ const EXPECTED_TAGS = [
   "neuwo-radio-group", "neuwo-segmented", "neuwo-badge", "neuwo-deal-id",
   "neuwo-status-dot", "neuwo-cta", "neuwo-notice", "neuwo-logo", "neuwo-copy",
   "neuwo-menu", "neuwo-menu-group", "neuwo-menu-item",
-  "neuwo-nav-item", "neuwo-nav-section", "neuwo-sidebar",
+  "neuwo-nav-item", "neuwo-nav-section", "neuwo-sidebar", "neuwo-spinner",
 ];
 
 // Removed on purpose: the combobox replaces `neuwo-select`, and `foundation/navigation.css` `neuwo-dropdown`.
@@ -317,6 +317,11 @@ describe("custom-elements.json", () => {
   it("documents the status-dot's five axes", () => {
     const attrs = attributesFor(manifest, "neuwo-status-dot");
     for (const a of ["variant", "size", "motion", "halo", "glow"]) expect(attrs).toContain(a);
+  });
+
+  it("documents the spinner's attributes", () => {
+    const attrs = attributesFor(manifest, "neuwo-spinner");
+    for (const a of ["size", "variant", "label"]) expect(attrs).toContain(a);
   });
 
   it("documents the cta's attributes", () => {

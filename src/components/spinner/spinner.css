@@ -1,0 +1,54 @@
+neuwo-spinner {
+  display: contents;
+}
+
+.neuwo-spinner {
+  display: inline-block;
+  flex: none;
+  box-sizing: border-box;
+  inline-size: 1em;
+  block-size: 1em;
+  vertical-align: -0.125em;
+  border: max(2px, 0.08em) solid color-mix(in srgb, currentColor 35%, transparent);
+  border-block-start-color: currentColor;
+  border-radius: var(--neuwo-radius-full);
+  animation: neuwo-spinner-spin 0.6s linear infinite;
+}
+
+.neuwo-spinner--m {
+  font-size: 1.5rem;
+}
+
+.neuwo-spinner--l {
+  font-size: 2.5rem;
+}
+
+.neuwo-spinner--blue {
+  color: var(--neuwo-color-blue);
+}
+
+.neuwo-spinner--green {
+  color: var(--neuwo-color-green);
+}
+
+@keyframes neuwo-spinner-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes neuwo-spinner-fade {
+  50% { opacity: 0.4; }
+}
+
+/* Forced colours would paint the track and the arc alike, so the turning ring would look still. */
+@media (forced-colors: active) {
+  .neuwo-spinner {
+    forced-color-adjust: none;
+    color: CanvasText;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neuwo-spinner {
+    animation: neuwo-spinner-fade 2s ease-in-out infinite;
+  }
+}

@@ -21,6 +21,7 @@ import "./components/menu/neuwo-menu-item.js"; // self-registers <neuwo-menu-ite
 import "./components/sidebar/neuwo-nav-item.js"; // self-registers <neuwo-nav-item>
 import "./components/sidebar/neuwo-nav-section.js"; // self-registers <neuwo-nav-section>
 import "./components/sidebar/neuwo-sidebar.js"; // self-registers <neuwo-sidebar>
+import "./components/spinner/neuwo-spinner.js"; // self-registers <neuwo-spinner>
 
 export { NeuwoButton } from "./components/button/neuwo-button.js";
 export { NeuwoInput } from "./components/fields/input/neuwo-input.js";
@@ -45,3 +46,4 @@ export { NeuwoMenuItem } from "./components/menu/neuwo-menu-item.js";
 export { NeuwoNavItem } from "./components/sidebar/neuwo-nav-item.js";
 export { NeuwoNavSection } from "./components/sidebar/neuwo-nav-section.js";
 export { NeuwoSidebar } from "./components/sidebar/neuwo-sidebar.js";
+export { NeuwoSpinner } from "./components/spinner/neuwo-spinner.js";

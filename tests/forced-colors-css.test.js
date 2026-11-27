@@ -151,4 +151,8 @@ describe("forced colours", () => {
     expect(forced("src/components/notice/notice.css", ".neuwo-notice__dismiss::before")).toEqual({ background: "ButtonText" });
     expect(forced("src/components/status-dot/status-dot.css", ".neuwo-status-dot")).toEqual({ background: "CanvasText" });
   });
+
+  it("keeps the spinner's gap visible, opting out to draw the arc and its faded track from CanvasText", () => {
+    expect(forced("src/components/spinner/spinner.css", ".neuwo-spinner")).toEqual({ "forced-color-adjust": "none", color: "CanvasText" });
+  });
 });

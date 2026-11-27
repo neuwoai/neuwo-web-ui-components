@@ -418,6 +418,16 @@ export const cases = {
     { name: "unknown size", attrs: { size: "xl" }, children: [] },
     { name: "forwarded host attributes", attrs: { title: "Online", "aria-label": "Online" }, children: [] },
   ],
+  "neuwo-spinner": [
+    { name: "default", attrs: {}, children: [] },
+    { name: "size m", attrs: { size: "m" }, children: [] },
+    { name: "large blue", attrs: { size: "l", variant: "blue" }, children: [] },
+    { name: "green", attrs: { variant: "green" }, children: [] },
+    { name: "custom label", attrs: { label: "Loading results" }, children: [] },
+    { name: "decorative", attrs: { label: "" }, children: [] },
+    { name: "unknown values", attrs: { size: "xl", variant: "red" }, children: [] },
+    { name: "forwarded host attributes", attrs: { title: "Busy", "aria-label": "Busy" }, children: [] },
+  ],
   "neuwo-menu": [
     { name: "root with id", attrs: { id: "export" }, children: [item("CSV", { value: "csv" }), item("JSON", { value: "json" })] },
     { name: "items directly", attrs: {}, children: ["\n  ", item("Rename"), "\n  ", item("Delete", { tone: "red" }), "\n"] },

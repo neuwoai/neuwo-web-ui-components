@@ -18,6 +18,7 @@ import { radioTemplate } from "./components/selection/radio/radio.template.js";
 import { rangeTemplate } from "./components/fields/range/range.template.js";
 import { segmentedTemplate } from "./components/selection/segmented/segmented.template.js";
 import { sidebarTemplate } from "./components/sidebar/sidebar.template.js";
+import { spinnerTemplate } from "./components/spinner/spinner.template.js";
 import { statusDotTemplate } from "./components/status-dot/status-dot.template.js";
 import { textareaTemplate } from "./components/fields/textarea/textarea.template.js";
 import { toggleTemplate } from "./components/selection/toggle/toggle.template.js";
@@ -44,6 +45,7 @@ export const templates = {
   "neuwo-range": rangeTemplate,
   "neuwo-segmented": segmentedTemplate,
   "neuwo-sidebar": sidebarTemplate,
+  "neuwo-spinner": spinnerTemplate,
   "neuwo-status-dot": statusDotTemplate,
   "neuwo-textarea": textareaTemplate,
   "neuwo-toggle": toggleTemplate,

@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `<neuwo-spinner>`, a loading ring for any page, not only inside a button. It is as tall as the
+  text around it and takes the text's colour, or takes `size="m"` (1.5rem) or `size="l"` (2.5rem)
+  and `variant="blue"` or `"green"`. A screen reader hears a progress bar named by `label`
+  (Loading by default), and an empty `label` hides it, as on the logo. Under reduced motion it
+  fades instead of turning. It renders the public class `.neuwo-spinner`, with the modifiers
+  `--m`, `--l`, `--blue` and `--green`, which also works hand-written without the element.
+
 ## 0.6.0
 
 Menus, menu buttons and a sidebar for a site's own navigation. Each font is now split in two, so an

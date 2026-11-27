@@ -1,4 +1,4 @@
-:where(neuwo-badge, neuwo-button, neuwo-checkbox, neuwo-combobox, neuwo-copy, neuwo-cta, neuwo-deal-id, neuwo-input, neuwo-logo, neuwo-menu, neuwo-menu-group, neuwo-menu-item, neuwo-nav-item, neuwo-nav-section, neuwo-notice, neuwo-radio, neuwo-radio-group, neuwo-range, neuwo-segmented, neuwo-sidebar, neuwo-status-dot, neuwo-textarea, neuwo-toggle) {
+:where(neuwo-badge, neuwo-button, neuwo-checkbox, neuwo-combobox, neuwo-copy, neuwo-cta, neuwo-deal-id, neuwo-input, neuwo-logo, neuwo-menu, neuwo-menu-group, neuwo-menu-item, neuwo-nav-item, neuwo-nav-section, neuwo-notice, neuwo-radio, neuwo-radio-group, neuwo-range, neuwo-segmented, neuwo-sidebar, neuwo-spinner, neuwo-status-dot, neuwo-textarea, neuwo-toggle) {
   box-sizing: border-box;
   font-family: var(--neuwo-font-text);
 
@@ -31,6 +31,7 @@
     .neuwo-range, [class*="neuwo-range__"], [class*="neuwo-range--"],
     .neuwo-segmented, [class*="neuwo-segmented__"], [class*="neuwo-segmented--"],
     .neuwo-sidebar, [class*="neuwo-sidebar__"], [class*="neuwo-sidebar--"],
+    .neuwo-spinner, [class*="neuwo-spinner__"], [class*="neuwo-spinner--"],
     .neuwo-status-dot, [class*="neuwo-status-dot__"], [class*="neuwo-status-dot--"],
     .neuwo-textarea, [class*="neuwo-textarea__"], [class*="neuwo-textarea--"]
   ) {

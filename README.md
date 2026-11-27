@@ -619,7 +619,7 @@ light DOM elements (`<neuwo-button>`, `<neuwo-badge>`, `<neuwo-deal-id>`, `<neuw
 `<neuwo-logo>`, `<neuwo-copy>`, `<neuwo-notice>`, `<neuwo-cta>`, `<neuwo-input>`, `<neuwo-textarea>`,
 `<neuwo-range>`, `<neuwo-combobox>`, `<neuwo-checkbox>`, `<neuwo-toggle>`, `<neuwo-radio>`,
 `<neuwo-radio-group>`, `<neuwo-segmented>`, `<neuwo-menu>`, `<neuwo-menu-group>`,
-`<neuwo-menu-item>`, `<neuwo-sidebar>`, `<neuwo-nav-section>` and `<neuwo-nav-item>`) into their markup; MDX reads its own
+`<neuwo-menu-item>`, `<neuwo-sidebar>`, `<neuwo-nav-section>`, `<neuwo-nav-item>` and `<neuwo-spinner>`) into their markup; MDX reads its own
 `jsxImportSource` option, not tsconfig's, so set it there too (in
 `@mdx-js/*` or Next's MDX config). Elements recognise markup React rendered, from Client or Server
 Components, and leave it to React, so without the setting a light DOM tag React renders stays bare.
@@ -869,6 +869,7 @@ React's own controlled inputs do.
 | Badge | `<neuwo-badge>` | Stable |
 | Deal-ID chip | `<neuwo-deal-id>` | Stable |
 | Status dot | `<neuwo-status-dot>` | Stable |
+| Spinner | `<neuwo-spinner>` | Stable |
 | Copy wrapper | `<neuwo-copy>` | Stable |
 | CTA band | `<neuwo-cta>` | Stable |
 | Notice card | `<neuwo-notice>` | Stable |
@@ -958,6 +959,9 @@ through the two tokens.
 | `.neuwo-status-dot--pulse`, `.neuwo-status-dot--blink` | the dot, by `motion` |
 | `.neuwo-status-dot--halo-none`, `.neuwo-status-dot--halo-s`, `.neuwo-status-dot--halo-l` | the dot, by `halo` |
 | `.neuwo-status-dot--glow-s`, `.neuwo-status-dot--glow-m`, `.neuwo-status-dot--glow-l` | the dot, by `glow` |
+| `.neuwo-spinner` | the ring `<span>`, which has no children |
+| `.neuwo-spinner--m`, `.neuwo-spinner--l` | the ring, by `size` |
+| `.neuwo-spinner--blue`, `.neuwo-spinner--green` | the ring, by `variant` |
 | `.neuwo-logo` | the logo `<svg>` |
 | `.neuwo-logo--bg-light`, `.neuwo-logo--bg-dark`, `.neuwo-logo--bg-dark-alt`, `.neuwo-logo--bg-colour` | the logo, by `variant` |
 | `.neuwo-copy` | the copy wrapper's root `<div>`, `display: contents`, so it draws no box |
@@ -2004,6 +2008,31 @@ A client navigation then swaps the page and leaves the sidebar as the reader had
 sections and its scroll included, while the new `current` moves the mark and opens the new page's
 sections. A hard reload opens the remembered sections through `remember`, whose script the server
 render carries. [demo/nextjs](https://github.com/neuwoai/neuwo-web-ui-components/tree/v0.6.0/demo/nextjs) is the working app.
+
+## Spinner
+
+`<neuwo-spinner>` is a loading ring for anything that waits on data: inline in a sentence, beside
+a label, or alone in a panel. Unset, it is as tall as the text around it and takes the text's
+colour; `size="m"` (1.5rem) and `size="l"` (2.5rem) suit a panel, and `variant="blue"` or
+`"green"` gives a ring of its own the brand colour. The stroke grows with the ring.
+
+```html
+<section aria-busy="true">
+  <neuwo-spinner size="l" label="Loading segments"></neuwo-spinner>
+</section>
+
+<p><neuwo-spinner label=""></neuwo-spinner> Loading results</p>
+```
+
+A screen reader hears it as a progress bar named by `label`, Loading by default; set it to the
+visitor's language. An empty `label` hides the ring from screen readers, as on the logo, for a
+ring beside text that already says what is loading. Put `aria-busy="true"` on the region that is
+loading. A live region inserted together with its text is not announced reliably, so a page that
+wants the load spoken updates a live region it already has.
+
+The ring turns, and under `prefers-reduced-motion: reduce` it stands still and fades in and out
+instead, so it never looks stuck. The class works without the element, from the stylesheet alone:
+`<span class="neuwo-spinner" role="progressbar" aria-label="Loading"></span>`.
 
 ## Logo
 
