@@ -2018,22 +2018,30 @@ colour; `size="m"` (1.5rem) and `size="l"` (2.5rem) suit a panel, and `variant="
 `"green"` gives a ring of its own the brand colour. The stroke grows with the ring.
 
 ```html
-<section aria-busy="true">
-  <neuwo-spinner size="l" label="Loading segments"></neuwo-spinner>
-</section>
+<neuwo-spinner id="segments-loading" size="l" label="Loading segments"></neuwo-spinner>
+<section aria-label="Segments" aria-busy="true" aria-describedby="segments-loading">...</section>
 
 <p><neuwo-spinner label=""></neuwo-spinner> Loading results</p>
 ```
 
 A screen reader hears it as a progress bar named by `label`, Loading by default; set it to the
-visitor's language. An empty `label` hides the ring from screen readers, as on the logo, for a
-ring beside text that already says what is loading. Put `aria-busy="true"` on the region that is
-loading. A live region inserted together with its text is not announced reliably, so a page that
-wants the load spoken updates a live region it already has.
+visitor's language. Without `label`, an `aria-label` on the element names the ring, as on
+`<neuwo-copy>`, but it stays on the element too, where Chromium exposes it a second time, so
+`label` is the cleaner choice. An empty `label` hides the ring from screen readers, as on the
+logo, for a ring beside text that already says what is loading.
 
+While a region loads, give it `aria-busy="true"` and point its `aria-describedby` at the
+spinner's `id`, as WAI-ARIA asks of a progress bar that describes a region; the description
+reaches the ring through the element. Keep the spinner outside the busy region, since a screen
+reader may hold back what a busy region holds until it is done. A live region inserted together
+with its text is not announced reliably, so a page that wants the load spoken updates a live
+region it already has.
+
+The element draws no box of its own (`display: contents`), so place the ring through
+`.neuwo-spinner` or its parent; a rule on `neuwo-spinner` itself, such as a margin, does nothing.
 The ring turns, and under `prefers-reduced-motion: reduce` it stands still and fades in and out
-instead, so it never looks stuck. The class works without the element, from the stylesheet alone:
-`<span class="neuwo-spinner" role="progressbar" aria-label="Loading"></span>`.
+instead, so it never looks stuck. The class works without the element, from the stylesheet alone,
+and hides with `hidden`: `<span class="neuwo-spinner" role="progressbar" aria-label="Loading"></span>`.
 
 ## Logo
 

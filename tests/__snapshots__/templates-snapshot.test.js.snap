@@ -441,7 +441,7 @@ exports[`template markup snapshots > neuwo-spinner > decorative 1`] = `"<neuwo-s
 
 exports[`template markup snapshots > neuwo-spinner > default 1`] = `"<neuwo-spinner><span class="neuwo-spinner" role="progressbar" aria-label="Loading"></span></neuwo-spinner>"`;
 
-exports[`template markup snapshots > neuwo-spinner > forwarded host attributes 1`] = `"<neuwo-spinner title="Busy" aria-label="Busy"><span class="neuwo-spinner" role="progressbar" aria-label="Loading"></span></neuwo-spinner>"`;
+exports[`template markup snapshots > neuwo-spinner > forwarded host attributes 1`] = `"<neuwo-spinner title="Busy" aria-label="Busy"><span class="neuwo-spinner" role="progressbar" aria-label="Busy"></span></neuwo-spinner>"`;
 
 exports[`template markup snapshots > neuwo-spinner > green 1`] = `"<neuwo-spinner variant="green"><span class="neuwo-spinner neuwo-spinner--green" role="progressbar" aria-label="Loading"></span></neuwo-spinner>"`;
 

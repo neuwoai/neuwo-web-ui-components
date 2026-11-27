@@ -44,7 +44,7 @@ neuwo-spinner {
   50% { opacity: 0.4; }
 }
 
-/* Forced colours would paint the track and the arc alike, so the turning ring would look still. */
+/* Opted out, as forced colours paint track and arc alike; CanvasText, as inherit takes the page's unforced colour. */
 @media (forced-colors: active) {
   .neuwo-spinner {
     forced-color-adjust: none;

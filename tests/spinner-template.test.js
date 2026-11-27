@@ -36,6 +36,13 @@ describe("spinnerTemplate()", () => {
     expect(render({ label: "Loading results" }).props["aria-label"]).toBe("Loading results");
   });
 
+  it("takes the element's aria-label when label is unset, and label wins over it", () => {
+    expect(render({ "aria-label": "Loading segments" }).props["aria-label"]).toBe("Loading segments");
+    expect(render({ label: "Loading results", "aria-label": "Loading segments" }).props["aria-label"]).toBe("Loading results");
+    expect(render({ "aria-label": "" }).props["aria-label"]).toBe("Loading");
+    expect(toHTML(render({ label: "", "aria-label": "Loading segments" }))).toBe('<span class="neuwo-spinner" aria-hidden="true"></span>');
+  });
+
   it("goes decorative on an empty label", () => {
     expect(toHTML(render({ label: "" }))).toBe('<span class="neuwo-spinner" aria-hidden="true"></span>');
   });

@@ -90,9 +90,19 @@ describe("<neuwo-spinner>", () => {
     expect(ring(el).hasAttribute("aria-hidden")).toBe(false);
   });
 
-  it("keeps title and aria-* on the host alone", () => {
+  it("keeps title and aria-* on the host alone, naming the ring from the host's aria-label", () => {
     const el = make(`<neuwo-spinner title="Busy" aria-label="Busy" data-x="1"></neuwo-spinner>`);
     expect(ring(el).getAttributeNames()).toEqual(["class", "role", "aria-label"]);
+    expect(ring(el).getAttribute("aria-label")).toBe("Busy");
+  });
+
+  it("follows a change to the host's aria-label on the same ring", async () => {
+    const el = make(`<neuwo-spinner aria-label="Loading segments"></neuwo-spinner>`);
+    const before = ring(el);
+    el.setAttribute("aria-label", "Loading audiences");
+    for (let turn = 0; turn < 3; turn++) await Promise.resolve();
+    expect(ring(el)).toBe(before);
+    expect(ring(el).getAttribute("aria-label")).toBe("Loading audiences");
   });
 
   it("adopts server markup without a single mutation", async () => {

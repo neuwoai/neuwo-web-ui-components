@@ -6,19 +6,21 @@
 
 - `<neuwo-spinner>`, a loading ring for any page, not only inside a button. It is as tall as the
   text around it and takes the text's colour, or takes `size="m"` (1.5rem) or `size="l"` (2.5rem)
-  and `variant="blue"` or `"green"`. A screen reader hears a progress bar named by `label`
-  (Loading by default), and an empty `label` hides it, as on the logo. Under reduced motion it
-  fades instead of turning. It renders the public class `.neuwo-spinner`, with the modifiers
-  `--m`, `--l`, `--blue` and `--green`, which also works hand-written without the element.
+  and `variant="blue"` or `"green"`. A screen reader hears a progress bar named by `label`, or
+  without it by the element's `aria-label` (Loading by default), and an empty `label` hides it, as
+  on the logo. Under reduced motion it fades instead of turning. It renders the public class
+  `.neuwo-spinner`, with the modifiers `--m`, `--l`, `--blue` and `--green`, which also works
+  hand-written without the element.
 
 ### Changed
 
-- A loading `<neuwo-button>` draws the shared ring: its spinner is now
-  `<span class="neuwo-spinner neuwo-btn__spinner">`, so a rule on `.neuwo-btn__spinner` still
-  reaches it. The ring's rules moved from `components/button/button.css` to
-  `components/spinner/spinner.css`, and its keyframes are renamed from `neuwo-button-spin` to
-  `neuwo-spinner-spin`. Under reduced motion it now fades instead of standing still. A site that
-  links the recipes one by one must link `components/spinner/spinner.css` with the button's.
+- A loading `<neuwo-button>` draws the shared ring: its spinner is now `<span class="neuwo-spinner
+  neuwo-btn__spinner">`, so a rule on `.neuwo-btn__spinner` still reaches it. The ring's rules moved
+  from `components/button/button.css` to `components/spinner/spinner.css`, and its keyframes are
+  renamed from `neuwo-button-spin` to `neuwo-spinner-spin`. Under reduced motion it now fades
+  instead of standing still, and in forced colours it keeps its gap, where before it turned as one
+  solid circle. A site that links the recipes one by one must link `components/spinner/spinner.css`
+  with the button's.
 
 ## 0.6.0
 
