@@ -1410,7 +1410,7 @@
       <neuwo-status-dot variant="blue" size="s" halo="none" glow="m" motion="blink"></neuwo-status-dot> Glowing blue dot
     </div>
 
-    <h2>Spinner (size, colour and name; fades instead of turning under reduced motion)</h2>
+    <h2>Spinner (size, colour and name, and the loading buttons' ring; fades instead of turning under reduced motion)</h2>
     <p>Fetching the latest segments <neuwo-spinner></neuwo-spinner> takes a moment, and the ring sits on the line like a word.</p>
     <div class="row">
       <neuwo-spinner></neuwo-spinner>
@@ -1426,6 +1426,14 @@
       <span style="display: inline-flex; align-items: center; gap: 0.5rem">
         <span class="neuwo-spinner" role="progressbar" aria-label="Loading"></span> Hand-written class, no element
       </span>
+    </div>
+    <div class="row">
+      <neuwo-button size="sm" loading>Saving</neuwo-button>
+      <neuwo-button loading>Saving</neuwo-button>
+      <neuwo-button size="lg" variant="outline" loading>Saving</neuwo-button>
+      <neuwo-button variant="glass" loading>Saving</neuwo-button>
+      <neuwo-button icon-only variant="outline" loading aria-label="Refresh"></neuwo-button>
+      <neuwo-spinner></neuwo-spinner>
     </div>
 
     <h2>CTA band (banner + spotlight variants)</h2>

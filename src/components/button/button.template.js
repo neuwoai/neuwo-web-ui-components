@@ -1,5 +1,6 @@
 import { DEFAULT_REGION, h, has, live, region } from "../../core/template.js";
 import { menuPanelId } from "../menu/menu.template.js";
+import { spinner } from "../spinner/spinner.template.js";
 
 /**
  * The attributes that make a native button open the menu whose id is `menu`.
@@ -61,7 +62,7 @@ export function buttonTemplate(attrs, ctx) {
   const node = h(
     link ? "a" : "button",
     props,
-    loading && h("span", { class: "neuwo-btn__spinner", "aria-hidden": "true" }),
+    loading && spinner({ label: "" }, "neuwo-btn__spinner"),
     h("span", { class: "neuwo-btn__start" }, region("start")),
     h("span", { class: "neuwo-btn__label" }, region()),
     iconOnly && opens && !loading && empty && h("span", { class: "neuwo-btn__dots", "aria-hidden": "true" }),

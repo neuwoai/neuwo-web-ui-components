@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { toHTML } from "../src/core/adapters/html.js";
 import { buttonTemplate } from "../src/components/button/button.template.js";
+import { spinner } from "../src/components/spinner/spinner.template.js";
 import { templates } from "../src/templates.js";
 
 const render = (attrs = {}) => buttonTemplate(attrs, { id: (suffix) => suffix, children: [] });
@@ -74,7 +75,7 @@ describe("buttonTemplate()", () => {
     const node = render({ loading: "" });
     expect(node.props).toMatchObject({ disabled: true, "aria-busy": "true" });
     expect(toHTML(node)).toBe(
-      `<button class="neuwo-btn neuwo-btn--solid neuwo-btn--loading" type="button" disabled="" aria-busy="true"><span class="neuwo-btn__spinner" aria-hidden="true"></span>${wrappers}</button>`,
+      `<button class="neuwo-btn neuwo-btn--solid neuwo-btn--loading" type="button" disabled="" aria-busy="true"><span class="neuwo-spinner neuwo-btn__spinner" aria-hidden="true"></span>${wrappers}</button>`,
     );
   });
 
@@ -143,8 +144,8 @@ describe("buttonTemplate()", () => {
     const icon = { tag: "svg", attrs: {}, text: "", slot: "default", children: [] };
     const loading = (children = []) => buttonTemplate({ "icon-only": "", menu: "rows", loading: "" }, { id: (suffix) => suffix, children, within: null });
     expect(toHTML(loading())).not.toContain("neuwo-btn__dots");
-    expect(loading().children[0]).toEqual({ tag: "span", props: { class: "neuwo-btn__spinner", "aria-hidden": "true" }, children: [] });
-    expect(loading([icon]).children[0].props.class).toBe("neuwo-btn__spinner");
+    expect(loading().children[0]).toEqual(spinner({ label: "" }, "neuwo-btn__spinner"));
+    expect(loading([icon]).children[0].props.class).toBe("neuwo-spinner neuwo-btn__spinner");
   });
 
   describe("split", () => {
@@ -190,7 +191,7 @@ describe("buttonTemplate()", () => {
 
       const [busy] = halves({ loading: "" });
       expect(toHTML(busy)).toBe(
-        `<button class="neuwo-btn-split__main neuwo-btn neuwo-btn--solid neuwo-btn--loading" type="button" disabled="" aria-busy="true"><span class="neuwo-btn__spinner" aria-hidden="true"></span>${wrappers}</button>`,
+        `<button class="neuwo-btn-split__main neuwo-btn neuwo-btn--solid neuwo-btn--loading" type="button" disabled="" aria-busy="true"><span class="neuwo-spinner neuwo-btn__spinner" aria-hidden="true"></span>${wrappers}</button>`,
       );
       expect(toHTML(split(), { start: "<i>s</i>", default: "Save", end: "<i>e</i>" })).toContain(
         '<span class="neuwo-btn__start"><i>s</i></span><span class="neuwo-btn__label">Save</span><span class="neuwo-btn__end"><i>e</i></span></button><button',

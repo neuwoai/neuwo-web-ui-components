@@ -173,7 +173,7 @@ describe("<neuwo-button>", () => {
     expect(btn.classList.contains("neuwo-btn--loading")).toBe(true);
     expect(btn.getAttribute("aria-busy")).toBe("true");
     expect(btn.disabled).toBe(true);
-    expect(btn.firstElementChild.className).toBe("neuwo-btn__spinner");
+    expect(btn.firstElementChild.className).toBe("neuwo-spinner neuwo-btn__spinner");
     expect(btn.firstElementChild.getAttribute("aria-hidden")).toBe("true");
   });
 
@@ -672,7 +672,7 @@ describe("<neuwo-button> under React", () => {
     const btn = show(base);
     expect(btn.localName).toBe("button");
     expect(show({ ...base, loading: true })).toBe(btn);
-    expect(btn.firstElementChild.className).toBe("neuwo-btn__spinner");
+    expect(btn.firstElementChild.className).toBe("neuwo-spinner neuwo-btn__spinner");
     expect(show(base)).toBe(btn);
     expect(btn.querySelector(".neuwo-btn__spinner")).toBeNull();
 
@@ -709,7 +709,7 @@ describe("<neuwo-button> under React", () => {
     expect(node.textContent).toBe("1");
 
     show({ loading: true }, slot);
-    expect(container.querySelector(".neuwo-btn").firstElementChild.className).toBe("neuwo-btn__spinner");
+    expect(container.querySelector(".neuwo-btn").firstElementChild.className).toBe("neuwo-spinner neuwo-btn__spinner");
     expect(counter()).toBe(node);
     expect(node.parentElement.className).toBe(wrapper);
     expect(node.textContent).toBe("1");
@@ -817,11 +817,12 @@ describe("button.css", () => {
     expect(buttonCss).toMatch(/\.neuwo-btn--block \{[^}]*width: 100%;/);
   });
 
-  it("defines the spinner keyframe with a reduced-motion guard", () => {
-    expect(buttonCss).toContain(".neuwo-btn__spinner");
-    expect(buttonCss).toContain("@keyframes neuwo-button-spin");
-    expect(buttonCss).toContain("animation: neuwo-button-spin");
-    expect(buttonCss).toMatch(/prefers-reduced-motion: reduce/);
+  it("draws the loading ring with the shared spinner, keeping only the icon-only size", () => {
+    expect(buttonCss).not.toContain("neuwo-button-spin");
+    expect(buttonCss).not.toMatch(/(^|\n)\.neuwo-btn__spinner \{/);
+    expect(buttonCss).not.toMatch(/\.neuwo-btn__spinner \{[^}]*animation/);
+    const reduced = buttonCss.slice(buttonCss.indexOf("@media (prefers-reduced-motion: reduce)"));
+    expect(reduced).not.toContain(".neuwo-btn__spinner");
   });
 
   it("pads an icon-only button by its font size, after the size and width modifiers it overrides", () => {

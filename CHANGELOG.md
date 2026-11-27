@@ -11,6 +11,15 @@
   fades instead of turning. It renders the public class `.neuwo-spinner`, with the modifiers
   `--m`, `--l`, `--blue` and `--green`, which also works hand-written without the element.
 
+### Changed
+
+- A loading `<neuwo-button>` draws the shared ring: its spinner is now
+  `<span class="neuwo-spinner neuwo-btn__spinner">`, so a rule on `.neuwo-btn__spinner` still
+  reaches it. The ring's rules moved from `components/button/button.css` to
+  `components/spinner/spinner.css`, and its keyframes are renamed from `neuwo-button-spin` to
+  `neuwo-spinner-spin`. Under reduced motion it now fades instead of standing still. A site that
+  links the recipes one by one must link `components/spinner/spinner.css` with the button's.
+
 ## 0.6.0
 
 Menus, menu buttons and a sidebar for a site's own navigation. Each font is now split in two, so an

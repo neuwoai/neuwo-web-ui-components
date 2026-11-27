@@ -19,7 +19,7 @@ import { MENU_LABEL, buttonTemplate } from "./button.template.js";
  * menu. Only the main half's clicks reach the host's listeners. `disabled` disables both halves; `loading` disables
  * the toggle half, and the main half too unless it is a link, which stays a link marked busy.
  *
- * @summary Neuwo button (or link button). Public classes: `.neuwo-btn` on the `<button>` or `<a>`, with its modifiers `.neuwo-btn--solid`, `--outline`, `--glass`, `--sm`, `--lg`, `--hover-s`, `--hover-l`, `--wide`, `--xwide`, `--block`, `--loading` and `--icon-only`; `.neuwo-btn__spinner` while loading; the wrappers `.neuwo-btn__start`, `.neuwo-btn__label` and `.neuwo-btn__end` around the start children, the label and the end children; `.neuwo-btn__chevron` after the end wrapper while `menu` is set without `icon-only`; `.neuwo-btn__dots` after the label wrapper on an `icon-only` button with `menu` and no label content, unless it is loading; and with `split`, the wrapper `.neuwo-btn-split` around the main half `.neuwo-btn-split__main` and the toggle half `.neuwo-btn-split__toggle`, both `.neuwo-btn` with the variant, the toggle half holding the chevron.
+ * @summary Neuwo button (or link button). Public classes: `.neuwo-btn` on the `<button>` or `<a>`, with its modifiers `.neuwo-btn--solid`, `--outline`, `--glass`, `--sm`, `--lg`, `--hover-s`, `--hover-l`, `--wide`, `--xwide`, `--block`, `--loading` and `--icon-only`; `.neuwo-btn__spinner` on the loading ring, which is also a `.neuwo-spinner`, the `<neuwo-spinner>` ring; the wrappers `.neuwo-btn__start`, `.neuwo-btn__label` and `.neuwo-btn__end` around the start children, the label and the end children; `.neuwo-btn__chevron` after the end wrapper while `menu` is set without `icon-only`; `.neuwo-btn__dots` after the label wrapper on an `icon-only` button with `menu` and no label content, unless it is loading; and with `split`, the wrapper `.neuwo-btn-split` around the main half `.neuwo-btn-split__main` and the toggle half `.neuwo-btn-split__toggle`, both `.neuwo-btn` with the variant, the toggle half holding the chevron.
  * @customElement neuwo-button
  * @attr {solid|outline|glass} variant - visual style (default solid).
  * @attr {sm|lg} size - size preset (default medium when unset).
@@ -29,7 +29,7 @@ import { MENU_LABEL, buttonTemplate } from "./button.template.js";
  * @attr {boolean} block - stretch the button to the container width.
  * @attr href - when set (and not disabled), renders a navigable link.
  * @attr {boolean} disabled - disables the button (a disabled `href` stays a button to be inert).
- * @attr {boolean} loading - shows a spinner, sets aria-busy, and blocks activation while keeping the button's colour.
+ * @attr {boolean} loading - shows the shared spinner, sets aria-busy, and blocks activation while keeping the button's colour.
  * @attr {button|submit|reset} type - native button type, for the enclosing form (default button).
  * @attr form - id of the form the native button belongs to, when it sits outside it.
  * @attr name - name the native button submits with its form.

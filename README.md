@@ -894,6 +894,7 @@ Published styling files, for direct linking or non-web use:
 | Component reset (before any recipe) | `@neuwo/web-ui-library--demo/components/reset.css` |
 | Popup panel and row (combobox, menu) | `@neuwo/web-ui-library--demo/components/popup.css` |
 | Button recipe | `@neuwo/web-ui-library--demo/components/button/button.css` |
+| Spinner recipe (the button's loading ring too: link it with `button/button.css`) | `@neuwo/web-ui-library--demo/components/spinner/spinner.css` |
 | Menu recipe (menu, menu group, menu item) | `@neuwo/web-ui-library--demo/components/menu/menu.css` |
 | Sidebar recipe (sidebar, nav section, nav entry) | `@neuwo/web-ui-library--demo/components/sidebar/sidebar.css` |
 | Field chrome | `@neuwo/web-ui-library--demo/components/fields/field.css` |
@@ -921,7 +922,7 @@ neuwo-button .neuwo-btn { border-radius: 0; }
 | `.neuwo-btn--sm`, `.neuwo-btn--lg` | the control, by `size` |
 | `.neuwo-btn--hover-s`, `.neuwo-btn--hover-l` | the control, by `hover` |
 | `.neuwo-btn--wide`, `.neuwo-btn--xwide`, `.neuwo-btn--block`, `.neuwo-btn--loading` | the control, by the attribute of the same name |
-| `.neuwo-btn__spinner` | the spinner, the control's first child while `loading` |
+| `.neuwo-btn__spinner` | the loading ring, also a `.neuwo-spinner`, the control's first child while `loading` |
 | `.neuwo-btn__start`, `.neuwo-btn__label`, `.neuwo-btn__end` | the wrappers around the `slot="start"` children, the label and the `slot="end"` children |
 | `.neuwo-btn--icon-only` | the control, by `icon-only` |
 | `.neuwo-btn__chevron` | the chevron after the end wrapper while `menu` is set without `icon-only` or `split`, and the content of a `split` button's toggle half; it turns while its control has `aria-expanded="true"` |

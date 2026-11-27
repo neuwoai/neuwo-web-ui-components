@@ -146,15 +146,6 @@ neuwo-button[block]:not([hidden]) {
   opacity: 1; /* stay full-colour while busy, unlike the dimmed disabled look */
 }
 
-.neuwo-btn__spinner {
-  width: 1em;
-  height: 1em;
-  border: 2px solid color-mix(in srgb, currentColor 35%, transparent);
-  border-top-color: currentColor;
-  border-radius: var(--neuwo-radius-full);
-  animation: neuwo-button-spin 0.6s linear infinite;
-}
-
 /* The dots' size, so an icon-only button keeps its size while it loads. */
 .neuwo-btn--icon-only > .neuwo-btn__spinner {
   inline-size: 1.125em;
@@ -163,10 +154,6 @@ neuwo-button[block]:not([hidden]) {
 
 .neuwo-btn--icon-only.neuwo-btn--loading > :is(.neuwo-btn__start, .neuwo-btn__label, .neuwo-btn__end) {
   display: none;
-}
-
-@keyframes neuwo-button-spin {
-  to { transform: rotate(360deg); }
 }
 
 .neuwo-btn__chevron {
@@ -238,8 +225,6 @@ neuwo-button[block]:not([hidden]) {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .neuwo-btn__spinner { animation: none; }
-
   .neuwo-btn__chevron {
     transition: none;
   }
