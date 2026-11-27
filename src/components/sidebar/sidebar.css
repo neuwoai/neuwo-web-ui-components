@@ -152,7 +152,7 @@ neuwo-nav-item:not([hidden]) {
     flex: 0 0 var(--neuwo-sidebar-width, 17rem);
     inline-size: var(--neuwo-sidebar-width, 17rem);
     gap: var(--neuwo-space-6);
-    padding-block: var(--neuwo-space-8) var(--neuwo-space-6);
+    padding-block: var(--neuwo-space-8) var(--neuwo-sidebar-end-space, var(--neuwo-space-6));
     padding-inline: var(--neuwo-space-6);
     border-inline-end: 1px solid var(--neuwo-glass-border);
     position: sticky;
@@ -277,6 +277,7 @@ neuwo-nav-item:not([hidden]) {
 
   .neuwo-sidebar__footer {
     margin: var(--neuwo-space-4);
+    margin-block-end: var(--neuwo-sidebar-end-space, var(--neuwo-space-4));
   }
 }
 

@@ -15,7 +15,7 @@ const code = css.replace(/\/\*[\s\S]*?\*\//g, "");
 
 const PHONE = "(width < 48rem)";
 const DESKTOP = "(width >= 48rem)";
-const KNOBS = ["--neuwo-sidebar-width", "--neuwo-logo-height", "--neuwo-nav-link-gutter"];
+const KNOBS = ["--neuwo-sidebar-width", "--neuwo-sidebar-end-space", "--neuwo-logo-height", "--neuwo-nav-link-gutter"];
 
 /** @param {string} source */
 function outsideMedia(source) {
@@ -76,6 +76,12 @@ describe("sidebar.css recipe", () => {
     });
   });
 
+  it("reads the space below the footer from --neuwo-sidebar-end-space, keeping 24px on the column and 16px on the phone menu unless it is set", () => {
+    expect(code).not.toMatch(/--neuwo-sidebar-end-space\s*:/);
+    expect(desktop(".neuwo-sidebar")["padding-block"]).toBe("var(--neuwo-space-8) var(--neuwo-sidebar-end-space, var(--neuwo-space-6))");
+    expect(phone(".neuwo-sidebar__footer")["margin-block-end"]).toBe("var(--neuwo-sidebar-end-space, var(--neuwo-space-4))");
+  });
+
   it("turns from a bar into the column at 48rem, and at no other width", () => {
     expect([...new Set(code.match(/@media \([^)]*width[^)]*\)/g))].sort()).toEqual([`@media ${DESKTOP}`, `@media ${PHONE}`].sort());
   });
@@ -102,7 +108,7 @@ describe("sidebar.css recipe", () => {
       "inset-block-start": "0",
       "block-size": "100vh",
       gap: "var(--neuwo-space-6)",
-      "padding-block": "var(--neuwo-space-8) var(--neuwo-space-6)",
+      "padding-block": "var(--neuwo-space-8) var(--neuwo-sidebar-end-space, var(--neuwo-space-6))",
       "padding-inline": "var(--neuwo-space-6)",
       "border-inline-end": "1px solid var(--neuwo-glass-border)",
     });
@@ -211,7 +217,7 @@ describe("sidebar.css recipe", () => {
       "padding-inline": "var(--neuwo-space-4)",
     });
     expect(phone(".neuwo-sidebar__after-nav")).toEqual({ "margin-inline": "var(--neuwo-space-4)" });
-    expect(phone(".neuwo-sidebar__footer")).toEqual({ margin: "var(--neuwo-space-4)" });
+    expect(phone(".neuwo-sidebar__footer")).toEqual({ margin: "var(--neuwo-space-4)", "margin-block-end": "var(--neuwo-sidebar-end-space, var(--neuwo-space-4))" });
   });
 
   it("rules the footer off with a glass border and takes out a place nothing fills", () => {

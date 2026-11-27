@@ -351,7 +351,7 @@ describe("custom-elements.json", () => {
     expect(panel.readonly).toBe(true);
   });
 
-  it("documents the sidebar's attributes, slots, navigate event, menu property and width, and the entry's href", () => {
+  it("documents the sidebar's attributes, slots, navigate event, menu property, width and end space, and the entry's href", () => {
     const sidebar = declByTag(manifest, "neuwo-sidebar");
     expect(sidebar.attributes.map((attribute) => attribute.name)).toEqual(["label", "current", "remember", "menu-label"]);
     expect(sidebar.attributes.find((attribute) => attribute.name === "remember").type.text).toBe("boolean|string");
@@ -360,7 +360,7 @@ describe("custom-elements.json", () => {
     const menuOpen = sidebar.members.find((member) => member.name === "menuOpen");
     expect(menuOpen.return.type.text).toBe("boolean");
     expect(menuOpen.description).toMatch(/not reflected/);
-    expect(cssPropertiesFor(manifest, "neuwo-sidebar")).toEqual(new Set(["--neuwo-sidebar-width"]));
+    expect(cssPropertiesFor(manifest, "neuwo-sidebar")).toEqual(new Set(["--neuwo-sidebar-width", "--neuwo-sidebar-end-space"]));
     expect(declByTag(manifest, "neuwo-nav-item").attributes.map((attribute) => attribute.name)).toEqual(["href"]);
   });
 

@@ -11,6 +11,9 @@
   on the logo. Under reduced motion it fades instead of turning. It renders the public class
   `.neuwo-spinner`, with the modifiers `--m`, `--l`, `--blue` and `--green`, which also works
   hand-written without the element.
+- `--neuwo-sidebar-end-space` sets the space below the sidebar's footer: the column's bottom padding
+  (`--neuwo-space-6` unless it is set) and, in the phone menu, the footer's bottom margin
+  (`--neuwo-space-4` unless it is set). The sidebar reads it and never declares it.
 
 ### Changed
 

@@ -1841,8 +1841,12 @@ document.querySelector("neuwo-sidebar").addEventListener("navigate", (event) => 
 
 The column is 17rem wide unless **`--neuwo-sidebar-width`** says otherwise. The library reads it and
 never declares it, so set it on the element or an ancestor. The 48rem breakpoint is fixed, since a
-custom property cannot drive a media query. The entries are `.neuwo-nav-link` with
-`--neuwo-nav-link-gutter` at `--neuwo-space-2`; the classes are listed under restyling above.
+custom property cannot drive a media query. The space below the footer is
+**`--neuwo-sidebar-end-space`**, read the same way: the column's bottom padding, `--neuwo-space-6`
+unless it is set, and in the phone menu the footer's bottom margin, `--neuwo-space-4` unless it is
+set. Set it to `0` or a small space for a footer that brings its own, such as a short link. The
+entries are `.neuwo-nav-link` with `--neuwo-nav-link-gutter` at `--neuwo-space-2`; the classes are
+listed under restyling above.
 
 ### Sections
 

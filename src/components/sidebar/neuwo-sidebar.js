@@ -48,6 +48,7 @@ const leaves = (link) => link.origin === location.origin && !(link.href.includes
  * @slot after-nav - content between the nav and the footer, outside the nav's scroll; inside the menu below 48rem.
  * @slot footer - the bottom of the column, ruled off above; inside the menu below 48rem.
  * @cssprop --neuwo-sidebar-width - the column's width from 48rem (default 17rem); read, never declared, so set it on the element or an ancestor.
+ * @cssprop --neuwo-sidebar-end-space - the space below the footer: the column's bottom padding from 48rem (default `--neuwo-space-6`), and the footer's bottom margin in the phone menu (default `--neuwo-space-4`); read, never declared, so set it on the element or an ancestor.
  */
 export class NeuwoSidebar extends NeuwoElement {
   static template = sidebarTemplate;
