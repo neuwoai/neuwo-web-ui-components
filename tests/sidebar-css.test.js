@@ -87,6 +87,7 @@ describe("sidebar.css recipe", () => {
     expect(of(rules, ".neuwo-sidebar__toggle")).toEqual({
       display: "block",
       "align-self": "flex-start",
+      "inline-size": "fit-content",
       "margin-inline-start": "calc(var(--neuwo-space-2) - var(--neuwo-space-3))",
     });
     expect(of(rules, ".neuwo-sidebar")).toEqual({ "overflow-y": "auto" });

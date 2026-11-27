@@ -212,6 +212,8 @@ neuwo-nav-item:not([hidden]) {
     .neuwo-sidebar__toggle {
       display: block;
       align-self: flex-start;
+      /* An engine that lays the <details> out as a block ignores align-self. */
+      inline-size: fit-content;
       margin-inline-start: calc(var(--neuwo-space-2) - var(--neuwo-space-3));
     }
 
