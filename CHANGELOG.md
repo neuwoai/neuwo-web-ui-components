@@ -14,6 +14,11 @@
 - `--neuwo-sidebar-end-space` sets the space below the sidebar's footer: the column's bottom padding
   (`--neuwo-space-6` unless it is set) and, in the phone menu, the footer's bottom margin
   (`--neuwo-space-4` unless it is set). The sidebar reads it and never declares it.
+- Status colours: four five-step scales, `--neuwo-color-success-400`, `-550`, `-700`, `-800` and
+  `-900`, and the same for `info`, `warning` and `error`. Each step is named for its OKLCH lightness
+  (`400` is 40 %), darkest to brightest, and has that lightness in every scale, so it reads at the
+  same contrast on the page. No existing colour changed, and the components still use the brand
+  colours and `--neuwo-color-red`.
 
 ### Changed
 

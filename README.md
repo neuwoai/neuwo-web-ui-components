@@ -271,6 +271,33 @@ out as anywhere else: inside an SVG `<foreignObject>`, `<desc>` or `<title>`, a 
 `<mn>`, `<ms>` or `<mtext>`, or an `<annotation-xml>` whose `encoding` is `text/html` or
 `application/xhtml+xml`, and after an HTML tag, such as `<p>` or `<div>`, that ends the drawing.
 
+### Status colours
+
+The tokens carry four status scales for feedback: `--neuwo-color-success-*`, `--neuwo-color-info-*`,
+`--neuwo-color-warning-*` and `--neuwo-color-error-*`. Each has five steps, named for their OKLCH
+lightness: `400` is 40 %, then `550`, `700`, `800` and `900`, darkest to brightest, the same direction
+as the grey scale. A step has the same lightness in every scale, so it reads at the same contrast on
+the page whichever status it colours: about 2, 4, 7.5, 11 and 15 to 1 from `400` to `900`. A step
+added later takes the name of its lightness, so none of these is ever renumbered.
+
+| Step | Use it for |
+|---|---|
+| `900`, `800` | Text of any size |
+| `700` | Text, icons and dots |
+| `550` | Borders and large text only |
+| `400` | Fills only, with `900` text on them |
+
+```css
+.quota-warning {
+  color: var(--neuwo-color-warning-800);
+  border-color: var(--neuwo-color-warning-550);
+}
+```
+
+There is no unnumbered `--neuwo-color-warning`: name the step. The brand colours are unchanged, and
+the components still draw from them: a field's error is `--neuwo-color-red`, at 62.83 % lightness,
+between `error-550` and `error-700`.
+
 ### Links
 
 The sheet styles bare `<a>` in prose: brand blue, underlined, deepening to `--neuwo-color-blue-dark`

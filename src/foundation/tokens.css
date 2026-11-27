@@ -20,6 +20,28 @@
   --neuwo-color-grey-800: oklch(96.826% 0.0069 247.896);
   --neuwo-color-grey-900: oklch(98.415% 0.0034 247.858);
 
+  /* Status */
+  --neuwo-color-success-400: oklch(40% 0.110 131.692);
+  --neuwo-color-success-550: oklch(55% 0.151 131.692);
+  --neuwo-color-success-700: oklch(70% 0.193 131.692);
+  --neuwo-color-success-800: oklch(80% 0.210 131.692);
+  --neuwo-color-success-900: oklch(90% 0.210 131.692);
+  --neuwo-color-info-400: oklch(40% 0.071 217.1);
+  --neuwo-color-info-550: oklch(55% 0.098 217.1);
+  --neuwo-color-info-700: oklch(70% 0.125 217.1);
+  --neuwo-color-info-800: oklch(80% 0.142 217.1);
+  --neuwo-color-info-900: oklch(90% 0.075 217.1);
+  --neuwo-color-warning-400: oklch(40% 0.082 80.297);
+  --neuwo-color-warning-550: oklch(55% 0.113 80.297);
+  --neuwo-color-warning-700: oklch(70% 0.144 80.297);
+  --neuwo-color-warning-800: oklch(80% 0.165 80.297);
+  --neuwo-color-warning-900: oklch(90% 0.094 80.297);
+  --neuwo-color-error-400: oklch(40% 0.162 25.21);
+  --neuwo-color-error-550: oklch(55% 0.210 25.21);
+  --neuwo-color-error-700: oklch(70% 0.190 25.21);
+  --neuwo-color-error-800: oklch(80% 0.114 25.21);
+  --neuwo-color-error-900: oklch(90% 0.051 25.21);
+
   /* Semantic surfaces */
   --neuwo-color-body-bg: oklch(16.140% 0.0289 266.826);
   --neuwo-color-surface-solid: oklch(18.020% 0.0325 266.625);
@@ -225,6 +247,26 @@
     --neuwo-color-grey-700: #e2e8f0;
     --neuwo-color-grey-800: #f1f5f9;
     --neuwo-color-grey-900: #f8fafc;
+    --neuwo-color-success-400: #305301;
+    --neuwo-color-success-550: #4f8202;
+    --neuwo-color-success-700: #70b502;
+    --neuwo-color-success-800: #89d826;
+    --neuwo-color-success-900: #a9f953;
+    --neuwo-color-info-400: #015161;
+    --neuwo-color-info-550: #017f97;
+    --neuwo-color-info-700: #01b1d1;
+    --neuwo-color-info-800: #0ad3f9;
+    --neuwo-color-info-900: #a4ebff;
+    --neuwo-color-warning-400: #5e4201;
+    --neuwo-color-warning-550: #936903;
+    --neuwo-color-warning-700: #cc9305;
+    --neuwo-color-warning-800: #f4b004;
+    --neuwo-color-warning-900: #ffd896;
+    --neuwo-color-error-400: #8a0012;
+    --neuwo-color-error-550: #d01c29;
+    --neuwo-color-error-700: #ff645f;
+    --neuwo-color-error-800: #ffa098;
+    --neuwo-color-error-900: #fed2cd;
     --neuwo-color-body-bg: #080d1a;
     --neuwo-color-surface-solid: #0b1120;
     --neuwo-color-header-solid-bg: #080d1af2;
